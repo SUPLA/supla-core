@@ -3,6 +3,8 @@
 
 #include "SrpcTest.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "gtest/gtest.h"  // NOLINT
@@ -535,7 +537,9 @@ vector<int> SrpcTest::get_call_ids(int version) {
     case 26:
       return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
     case 29:
-      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE};
+      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE,
+              SUPLA_DS_CALL_OBJECT_ALERTS_REPORT,
+              SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED};
   }
 
   return {};
@@ -4486,5 +4490,195 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_set_subdevice_details, TDS_SubdeviceDetails,
                      ds_subdevice_details);
 
 #endif /*SUPLA_PROTO_VERSION >= 25*/
+
+//---------------------------------------------------------
+// OBJECT ALERTS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, object_alerts_report_uses_variable_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  alerts.Count = 1;
+  alerts.Items[0].Code = SUPLA_ALERT_CODE_OUTPUT_MOTOR_PROBLEM;
+  alerts.Items[0].Severity = SUPLA_ALERT_SEVERITY_WARNING;
+  alerts.Items[0].Flags = SUPLA_OBJECT_ALERT_FLAG_ACTIVE |
+                          SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED;
+
+  ASSERT_GT(srpc_ds_async_object_alerts_report(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_REPORT, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(1, cr_rd.data.ds_object_alerts->Count);
+  ASSERT_EQ(alerts.Items[0].Code, cr_rd.data.ds_object_alerts->Items[0].Code);
+  ASSERT_EQ(alerts.Items[0].Flags,
+            cr_rd.data.ds_object_alerts->Items[0].Flags);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_changed_supports_empty_report_and_max_count) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_CHANNEL;
+  alerts.Number = 1;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  ASSERT_GT(srpc_ds_async_object_alerts_changed(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(0, cr_rd.data.ds_object_alerts->Count);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  alerts.Count = SUPLA_OBJECT_ALERT_MAXCOUNT;
+  for (unsigned char i = 0; i < alerts.Count; i++) {
+    alerts.Items[i].Code = (unsigned _supla_int16_t)(0x7000 + i);
+    alerts.Items[i].Severity = SUPLA_ALERT_SEVERITY_INFO;
+  }
+  ASSERT_GT(srpc_ds_async_object_alerts_changed(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED,
+                 23 + 4 + 4 * SUPLA_OBJECT_ALERT_MAXCOUNT);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(SUPLA_OBJECT_ALERT_MAXCOUNT,
+            cr_rd.data.ds_object_alerts->Count);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_reject_invalid_fields) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_GROUP;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.Number = 1;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Number = 0;
+  alerts.Count = 1;
+  alerts.Items[0].Flags = SUPLA_OBJECT_ALERT_FLAG_ACTIVE |
+                          SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Items[0].Flags = SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED |
+                          SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  alerts.Items[0].Flags = 0;
+  alerts.Count = SUPLA_OBJECT_ALERT_MAXCOUNT + 1;
+  ASSERT_EQ(0, srpc_ds_async_object_alerts_report(srpc, &alerts));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_reject_count_above_max_from_packet) {
+  const unsigned _supla_int_t packet_header_size =
+      (unsigned _supla_int_t)offsetof(TSuplaDataPacket, data);
+  const unsigned _supla_int_t data_size = sizeof(TDS_ObjectAlerts);
+
+  data_read_result = 0;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  data_read =
+      (char *)calloc(1, packet_header_size + data_size + SUPLA_TAG_SIZE);
+  ASSERT_FALSE(data_read == NULL);
+  TSuplaDataPacket *packet = (TSuplaDataPacket *)data_read;
+  memcpy(packet->tag, sproto_tag, SUPLA_TAG_SIZE);
+  packet->version = SUPLA_PROTO_VERSION;
+  packet->rr_id = 1;
+  packet->call_id = SUPLA_DS_CALL_OBJECT_ALERTS_REPORT;
+  packet->data_size = data_size;
+
+  TDS_ObjectAlerts *alerts = (TDS_ObjectAlerts *)packet->data;
+  alerts->Target = SUPLA_TARGET_IODEVICE;
+  alerts->AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  alerts->Count = SUPLA_OBJECT_ALERT_MAXCOUNT + 1;
+  memcpy(data_read + packet_header_size + data_size, sproto_tag,
+         SUPLA_TAG_SIZE);
+  data_read_result = packet_header_size + data_size + SUPLA_TAG_SIZE;
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, 1));
+  ASSERT_TRUE(cr_rd.data.ds_object_alerts == NULL);
+
+  free(data_read);
+  data_read = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, object_alerts_accept_unknown_code_and_reject_bad_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_ObjectAlerts alerts = {};
+  alerts.Target = SUPLA_TARGET_IODEVICE;
+  alerts.AlertSurfaceChannelNumber = SUPLA_OBJECT_ALERT_SURFACE_NONE;
+  alerts.Count = 1;
+  alerts.Items[0].Code = 0x7FFF;
+  alerts.Items[0].Severity = SUPLA_ALERT_SEVERITY_INFO;
+  ASSERT_GT(srpc_ds_async_object_alerts_report(srpc, &alerts), 0);
+  SendAndReceive(SUPLA_DS_CALL_OBJECT_ALERTS_REPORT, 27);
+  ASSERT_FALSE(cr_rd.data.ds_object_alerts == NULL);
+  ASSERT_EQ(0x7FFF, cr_rd.data.ds_object_alerts->Items[0].Code);
+  free(cr_rd.data.ds_object_alerts);
+  cr_rd.data.ds_object_alerts = NULL;
+  srpc_free(srpc);
+  srpc = NULL;
+
+  const unsigned _supla_int_t packet_header_size =
+      (unsigned _supla_int_t)offsetof(TSuplaDataPacket, data);
+  const unsigned _supla_int_t malformed_sizes[] = {
+      (unsigned _supla_int_t)offsetof(TDS_ObjectAlerts, Items) - 1,
+      (unsigned _supla_int_t)sizeof(TDS_ObjectAlerts) + 1};
+
+  data_read_result = 0;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  for (unsigned _supla_int_t malformed_size : malformed_sizes) {
+    data_read = (char *)calloc(
+        1, packet_header_size + malformed_size + SUPLA_TAG_SIZE);
+    ASSERT_FALSE(data_read == NULL);
+    TSuplaDataPacket *packet = (TSuplaDataPacket *)data_read;
+    memcpy(packet->tag, sproto_tag, SUPLA_TAG_SIZE);
+    packet->version = SUPLA_PROTO_VERSION;
+    packet->rr_id = 1;
+    packet->call_id = SUPLA_DS_CALL_OBJECT_ALERTS_REPORT;
+    packet->data_size = malformed_size;
+    memcpy(&packet->data[malformed_size], sproto_tag, SUPLA_TAG_SIZE);
+    data_read_result = packet_header_size + malformed_size + SUPLA_TAG_SIZE;
+
+    ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+    ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, 1));
+    free(data_read);
+    data_read = NULL;
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
 
 }  // namespace

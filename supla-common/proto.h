@@ -287,6 +287,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
 #define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
+#define SUPLA_DS_CALL_OBJECT_ALERTS_REPORT 1280                // ver. >= 29
+#define SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED 1281              // ver. >= 29
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -566,6 +568,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_TARGET_CHANNEL 0
 #define SUPLA_TARGET_GROUP 1
 #define SUPLA_TARGET_IODEVICE 2
+#define SUPLA_TARGET_SUBDEVICE 3
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -610,6 +613,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED 0x20000           // ver. >= 29
+#define SUPLA_DEVICE_FLAG_OBJECT_ALERTS_SUPPORTED 0x40000       // ver. >= 29
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -2194,6 +2198,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET 7010           // v. >= 29
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 #define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 #define SUPLA_CALCFG_CMD_RESET_TO_FACTORY_SETTINGS 9010   // v. >= 28
@@ -2746,6 +2751,175 @@ typedef struct {
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
+
+/********************************************
+ * OBJECT ALERTS
+ *
+ * Object Alerts describe alarms, warnings, faults, service information and
+ * diagnostic events associated with a protocol Target. A Target is the whole
+ * IO device, a subdevice or a channel. Device-to-Server messages identify the
+ * Target with its local Number: IODEVICE uses zero, SUBDEVICE uses
+ * TDS_SuplaDeviceChannel_E::SubDeviceId and CHANNEL uses the channel number.
+ ********************************************/
+
+#define SUPLA_ALERT_SEVERITY_NONE 0
+#define SUPLA_ALERT_SEVERITY_INFO 1
+#define SUPLA_ALERT_SEVERITY_WARNING 2
+#define SUPLA_ALERT_SEVERITY_ALARM 3
+#define SUPLA_ALERT_SEVERITY_CRITICAL 4
+
+// The catalogue metadata for each code is defined in
+// object_alert_catalog.json. This map provides the numeric identifiers and
+// symbolic names used by the protocol and source code.
+#define SUPLA_ALERT_CODE_MAP(X) \
+  X(0x0000, NONE) \
+  X(0x0100, SYSTEM_CLOCK_NOT_SET) \
+  X(0x0101, SYSTEM_CLOCK_ERROR) \
+  X(0x0102, SYSTEM_CLOCK_BATTERY_LOW) \
+  X(0x0103, SYSTEM_CLOCK_BATTERY_REPLACE) \
+  X(0x0104, SYSTEM_CONFIGURATION_ERROR) \
+  X(0x0105, SYSTEM_COMMUNICATION_LOST) \
+  X(0x0106, SYSTEM_COMMUNICATION_ERROR) \
+  X(0x0107, SYSTEM_CLOCK_UNRELIABLE) \
+  X(0x0108, SYSTEM_STORAGE_ERROR) \
+  X(0x0109, SYSTEM_RESOURCE_EXHAUSTION) \
+  X(0x010A, SYSTEM_CONFIGURATION_SAVE_FAILED) \
+  X(0x010B, SYSTEM_REQUIRED_DEPENDENCY_UNAVAILABLE) \
+  X(0x0200, SENSOR_ERROR) \
+  X(0x0201, SENSOR_TEMPERATURE_ERROR) \
+  X(0x0202, SENSOR_HUMIDITY_ERROR) \
+  X(0x0203, SENSOR_AIR_QUALITY_ERROR) \
+  X(0x0204, SENSOR_CO2_ERROR) \
+  X(0x0205, SENSOR_PM_ERROR) \
+  X(0x0206, SENSOR_NOT_DETECTED) \
+  X(0x0207, SENSOR_OPEN_CIRCUIT) \
+  X(0x0208, SENSOR_SHORT_CIRCUIT) \
+  X(0x0209, SENSOR_OUT_OF_VALID_RANGE) \
+  X(0x020A, SENSOR_INCONSISTENT_STATE) \
+  X(0x0300, OUTPUT_ERROR) \
+  X(0x0301, OUTPUT_MOTOR_PROBLEM) \
+  X(0x0302, OUTPUT_STATE_MISMATCH) \
+  X(0x0303, OUTPUT_TRAVEL_TIMEOUT) \
+  X(0x0304, OUTPUT_OBSTRUCTION_DETECTED) \
+  X(0x0305, OUTPUT_POSITION_UNKNOWN) \
+  X(0x0400, CALIBRATION_LOST) \
+  X(0x0401, CALIBRATION_FAILED) \
+  X(0x0402, CALIBRATION_ERROR) \
+  X(0x0403, CALIBRATION_REQUIRED) \
+  X(0x0500, MAINTENANCE_REQUIRED) \
+  X(0x0501, MAINTENANCE_FILTER_REPLACE_SOON) \
+  X(0x0502, MAINTENANCE_FILTER_REPLACE_NOW) \
+  X(0x0503, MAINTENANCE_SUPPLY_FILTER_REPLACE_NOW) \
+  X(0x0504, MAINTENANCE_EXHAUST_FILTER_REPLACE_NOW) \
+  X(0x0505, MAINTENANCE_GHE_FILTER_REPLACE_NOW) \
+  X(0x0506, MAINTENANCE_SERVICE_DUE) \
+  X(0x0507, MAINTENANCE_CALIBRATION_DUE) \
+  X(0x0508, MAINTENANCE_SENSOR_END_OF_LIFE) \
+  X(0x0509, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_LOW) \
+  X(0x050A, MAINTENANCE_LIGHT_SOURCE_LIFESPAN_END) \
+  X(0x0600, PROCESS_NO_FLOW) \
+  X(0x0601, PROCESS_SUPPLY_NO_FLOW) \
+  X(0x0602, PROCESS_EXHAUST_NO_FLOW) \
+  X(0x0603, PROCESS_RESTRICTED_FLOW) \
+  X(0x0604, PROCESS_PRESSURE_HIGH) \
+  X(0x0605, PROCESS_PRESSURE_LOW) \
+  X(0x0606, PROCESS_LEVEL_HIGH) \
+  X(0x0607, PROCESS_LEVEL_LOW) \
+  X(0x0608, PROCESS_UNEXPECTED_FLOW) \
+  X(0x0609, PROCESS_CONTINUOUS_OPERATION_LIMIT_EXCEEDED) \
+  X(0x0700, ENVIRONMENT_DEFROST_TIMEOUT) \
+  X(0x0701, ENVIRONMENT_FROST_PROTECTION_ACTIVE) \
+  X(0x0702, ENVIRONMENT_FREEZE_RISK) \
+  X(0x0703, ENVIRONMENT_HIGH_TEMPERATURE) \
+  X(0x0704, ENVIRONMENT_LOW_TEMPERATURE) \
+  X(0x0705, ENVIRONMENT_HIGH_HUMIDITY) \
+  X(0x0706, ENVIRONMENT_HIGH_CO2) \
+  X(0x0707, ENVIRONMENT_HIGH_WIND) \
+  X(0x0800, SAFETY_EMERGENCY_STOP) \
+  X(0x0801, SAFETY_FIRE_ALARM) \
+  X(0x0802, SAFETY_CO_ALARM) \
+  X(0x0803, SAFETY_INPUT_ACTIVE) \
+  X(0x0804, SAFETY_FORCED_OFF_BY_SENSOR) \
+  X(0x0805, SAFETY_SMOKE_ALARM) \
+  X(0x0806, SAFETY_COMBUSTIBLE_GAS_ALARM) \
+  X(0x0807, SAFETY_WATER_LEAK) \
+  X(0x0808, SAFETY_PROTECTIVE_DEVICE_FAULT) \
+  X(0x0900, POWER_BATTERY_LOW) \
+  X(0x0901, POWER_BATTERY_HEALTH_LOW) \
+  X(0x0902, POWER_BATTERY_COVER_OPEN) \
+  X(0x0903, POWER_SUPPLY_ERROR) \
+  X(0x0904, POWER_MAINS_LOST) \
+  X(0x0905, POWER_UNDERVOLTAGE) \
+  X(0x0906, POWER_OVERVOLTAGE) \
+  X(0x0907, POWER_PHASE_LOSS) \
+  X(0x0908, POWER_CHARGING_FAILURE) \
+  X(0x0A00, PROTECTION_ANTIFREEZE_ACTIVE) \
+  X(0x0A01, PROTECTION_OVERHEAT_ACTIVE) \
+  X(0x0A02, PROTECTION_OVERCURRENT_TRIPPED) \
+  X(0x0A03, PROTECTION_SHORT_CIRCUIT_ACTIVE) \
+  X(0x0A04, PROTECTION_DRY_RUN_ACTIVE) \
+  X(0x0B00, DEVICE_COVER_OPEN) \
+  X(0x0B03, DEVICE_SELF_TEST_FAILED) \
+  X(0x0B04, DEVICE_SELF_TEST_COMPLETED) \
+  X(0x0B05, DEVICE_WATCHDOG_RESET) \
+  X(0x0B06, DEVICE_BROWNOUT_RESET) \
+  X(0x0B07, DEVICE_FIRMWARE_UPDATE_FAILED) \
+  X(0x0B08, DEVICE_SECURITY_UPDATE_FAILED) \
+  X(0x0B09, DEVICE_SELF_TEST_ACTIVE)
+
+typedef enum {
+#define X(id, name) \
+  SUPLA_ALERT_CODE_##name = id,
+  SUPLA_ALERT_CODE_MAP(X)
+#undef X
+} TSuplaAlertCode;
+
+// OCCURRENCE identifies an occurrence capability or event. ACTIVE identifies
+// the current active state of a stateful alert. RESET_SUPPORTED identifies a
+// stateful alert for which the Target accepts a reset operation.
+#define SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE (1 << 0)
+#define SUPLA_OBJECT_ALERT_FLAG_ACTIVE (1 << 1)
+#define SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED (1 << 2)
+#define SUPLA_OBJECT_ALERT_FLAGS_MASK \
+  (SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE | SUPLA_OBJECT_ALERT_FLAG_ACTIVE | \
+   SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED)
+
+typedef struct {
+  unsigned _supla_int16_t Code;  // known or unknown future alert code
+  unsigned char Severity;        // SUPLA_ALERT_SEVERITY_*
+  unsigned char Flags;           // SUPLA_OBJECT_ALERT_FLAG_*
+} TSuplaObjectAlert;
+
+// Data payload for SUPLA_CALCFG_CMD_OBJECT_ALERT_RESET. The Target and its
+// local number are carried by the CALCFG request envelope.
+typedef struct {
+  unsigned _supla_int16_t Code;
+} TCalCfg_ObjectAlertReset;  // v. >= 29
+
+#define SUPLA_OBJECT_ALERT_SURFACE_NONE 0xFF
+#define SUPLA_OBJECT_ALERT_MAXCOUNT 60
+
+// REPORT contains the complete supported alert set and its current state.
+// CHANGED contains incremental state changes or occurrence events. The packet
+// is variable length: offsetof(TDS_ObjectAlerts, Items) +
+// Count * sizeof(TSuplaObjectAlert).
+typedef struct {
+  unsigned char Target;  // SUPLA_TARGET_CHANNEL/IODEVICE/SUBDEVICE
+  unsigned char Number;  // local number; IODEVICE uses zero
+  unsigned char AlertSurfaceChannelNumber;  // or SUPLA_OBJECT_ALERT_SURFACE_NONE
+  unsigned char Count;
+  TSuplaObjectAlert Items[SUPLA_OBJECT_ALERT_MAXCOUNT];  // variable length
+} TDS_ObjectAlerts;
+
+// OBJECT_ALERTS_REPORT contains the complete set of Object Alerts currently
+// supported by Target together with current effective state and severity.
+// After successful processing, the received set replaces the previously known
+// capability/state set for Target. A zero Count means that Target currently
+// exposes no Object Alerts through this mechanism. Supported stateful alerts
+// are included even when inactive; occurrence capabilities use OCCURRENCE.
+// OBJECT_ALERTS_CHANGED contains incremental changes to declared stateful
+// alerts and/or occurrence events. An occurrence is best effort and is not
+// later reconstructed as an inactive state.
 
 typedef struct {
   _supla_int_t ChannelID;

@@ -3,18 +3,27 @@
 
 #include "srpc.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if !defined(__AVR__) && !defined(_WIN32)
+#include <sys/time.h>
+#endif
 
 #include "lck.h"
 #include "log.h"
 #include "proto.h"
 
-// ESP8266 and ESP32
-#if defined(ESP8266) || defined(ESP32)
+#if defined(SUPLA_DEVICE) || defined(ARDUINO) || defined(ESP8266) || \
+    defined(ESP32)
 #ifndef __EH_DISABLED
 #define __EH_DISABLED
-#endif /*__EH_DISABLED*/
+#endif  /* __EH_DISABLED */
+#endif
+
+// ESP8266 and ESP32
+#if defined(ESP8266) || defined(ESP32)
 #define SRPC_BUFFER_SIZE 256
 #define SRPC_QUEUE_SIZE 2
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 2
@@ -45,7 +54,6 @@
 // Linux target, other?
 #elif defined(SUPLA_DEVICE)
 #define SRPC_BUFFER_SIZE 1024
-#define __EH_DISABLED
 
 // other not releated to supla-device
 #else
@@ -837,6 +845,68 @@ void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc,
       (((MIAN_TYPE *)srpc->sdp.data)->SIZE_VAR) * sizeof(ITEM_TYPE) ==        \
           srpc->sdp.data_size - (sizeof(MIAN_TYPE) - sizeof(ITEM_TYPE) * MAX)
 
+static unsigned char srpc_object_alerts_valid(
+    const TDS_ObjectAlerts *alerts, unsigned _supla_int_t data_size) {
+  const unsigned _supla_int_t header_size =
+      (unsigned _supla_int_t)offsetof(TDS_ObjectAlerts, Items);
+
+  if (alerts == NULL || data_size < header_size ||
+      data_size > sizeof(TDS_ObjectAlerts)) {
+    return 0;
+  }
+
+  if (alerts->Count > SUPLA_OBJECT_ALERT_MAXCOUNT ||
+      data_size != header_size +
+                       (unsigned _supla_int_t)alerts->Count *
+                           sizeof(TSuplaObjectAlert)) {
+    return 0;
+  }
+
+  switch (alerts->Target) {
+    case SUPLA_TARGET_CHANNEL:
+      if (alerts->Number >= SUPLA_CHANNELMAXCOUNT) {
+        return 0;
+      }
+      break;
+    case SUPLA_TARGET_IODEVICE:
+      if (alerts->Number != 0) {
+        return 0;
+      }
+      break;
+    case SUPLA_TARGET_SUBDEVICE:
+      if (alerts->Number == 0) {
+        return 0;
+      }
+      break;
+    default:
+      return 0;
+  }
+
+  if (alerts->AlertSurfaceChannelNumber != SUPLA_OBJECT_ALERT_SURFACE_NONE &&
+      alerts->AlertSurfaceChannelNumber >= SUPLA_CHANNELMAXCOUNT) {
+    return 0;
+  }
+
+  for (unsigned char i = 0; i < alerts->Count; i++) {
+    const TSuplaObjectAlert *item = &alerts->Items[i];
+    if (item->Severity > SUPLA_ALERT_SEVERITY_CRITICAL ||
+        (item->Flags & ~SUPLA_OBJECT_ALERT_FLAGS_MASK) != 0 ||
+        ((item->Flags & SUPLA_OBJECT_ALERT_FLAG_OCCURRENCE) != 0 &&
+         (item->Flags & (SUPLA_OBJECT_ALERT_FLAG_ACTIVE |
+                         SUPLA_OBJECT_ALERT_FLAG_RESET_SUPPORTED)) != 0)) {
+      return 0;
+    }
+
+    for (unsigned char j = 0; j < i; j++) {
+      if (alerts->Items[j].Code == item->Code) {
+        return 0;
+      }
+    }
+  }
+
+  return 1;
+}
+
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     unsigned _supla_int_t rr_id) {
   Tsrpc *srpc = (Tsrpc *)_srpc;
@@ -1250,6 +1320,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (srpc->sdp.data_size == sizeof(TDS_SubdeviceDetails)) {
           rd->data.ds_subdevice_details =
               (TDS_SubdeviceDetails *)malloc(sizeof(TDS_SubdeviceDetails));
+        }
+        break;
+      case SUPLA_DS_CALL_OBJECT_ALERTS_REPORT:
+      case SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED:
+        if (srpc_object_alerts_valid(
+                (const TDS_ObjectAlerts *)srpc->sdp.data,
+                srpc->sdp.data_size)) {
+          rd->data.ds_object_alerts =
+              (TDS_ObjectAlerts *)calloc(1, sizeof(TDS_ObjectAlerts));
         }
         break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
@@ -1894,6 +1973,9 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE:
       return 26;
     case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
+      return 29;
+    case SUPLA_DS_CALL_OBJECT_ALERTS_REPORT:
+    case SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED:
       return 29;
   }
 
@@ -2722,6 +2804,34 @@ srpc_ds_async_set_subdevice_details(void *_srpc, TDS_SubdeviceDetails *reg) {
 
   return srpc_async_call(_srpc, SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS,
                          (char *)reg, sizeof(TDS_SubdeviceDetails));
+}
+
+static _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_object_alerts(
+    void *_srpc, TDS_ObjectAlerts *alerts, unsigned _supla_int_t call_id) {
+  if (alerts == NULL || alerts->Count > SUPLA_OBJECT_ALERT_MAXCOUNT) {
+    return 0;
+  }
+
+  unsigned _supla_int_t size =
+      (unsigned _supla_int_t)offsetof(TDS_ObjectAlerts, Items) +
+      (unsigned _supla_int_t)alerts->Count * sizeof(TSuplaObjectAlert);
+  if (!srpc_object_alerts_valid(alerts, size)) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, call_id, (char *)alerts, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_report(void *_srpc, TDS_ObjectAlerts *alerts) {
+  return srpc_ds_async_object_alerts(_srpc, alerts,
+                                     SUPLA_DS_CALL_OBJECT_ALERTS_REPORT);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_changed(void *_srpc, TDS_ObjectAlerts *alerts) {
+  return srpc_ds_async_object_alerts(_srpc, alerts,
+                                     SUPLA_DS_CALL_OBJECT_ALERTS_CHANGED);
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
