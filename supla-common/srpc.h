@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#if !defined(SUPLA_DEVICE) && !defined(ARDUINO)
 #include "eh.h"
+#endif
 #include "proto.h"
 #if defined(ESP32)
 #include <esp8266-compat.h>
@@ -105,7 +107,9 @@ typedef struct {
 #endif
   _func_srpc_event_OnMinVersionRequired on_min_version_required;
 
+#if !defined(SUPLA_DEVICE) && !defined(ARDUINO)
   TEventHandler *eh;
+#endif
 
   void *user_params;
 } TsrpcParams;

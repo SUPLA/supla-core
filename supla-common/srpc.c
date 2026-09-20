@@ -6,15 +6,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined(__AVR__) && !defined(_WIN32)
+#include <sys/time.h>
+#endif
+
 #include "lck.h"
 #include "log.h"
 #include "proto.h"
 
-// ESP8266 and ESP32
-#if defined(ESP8266) || defined(ESP32)
+#if defined(SUPLA_DEVICE) || defined(ARDUINO) || defined(ESP8266) || \
+    defined(ESP32)
 #ifndef __EH_DISABLED
 #define __EH_DISABLED
-#endif /*__EH_DISABLED*/
+#endif  /* __EH_DISABLED */
+#endif
+
+// ESP8266 and ESP32
+#if defined(ESP8266) || defined(ESP32)
 #define SRPC_BUFFER_SIZE 256
 #define SRPC_QUEUE_SIZE 2
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 2
@@ -45,7 +53,6 @@
 // Linux target, other?
 #elif defined(SUPLA_DEVICE)
 #define SRPC_BUFFER_SIZE 1024
-#define __EH_DISABLED
 
 // other not releated to supla-device
 #else
