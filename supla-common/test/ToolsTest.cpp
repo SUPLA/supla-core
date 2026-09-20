@@ -151,17 +151,29 @@ TEST_F(ToolsTest, st_read_guid_from_file) {
 }
 
 TEST_F(ToolsTest, st_read_authkey_from_file) {
-  char file[] = "/tmp/t7oosvsTZS87";
+  char file1[] = "/tmp/t7oosvsTZS87";
+  char file2[] = "/tmp/t7oosvsTZS86";
   char AUTHKEY1[SUPLA_AUTHKEY_SIZE];
   char AUTHKEY2[SUPLA_AUTHKEY_SIZE];
+  char AUTHKEY1_COPY[SUPLA_AUTHKEY_SIZE];
 
   memset(AUTHKEY1, 0, SUPLA_AUTHKEY_SIZE);
   memset(AUTHKEY2, 0, SUPLA_AUTHKEY_SIZE);
+  memset(AUTHKEY1_COPY, 0, SUPLA_AUTHKEY_SIZE);
 
-  ASSERT_EQ(1, st_read_authkey_from_file(file, AUTHKEY1, 1));
-  ASSERT_EQ(1, st_file_exists(file));
+  unlink(file1);
+  unlink(file2);
+
+  ASSERT_EQ(1, st_read_authkey_from_file(file1, AUTHKEY1, 1));
+  ASSERT_EQ(1, st_file_exists(file1));
+  ASSERT_EQ(1, st_read_authkey_from_file(file1, AUTHKEY1_COPY, 0));
+  ASSERT_EQ(0, memcmp(AUTHKEY1, AUTHKEY1_COPY, SUPLA_AUTHKEY_SIZE));
+
+  ASSERT_EQ(1, st_read_authkey_from_file(file2, AUTHKEY2, 1));
   ASSERT_NE(0, memcmp(AUTHKEY1, AUTHKEY2, SUPLA_AUTHKEY_SIZE));
-  unlink(file);
+
+  unlink(file1);
+  unlink(file2);
 }
 
 TEST_F(ToolsTest, st_bcrypt) {

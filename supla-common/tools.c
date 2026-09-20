@@ -315,31 +315,26 @@ char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
   return st_bin2hex(buffer, str, strnlen(str, maxlen));
 }
 
+static char st_get_random_bytes(unsigned char *buffer, size_t size);
+
 char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
   FILE *F;
   int a;
   char result = 0;
 
+  if (file == NULL || KEY == NULL || size <= 0) {
+    return 0;
+  }
+
   if (st_file_exists(file) != 1) {
-    if (create == 1 && file != 0 && strnlen(file, 1024) > 0) {
+    if (create == 1 && strnlen(file, 1024) > 0) {
+      if (!st_get_random_bytes((unsigned char *)KEY, (size_t)size)) {
+        supla_log(LOG_ERR, "Can't generate random key");
+        return 0;
+      }
+
       F = fopen(file, "w");
       if (F) {
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-
-#ifdef __ANDROID__
-        srand48(tv.tv_usec);
-        gettimeofday(&tv, NULL);
-
-        for (a = 0; a < size; a++)
-          KEY[a] = (unsigned char)(rand() + tv.tv_usec);  // NOLINT
-#else
-        unsigned int seed = tv.tv_sec + tv.tv_usec;
-
-        for (a = 0; a < size; a++)
-          KEY[a] = (unsigned char)(rand_r(&seed) + tv.tv_usec);
-#endif
-
         if (fwrite(KEY, size, (int)1, F) == 1) {
           result = 1;
         } else {
