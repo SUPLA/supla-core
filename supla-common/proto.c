@@ -443,3 +443,37 @@ void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     dest[0] = 0;
   }
 }
+
+unsigned char PROTO_ICACHE_FLASH
+supla_weekly_schedule_get_program_mode_type(_supla_int_t func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON;
+  }
+
+  return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED;
+}
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_relay_function(
+    _supla_int_t func) {
+  return supla_weekly_schedule_get_program_mode_type(func) ==
+         SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY;
+}
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
+    _supla_int_t func) {
+  return supla_weekly_schedule_get_program_mode_type(func) !=
+         SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED;
+}

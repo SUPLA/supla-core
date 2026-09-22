@@ -738,6 +738,52 @@ TEST_F(ProtoTest, set_null_terminated_string) {
   EXPECT_EQ(dest_size, strnlen(src, sizeof(src)) + 1);
 }
 
+TEST_F(ProtoTest, relayWeeklyScheduleFunctions) {
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_LIGHTSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_POWERSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_STAIRCASETIMER));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATE));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK));
+
+  EXPECT_FALSE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_FALSE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_PUMPSWITCH));
+}
+
+TEST_F(ProtoTest, weeklyScheduleProgramModeTypes) {
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_HVAC_THERMOSTAT),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_LIGHTSWITCH),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_ACTIONTRIGGER),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_PUMPSWITCH),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED);
+
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_LIGHTSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_FALSE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_PUMPSWITCH));
+}
+
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace

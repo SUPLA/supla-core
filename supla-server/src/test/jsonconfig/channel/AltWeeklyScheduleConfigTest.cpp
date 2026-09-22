@@ -31,7 +31,7 @@ TEST_F(AltWeeklyScheduleConfigTest, getConfig) {
   TChannelConfig_WeeklySchedule sd_config = {};
 
   alt_weekly_schedule_config config;
-  config.set_config(&sd_config);
+  config.set_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
 
   char *str = config.get_user_config();
   ASSERT_TRUE(str != nullptr);

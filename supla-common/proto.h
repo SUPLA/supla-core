@@ -3237,6 +3237,11 @@ typedef struct {
 } TChannelConfig_ActionTrigger;  // v. >= 16
 
 // Weekly schedule definition for HVAC, Relay, AT channels
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED 0
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC 1
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY 2
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON 3
+
 typedef struct {
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
                        // for AT: SUPLA_BUTTON_MODE_
@@ -4057,6 +4062,13 @@ void PROTO_ICACHE_FLASH sproto_set_null_terminated_string(
 void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     const char *src, char *dest, unsigned _supla_int16_t *dest_size,
     unsigned int max_size);
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_relay_function(
+    _supla_int_t func);
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
+    _supla_int_t func);
+unsigned char PROTO_ICACHE_FLASH
+supla_weekly_schedule_get_program_mode_type(_supla_int_t func);
 
 #ifdef __cplusplus
 }

@@ -62,7 +62,7 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
   }
 
   weekly_schedule_config config;
-  config.set_config(&sd_config1);
+  config.set_config(&sd_config1, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
 
   char *str = config.get_user_config();
   ASSERT_TRUE(str != nullptr);
@@ -102,7 +102,7 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
 
   free(str);
 
-  config.get_config(&sd_config2);
+  config.get_config(&sd_config2, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
 
   EXPECT_EQ(
       memcmp(&sd_config1, &sd_config2, sizeof(TChannelConfig_WeeklySchedule)),
@@ -112,35 +112,42 @@ TEST_F(WeeklyScheduleConfigTest, setAndGetConfig) {
 TEST_F(WeeklyScheduleConfigTest, getConfigResult) {
   weekly_schedule_config config;
   TChannelConfig_WeeklySchedule sd_config = {};
-  EXPECT_FALSE(config.get_config(&sd_config));
+  EXPECT_FALSE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config("{}");
 
-  EXPECT_FALSE(config.get_config(&sd_config));
+  EXPECT_FALSE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config("{\"weeklySchedule\":{}}");
 
-  EXPECT_FALSE(config.get_config(&sd_config));
+  EXPECT_FALSE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config("{\"weeklySchedule\":{\"programSettings\":{}}}");
 
-  EXPECT_FALSE(config.get_config(&sd_config));
+  EXPECT_FALSE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config(
       "{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[]}}");
 
-  EXPECT_FALSE(config.get_config(&sd_config));
+  EXPECT_FALSE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config(
       "{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"COOL\"}},"
       "\"quarters\":[]}}");
 
-  EXPECT_TRUE(config.get_config(&sd_config));
+  EXPECT_TRUE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 
   config.set_user_config(
       "{\"weeklySchedule\":{\"programSettings\":{},\"quarters\":[0]}}");
 
-  EXPECT_TRUE(config.get_config(&sd_config));
+  EXPECT_TRUE(
+      config.get_config(&sd_config, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
 }
 
 TEST_F(WeeklyScheduleConfigTest, rendom) {
@@ -151,11 +158,116 @@ TEST_F(WeeklyScheduleConfigTest, rendom) {
                         sizeof(sd_config1.Quarters));
 
   weekly_schedule_config config;
-  config.set_config(&sd_config1);
-  config.get_config(&sd_config2);
+  config.set_config(&sd_config1, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  config.get_config(&sd_config2, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
 
   EXPECT_EQ(
       memcmp(&sd_config1, &sd_config2, sizeof(TChannelConfig_WeeklySchedule)),
+      0);
+}
+
+TEST_F(WeeklyScheduleConfigTest, relayProgramsAreSerializedByFunction) {
+  const _supla_int_t relay_functions[] = {
+      SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNELFNC_POWERSWITCH,
+      SUPLA_CHANNELFNC_STAIRCASETIMER,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATE,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK};
+
+  for (auto func : relay_functions) {
+    TChannelConfig_WeeklySchedule sd_config1 = {};
+    TChannelConfig_WeeklySchedule sd_config2 = {};
+
+    sd_config1.Program[0].Mode = SUPLA_RELAY_MODE_START_ON;
+    sd_config1.Program[0].RelayModeDurationS = 65535;
+    sd_config1.Program[0].RelayOppositeModeDurationS = 123;
+    sd_config1.Program[1].Mode = SUPLA_RELAY_MODE_START_OFF;
+    sd_config1.Program[1].RelayModeDurationS = 321;
+    sd_config1.Program[2].Mode = SUPLA_RELAY_MODE_FORCED_ON;
+    sd_config1.Program[3].Mode = SUPLA_RELAY_MODE_AUTOMATIC;
+
+    weekly_schedule_config config;
+    config.set_config(&sd_config1, func);
+
+    char *str = config.get_user_config();
+    ASSERT_NE(str, nullptr);
+
+    cJSON *root = cJSON_Parse(str);
+    ASSERT_NE(root, nullptr);
+    cJSON *weekly_schedule = cJSON_GetObjectItem(root, "weeklySchedule");
+    ASSERT_NE(weekly_schedule, nullptr);
+    cJSON *program_settings =
+        cJSON_GetObjectItem(weekly_schedule, "programSettings");
+    ASSERT_NE(program_settings, nullptr);
+    cJSON *program = cJSON_GetObjectItem(program_settings, "1");
+    ASSERT_NE(program, nullptr);
+
+    EXPECT_STREQ(cJSON_GetStringValue(cJSON_GetObjectItem(program, "mode")),
+                 "START_ON");
+    EXPECT_EQ(cJSON_GetNumberValue(
+                  cJSON_GetObjectItem(program, "relayModeDurationS")),
+              65535);
+    EXPECT_EQ(cJSON_GetNumberValue(
+                  cJSON_GetObjectItem(program,
+                                      "relayOppositeModeDurationS")),
+              123);
+    EXPECT_EQ(cJSON_GetObjectItem(program, "setpointTemperatureHeat"),
+              nullptr);
+    EXPECT_EQ(cJSON_GetObjectItem(program, "setpointTemperatureCool"),
+              nullptr);
+
+    cJSON_Delete(root);
+    free(str);
+
+    ASSERT_TRUE(config.get_config(&sd_config2, func));
+    EXPECT_EQ(
+        memcmp(&sd_config1, &sd_config2,
+               sizeof(TChannelConfig_WeeklySchedule)),
+        0);
+  }
+}
+
+TEST_F(WeeklyScheduleConfigTest, actionTriggerProgramsUseButtonMode) {
+  TChannelConfig_WeeklySchedule sd_config1 = {};
+  TChannelConfig_WeeklySchedule sd_config2 = {};
+
+  sd_config1.Program[0].Mode = SUPLA_BUTTON_MODE_LOCKED;
+  sd_config1.Program[1].Mode = SUPLA_BUTTON_MODE_NOT_SET;
+
+  weekly_schedule_config config;
+  config.set_config(&sd_config1, SUPLA_CHANNELFNC_ACTIONTRIGGER);
+
+  char *str = config.get_user_config();
+  ASSERT_NE(str, nullptr);
+
+  cJSON *root = cJSON_Parse(str);
+  ASSERT_NE(root, nullptr);
+  cJSON *weekly_schedule = cJSON_GetObjectItem(root, "weeklySchedule");
+  ASSERT_NE(weekly_schedule, nullptr);
+  cJSON *program_settings =
+      cJSON_GetObjectItem(weekly_schedule, "programSettings");
+  ASSERT_NE(program_settings, nullptr);
+  cJSON *program = cJSON_GetObjectItem(program_settings, "1");
+  ASSERT_NE(program, nullptr);
+
+  EXPECT_STREQ(cJSON_GetStringValue(cJSON_GetObjectItem(program, "mode")),
+               "LOCKED");
+  EXPECT_EQ(cJSON_GetObjectItem(program, "setpointTemperatureHeat"), nullptr);
+  EXPECT_EQ(cJSON_GetObjectItem(program, "setpointTemperatureCool"), nullptr);
+  EXPECT_EQ(cJSON_GetObjectItem(program, "relayModeDurationS"), nullptr);
+  EXPECT_EQ(cJSON_GetObjectItem(program, "relayOppositeModeDurationS"),
+            nullptr);
+
+  cJSON_Delete(root);
+  free(str);
+
+  ASSERT_TRUE(
+      config.get_config(&sd_config2, SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_EQ(
+      memcmp(&sd_config1, &sd_config2,
+             sizeof(TChannelConfig_WeeklySchedule)),
       0);
 }
 

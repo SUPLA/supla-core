@@ -19,6 +19,7 @@
 #include "channel_config_weekly_schedule.h"
 
 #include <android/log.h>
+#include <cstdio>
 #include <stdlib.h>
 
 #include "supla.h"
@@ -64,6 +65,64 @@ jobject supla_cc_hvac_mode_to_jobject(JNIEnv *env, unsigned char mode) {
       enum_name);
 }
 
+jobject supla_cc_relay_mode_to_jobject(JNIEnv *env, unsigned char mode) {
+  char enum_name[30] = {};
+
+  switch (mode) {
+    case SUPLA_RELAY_MODE_START_ON:
+      snprintf(enum_name, sizeof(enum_name), "START_ON");
+      break;
+    case SUPLA_RELAY_MODE_START_OFF:
+      snprintf(enum_name, sizeof(enum_name), "START_OFF");
+      break;
+    case SUPLA_RELAY_MODE_FORCED_ON:
+      snprintf(enum_name, sizeof(enum_name), "FORCED_ON");
+      break;
+    case SUPLA_RELAY_MODE_FORCED_OFF:
+      snprintf(enum_name, sizeof(enum_name), "FORCED_OFF");
+      break;
+    case SUPLA_RELAY_MODE_AUTOMATIC:
+      snprintf(enum_name, sizeof(enum_name), "AUTOMATIC");
+      break;
+    case SUPLA_RELAY_MODE_CMD_WEEKLY_SCHEDULE:
+      snprintf(enum_name, sizeof(enum_name), "CMD_WEEKLY_SCHEDULE");
+      break;
+    case SUPLA_RELAY_MODE_CMD_SWITCH_TO_MANUAL:
+      snprintf(enum_name, sizeof(enum_name), "CMD_SWITCH_TO_MANUAL");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "NOT_SET");
+      break;
+  }
+
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaRelayMode",
+      enum_name);
+}
+
+jobject supla_cc_button_mode_to_jobject(JNIEnv *env, unsigned char mode) {
+  char enum_name[30] = {};
+
+  switch (mode) {
+    case SUPLA_BUTTON_MODE_LOCKED:
+      snprintf(enum_name, sizeof(enum_name), "LOCKED");
+      break;
+    case SUPLA_BUTTON_MODE_CMD_WEEKLY_SCHEDULE:
+      snprintf(enum_name, sizeof(enum_name), "CMD_WEEKLY_SCHEDULE");
+      break;
+    case SUPLA_BUTTON_MODE_CMD_SWITCH_TO_MANUAL:
+      snprintf(enum_name, sizeof(enum_name), "CMD_SWITCH_TO_MANUAL");
+      break;
+    default:
+      snprintf(enum_name, sizeof(enum_name), "NOT_SET");
+      break;
+  }
+
+  return supla_NewEnum(
+      env, "org/supla/android/data/source/remote/hvac/SuplaButtonMode",
+      enum_name);
+}
+
 jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
                                              unsigned char program) {
   char enum_name[15] = {};
@@ -80,13 +139,36 @@ jobject supla_cc_schedule_program_to_jobject(JNIEnv *env,
 }
 
 jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
+                                       _supla_int_t func,
                                        TWeeklyScheduleProgram *program) {
   jobject enum_program = supla_cc_schedule_program_to_jobject(env, index);
+  jobject hvac_mode = nullptr;
+  jobject setpoint_temperature_heat = nullptr;
+  jobject setpoint_temperature_cool = nullptr;
+  jobject relay_mode = nullptr;
+  jobject relay_mode_duration_s = nullptr;
+  jobject relay_opposite_mode_duration_s = nullptr;
+  jobject button_mode = nullptr;
 
-  jobject hvac_mode = supla_cc_hvac_mode_to_jobject(env, program->Mode);
-
-  jshort setpoint_temperature_heat = program->SetpointTemperatureHeat;
-  jshort setpoint_temperature_cool = program->SetpointTemperatureCool;
+  switch (supla_weekly_schedule_get_program_mode_type(func)) {
+    case SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY:
+      relay_mode = supla_cc_relay_mode_to_jobject(env, program->Mode);
+      relay_mode_duration_s =
+          supla_NewInt(env, program->RelayModeDurationS);
+      relay_opposite_mode_duration_s =
+          supla_NewInt(env, program->RelayOppositeModeDurationS);
+      break;
+    case SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON:
+      button_mode = supla_cc_button_mode_to_jobject(env, program->Mode);
+      break;
+    default:
+      hvac_mode = supla_cc_hvac_mode_to_jobject(env, program->Mode);
+      setpoint_temperature_heat =
+          supla_NewShort(env, program->SetpointTemperatureHeat);
+      setpoint_temperature_cool =
+          supla_NewShort(env, program->SetpointTemperatureCool);
+      break;
+  }
 
   jclass program_cls = env->FindClass(
       "org/supla/android/data/source/remote/hvac/SuplaWeeklyScheduleProgram");
@@ -95,25 +177,44 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
       program_cls, "<init>",
       "(Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;Lorg/"
       "supla/android/data/source/remote/hvac/SuplaHvacMode;Ljava/lang/"
-      "Short;Ljava/lang/Short;)V");
+      "Short;Ljava/lang/Short;Lorg/supla/android/data/source/remote/hvac/"
+      "SuplaRelayMode;Ljava/lang/Integer;Ljava/lang/Integer;Lorg/supla/"
+      "android/data/source/remote/hvac/SuplaButtonMode;)V");
 
-  jobject result =
-      env->NewObject(program_cls, init_method, enum_program, hvac_mode,
-                     supla_NewShort(env, setpoint_temperature_heat),
-                     supla_NewShort(env, setpoint_temperature_cool));
+  jobject result = env->NewObject(
+      program_cls, init_method, enum_program, hvac_mode,
+      setpoint_temperature_heat, setpoint_temperature_cool, relay_mode,
+      relay_mode_duration_s, relay_opposite_mode_duration_s, button_mode);
 
   env->DeleteLocalRef(program_cls);
+  env->DeleteLocalRef(enum_program);
+
+  if (hvac_mode) {
+    env->DeleteLocalRef(hvac_mode);
+    env->DeleteLocalRef(setpoint_temperature_heat);
+    env->DeleteLocalRef(setpoint_temperature_cool);
+  }
+
+  if (relay_mode) {
+    env->DeleteLocalRef(relay_mode);
+    env->DeleteLocalRef(relay_mode_duration_s);
+    env->DeleteLocalRef(relay_opposite_mode_duration_s);
+  }
+
+  if (button_mode) {
+    env->DeleteLocalRef(button_mode);
+  }
 
   return result;
 }
 
 jobject supla_cc_ws_program_configurations_to_jobject(
-    JNIEnv *env, TChannelConfig_WeeklySchedule *ws) {
+    JNIEnv *env, _supla_int_t func, TChannelConfig_WeeklySchedule *ws) {
   jobject jarr = supla_NewArrayList(env);
 
   for (unsigned char a = 0; a < SUPLA_WEEKLY_SCHEDULE_PROGRAMS_MAX_SIZE; a++) {
     jobject program =
-        supla_cc_ws_program_to_jobject(env, a + 1, &ws->Program[a]);
+        supla_cc_ws_program_to_jobject(env, a + 1, func, &ws->Program[a]);
     supla_AddItemToArrayList(env, jarr, program);
     env->DeleteLocalRef(program);
   }
@@ -243,7 +344,7 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
       "(ILjava/lang/Integer;JLjava/util/List;Ljava/util/List;)V");
 
   jobject program_configurations =
-      supla_cc_ws_program_configurations_to_jobject(env, ws);
+      supla_cc_ws_program_configurations_to_jobject(env, func, ws);
   jobject schedule = supla_cc_ws_quarters_to_jobject(env, ws);
 
   jobject result = env->NewObject(config_cls, method_init, channel_id,
@@ -255,6 +356,71 @@ jobject supla_cc_weekly_schedule_to_jobject(JNIEnv *env,
   env->DeleteLocalRef(schedule);
 
   return result;
+}
+
+static bool supla_cc_ws_get_program_mode(
+    JNIEnv *env, jclass program_cls, jobject item, const char *getter,
+    const char *signature, const char *enum_class, unsigned char *mode) {
+  jobject mode_enum =
+      supla_CallObjectMethod(env, program_cls, item, getter, signature);
+  if (env->IsSameObject(mode_enum, nullptr)) {
+    return false;
+  }
+
+  jint value = supla_GetEnumValue(env, mode_enum, enum_class);
+  env->DeleteLocalRef(mode_enum);
+
+  if (value < 0 || value > 255) {
+    return false;
+  }
+
+  *mode = value;
+  return true;
+}
+
+static unsigned _supla_int16_t supla_cc_ws_get_duration_s(
+    JNIEnv *env, jclass program_cls, jobject item, const char *getter) {
+  jint result = 0;
+  if (!supla_CallIntObjectMethod(env, program_cls, item, getter, &result) ||
+      result < 0 || result > 65535) {
+    return 0;
+  }
+
+  return result;
+}
+
+static void supla_cc_ws_get_hvac_program(JNIEnv *env, jclass program_cls,
+                                         jobject item,
+                                         TWeeklyScheduleProgram *program) {
+  supla_cc_ws_get_program_mode(
+      env, program_cls, item, "getMode",
+      "()Lorg/supla/android/data/source/remote/hvac/SuplaHvacMode;",
+      "org/supla/android/data/source/remote/hvac/SuplaHvacMode",
+      &program->Mode);
+
+  jshort value = 0;
+  supla_CallShortObjectMethod(env, program_cls, item,
+                              "getSetpointTemperatureHeat", &value);
+  program->SetpointTemperatureHeat = value;
+
+  value = 0;
+  supla_CallShortObjectMethod(env, program_cls, item,
+                              "getSetpointTemperatureCool", &value);
+  program->SetpointTemperatureCool = value;
+}
+
+static void supla_cc_ws_get_relay_program(JNIEnv *env, jclass program_cls,
+                                          jobject item,
+                                          TWeeklyScheduleProgram *program) {
+  program->RelayModeDurationS = supla_cc_ws_get_duration_s(
+      env, program_cls, item, "getRelayModeDurationS");
+  program->RelayOppositeModeDurationS = supla_cc_ws_get_duration_s(
+      env, program_cls, item, "getRelayOppositeModeDurationS");
+}
+
+static void supla_cc_ws_get_button_program(TWeeklyScheduleProgram *program) {
+  program->Value1 = 0;
+  program->Value2 = 0;
 }
 
 void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
@@ -270,43 +436,33 @@ void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
         env, program_cls, item, "getProgram",
         "()Lorg/supla/android/data/source/remote/hvac/SuplaScheduleProgram;");
 
-    jint prog_id = supla_GetEnumValue(
+    jint program_id = supla_GetEnumValue(
         env, program_enum,
         "org/supla/android/data/source/remote/hvac/SuplaScheduleProgram");
 
-    jobject mode_enum = supla_CallObjectMethod(
-        env, program_cls, item, "getMode",
-        "()Lorg/supla/android/data/source/remote/hvac/SuplaHvacMode;");
-
-    jint mode_id = supla_GetEnumValue(
-        env, mode_enum,
-        "org/supla/android/data/source/remote/hvac/SuplaHvacMode");
-
-    jshort setpoint_temperature_heat = 0;
-
-    if (!supla_CallShortObjectMethod(env, program_cls, item,
-                                     "getSetpointTemperatureHeat",
-                                     &setpoint_temperature_heat)) {
-      setpoint_temperature_heat = 0;
-    }
-
-    jshort setpoint_temperature_cool = 0;
-    if (!supla_CallShortObjectMethod(env, program_cls, item,
-                                     "getSetpointTemperatureCool",
-                                     &setpoint_temperature_cool)) {
-      setpoint_temperature_cool = 0;
-    }
-
-    if (prog_id > 0 && prog_id < 5) {
-      prog_id--;
-      ws->Program[prog_id].Mode = mode_id;
-      ws->Program[prog_id].SetpointTemperatureHeat = setpoint_temperature_heat;
-      ws->Program[prog_id].SetpointTemperatureCool = setpoint_temperature_cool;
+    if (program_id > 0 && program_id < 5) {
+      TWeeklyScheduleProgram *program = &ws->Program[program_id - 1];
+      if (supla_cc_ws_get_program_mode(
+              env, program_cls, item, "getRelayMode",
+              "()Lorg/supla/android/data/source/remote/hvac/SuplaRelayMode;",
+              "org/supla/android/data/source/remote/hvac/SuplaRelayMode",
+              &program->Mode)) {
+        supla_cc_ws_get_relay_program(env, program_cls, item, program);
+      } else if (supla_cc_ws_get_program_mode(
+                     env, program_cls, item, "getButtonMode",
+                     "()Lorg/supla/android/data/source/remote/hvac/"
+                     "SuplaButtonMode;",
+                     "org/supla/android/data/source/remote/hvac/"
+                     "SuplaButtonMode",
+                     &program->Mode)) {
+        supla_cc_ws_get_button_program(program);
+      } else {
+        supla_cc_ws_get_hvac_program(env, program_cls, item, program);
+      }
     }
 
     env->DeleteLocalRef(item);
     env->DeleteLocalRef(program_enum);
-    env->DeleteLocalRef(mode_enum);
   }
 
   env->DeleteLocalRef(program_cls);

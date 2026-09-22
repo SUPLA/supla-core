@@ -30,6 +30,10 @@ const char weekly_schedule_config::setpoint_temperature_heat[] =
     "setpointTemperatureHeat";
 const char weekly_schedule_config::setpoint_temperature_cool[] =
     "setpointTemperatureCool";
+const char weekly_schedule_config::relay_mode_duration_s[] =
+    "relayModeDurationS";
+const char weekly_schedule_config::relay_opposite_mode_duration_s[] =
+    "relayOppositeModeDurationS";
 const char weekly_schedule_config::program_settings[] = "programSettings";
 const char weekly_schedule_config::quarters[] = "quarters";
 
@@ -77,7 +81,41 @@ cJSON *weekly_schedule_config::get_ws_root(bool force) {
   return ws_root;
 }
 
-string weekly_schedule_config::mode_to_string(unsigned char mode) {
+string weekly_schedule_config::mode_to_string(unsigned char mode,
+                                              _supla_int_t func) {
+  unsigned char mode_type =
+      supla_weekly_schedule_get_program_mode_type(func);
+
+  if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY) {
+    switch (mode) {
+      case SUPLA_RELAY_MODE_NOT_SET:
+        return "NOT_SET";
+      case SUPLA_RELAY_MODE_START_ON:
+        return "START_ON";
+      case SUPLA_RELAY_MODE_START_OFF:
+        return "START_OFF";
+      case SUPLA_RELAY_MODE_FORCED_ON:
+        return "FORCED_ON";
+      case SUPLA_RELAY_MODE_FORCED_OFF:
+        return "FORCED_OFF";
+      case SUPLA_RELAY_MODE_AUTOMATIC:
+        return "AUTOMATIC";
+    }
+
+    return "";
+  }
+
+  if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+    switch (mode) {
+      case SUPLA_BUTTON_MODE_NOT_SET:
+        return "NOT_SET";
+      case SUPLA_BUTTON_MODE_LOCKED:
+        return "LOCKED";
+    }
+
+    return "";
+  }
+
   switch (mode) {
     case SUPLA_HVAC_MODE_NOT_SET:
       return "NOT_SET";
@@ -98,7 +136,35 @@ string weekly_schedule_config::mode_to_string(unsigned char mode) {
   return "";
 }
 
-unsigned char weekly_schedule_config::string_to_mode(const std::string &mode) {
+unsigned char weekly_schedule_config::string_to_mode(const std::string &mode,
+                                                     _supla_int_t func) {
+  unsigned char mode_type =
+      supla_weekly_schedule_get_program_mode_type(func);
+
+  if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY) {
+    if (mode == "START_ON") {
+      return SUPLA_RELAY_MODE_START_ON;
+    } else if (mode == "START_OFF") {
+      return SUPLA_RELAY_MODE_START_OFF;
+    } else if (mode == "FORCED_ON") {
+      return SUPLA_RELAY_MODE_FORCED_ON;
+    } else if (mode == "FORCED_OFF") {
+      return SUPLA_RELAY_MODE_FORCED_OFF;
+    } else if (mode == "AUTOMATIC") {
+      return SUPLA_RELAY_MODE_AUTOMATIC;
+    }
+
+    return SUPLA_RELAY_MODE_NOT_SET;
+  }
+
+  if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+    if (mode == "LOCKED") {
+      return SUPLA_BUTTON_MODE_LOCKED;
+    }
+
+    return SUPLA_BUTTON_MODE_NOT_SET;
+  }
+
   if (mode == "OFF") {
     return SUPLA_HVAC_MODE_OFF;
   } else if (mode == "HEAT") {
@@ -118,26 +184,41 @@ unsigned char weekly_schedule_config::string_to_mode(const std::string &mode) {
 
 void weekly_schedule_config::add_program(unsigned char index,
                                          TChannelConfig_WeeklySchedule *config,
-                                         cJSON *program_root) {
+                                         cJSON *program_root,
+                                         _supla_int_t func) {
   string name = std::to_string(index + 1);
   cJSON *program = cJSON_AddObjectToObject(program_root, name.c_str());
   if (program) {
     set_item_value(program, mode, cJSON_String, true, nullptr,
-                   mode_to_string(config->Program[index].Mode).c_str(), 0);
+                   mode_to_string(config->Program[index].Mode, func).c_str(),
+                   0);
 
-    set_item_value(program, setpoint_temperature_heat, cJSON_Number, true,
-                   nullptr, nullptr,
-                   config->Program[index].SetpointTemperatureHeat);
+    unsigned char mode_type =
+        supla_weekly_schedule_get_program_mode_type(func);
+    if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY) {
+      set_item_value(program, relay_mode_duration_s, cJSON_Number, true,
+                     nullptr, nullptr,
+                     config->Program[index].RelayModeDurationS);
 
-    set_item_value(program, setpoint_temperature_cool, cJSON_Number, true,
-                   nullptr, nullptr,
-                   config->Program[index].SetpointTemperatureCool);
+      set_item_value(program, relay_opposite_mode_duration_s, cJSON_Number,
+                     true, nullptr, nullptr,
+                     config->Program[index].RelayOppositeModeDurationS);
+    } else if (mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+      set_item_value(program, setpoint_temperature_heat, cJSON_Number, true,
+                     nullptr, nullptr,
+                     config->Program[index].SetpointTemperatureHeat);
+
+      set_item_value(program, setpoint_temperature_cool, cJSON_Number, true,
+                     nullptr, nullptr,
+                     config->Program[index].SetpointTemperatureCool);
+    }
   }
 }
 
 bool weekly_schedule_config::get_program(unsigned char index,
                                          TChannelConfig_WeeklySchedule *config,
-                                         cJSON *program_root) {
+                                         cJSON *program_root,
+                                         _supla_int_t func) {
   bool result = false;
 
   string name = std::to_string(index + 1);
@@ -145,18 +226,31 @@ bool weekly_schedule_config::get_program(unsigned char index,
   if (program) {
     string str_value;
     if (get_string(program, mode, &str_value)) {
-      config->Program[index].Mode = string_to_mode(str_value);
+      config->Program[index].Mode = string_to_mode(str_value, func);
       result = true;
     }
 
     double dbl_value = 0;
-    if (get_double(program, setpoint_temperature_heat, &dbl_value)) {
-      config->Program[index].SetpointTemperatureHeat = dbl_value;
-      result = true;
-    }
-    if (get_double(program, setpoint_temperature_cool, &dbl_value)) {
-      config->Program[index].SetpointTemperatureCool = dbl_value;
-      result = true;
+    unsigned char mode_type =
+        supla_weekly_schedule_get_program_mode_type(func);
+    if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY) {
+      if (get_double(program, relay_mode_duration_s, &dbl_value)) {
+        config->Program[index].RelayModeDurationS = dbl_value;
+        result = true;
+      }
+      if (get_double(program, relay_opposite_mode_duration_s, &dbl_value)) {
+        config->Program[index].RelayOppositeModeDurationS = dbl_value;
+        result = true;
+      }
+    } else if (mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+      if (get_double(program, setpoint_temperature_heat, &dbl_value)) {
+        config->Program[index].SetpointTemperatureHeat = dbl_value;
+        result = true;
+      }
+      if (get_double(program, setpoint_temperature_cool, &dbl_value)) {
+        config->Program[index].SetpointTemperatureCool = dbl_value;
+        result = true;
+      }
     }
   }
 
@@ -171,7 +265,8 @@ void weekly_schedule_config::add_quarter(TChannelConfig_WeeklySchedule *config,
   cJSON_AddItemToArray(quarters_root, item);
 }
 
-void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config) {
+void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config,
+                                        _supla_int_t func) {
   if (!config) {
     return;
   }
@@ -191,7 +286,7 @@ void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config) {
 
   if (program_root) {
     for (char a = 0; a < SUPLA_WEEKLY_SCHEDULE_PROGRAMS_MAX_SIZE; a++) {
-      add_program(a, config, program_root);
+      add_program(a, config, program_root, func);
     }
   }
 
@@ -210,7 +305,8 @@ void weekly_schedule_config::set_config(TChannelConfig_WeeklySchedule *config) {
   }
 }
 
-bool weekly_schedule_config::get_config(TChannelConfig_WeeklySchedule *config) {
+bool weekly_schedule_config::get_config(TChannelConfig_WeeklySchedule *config,
+                                        _supla_int_t func) {
   if (!config) {
     return false;
   }
@@ -228,7 +324,7 @@ bool weekly_schedule_config::get_config(TChannelConfig_WeeklySchedule *config) {
 
   if (program_root) {
     for (char a = 0; a < SUPLA_WEEKLY_SCHEDULE_PROGRAMS_MAX_SIZE; a++) {
-      if (get_program(a, config, program_root)) {
+      if (get_program(a, config, program_root, func)) {
         result = true;
       }
     }
