@@ -59,8 +59,8 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void open_close_without_canceling_tasks();
   virtual void forward_outside(int cap);
   virtual void hvac_set_parameters(supla_action_hvac_parameters *params);
-  virtual void hvac_switch_to_program_mode(void);
-  virtual void hvac_switch_to_manual_mode(void);
+  virtual void switch_to_program_mode(void);
+  virtual void switch_to_manual_mode(void);
   virtual void hvac_set_temperature(
       supla_action_hvac_setpoint_temperature *temperature);
   virtual void hvac_set_temperatures(

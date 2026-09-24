@@ -84,6 +84,11 @@ class supla_device_channels {
       std::function<bool(supla_device_channel *, supla_channel_hvac_value *)>
           on_value);
 
+  bool action_weekly_schedule_switch_to_mode(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol, unsigned char relay_mode, unsigned char button_mode,
+      bool *function_match);
+
   bool hp_action(
       int channel_id, bool *function_match,
       std::function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
@@ -185,6 +190,8 @@ class supla_device_channels {
   bool set_dgf_transparency(const supla_caller &caller, int channel_id,
                             unsigned short activeBits, unsigned short mask);
   bool get_relay_value(int channel_id, TRelayChannel_Value *relay_value);
+  bool get_action_trigger_value(int channel_id,
+                                TActionTriggerProperties *at_value);
   bool action_toggle(const supla_caller &caller, int channel_id, int group_id,
                      unsigned char eol);
   bool action_shut(const supla_caller &caller, int channel_id, int group_id,
@@ -217,12 +224,10 @@ class supla_device_channels {
   bool action_hvac_set_parameters(const supla_caller &caller, int channel_id,
                                   int group_id, unsigned char eol,
                                   const supla_action_hvac_parameters *params);
-  bool action_hvac_switch_to_manual_mode(const supla_caller &caller,
-                                         int channel_id, int group_id,
-                                         unsigned char eol);
-  bool action_hvac_switch_to_program_mode(const supla_caller &caller,
-                                          int channel_id, int group_id,
-                                          unsigned char eol);
+  bool action_switch_to_manual_mode(const supla_caller &caller, int channel_id,
+                                    int group_id, unsigned char eol);
+  bool action_switch_to_program_mode(const supla_caller &caller, int channel_id,
+                                     int group_id, unsigned char eol);
   bool action_hvac_set_temperature(
       const supla_caller &caller, int channel_id, int group_id,
       unsigned char eol,

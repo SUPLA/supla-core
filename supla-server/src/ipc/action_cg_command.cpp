@@ -112,15 +112,15 @@ bool supla_action_cg_command::action_hvac_set_parameters(
       get_caller(), group_id, params);
 }
 
-bool supla_action_cg_command::action_hvac_switch_to_manual_mode(
-    supla_user *user, int group_id) {
-  return user->get_channel_groups()->action_hvac_switch_to_manual_mode(
+bool supla_action_cg_command::action_switch_to_manual_mode(supla_user *user,
+                                                           int group_id) {
+  return user->get_channel_groups()->action_switch_to_manual_mode(
       get_caller(), group_id);
 }
 
-bool supla_action_cg_command::action_hvac_switch_to_program_mode(
-    supla_user *user, int group_id) {
-  return user->get_channel_groups()->action_hvac_switch_to_program_mode(
+bool supla_action_cg_command::action_switch_to_program_mode(supla_user *user,
+                                                            int group_id) {
+  return user->get_channel_groups()->action_switch_to_program_mode(
       get_caller(), group_id);
 }
 

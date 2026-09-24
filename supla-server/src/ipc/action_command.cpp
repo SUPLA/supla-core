@@ -198,28 +198,28 @@ bool supla_action_command::action_hvac_set_parameters(
   return false;
 }
 
-bool supla_action_command::action_hvac_switch_to_manual_mode(int user_id,
-                                                             int device_id,
-                                                             int channel_id) {
+bool supla_action_command::action_switch_to_manual_mode(int user_id,
+                                                        int device_id,
+                                                        int channel_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->action_hvac_switch_to_manual_mode(
+    return device->get_channels()->action_switch_to_manual_mode(
         get_caller(), channel_id, 0, 1);
   }
 
   return false;
 }
 
-bool supla_action_command::action_hvac_switch_to_program_mode(int user_id,
-                                                              int device_id,
-                                                              int channel_id) {
+bool supla_action_command::action_switch_to_program_mode(int user_id,
+                                                         int device_id,
+                                                         int channel_id) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
     call_before(device, channel_id);
 
-    return device->get_channels()->action_hvac_switch_to_program_mode(
+    return device->get_channels()->action_switch_to_program_mode(
         get_caller(), channel_id, 0, 1);
   }
 

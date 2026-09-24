@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_hvac_switch_to_manual_mode.h"
+#include "action_switch_to_manual_mode.h"
 
 s_worker_action_switch_to_manual_mode::s_worker_action_switch_to_manual_mode(
     s_abstract_worker *worker)
@@ -27,4 +27,4 @@ bool s_worker_action_switch_to_manual_mode::to_program_mode(void) {
 }
 
 REGISTER_ACTION(s_worker_action_switch_to_manual_mode,
-                ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+                ACTION_SWITCH_TO_MANUAL_MODE);

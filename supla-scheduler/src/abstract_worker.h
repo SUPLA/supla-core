@@ -66,10 +66,13 @@ class s_abstract_worker {
   virtual bool ipcc_action_shut_partially(char percentage,
                                           bool percentage_as_delta, char tilt,
                                           bool tilt_as_delta) = 0;
-  virtual bool ipcc_action_hvac_switch_to_program_mode(void) = 0;
-  virtual bool ipcc_action_hvac_switch_to_manual_mode(void) = 0;
+  virtual bool ipcc_action_switch_to_program_mode(void) = 0;
+  virtual bool ipcc_action_switch_to_manual_mode(void) = 0;
   virtual bool ipcc_get_hvac_value(THVACValue *value, int *temperature,
                                    int *humidity) = 0;
+  virtual bool ipcc_get_relay_value(TRelayChannel_Value *value) = 0;
+  virtual bool ipcc_get_action_trigger_value(
+      TActionTriggerProperties *value) = 0;
   virtual bool ipcc_action_turn_on(void) = 0;
   virtual bool ipcc_action_turn_off(void) = 0;
   virtual bool ipcc_execute_scene(void) = 0;

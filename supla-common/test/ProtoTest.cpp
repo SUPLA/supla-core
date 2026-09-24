@@ -193,6 +193,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
   EXPECT_EQ((unsigned int)4, sizeof(TRelayChannel_Value));
   EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  EXPECT_LE(sizeof(TActionTriggerProperties),
+            (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
   EXPECT_EQ((unsigned int)520, sizeof(TSD_ChannelConfig));

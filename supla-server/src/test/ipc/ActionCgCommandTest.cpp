@@ -345,25 +345,25 @@ TEST_F(ActionCgCommandTest, SetHvacParameters) {
                         "OK:30\n");
 }
 
-TEST_F(ActionCgCommandTest, HvacSwitchToManualMode) {
+TEST_F(ActionCgCommandTest, SwitchToManualMode) {
   StrictMock<ActionCgCommandMock> c(socketAdapter,
-                                    ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+                                    ACTION_SWITCH_TO_MANUAL_MODE);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_manual_mode(user, 30))
+  EXPECT_CALL(c, action_switch_to_manual_mode(user, 30))
       .WillOnce(Return(true));
 
-  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE:10,30\n",
+  commandProcessingTest("ACTION-CG-SWITCH-TO-MANUAL-MODE:10,30\n",
                         "OK:30\n");
 }
 
-TEST_F(ActionCgCommandTest, HvacSwitchToProgramMode) {
+TEST_F(ActionCgCommandTest, SwitchToProgramMode) {
   StrictMock<ActionCgCommandMock> c(socketAdapter,
-                                    ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+                                    ACTION_SWITCH_TO_PROGRAM_MODE);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_program_mode(user, 30))
+  EXPECT_CALL(c, action_switch_to_program_mode(user, 30))
       .WillOnce(Return(true));
 
-  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE:10,30\n",
+  commandProcessingTest("ACTION-CG-SWITCH-TO-PROGRAM-MODE:10,30\n",
                         "OK:30\n");
 }
 

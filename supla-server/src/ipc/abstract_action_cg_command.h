@@ -48,10 +48,10 @@ class supla_abstract_action_cg_command : public supla_abstract_ipc_command {
   virtual bool action_hvac_set_parameters(
       supla_user *user, int group_id,
       const supla_action_hvac_parameters *params) = 0;
-  virtual bool action_hvac_switch_to_manual_mode(supla_user *user,
-                                                 int group_id) = 0;
-  virtual bool action_hvac_switch_to_program_mode(supla_user *user,
-                                                  int group_id) = 0;
+  virtual bool action_switch_to_manual_mode(supla_user *user,
+                                            int group_id) = 0;
+  virtual bool action_switch_to_program_mode(supla_user *user,
+                                             int group_id) = 0;
   virtual bool action_hvac_set_temperature(
       supla_user *user, int group_id,
       const supla_action_hvac_setpoint_temperature *temperature) = 0;

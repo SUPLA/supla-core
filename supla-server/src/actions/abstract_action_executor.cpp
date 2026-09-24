@@ -306,11 +306,11 @@ void supla_abstract_action_executor::execute_action(
         }
       }
       break;
-    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
-      hvac_switch_to_manual_mode();
+    case ACTION_SWITCH_TO_MANUAL_MODE:
+      switch_to_manual_mode();
       break;
-    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
-      hvac_switch_to_program_mode();
+    case ACTION_SWITCH_TO_PROGRAM_MODE:
+      switch_to_program_mode();
       break;
     case ACTION_HVAC_SET_TEMPERATURE:
       if (params) {

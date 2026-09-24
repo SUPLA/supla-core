@@ -198,6 +198,8 @@ static_assert((unsigned int)1 == sizeof(TDS_GetChannelIntParamsRequest));
 static_assert((unsigned int)4 == sizeof(TRelayChannel_Value));
 static_assert(sizeof(TRelayChannel_Value) <=
               (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+static_assert(sizeof(TActionTriggerProperties) <=
+              (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 static_assert((unsigned int)6 == sizeof(TDS_GetChannelConfigRequest));
 static_assert((unsigned int)520 == sizeof(TSD_ChannelConfig));
 static_assert((unsigned int)520 == sizeof(TSDS_SetChannelConfig));

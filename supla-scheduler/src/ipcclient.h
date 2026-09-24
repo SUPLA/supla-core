@@ -62,6 +62,10 @@ class ipc_client {
 
   bool get_hvac_value(int user_id, int device_id, int channel_id,
                       THVACValue *value, int *temperature, int *humidity);
+  bool get_relay_value(int user_id, int device_id, int channel_id,
+                       TRelayChannel_Value *value);
+  bool get_action_trigger_value(int user_id, int device_id, int channel_id,
+                                TActionTriggerProperties *value);
 
   bool set_char_value(int user_id, int device_id, int channel_id,
                       int channel_group_id, char value);
@@ -78,10 +82,10 @@ class ipc_client {
                              int channel_group_id, char percentage,
                              bool percentage_as_delta, char tilt,
                              bool tilt_as_delta);
-  bool action_hvac_switch_to_program_mode(int user_id, int device_id,
-                                          int channel_id, int channel_group_id);
-  bool action_hvac_switch_to_manual_mode(int user_id, int device_id,
-                                         int channel_id, int channel_group_id);
+  bool action_switch_to_program_mode(int user_id, int device_id,
+                                     int channel_id, int channel_group_id);
+  bool action_switch_to_manual_mode(int user_id, int device_id,
+                                    int channel_id, int channel_group_id);
   bool action_turn_on(int user_id, int device_id, int channel_id,
                       int channel_group_id);
   bool action_turn_off(int user_id, int device_id, int channel_id,

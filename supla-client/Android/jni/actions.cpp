@@ -88,6 +88,12 @@ jobject supla_action_id_to_jobject(JNIEnv *env, int action_id) {
     case ACTION_HVAC_SET_PARAMETERS:
       snprintf(enum_name, sizeof(enum_name), "SET_HVAC_PARAMETERS");
       break;
+    case ACTION_SWITCH_TO_PROGRAM_MODE:
+      snprintf(enum_name, sizeof(enum_name), "SWITCH_TO_PROGRAM_MODE");
+      break;
+    case ACTION_SWITCH_TO_MANUAL_MODE:
+      snprintf(enum_name, sizeof(enum_name), "SWITCH_TO_MANUAL_MODE");
+      break;
     case ACTION_EXECUTE:
       snprintf(enum_name, sizeof(enum_name), "EXECUTE");
       break;

@@ -51,10 +51,12 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_action_shut_partially(char percentage,
                                           bool percentage_as_delta, char tilt,
                                           bool tilt_as_delta);
-  virtual bool ipcc_action_hvac_switch_to_program_mode(void);
-  virtual bool ipcc_action_hvac_switch_to_manual_mode(void);
+  virtual bool ipcc_action_switch_to_program_mode(void);
+  virtual bool ipcc_action_switch_to_manual_mode(void);
   virtual bool ipcc_get_hvac_value(THVACValue *value, int *temperature,
                                    int *humidity);
+  virtual bool ipcc_get_relay_value(TRelayChannel_Value *value);
+  virtual bool ipcc_get_action_trigger_value(TActionTriggerProperties *value);
   virtual bool ipcc_action_turn_on(void);
   virtual bool ipcc_action_turn_off(void);
   virtual bool ipcc_execute_scene(void);

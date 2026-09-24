@@ -31,6 +31,7 @@
 #include "ipc/enter_cfg_mode_command.h"
 #include "ipc/execute_scene_command.h"
 #include "ipc/factory_reset_command.h"
+#include "ipc/get_action_trigger_value_command.h"
 #include "ipc/get_char_command.h"
 #include "ipc/get_container_value_command.h"
 #include "ipc/get_digiglass_value_command.h"
@@ -108,6 +109,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_get_em_value_command(socket_adapter));
   add_command(new supla_get_ic_value_command(socket_adapter));
   add_command(new supla_get_valve_value_command(socket_adapter));
+  add_command(new supla_get_action_trigger_value_command(socket_adapter));
   add_command(new supla_get_relay_value_command(socket_adapter));
   add_command(new supla_get_hvac_value_command(socket_adapter));
   add_command(new supla_get_gpm_value_command(socket_adapter));
@@ -154,13 +156,13 @@ supla_ipc_ctrl::supla_ipc_ctrl(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
 
   add_command(new supla_action_cg_command(socket_adapter,
-                                          ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+                                          ACTION_SWITCH_TO_MANUAL_MODE));
   add_command(new supla_action_command(socket_adapter,
-                                       ACTION_HVAC_SWITCH_TO_MANUAL_MODE));
+                                       ACTION_SWITCH_TO_MANUAL_MODE));
   add_command(new supla_action_cg_command(socket_adapter,
-                                          ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+                                          ACTION_SWITCH_TO_PROGRAM_MODE));
   add_command(new supla_action_command(socket_adapter,
-                                       ACTION_HVAC_SWITCH_TO_PROGRAM_MODE));
+                                       ACTION_SWITCH_TO_PROGRAM_MODE));
   add_command(
       new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_TEMPERATURE));
   add_command(

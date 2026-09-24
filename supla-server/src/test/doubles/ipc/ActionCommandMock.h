@@ -53,9 +53,9 @@ class ActionCommandMock : public supla_abstract_action_command {
   MOCK_METHOD4(action_hvac_set_parameters,
                bool(int user_id, int device_id, int channel_id,
                     const supla_action_hvac_parameters *params));
-  MOCK_METHOD3(action_hvac_switch_to_manual_mode,
+  MOCK_METHOD3(action_switch_to_manual_mode,
                bool(int user_id, int device_id, int channel_id));
-  MOCK_METHOD3(action_hvac_switch_to_program_mode,
+  MOCK_METHOD3(action_switch_to_program_mode,
                bool(int user_id, int device_id, int channel_id));
   MOCK_METHOD4(action_hvac_set_temperature,
                bool(int user_id, int device_id, int channel_id,

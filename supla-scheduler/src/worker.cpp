@@ -152,16 +152,29 @@ bool s_worker::ipcc_action_shut_partially(char percentage,
       percentage_as_delta, tilt, tilt_as_delta);
 }
 
-bool s_worker::ipcc_action_hvac_switch_to_program_mode(void) {
-  return get_ipcc()->action_hvac_switch_to_program_mode(
+bool s_worker::ipcc_action_switch_to_program_mode(void) {
+  return get_ipcc()->action_switch_to_program_mode(
       get_params()->user_id, get_params()->iodevice_id,
       get_params()->channel_id, get_params()->channel_group_id);
 }
 
-bool s_worker::ipcc_action_hvac_switch_to_manual_mode(void) {
-  return get_ipcc()->action_hvac_switch_to_manual_mode(
+bool s_worker::ipcc_action_switch_to_manual_mode(void) {
+  return get_ipcc()->action_switch_to_manual_mode(
       get_params()->user_id, get_params()->iodevice_id,
       get_params()->channel_id, get_params()->channel_group_id);
+}
+
+bool s_worker::ipcc_get_relay_value(TRelayChannel_Value *value) {
+  return get_ipcc()->get_relay_value(get_params()->user_id,
+                                     get_params()->iodevice_id,
+                                     get_params()->channel_id, value);
+}
+
+bool s_worker::ipcc_get_action_trigger_value(
+    TActionTriggerProperties *value) {
+  return get_ipcc()->get_action_trigger_value(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, value);
 }
 
 bool s_worker::ipcc_action_turn_on(void) {

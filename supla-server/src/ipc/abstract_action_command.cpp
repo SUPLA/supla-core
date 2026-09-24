@@ -57,10 +57,10 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SHUT-PARTIALLY:";
     case ACTION_HVAC_SET_PARAMETERS:
       return "ACTION-HVAC-SET-PARAMETERS:";
-    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
-      return "ACTION-HVAC-SWITCH-TO-MANUAL-MODE:";
-    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
-      return "ACTION-HVAC-SWITCH-TO-PROGRAM-MODE:";
+    case ACTION_SWITCH_TO_MANUAL_MODE:
+      return "ACTION-SWITCH-TO-MANUAL-MODE:";
+    case ACTION_SWITCH_TO_PROGRAM_MODE:
+      return "ACTION-SWITCH-TO-PROGRAM-MODE:";
     case ACTION_HVAC_SET_TEMPERATURE:
       return "ACTION-HVAC-SET-TEMPERATURE:";
     case ACTION_HVAC_SET_TEMPERATURES:
@@ -227,13 +227,13 @@ void supla_abstract_action_command::on_command_match(const char *params) {
           case ACTION_STEP_BY_STEP:
             result = action_step_by_step(user_id, device_id, channel_id);
             break;
-          case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
-            result = action_hvac_switch_to_manual_mode(user_id, device_id,
-                                                       channel_id);
+          case ACTION_SWITCH_TO_MANUAL_MODE:
+            result =
+                action_switch_to_manual_mode(user_id, device_id, channel_id);
             break;
-          case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
-            result = action_hvac_switch_to_program_mode(user_id, device_id,
-                                                        channel_id);
+          case ACTION_SWITCH_TO_PROGRAM_MODE:
+            result =
+                action_switch_to_program_mode(user_id, device_id, channel_id);
             break;
         }
 

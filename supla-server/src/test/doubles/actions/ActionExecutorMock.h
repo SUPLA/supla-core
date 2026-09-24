@@ -60,8 +60,8 @@ class ActionExecutorMock
   int rgbw_counter;
   int forward_outside_counter;
   int hvac_set_parameters_counter;
-  int hvac_switch_to_program_mode_counter;
-  int hvac_switch_to_manual_mode_counter;
+  int switch_to_program_mode_counter;
+  int switch_to_manual_mode_counter;
   int hvac_set_temperature_counter;
   int hvac_set_temperatures_counter;
   unsigned int color;
@@ -111,8 +111,8 @@ class ActionExecutorMock
   virtual void open_close_without_canceling_tasks(void);
   virtual void forward_outside(int cap);
   virtual void hvac_set_parameters(supla_action_hvac_parameters *params);
-  virtual void hvac_switch_to_program_mode(void);
-  virtual void hvac_switch_to_manual_mode(void);
+  virtual void switch_to_program_mode(void);
+  virtual void switch_to_manual_mode(void);
   virtual void hvac_set_temperature(
       supla_action_hvac_setpoint_temperature *temperature);
   virtual void hvac_set_temperatures(
@@ -146,8 +146,8 @@ class ActionExecutorMock
   int getOpenCloseWctCounter(void);
   int getForwardOutsideCounter(void);
   int getHvacSetParametersCounter(void);
-  int getHvacSwitchToProgramModeCounter(void);
-  int getHvacSwitchToManualModeCounter(void);
+  int getSwitchToProgramModeCounter(void);
+  int getSwitchToManualModeCounter(void);
   int getHvacSetTemperatureCounter(void);
   int getHvacSetTemperaturesCounter(void);
   const supla_action_shading_system_parameters *getShadingSystemParams(void);
