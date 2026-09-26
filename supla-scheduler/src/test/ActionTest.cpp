@@ -21,9 +21,34 @@
 #include <list>
 
 #include "action.h"
+#include "action_switch_to_manual_mode.h"
+#include "action_switch_to_program_mode.h"
 #include "doubles/WorkerMock.h"
 
 namespace testing {
+
+namespace {
+
+class TestableSwitchToProgramMode
+    : public s_worker_action_switch_to_program_mode {
+ public:
+  explicit TestableSwitchToProgramMode(s_abstract_worker *worker)
+      : s_worker_action_switch_to_program_mode(worker) {}
+
+  bool is_allowed() { return is_action_allowed(); }
+  bool is_success() { return result_success(NULL); }
+};
+
+class TestableSwitchToManualMode
+    : public s_worker_action_switch_to_manual_mode {
+ public:
+  explicit TestableSwitchToManualMode(s_abstract_worker *worker)
+      : s_worker_action_switch_to_manual_mode(worker) {}
+
+  bool is_success() { return result_success(NULL); }
+};
+
+}  // namespace
 
 ActionTest::ActionTest() {}
 
@@ -47,6 +72,100 @@ TEST_F(ActionTest, time) {
 
     delete action;
   }
+}
+
+TEST_F(ActionTest, switchToModeEligibilityAndConfirmation) {
+  WorkerMock worker(NULL);
+  int func = 0;
+  EXPECT_CALL(worker, get_channel_func())
+      .WillRepeatedly([&func]() { return func; });
+  TestableSwitchToProgramMode action(&worker);
+
+  const int relay_and_button_functions[] = {
+      SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNELFNC_POWERSWITCH,
+      SUPLA_CHANNELFNC_STAIRCASETIMER,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATE,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR,
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK,
+      SUPLA_CHANNELFNC_ACTIONTRIGGER,
+  };
+
+  for (int allowed_func : relay_and_button_functions) {
+    func = allowed_func;
+    EXPECT_TRUE(action.is_allowed());
+    EXPECT_EQ(action.try_limit(), 2);
+  }
+
+  func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_EQ(action.try_limit(), 2);
+
+  func = SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER;
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_EQ(action.try_limit(), 2);
+
+  func = SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_EQ(action.try_limit(), 2);
+
+  func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL;
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_EQ(action.try_limit(), 2);
+
+  func = SUPLA_CHANNELFNC_DIMMER;
+  EXPECT_FALSE(action.is_allowed());
+}
+
+TEST_F(ActionTest, switchToModeChecksRelayAndButtonFlags) {
+  WorkerMock worker(NULL);
+  int func = SUPLA_CHANNELFNC_LIGHTSWITCH;
+  EXPECT_CALL(worker, get_channel_func())
+      .WillRepeatedly([&func]() { return func; });
+  EXPECT_CALL(worker, ipcc_get_hvac_value).Times(0);
+
+  TestableSwitchToProgramMode program(&worker);
+  TestableSwitchToManualMode manual(&worker);
+
+  EXPECT_CALL(worker, ipcc_get_relay_value)
+      .WillOnce([](TRelayChannel_Value *value) {
+        value->flags = SUPLA_RELAY_FLAG_WEEKLY_SCHEDULE_ENABLED;
+        return true;
+      })
+      .WillOnce([](TRelayChannel_Value *value) {
+        value->flags = SUPLA_RELAY_FLAG_WEEKLY_SCHEDULE_ENABLED;
+        return true;
+      })
+      .WillOnce([](TRelayChannel_Value *value) { return true; })
+      .WillOnce([](TRelayChannel_Value *value) { return true; })
+      .WillOnce([](TRelayChannel_Value *value) { return false; });
+
+  EXPECT_TRUE(program.is_success());
+  EXPECT_FALSE(manual.is_success());
+  EXPECT_TRUE(manual.is_success());
+  EXPECT_FALSE(program.is_success());
+  EXPECT_FALSE(program.is_success());
+
+  func = SUPLA_CHANNELFNC_ACTIONTRIGGER;
+  EXPECT_CALL(worker, ipcc_get_action_trigger_value)
+      .WillOnce([](TActionTriggerProperties *value) {
+        value->Flags = SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED;
+        return true;
+      })
+      .WillOnce([](TActionTriggerProperties *value) {
+        value->Flags = SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED;
+        return true;
+      })
+      .WillOnce([](TActionTriggerProperties *value) { return true; })
+      .WillOnce([](TActionTriggerProperties *value) { return true; })
+      .WillOnce([](TActionTriggerProperties *value) { return false; });
+
+  EXPECT_TRUE(program.is_success());
+  EXPECT_FALSE(manual.is_success());
+  EXPECT_TRUE(manual.is_success());
+  EXPECT_FALSE(program.is_success());
+  EXPECT_FALSE(program.is_success());
 }
 
 }  // namespace testing
