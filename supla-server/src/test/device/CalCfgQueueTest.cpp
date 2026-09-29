@@ -707,7 +707,8 @@ TEST(ChannelConfigSyncCoordinatorTest, passesDeviceToFinishedCallback) {
   EXPECT_EQ(&device, finished_device);
 }
 
-TEST(ChannelConfigSyncCoordinatorTest, sendsRelayWeeklyScheduleWhenAvailable) {
+TEST(ChannelConfigSyncCoordinatorTest,
+     sendsPowerSwitchWeeklyScheduleWhenAvailable) {
   DeviceStub device(nullptr);
   const unsigned _supla_int64_t flags =
       SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
@@ -717,7 +718,7 @@ TEST(ChannelConfigSyncCoordinatorTest, sendsRelayWeeklyScheduleWhenAvailable) {
       "\"relayModeDurationS\":60,\"relayOppositeModeDurationS\":30}},"
       "\"quarters\":[1]}}";
   DeviceChannelWithProtocolVersion channel(
-      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH, flags,
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_POWERSWITCH, flags,
       user_config);
   std::vector<TSDS_SetChannelConfig> configs;
 
