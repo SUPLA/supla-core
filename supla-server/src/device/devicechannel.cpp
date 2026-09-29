@@ -978,7 +978,7 @@ bool supla_device_channel::prepare_config_for_device(
   }
 
   if ((get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) &&
-      get_device()->get_protocol_version() >= 21) {
+      get_protocol_version() >= 21) {
     *config = {};
 
     get_config(config, config_type, 0);
@@ -1000,7 +1000,7 @@ bool supla_device_channel::prepare_config_for_device(
   configs->clear();
 
   if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
-      get_device()->get_protocol_version() < 21) {
+      get_protocol_version() < 21) {
     return false;
   }
 
@@ -1010,8 +1010,8 @@ bool supla_device_channel::prepare_config_for_device(
     configs->push_back(config);
   }
 
-  if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
-      (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+  if ((get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) &&
+      supla_weekly_schedule_is_function_supported(get_func())) {
     if (prepare_config_for_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, &config)) {
       configs->push_back(config);
     }
@@ -1022,8 +1022,10 @@ bool supla_device_channel::prepare_config_for_device(
         configs->push_back(config);
       }
     }
-  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-             get_device()->get_protocol_version() >= 25) {
+  }
+
+  if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+      get_protocol_version() >= 25) {
     if (prepare_config_for_device(SUPLA_CONFIG_TYPE_OCR, &config)) {
       configs->push_back(config);
     }

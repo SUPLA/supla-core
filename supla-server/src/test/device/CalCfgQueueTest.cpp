@@ -25,12 +25,30 @@
 
 #include "device/calcfg_queue.h"
 #include "device/channel_config_sync_coordinator.h"
+#include "device/devicechannel.h"
 #include "doubles/device/DeviceStub.h"
 #include "gtest/gtest.h"
 
 namespace testing {
 
 namespace {
+
+const char empty_channel_value[SUPLA_CHANNELVALUE_SIZE] = {};
+
+class DeviceChannelWithProtocolVersion : public supla_device_channel {
+ public:
+  DeviceChannelWithProtocolVersion(DeviceStub *device, int type, int func,
+                                   unsigned _supla_int64_t flags,
+                                   const char *user_config,
+                                   const char *properties = nullptr)
+      : supla_device_channel(device, 1, 0, type, func, 0, 0, 0, 0, nullptr,
+                             nullptr, nullptr, false, flags,
+                             empty_channel_value, 0, nullptr, user_config,
+                             properties, nullptr) {}
+
+ protected:
+  unsigned char get_protocol_version(void) override { return 29; }
+};
 
 TSD_DeviceCalCfgRequest request(_supla_int_t command) {
   TSD_DeviceCalCfgRequest result = {};
@@ -687,6 +705,114 @@ TEST(ChannelConfigSyncCoordinatorTest, passesDeviceToFinishedCallback) {
   });
 
   EXPECT_EQ(&device, finished_device);
+}
+
+TEST(ChannelConfigSyncCoordinatorTest, sendsRelayWeeklyScheduleWhenAvailable) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  const char *user_config =
+      "{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"START_ON\","
+      "\"relayModeDurationS\":60,\"relayOppositeModeDurationS\":30}},"
+      "\"quarters\":[1]}}";
+  DeviceChannelWithProtocolVersion channel(
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH, flags,
+      user_config);
+  std::vector<TSDS_SetChannelConfig> configs;
+
+  ASSERT_TRUE(channel.prepare_config_for_device(&configs));
+  ASSERT_EQ(2U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, configs[1].ConfigType);
+  ASSERT_EQ(sizeof(TChannelConfig_WeeklySchedule), configs[1].ConfigSize);
+
+  auto *schedule = reinterpret_cast<TChannelConfig_WeeklySchedule *>(
+      configs[1].Config);
+  EXPECT_EQ(SUPLA_RELAY_MODE_START_ON, schedule->Program[0].Mode);
+  EXPECT_EQ(60, schedule->Program[0].RelayModeDurationS);
+  EXPECT_EQ(30, schedule->Program[0].RelayOppositeModeDurationS);
+  EXPECT_EQ(1, schedule->Quarters[0]);
+}
+
+TEST(ChannelConfigSyncCoordinatorTest,
+     sendsActionTriggerWeeklyScheduleWhenAvailable) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  const char *user_config =
+      "{\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"LOCKED\"}},"
+      "\"quarters\":[1]}}";
+  DeviceChannelWithProtocolVersion channel(
+      &device, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+      SUPLA_CHANNELFNC_ACTIONTRIGGER, flags, user_config);
+  std::vector<TSDS_SetChannelConfig> configs;
+
+  ASSERT_TRUE(channel.prepare_config_for_device(&configs));
+  ASSERT_EQ(2U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, configs[1].ConfigType);
+  ASSERT_EQ(sizeof(TChannelConfig_WeeklySchedule), configs[1].ConfigSize);
+
+  auto *schedule = reinterpret_cast<TChannelConfig_WeeklySchedule *>(
+      configs[1].Config);
+  EXPECT_EQ(SUPLA_BUTTON_MODE_LOCKED, schedule->Program[0].Mode);
+  EXPECT_EQ(1, schedule->Quarters[0]);
+}
+
+TEST(ChannelConfigSyncCoordinatorTest, skipsUnavailableWeeklySchedule) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  DeviceChannelWithProtocolVersion missing_config(
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH, flags,
+      "{}");
+  DeviceChannelWithProtocolVersion unsupported_function(
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_DIMMER, flags,
+      "{\"weeklySchedule\":{\"quarters\":[1]}}");
+  DeviceChannelWithProtocolVersion missing_flag(
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE,
+      "{\"weeklySchedule\":{\"quarters\":[1]}}");
+  std::vector<TSDS_SetChannelConfig> configs;
+
+  ASSERT_TRUE(missing_config.prepare_config_for_device(&configs));
+  ASSERT_EQ(1U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+
+  ASSERT_TRUE(unsupported_function.prepare_config_for_device(&configs));
+  ASSERT_EQ(1U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+
+  ASSERT_TRUE(missing_flag.prepare_config_for_device(&configs));
+  ASSERT_EQ(1U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+}
+
+TEST(ChannelConfigSyncCoordinatorTest,
+     sendsStaircaseTimerWeeklyAndExtendedConfigs) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  const char *user_config =
+      "{\"relayTimeMs\":1000,\"overcurrentThreshold\":4,"
+      "\"weeklySchedule\":{\"programSettings\":{\"1\":{\"mode\":\"START_ON\"}},"
+      "\"quarters\":[1]}}";
+  DeviceChannelWithProtocolVersion channel(
+      &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_STAIRCASETIMER,
+      flags, user_config, "{\"overcurrentMaxAllowed\":3}");
+  std::vector<TSDS_SetChannelConfig> configs;
+
+  ASSERT_TRUE(channel.prepare_config_for_device(&configs));
+  ASSERT_EQ(3U, configs.size());
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, configs[1].ConfigType);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_EXTENDED, configs[2].ConfigType);
+  EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), configs[1].ConfigSize);
+  EXPECT_EQ(sizeof(TChannelConfig_PowerSwitch), configs[2].ConfigSize);
 }
 
 }  // namespace testing
