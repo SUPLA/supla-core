@@ -265,10 +265,16 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ((unsigned int)16, sizeof(TAction_ShadingSystem_Parameters));
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_AT_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_Relay_Parameters));
 
   EXPECT_LE(sizeof(TAction_ShadingSystem_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+  EXPECT_LE(sizeof(TAction_AT_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+  EXPECT_LE(sizeof(TAction_Relay_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
 
   EXPECT_EQ(sizeof(TSC_GetChannelValueResult), 1055);
@@ -353,6 +359,48 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_LE(sizeof(TValve_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+}
+
+TEST_F(ProtoTest, actionModeNames) {
+  struct ModeCase {
+    int action_id;
+    const char *name;
+    unsigned char expected_mode;
+  };
+  const ModeCase cases[] = {
+      {ACTION_SET_AT_PARAMETERS, "NOT_SET", SUPLA_BUTTON_MODE_NOT_SET},
+      {ACTION_SET_AT_PARAMETERS, "LOCKED", SUPLA_BUTTON_MODE_LOCKED},
+      {ACTION_SET_RELAY_PARAMETERS, "NOT_SET", SUPLA_RELAY_MODE_NOT_SET},
+      {ACTION_SET_RELAY_PARAMETERS, "START_ON", SUPLA_RELAY_MODE_START_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "START_OFF", SUPLA_RELAY_MODE_START_OFF},
+      {ACTION_SET_RELAY_PARAMETERS, "FORCED_ON", SUPLA_RELAY_MODE_FORCED_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "FORCED_OFF", SUPLA_RELAY_MODE_FORCED_OFF},
+      {ACTION_SET_RELAY_PARAMETERS, "AUTOMATIC", SUPLA_RELAY_MODE_AUTOMATIC},
+  };
+
+  for (const ModeCase &test_case : cases) {
+    unsigned char mode = 255;
+    EXPECT_TRUE(supla_action_mode_from_text(test_case.action_id,
+                                            test_case.name, &mode));
+    EXPECT_EQ(mode, test_case.expected_mode);
+  }
+
+  unsigned char mode = 255;
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS,
+                                           "AUTOMATIC", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS,
+                                           "LOCKED", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS,
+                                           "automatic", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS, "5",
+                                           &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RGBW_PARAMETERS,
+                                           "NOT_SET", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS, nullptr,
+                                           &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS, "LOCKED",
+                                           nullptr));
+  EXPECT_EQ(mode, 255);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {

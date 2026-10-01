@@ -154,6 +154,14 @@ supla_ipc_ctrl::supla_ipc_ctrl(
       new supla_action_cg_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
   add_command(
       new supla_action_command(socket_adapter, ACTION_HVAC_SET_PARAMETERS));
+  add_command(
+      new supla_action_cg_command(socket_adapter, ACTION_SET_AT_PARAMETERS));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_SET_AT_PARAMETERS));
+  add_command(new supla_action_cg_command(socket_adapter,
+                                          ACTION_SET_RELAY_PARAMETERS));
+  add_command(
+      new supla_action_command(socket_adapter, ACTION_SET_RELAY_PARAMETERS));
 
   add_command(new supla_action_cg_command(socket_adapter,
                                           ACTION_SWITCH_TO_MANUAL_MODE));

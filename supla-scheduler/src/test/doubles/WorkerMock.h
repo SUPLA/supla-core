@@ -54,6 +54,8 @@ class WorkerMock : public s_abstract_worker {
                     bool tilt_as_delta));
   MOCK_METHOD0(ipcc_action_switch_to_program_mode, bool(void));
   MOCK_METHOD0(ipcc_action_switch_to_manual_mode, bool(void));
+  MOCK_METHOD1(ipcc_action_set_at_parameters, bool(unsigned char mode));
+  MOCK_METHOD1(ipcc_action_set_relay_parameters, bool(unsigned char mode));
   MOCK_METHOD3(ipcc_get_hvac_value,
                bool(THVACValue *value, int *temperature, int *humidity));
   MOCK_METHOD1(ipcc_get_relay_value, bool(TRelayChannel_Value *value));

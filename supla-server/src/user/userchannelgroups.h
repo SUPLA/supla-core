@@ -80,6 +80,10 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool action_open_close(const supla_caller &caller, int GroupID);
   bool action_hvac_set_parameters(const supla_caller &caller, int group_id,
                                   const supla_action_hvac_parameters *params);
+  bool action_set_at_parameters(const supla_caller &caller, int group_id,
+                                const supla_action_mode_parameters *params);
+  bool action_set_relay_parameters(const supla_caller &caller, int group_id,
+                                   const supla_action_mode_parameters *params);
   bool action_switch_to_program_mode(const supla_caller &caller, int group_id);
   bool action_switch_to_manual_mode(const supla_caller &caller, int group_id);
   bool action_hvac_set_temperatures(

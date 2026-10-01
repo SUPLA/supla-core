@@ -112,6 +112,20 @@ bool supla_action_cg_command::action_hvac_set_parameters(
       get_caller(), group_id, params);
 }
 
+bool supla_action_cg_command::action_set_at_parameters(
+    supla_user *user, int group_id,
+    const supla_action_mode_parameters *params) {
+  return user->get_channel_groups()->action_set_at_parameters(
+      get_caller(), group_id, params);
+}
+
+bool supla_action_cg_command::action_set_relay_parameters(
+    supla_user *user, int group_id,
+    const supla_action_mode_parameters *params) {
+  return user->get_channel_groups()->action_set_relay_parameters(
+      get_caller(), group_id, params);
+}
+
 bool supla_action_cg_command::action_switch_to_manual_mode(supla_user *user,
                                                            int group_id) {
   return user->get_channel_groups()->action_switch_to_manual_mode(

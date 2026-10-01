@@ -18,6 +18,7 @@
 
 #include "ActionConfigTest.h"
 
+#include "actions/action_mode_parameters.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 
@@ -89,6 +90,70 @@ TEST_F(ActionConfigTest, actionId) {
   EXPECT_EQ(config.get_action_id(), 0);
   config.set_action_id(ACTION_SHUT);
   EXPECT_EQ(config.get_action_id(), ACTION_SHUT);
+}
+
+TEST_F(ActionConfigTest, jsonModeParameters) {
+  struct ModeCase {
+    int action_id;
+    const char *json;
+    unsigned char expected_mode;
+  };
+  const ModeCase cases[] = {
+      {ACTION_SET_AT_PARAMETERS, "{\"mode\":\"NOT_SET\"}",
+       SUPLA_BUTTON_MODE_NOT_SET},
+      {ACTION_SET_AT_PARAMETERS, "{\"mode\":\"LOCKED\"}",
+       SUPLA_BUTTON_MODE_LOCKED},
+      {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"NOT_SET\"}",
+       SUPLA_RELAY_MODE_NOT_SET},
+      {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"START_ON\"}",
+       SUPLA_RELAY_MODE_START_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"START_OFF\"}",
+       SUPLA_RELAY_MODE_START_OFF},
+      {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"FORCED_ON\"}",
+       SUPLA_RELAY_MODE_FORCED_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"FORCED_OFF\"}",
+       SUPLA_RELAY_MODE_FORCED_OFF},
+      {ACTION_SET_RELAY_PARAMETERS,
+       "{\"mode\":\"AUTOMATIC\",\"sourceChannelId\":42,"
+       "\"sourceDeviceId\":24}",
+       SUPLA_RELAY_MODE_AUTOMATIC},
+  };
+
+  for (const ModeCase &test_case : cases) {
+    config.set_action_id(test_case.action_id);
+    config.apply_json_params(test_case.json);
+    supla_abstract_action_parameters *params = config.get_parameters();
+    ASSERT_NE(params, nullptr);
+    supla_action_mode_parameters *mode =
+        dynamic_cast<supla_action_mode_parameters *>(params);
+    ASSERT_NE(mode, nullptr);
+    EXPECT_EQ(mode->get_mode(), test_case.expected_mode);
+    delete params;
+  }
+  EXPECT_EQ(config.get_source_channel_id(), 42);
+  EXPECT_EQ(config.get_source_device_id(), 24);
+}
+
+TEST_F(ActionConfigTest, rejectsInvalidJsonModeParameters) {
+  const char *invalid_json[] = {
+      "{\"mode\":0}",          "{\"mode\":\"locked\"}",
+      "{\"mode\":\"AUTOMATIC\"}", "{\"mode\":null}",
+  };
+  for (const char *json : invalid_json) {
+    supla_action_config invalid;
+    invalid.set_action_id(ACTION_SET_AT_PARAMETERS);
+    invalid.apply_json_params(json);
+    supla_abstract_action_parameters *params = invalid.get_parameters();
+    EXPECT_EQ(params, nullptr);
+    delete params;
+  }
+
+  supla_action_config invalid;
+  invalid.set_action_id(ACTION_SET_RELAY_PARAMETERS);
+  invalid.apply_json_params("{\"mode\":\"LOCKED\"}");
+  supla_abstract_action_parameters *params = invalid.get_parameters();
+  EXPECT_EQ(params, nullptr);
+  delete params;
 }
 
 TEST_F(ActionConfigTest, subjectType) {

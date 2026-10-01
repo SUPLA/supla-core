@@ -69,6 +69,8 @@ class ActionExecutorGmock : public supla_abstract_action_executor {
   MOCK_METHOD0(open_close_without_canceling_tasks, void(void));
   MOCK_METHOD1(forward_outside, void(int cap));
   MOCK_METHOD1(hvac_set_parameters, void(supla_action_hvac_parameters *params));
+  MOCK_METHOD1(set_at_parameters, void(supla_action_mode_parameters *params));
+  MOCK_METHOD1(set_relay_parameters, void(supla_action_mode_parameters *params));
   MOCK_METHOD0(switch_to_program_mode, void(void));
   MOCK_METHOD0(switch_to_manual_mode, void(void));
   MOCK_METHOD1(hvac_set_temperature,

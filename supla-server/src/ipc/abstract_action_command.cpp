@@ -57,6 +57,10 @@ const string supla_abstract_action_command::get_command_name(void) {
       return "ACTION-SHUT-PARTIALLY:";
     case ACTION_HVAC_SET_PARAMETERS:
       return "ACTION-HVAC-SET-PARAMETERS:";
+    case ACTION_SET_AT_PARAMETERS:
+      return "ACTION-SET-AT-PARAMETERS:";
+    case ACTION_SET_RELAY_PARAMETERS:
+      return "ACTION-SET-RELAY-PARAMETERS:";
     case ACTION_SWITCH_TO_MANUAL_MODE:
       return "ACTION-SWITCH-TO-MANUAL-MODE:";
     case ACTION_SWITCH_TO_PROGRAM_MODE:
@@ -150,6 +154,26 @@ void supla_abstract_action_command::on_command_match(const char *params) {
       send_result("UNKNOWN:", channel_id);
     }
 
+    return;
+  }
+
+  if (action == ACTION_SET_AT_PARAMETERS ||
+      action == ACTION_SET_RELAY_PARAMETERS) {
+    int mode = -1;
+    int count = sscanf(params, "%i,%i,%i,%i", &user_id, &device_id,
+                       &channel_id, &mode);
+    if (count == 4 && user_id > 0 && device_id > 0 && channel_id > 0 &&
+        mode >= 0 && mode <= 255) {
+      supla_action_mode_parameters mode_params(mode);
+      bool result = action == ACTION_SET_AT_PARAMETERS
+                        ? action_set_at_parameters(user_id, device_id,
+                                                   channel_id, &mode_params)
+                        : action_set_relay_parameters(user_id, device_id,
+                                                      channel_id, &mode_params);
+      _send_result(result, channel_id);
+    } else {
+      send_result("UNKNOWN:", channel_id);
+    }
     return;
   }
 

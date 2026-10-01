@@ -88,6 +88,12 @@ jobject supla_action_id_to_jobject(JNIEnv *env, int action_id) {
     case ACTION_HVAC_SET_PARAMETERS:
       snprintf(enum_name, sizeof(enum_name), "SET_HVAC_PARAMETERS");
       break;
+    case ACTION_SET_AT_PARAMETERS:
+      snprintf(enum_name, sizeof(enum_name), "SET_AT_PARAMETERS");
+      break;
+    case ACTION_SET_RELAY_PARAMETERS:
+      snprintf(enum_name, sizeof(enum_name), "SET_RELAY_PARAMETERS");
+      break;
     case ACTION_SWITCH_TO_PROGRAM_MODE:
       snprintf(enum_name, sizeof(enum_name), "SWITCH_TO_PROGRAM_MODE");
       break;
@@ -176,6 +182,14 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
                                   unsigned _supla_int16_t *param_size,
                                   int *subject_type, int *subject_id) {
   jclass cls = env->FindClass("org/supla/android/lib/actions/ActionParameters");
+
+  jclass action_id_cls =
+      env->FindClass("org/supla/android/lib/actions/ActionId");
+  jobject action_id_obj =
+      supla_CallObjectMethod(env, cls, action_params, "getAction",
+                             "()Lorg/supla/android/lib/actions/ActionId;");
+  *action_id =
+      supla_CallIntMethod(env, action_id_cls, action_id_obj, "getValue");
 
   jclass ss_cls = env->FindClass(
       "org/supla/android/lib/actions/ShadingSystemActionParameters");
@@ -276,17 +290,71 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
 
     *param = hvac_param;
     *param_size = sizeof(TAction_HVAC_Parameters);
+  } else if (*action_id == ACTION_SET_AT_PARAMETERS ||
+             *action_id == ACTION_SET_RELAY_PARAMETERS) {
+    const bool is_at = *action_id == ACTION_SET_AT_PARAMETERS;
+    const char *class_name =
+        is_at ? "org/supla/android/lib/actions/AtActionParameters"
+              : "org/supla/android/lib/actions/RelayActionParameters";
+    const char *mode_class_name =
+        is_at ? "org/supla/android/data/source/remote/hvac/SuplaButtonMode"
+              : "org/supla/android/data/source/remote/hvac/SuplaRelayMode";
+    const char *mode_signature =
+        is_at ? "()Lorg/supla/android/data/source/remote/hvac/SuplaButtonMode;"
+              : "()Lorg/supla/android/data/source/remote/hvac/SuplaRelayMode;";
+    jclass mode_cls = env->FindClass(class_name);
+    if (!mode_cls) {
+      return;
+    }
+
+    if (!env->IsInstanceOf(action_params, mode_cls)) {
+      jclass exception_cls = env->FindClass("java/lang/IllegalArgumentException");
+      env->ThrowNew(exception_cls, "Invalid mode action parameters type");
+      return;
+    }
+
+    jobject mode_enum = supla_CallObjectMethod(
+        env, mode_cls, action_params, "getMode", mode_signature);
+    if (env->ExceptionCheck()) {
+      return;
+    }
+    if (!mode_enum) {
+      jclass exception_cls = env->FindClass("java/lang/IllegalArgumentException");
+      env->ThrowNew(exception_cls, "Mode is required");
+      return;
+    }
+    jint mode = supla_GetEnumValue(env, mode_enum, mode_class_name);
+    env->DeleteLocalRef(mode_enum);
+    if (env->ExceptionCheck()) {
+      return;
+    }
+    if ((is_at && mode != SUPLA_BUTTON_MODE_NOT_SET &&
+         mode != SUPLA_BUTTON_MODE_LOCKED) ||
+        (!is_at && mode != SUPLA_RELAY_MODE_NOT_SET &&
+         mode != SUPLA_RELAY_MODE_START_ON &&
+         mode != SUPLA_RELAY_MODE_START_OFF &&
+         mode != SUPLA_RELAY_MODE_FORCED_ON &&
+         mode != SUPLA_RELAY_MODE_FORCED_OFF &&
+         mode != SUPLA_RELAY_MODE_AUTOMATIC)) {
+      jclass exception_cls = env->FindClass("java/lang/IllegalArgumentException");
+      env->ThrowNew(exception_cls, "Unsupported mode for this action");
+      return;
+    }
+
+    if (is_at) {
+      TAction_AT_Parameters *at =
+          (TAction_AT_Parameters *)calloc(1, sizeof(TAction_AT_Parameters));
+      at->Mode = mode;
+      *param = at;
+      *param_size = sizeof(TAction_AT_Parameters);
+    } else {
+      TAction_Relay_Parameters *relay = (TAction_Relay_Parameters *)calloc(
+          1, sizeof(TAction_Relay_Parameters));
+      relay->Mode = mode;
+      *param = relay;
+      *param_size = sizeof(TAction_Relay_Parameters);
+    }
   }
-
-  jclass action_id_cls =
-      env->FindClass("org/supla/android/lib/actions/ActionId");
-
-  jobject action_id_obj =
-      supla_CallObjectMethod(env, cls, action_params, "getAction",
-                             "()Lorg/supla/android/lib/actions/ActionId;");
-
-  *action_id =
-      supla_CallIntMethod(env, action_id_cls, action_id_obj, "getValue");
 
   jobject subject_type_obj =
       supla_CallObjectMethod(env, cls, action_params, "getSubjectType",
@@ -320,6 +388,11 @@ Java_org_supla_android_lib_SuplaClient_scExecuteAction(JNIEnv *env,
 
     getActionExecutionCallParams(env, action_params, &action_id, &param,
                                  &param_size, &subject_type, &subject_id);
+
+    if (env->ExceptionCheck()) {
+      free(param);
+      return JNI_FALSE;
+    }
 
     if (supla_client_execute_action(supla_client, action_id, param, param_size,
                                     subject_type, subject_id) > 0) {

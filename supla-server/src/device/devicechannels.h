@@ -27,6 +27,7 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_mode_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "channel_availability_status.h"
 #include "device/abstract_device_dao.h"
@@ -224,6 +225,12 @@ class supla_device_channels {
   bool action_hvac_set_parameters(const supla_caller &caller, int channel_id,
                                   int group_id, unsigned char eol,
                                   const supla_action_hvac_parameters *params);
+  bool action_set_at_parameters(const supla_caller &caller, int channel_id,
+                                int group_id, unsigned char eol,
+                                const supla_action_mode_parameters *params);
+  bool action_set_relay_parameters(const supla_caller &caller, int channel_id,
+                                   int group_id, unsigned char eol,
+                                   const supla_action_mode_parameters *params);
   bool action_switch_to_manual_mode(const supla_caller &caller, int channel_id,
                                     int group_id, unsigned char eol);
   bool action_switch_to_program_mode(const supla_caller &caller, int channel_id,

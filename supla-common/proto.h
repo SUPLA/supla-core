@@ -1646,6 +1646,8 @@ typedef struct {
 #define ACTION_SWITCH_TO_MANUAL_MODE 232
 #define ACTION_HVAC_SET_TEMPERATURES 233
 #define ACTION_HVAC_SET_TEMPERATURE 234
+#define ACTION_SET_AT_PARAMETERS 236
+#define ACTION_SET_RELAY_PARAMETERS 237
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1685,6 +1687,16 @@ typedef struct {
       SetpointTemperatureCool;    // * 0.01 - Celcius degree used for coolingx
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_BUTTON_MODE_
+  char Reserved[15];
+} TAction_AT_Parameters;
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_RELAY_MODE_
+  char Reserved[15];
+} TAction_Relay_Parameters;
 
 typedef struct {
   _supla_int_t ActionId;
@@ -4069,6 +4081,8 @@ char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
     _supla_int_t func);
 unsigned char PROTO_ICACHE_FLASH
 supla_weekly_schedule_get_program_mode_type(_supla_int_t func);
+char PROTO_ICACHE_FLASH supla_action_mode_from_text(
+    _supla_int_t action_id, const char *name, unsigned char *mode);
 
 #ifdef __cplusplus
 }

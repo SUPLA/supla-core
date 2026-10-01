@@ -384,6 +384,41 @@ TEST_F(ActionCommandTest, HvacSetParameters) {
                         "OK:30\n");
 }
 
+TEST_F(ActionCommandTest, SetAtParameters) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters(10, 20, 30, NotNull()))
+      .WillOnce([](int, int, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_NOT_SET);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-SET-AT-PARAMETERS:10,20,30,0\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, SetRelayParameters) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_relay_parameters(10, 20, 30, NotNull()))
+      .WillOnce([](int, int, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_RELAY_MODE_AUTOMATIC);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-SET-RELAY-PARAMETERS:10,20,30,5\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, SetRelayParametersWithoutMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_relay_parameters).Times(0);
+  commandProcessingTest("ACTION-SET-RELAY-PARAMETERS:10,20,30\n",
+                        "UNKNOWN:30\n");
+}
+
 TEST_F(ActionCommandTest, SwitchToManualMode) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SWITCH_TO_MANUAL_MODE);
   cmd = &c;

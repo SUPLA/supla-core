@@ -299,7 +299,7 @@ bool supla_device_channel::is_hidden(void) { return hidden; }
 
 unsigned _supla_int64_t supla_device_channel::get_flags() {
   lock();
-  int result = flags;
+  unsigned _supla_int64_t result = flags;
   unlock();
   return result;
 }

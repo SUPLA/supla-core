@@ -21,6 +21,7 @@
 #include <list>
 
 #include "action.h"
+#include "action_set_mode.h"
 #include "action_switch_to_manual_mode.h"
 #include "action_switch_to_program_mode.h"
 #include "doubles/WorkerMock.h"
@@ -45,6 +46,26 @@ class TestableSwitchToManualMode
   explicit TestableSwitchToManualMode(s_abstract_worker *worker)
       : s_worker_action_switch_to_manual_mode(worker) {}
 
+  bool is_success() { return result_success(NULL); }
+};
+
+class TestableSetAtParameters : public s_worker_action_set_at_parameters {
+ public:
+  explicit TestableSetAtParameters(s_abstract_worker *worker)
+      : s_worker_action_set_at_parameters(worker) {}
+
+  bool is_allowed() { return is_action_allowed(); }
+  bool perform() { return do_action(); }
+  bool is_success() { return result_success(NULL); }
+};
+
+class TestableSetRelayParameters : public s_worker_action_set_relay_parameters {
+ public:
+  explicit TestableSetRelayParameters(s_abstract_worker *worker)
+      : s_worker_action_set_relay_parameters(worker) {}
+
+  bool is_allowed() { return is_action_allowed(); }
+  bool perform() { return do_action(); }
   bool is_success() { return result_success(NULL); }
 };
 
@@ -166,6 +187,47 @@ TEST_F(ActionTest, switchToModeChecksRelayAndButtonFlags) {
   EXPECT_TRUE(manual.is_success());
   EXPECT_FALSE(program.is_success());
   EXPECT_FALSE(program.is_success());
+}
+
+TEST_F(ActionTest, setAtParametersUsesButtonMode) {
+  WorkerMock worker(NULL);
+  EXPECT_CALL(worker, get_channel_func())
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_CALL(worker, get_action_param())
+      .WillRepeatedly(Return("{\"mode\":\"LOCKED\"}"));
+  EXPECT_CALL(worker, ipcc_action_set_at_parameters(SUPLA_BUTTON_MODE_LOCKED))
+      .WillOnce(Return(true));
+  EXPECT_CALL(worker, ipcc_get_action_trigger_value(_))
+      .WillOnce([](TActionTriggerProperties *value) {
+        value->ButtonMode = SUPLA_BUTTON_MODE_LOCKED;
+        return true;
+      });
+
+  TestableSetAtParameters action(&worker);
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_TRUE(action.perform());
+  EXPECT_TRUE(action.is_success());
+}
+
+TEST_F(ActionTest, setRelayParametersUsesRelayMode) {
+  WorkerMock worker(NULL);
+  EXPECT_CALL(worker, get_channel_func())
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_LIGHTSWITCH));
+  EXPECT_CALL(worker, get_action_param())
+      .WillRepeatedly(Return("{\"mode\":\"AUTOMATIC\"}"));
+  EXPECT_CALL(worker,
+              ipcc_action_set_relay_parameters(SUPLA_RELAY_MODE_AUTOMATIC))
+      .WillOnce(Return(true));
+  EXPECT_CALL(worker, ipcc_get_relay_value(_))
+      .WillOnce([](TRelayChannel_Value *value) {
+        value->RelayMode = SUPLA_RELAY_MODE_AUTOMATIC;
+        return true;
+      });
+
+  TestableSetRelayParameters action(&worker);
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_TRUE(action.perform());
+  EXPECT_TRUE(action.is_success());
 }
 
 }  // namespace testing

@@ -306,6 +306,20 @@ void supla_abstract_action_executor::execute_action(
         }
       }
       break;
+    case ACTION_SET_AT_PARAMETERS:
+    case ACTION_SET_RELAY_PARAMETERS:
+      if (params) {
+        supla_action_mode_parameters *mode =
+            dynamic_cast<supla_action_mode_parameters *>(params);
+        if (mode) {
+          if (action_id == ACTION_SET_AT_PARAMETERS) {
+            set_at_parameters(mode);
+          } else {
+            set_relay_parameters(mode);
+          }
+        }
+      }
+      break;
     case ACTION_SWITCH_TO_MANUAL_MODE:
       switch_to_manual_mode();
       break;

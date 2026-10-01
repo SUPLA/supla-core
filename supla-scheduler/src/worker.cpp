@@ -164,6 +164,18 @@ bool s_worker::ipcc_action_switch_to_manual_mode(void) {
       get_params()->channel_id, get_params()->channel_group_id);
 }
 
+bool s_worker::ipcc_action_set_at_parameters(unsigned char mode) {
+  return get_ipcc()->action_set_at_parameters(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, mode);
+}
+
+bool s_worker::ipcc_action_set_relay_parameters(unsigned char mode) {
+  return get_ipcc()->action_set_relay_parameters(
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, mode);
+}
+
 bool s_worker::ipcc_get_relay_value(TRelayChannel_Value *value) {
   return get_ipcc()->get_relay_value(get_params()->user_id,
                                      get_params()->iodevice_id,

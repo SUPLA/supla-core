@@ -41,6 +41,12 @@ class supla_action_cg_command : public supla_abstract_action_cg_command {
   virtual bool action_hvac_set_parameters(
       supla_user *user, int group_id,
       const supla_action_hvac_parameters *params);
+  virtual bool action_set_at_parameters(
+      supla_user *user, int group_id,
+      const supla_action_mode_parameters *params);
+  virtual bool action_set_relay_parameters(
+      supla_user *user, int group_id,
+      const supla_action_mode_parameters *params);
   virtual bool action_switch_to_manual_mode(supla_user *user, int group_id);
   virtual bool action_switch_to_program_mode(supla_user *user, int group_id);
   virtual bool action_hvac_set_temperature(

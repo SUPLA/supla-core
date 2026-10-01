@@ -1398,6 +1398,78 @@ bool supla_device_channels::action_hvac_set_parameters(
                      });
 }
 
+bool supla_device_channels::action_set_at_parameters(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_mode_parameters *params) {
+  if (!params) {
+    return false;
+  }
+
+  bool result = false;
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    unsigned char mode = params->get_mode();
+    if (channel->get_func() != SUPLA_CHANNELFNC_ACTIONTRIGGER ||
+        !(channel->get_flags() & SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED) ||
+        (mode != SUPLA_BUTTON_MODE_NOT_SET &&
+         mode != SUPLA_BUTTON_MODE_LOCKED)) {
+      return;
+    }
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ((TActionTriggerProperties *)value)->ButtonMode = mode;
+    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    result = true;
+  });
+
+  return result;
+}
+
+bool supla_device_channels::action_set_relay_parameters(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_mode_parameters *params) {
+  if (!params) {
+    return false;
+  }
+
+  bool result = false;
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    if (!supla_weekly_schedule_is_relay_function(channel->get_func())) {
+      return;
+    }
+
+    unsigned char mode = params->get_mode();
+    unsigned _supla_int64_t flags = channel->get_flags();
+    bool supported = false;
+    switch (mode) {
+      case SUPLA_RELAY_MODE_NOT_SET:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_START_ON:
+      case SUPLA_RELAY_MODE_START_OFF:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_FORCED_ON:
+      case SUPLA_RELAY_MODE_FORCED_OFF:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_AUTOMATIC:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED;
+        break;
+    }
+
+    if (!supported) {
+      return;
+    }
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ((TRelayChannel_Value *)value)->RelayMode = mode;
+    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    result = true;
+  });
+
+  return result;
+}
+
 bool supla_device_channels::hp_action(
     int channel_id, bool *function_match,
     function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>

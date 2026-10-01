@@ -46,6 +46,12 @@ class ActionCgCommandMock : public supla_abstract_action_cg_command {
   MOCK_METHOD3(action_hvac_set_parameters,
                bool(supla_user *user, int group_id,
                     const supla_action_hvac_parameters *params));
+  MOCK_METHOD3(action_set_at_parameters,
+               bool(supla_user *user, int group_id,
+                    const supla_action_mode_parameters *params));
+  MOCK_METHOD3(action_set_relay_parameters,
+               bool(supla_user *user, int group_id,
+                    const supla_action_mode_parameters *params));
   MOCK_METHOD2(action_switch_to_manual_mode,
                bool(supla_user *user, int group_id));
   MOCK_METHOD2(action_switch_to_program_mode,

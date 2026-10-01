@@ -29,6 +29,7 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_mode_parameters.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -132,6 +133,8 @@ class supla_abstract_action_executor {
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
   virtual void hvac_set_parameters(supla_action_hvac_parameters *params) = 0;
+  virtual void set_at_parameters(supla_action_mode_parameters *params) = 0;
+  virtual void set_relay_parameters(supla_action_mode_parameters *params) = 0;
   virtual void switch_to_program_mode(void) = 0;
   virtual void switch_to_manual_mode(void) = 0;
   virtual void hvac_set_temperature(

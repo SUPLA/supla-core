@@ -111,6 +111,8 @@ class ActionExecutorMock
   virtual void open_close_without_canceling_tasks(void);
   virtual void forward_outside(int cap);
   virtual void hvac_set_parameters(supla_action_hvac_parameters *params);
+  virtual void set_at_parameters(supla_action_mode_parameters *params);
+  virtual void set_relay_parameters(supla_action_mode_parameters *params);
   virtual void switch_to_program_mode(void);
   virtual void switch_to_manual_mode(void);
   virtual void hvac_set_temperature(

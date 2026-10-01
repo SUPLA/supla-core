@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "actions/action_config.h"
+#include "actions/action_mode_parameters.h"
 #include "device/devicechannels.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/device/DeviceDaoMock.h"
@@ -347,6 +348,76 @@ TEST(DeviceChannelsSwitchToModeTest, readsActionTriggerValue) {
   TActionTriggerProperties actual = {};
   EXPECT_TRUE(channels->get_action_trigger_value(89, &actual));
   EXPECT_EQ(actual.Flags, SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED);
+}
+
+TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedActionTriggerModes) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                                  SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED);
+  supla_action_mode_parameters not_set(SUPLA_BUTTON_MODE_NOT_SET);
+  supla_action_mode_parameters locked(SUPLA_BUTTON_MODE_LOCKED);
+  supla_action_mode_parameters invalid(2);
+
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &not_set));
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &locked));
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &invalid));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, rejectsUnsupportedActionTrigger) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER, 0);
+  supla_action_mode_parameters locked(SUPLA_BUTTON_MODE_LOCKED);
+
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &locked));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedRelayModes) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED);
+  supla_action_mode_parameters not_set(SUPLA_RELAY_MODE_NOT_SET);
+  supla_action_mode_parameters start_on(SUPLA_RELAY_MODE_START_ON);
+  supla_action_mode_parameters forced_off(SUPLA_RELAY_MODE_FORCED_OFF);
+  supla_action_mode_parameters automatic(SUPLA_RELAY_MODE_AUTOMATIC);
+  supla_action_mode_parameters invalid(6);
+
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &not_set));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &start_on));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &forced_off));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &automatic));
+  EXPECT_FALSE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                     0, &invalid));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, rejectsUnsupportedRelayMode) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED);
+  supla_action_mode_parameters automatic(SUPLA_RELAY_MODE_AUTOMATIC);
+
+  EXPECT_FALSE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                     0, &automatic));
 }
 
 } /* namespace testing */

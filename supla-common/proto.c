@@ -477,3 +477,48 @@ char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
   return supla_weekly_schedule_get_program_mode_type(func) !=
          SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED;
 }
+
+char PROTO_ICACHE_FLASH supla_action_mode_from_text(
+    _supla_int_t action_id, const char *name, unsigned char *mode) {
+  typedef struct {
+    const char *name;
+    unsigned char mode;
+  } mode_mapping;
+
+  static const mode_mapping at_modes[] = {
+      {"NOT_SET", SUPLA_BUTTON_MODE_NOT_SET},
+      {"LOCKED", SUPLA_BUTTON_MODE_LOCKED},
+  };
+  static const mode_mapping relay_modes[] = {
+      {"NOT_SET", SUPLA_RELAY_MODE_NOT_SET},
+      {"START_ON", SUPLA_RELAY_MODE_START_ON},
+      {"START_OFF", SUPLA_RELAY_MODE_START_OFF},
+      {"FORCED_ON", SUPLA_RELAY_MODE_FORCED_ON},
+      {"FORCED_OFF", SUPLA_RELAY_MODE_FORCED_OFF},
+      {"AUTOMATIC", SUPLA_RELAY_MODE_AUTOMATIC},
+  };
+
+  const mode_mapping *mappings = NULL;
+  size_t count = 0;
+  size_t i = 0;
+  if (!name || !mode) {
+    return 0;
+  }
+
+  if (action_id == ACTION_SET_AT_PARAMETERS) {
+    mappings = at_modes;
+    count = sizeof(at_modes) / sizeof(at_modes[0]);
+  } else if (action_id == ACTION_SET_RELAY_PARAMETERS) {
+    mappings = relay_modes;
+    count = sizeof(relay_modes) / sizeof(relay_modes[0]);
+  }
+
+  for (i = 0; i < count; i++) {
+    if (strcmp(name, mappings[i].name) == 0) {
+      *mode = mappings[i].mode;
+      return 1;
+    }
+  }
+
+  return 0;
+}

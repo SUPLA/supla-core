@@ -345,6 +345,33 @@ TEST_F(ActionCgCommandTest, SetHvacParameters) {
                         "OK:30\n");
 }
 
+TEST_F(ActionCgCommandTest, SetAtParameters) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_LOCKED);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-SET-AT-PARAMETERS:10,30,1\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, SetRelayParameters) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_relay_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_RELAY_MODE_NOT_SET);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-SET-RELAY-PARAMETERS:10,30,0\n",
+                        "OK:30\n");
+}
+
 TEST_F(ActionCgCommandTest, SwitchToManualMode) {
   StrictMock<ActionCgCommandMock> c(socketAdapter,
                                     ACTION_SWITCH_TO_MANUAL_MODE);

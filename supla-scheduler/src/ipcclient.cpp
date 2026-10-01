@@ -76,6 +76,10 @@ const char cmd_cg_switch_to_program_mode[] =
     "ACTION-CG-SWITCH-TO-PROGRAM-MODE";
 const char cmd_cg_switch_to_manual_mode[] =
     "ACTION-CG-SWITCH-TO-MANUAL-MODE";
+const char cmd_set_at_parameters[] = "ACTION-SET-AT-PARAMETERS";
+const char cmd_cg_set_at_parameters[] = "ACTION-CG-SET-AT-PARAMETERS";
+const char cmd_set_relay_parameters[] = "ACTION-SET-RELAY-PARAMETERS";
+const char cmd_cg_set_relay_parameters[] = "ACTION-CG-SET-RELAY-PARAMETERS";
 
 const char cmd_turn_off[] = "ACTION-TURN-OFF";
 const char cmd_turn_on[] = "ACTION-TURN-ON";
@@ -526,6 +530,40 @@ bool ipc_client::action_switch_to_manual_mode(int user_id, int device_id,
                                               int channel_group_id) {
   return do_action(cmd_switch_to_manual_mode, cmd_cg_switch_to_manual_mode,
                    user_id, device_id, channel_id, channel_group_id);
+}
+
+bool ipc_client::action_set_mode(const char *cmd, const char *cmd_group,
+                                 int user_id, int device_id, int channel_id,
+                                 int channel_group_id, unsigned char mode) {
+  if (!ipc_connect()) return false;
+
+  if (channel_group_id) {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%u\n", cmd_group, user_id,
+             channel_group_id, mode);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%u\n", cmd, user_id,
+             device_id, channel_id, mode);
+  }
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+  return check_set_result();
+}
+
+bool ipc_client::action_set_at_parameters(int user_id, int device_id,
+                                          int channel_id, int channel_group_id,
+                                          unsigned char mode) {
+  return action_set_mode(cmd_set_at_parameters, cmd_cg_set_at_parameters,
+                         user_id, device_id, channel_id, channel_group_id,
+                         mode);
+}
+
+bool ipc_client::action_set_relay_parameters(int user_id, int device_id,
+                                             int channel_id,
+                                             int channel_group_id,
+                                             unsigned char mode) {
+  return action_set_mode(cmd_set_relay_parameters, cmd_cg_set_relay_parameters,
+                         user_id, device_id, channel_id, channel_group_id,
+                         mode);
 }
 
 bool ipc_client::action_turn_on(int user_id, int device_id, int channel_id,

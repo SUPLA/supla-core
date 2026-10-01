@@ -198,6 +198,32 @@ bool supla_action_command::action_hvac_set_parameters(
   return false;
 }
 
+bool supla_action_command::action_set_at_parameters(
+    int user_id, int device_id, int channel_id,
+    const supla_action_mode_parameters *params) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device) {
+    call_before(device, channel_id);
+    return device->get_channels()->action_set_at_parameters(
+        get_caller(), channel_id, 0, 1, params);
+  }
+  return false;
+}
+
+bool supla_action_command::action_set_relay_parameters(
+    int user_id, int device_id, int channel_id,
+    const supla_action_mode_parameters *params) {
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device) {
+    call_before(device, channel_id);
+    return device->get_channels()->action_set_relay_parameters(
+        get_caller(), channel_id, 0, 1, params);
+  }
+  return false;
+}
+
 bool supla_action_command::action_switch_to_manual_mode(int user_id,
                                                         int device_id,
                                                         int channel_id) {

@@ -256,9 +256,15 @@ static_assert((unsigned int)901 == sizeof(TCS_ActionWithAuth));
 static_assert((unsigned int)13 == sizeof(TSC_ActionExecutionResult));
 static_assert((unsigned int)16 == sizeof(TAction_ShadingSystem_Parameters));
 static_assert((unsigned int)16 == sizeof(TAction_RGBW_Parameters));
+static_assert((unsigned int)16 == sizeof(TAction_AT_Parameters));
+static_assert((unsigned int)16 == sizeof(TAction_Relay_Parameters));
 static_assert(sizeof(TAction_ShadingSystem_Parameters) <=
               (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
 static_assert(sizeof(TAction_RGBW_Parameters) <=
+              (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+static_assert(sizeof(TAction_AT_Parameters) <=
+              (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+static_assert(sizeof(TAction_Relay_Parameters) <=
               (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
 static_assert(sizeof(TCS_GetChannelValueWithAuth) == 394);
 static_assert(sizeof(TDS_RegisterPushNotification) == 11);

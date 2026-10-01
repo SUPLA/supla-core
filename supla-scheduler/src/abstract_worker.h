@@ -68,6 +68,8 @@ class s_abstract_worker {
                                           bool tilt_as_delta) = 0;
   virtual bool ipcc_action_switch_to_program_mode(void) = 0;
   virtual bool ipcc_action_switch_to_manual_mode(void) = 0;
+  virtual bool ipcc_action_set_at_parameters(unsigned char mode) = 0;
+  virtual bool ipcc_action_set_relay_parameters(unsigned char mode) = 0;
   virtual bool ipcc_get_hvac_value(THVACValue *value, int *temperature,
                                    int *humidity) = 0;
   virtual bool ipcc_get_relay_value(TRelayChannel_Value *value) = 0;
