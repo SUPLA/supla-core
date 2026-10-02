@@ -836,4 +836,24 @@ TEST_F(ProtoTest, weeklyScheduleProgramModeTypes) {
 
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
+TEST_F(ProtoTest, suplan_frozen_wire_sizes) {
+  EXPECT_EQ(29, SUPLA_PROTO_VERSION);
+  EXPECT_EQ(0x80000, SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+  EXPECT_EQ(27U, sizeof(TSuplaSuplanPeerContext));
+  EXPECT_EQ(5U, sizeof(TSuplaSuplanResource));
+  EXPECT_EQ(6U, sizeof(TSuplaSuplanAclEntry));
+  EXPECT_EQ(520U, sizeof(TSD_SuplaDeviceIdentities));
+  EXPECT_EQ(5U, sizeof(TDS_SuplaDeviceIdentitiesResult));
+  EXPECT_EQ(568U, sizeof(TSDS_SuplaSetSuplanSourceAssociation));
+  EXPECT_EQ(65U, sizeof(TDS_SuplaSetSuplanSourceAssociationResult));
+  EXPECT_EQ(600U, sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+  EXPECT_EQ(32U, sizeof(TDS_SuplaSetSuplanDestinationAssociationResult));
+  EXPECT_EQ(6U, sizeof(TDS_SuplaEnsureResourceAccess));
+  EXPECT_EQ(2U, sizeof(TSD_SuplaEnsureResourceAccessResult));
+  EXPECT_EQ(8U, offsetof(TSD_SuplaDeviceIdentities, ChannelId));
+  EXPECT_EQ(34U, offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl));
+  EXPECT_EQ(66U,
+            offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources));
+}
+
 }  // namespace

@@ -366,3 +366,24 @@ static_assert(sizeof(TChannelAndTimerState_ExtendedValue) <=
               (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 static_assert(sizeof(TSC_GetChannelValueResult) == 1055);
 #endif
+
+// SupLAN public v1 frozen wire sizes.
+static_assert(sizeof(TSuplaSuplanPeerContext) == 27);
+static_assert(sizeof(TSuplaSuplanResource) == 5);
+static_assert(sizeof(TSuplaSuplanAclEntry) == 6);
+static_assert(sizeof(TSD_SuplaDeviceIdentities) == 520);
+static_assert(sizeof(TDS_SuplaDeviceIdentitiesResult) == 5);
+static_assert(sizeof(TSDS_SuplaSetSuplanSourceAssociation) == 568);
+static_assert(sizeof(TDS_SuplaSetSuplanSourceAssociationResult) == 65);
+static_assert(sizeof(TSDS_SuplaSetSuplanDestinationAssociation) == 600);
+static_assert(sizeof(TDS_SuplaSetSuplanDestinationAssociationResult) == 32);
+static_assert(sizeof(TDS_SuplaEnsureResourceAccess) == 6);
+static_assert(sizeof(TSD_SuplaEnsureResourceAccessResult) == 2);
+static_assert(offsetof(TSD_SuplaDeviceIdentities, ChannelId) == 8);
+static_assert(offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl) == 34);
+static_assert(offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources) ==
+              66);
+#ifdef SUPLA_DEVICE
+static_assert(sizeof(TSDS_SuplaSetSuplanDestinationAssociation) ==
+              SUPLA_MAX_DATA_SIZE);
+#endif

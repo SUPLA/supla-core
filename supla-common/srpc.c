@@ -3,6 +3,7 @@
 
 #include "srpc.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1158,6 +1159,104 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               1, sizeof(TSD_DeviceCalCfgRequest));
         }
         break;
+      case SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES: {
+        TSD_SuplaDeviceIdentities *data =
+            (TSD_SuplaDeviceIdentities *)srpc->sdp.data;
+        if (srpc->sdp.data_size >=
+                offsetof(TSD_SuplaDeviceIdentities, ChannelId) &&
+            srpc->sdp.data_size <= sizeof(TSD_SuplaDeviceIdentities) &&
+            data->ChannelCount >= 0 &&
+            data->ChannelCount <= SUPLA_CHANNELMAXCOUNT &&
+            srpc->sdp.data_size ==
+                offsetof(TSD_SuplaDeviceIdentities, ChannelId) +
+                    data->ChannelCount * sizeof(data->ChannelId[0])) {
+          rd->data.sd_suplan_device_identities =
+              (TSD_SuplaDeviceIdentities *)calloc(
+                  1, sizeof(TSD_SuplaDeviceIdentities));
+        }
+        break;
+      }
+
+      case SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT:
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaDeviceIdentitiesResult)) {
+          rd->data.ds_suplan_device_identities_result =
+              (TDS_SuplaDeviceIdentitiesResult *)calloc(
+                  1, sizeof(TDS_SuplaDeviceIdentitiesResult));
+        }
+        break;
+
+      case SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION: {
+        TSDS_SuplaSetSuplanSourceAssociation *data =
+            (TSDS_SuplaSetSuplanSourceAssociation *)srpc->sdp.data;
+        if (srpc->sdp.data_size >=
+                offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl) &&
+            srpc->sdp.data_size <=
+                sizeof(TSDS_SuplaSetSuplanSourceAssociation) &&
+            data->AclEntryCount <= SUPLA_SUPLAN_MAX_ACL_ENTRIES &&
+            srpc->sdp.data_size ==
+                offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl) +
+                    data->AclEntryCount * sizeof(data->Acl[0])) {
+          rd->data.sd_set_suplan_source_association =
+              (TSDS_SuplaSetSuplanSourceAssociation *)calloc(
+                  1, sizeof(TSDS_SuplaSetSuplanSourceAssociation));
+        }
+        break;
+      }
+
+      case SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT:
+        if (srpc->sdp.data_size ==
+            sizeof(TDS_SuplaSetSuplanSourceAssociationResult)) {
+          rd->data.ds_set_suplan_source_association_result =
+              (TDS_SuplaSetSuplanSourceAssociationResult *)calloc(
+                  1, sizeof(TDS_SuplaSetSuplanSourceAssociationResult));
+        }
+        break;
+
+      case SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION: {
+        TSDS_SuplaSetSuplanDestinationAssociation *data =
+            (TSDS_SuplaSetSuplanDestinationAssociation *)srpc->sdp.data;
+        if (srpc->sdp.data_size >=
+                offsetof(TSDS_SuplaSetSuplanDestinationAssociation,
+                         Resources) &&
+            srpc->sdp.data_size <=
+                sizeof(TSDS_SuplaSetSuplanDestinationAssociation) &&
+            data->ResourceCount <= SUPLA_SUPLAN_MAX_ACL_ENTRIES &&
+            srpc->sdp.data_size ==
+                offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources) +
+                    data->ResourceCount * sizeof(data->Resources[0])) {
+          rd->data.sd_set_suplan_destination_association =
+              (TSDS_SuplaSetSuplanDestinationAssociation *)calloc(
+                  1, sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+        }
+        break;
+      }
+
+      case SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT:
+        if (srpc->sdp.data_size ==
+            sizeof(TDS_SuplaSetSuplanDestinationAssociationResult)) {
+          rd->data.ds_set_suplan_destination_association_result =
+              (TDS_SuplaSetSuplanDestinationAssociationResult *)calloc(
+                  1, sizeof(TDS_SuplaSetSuplanDestinationAssociationResult));
+        }
+        break;
+
+      case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS:
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaEnsureResourceAccess)) {
+          rd->data.ds_ensure_suplan_resource_access =
+              (TDS_SuplaEnsureResourceAccess *)calloc(
+                  1, sizeof(TDS_SuplaEnsureResourceAccess));
+        }
+        break;
+
+      case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT:
+        if (srpc->sdp.data_size ==
+            sizeof(TSD_SuplaEnsureResourceAccessResult)) {
+          rd->data.sd_ensure_suplan_resource_access_result =
+              (TSD_SuplaEnsureResourceAccessResult *)calloc(
+                  1, sizeof(TSD_SuplaEnsureResourceAccessResult));
+        }
+        break;
+
       case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
         call_with_no_data = 1;
         break;
@@ -1900,6 +1999,14 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
       return 25;
     case SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE:
       return 26;
+    case SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES:
+    case SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT:
+    case SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION:
+    case SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT:
+    case SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION:
+    case SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT:
+    case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS:
+    case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT:
     case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
       return 29;
   }
@@ -2459,6 +2566,99 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
       _srpc, SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, (char *)result,
       result->exists == 1 ? sizeof(TSD_FirmwareUpdate_UrlResult)
                           : sizeof(char));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_suplan_device_identities(
+    void *_srpc, TSD_SuplaDeviceIdentities *data) {
+  if (!data || data->ChannelCount < 0 ||
+      data->ChannelCount > SUPLA_CHANNELMAXCOUNT) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES,
+                         (char *)data,
+                         offsetof(TSD_SuplaDeviceIdentities, ChannelId) +
+                             data->ChannelCount * sizeof(data->ChannelId[0]));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_suplan_device_identities_result(
+    void *_srpc, TDS_SuplaDeviceIdentitiesResult *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+                         (char *)data, sizeof(TDS_SuplaDeviceIdentitiesResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_suplan_source_association(
+    void *_srpc, TSDS_SuplaSetSuplanSourceAssociation *data) {
+  if (!data || data->AclEntryCount > SUPLA_SUPLAN_MAX_ACL_ENTRIES) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION,
+                         (char *)data,
+                         offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl) +
+                             data->AclEntryCount * sizeof(data->Acl[0]));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_suplan_source_association_result(
+    void *_srpc, TDS_SuplaSetSuplanSourceAssociationResult *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT, (char *)data,
+      sizeof(TDS_SuplaSetSuplanSourceAssociationResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_suplan_destination_association(
+    void *_srpc, TSDS_SuplaSetSuplanDestinationAssociation *data) {
+  if (!data || data->ResourceCount > SUPLA_SUPLAN_MAX_ACL_ENTRIES) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, (char *)data,
+      offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources) +
+          data->ResourceCount * sizeof(data->Resources[0]));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_suplan_destination_association_result(
+    void *_srpc, TDS_SuplaSetSuplanDestinationAssociationResult *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+      (char *)data, sizeof(TDS_SuplaSetSuplanDestinationAssociationResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_access(
+    void *_srpc, TDS_SuplaEnsureResourceAccess *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS,
+                         (char *)data, sizeof(TDS_SuplaEnsureResourceAccess));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_ensure_suplan_resource_access_result(
+    void *_srpc, TSD_SuplaEnsureResourceAccessResult *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, (char *)data,
+      sizeof(TSD_SuplaEnsureResourceAccessResult));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_sync_done(void *_srpc) {

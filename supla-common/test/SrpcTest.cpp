@@ -3,6 +3,9 @@
 
 #include "SrpcTest.h"
 
+#include <stddef.h>
+
+#include <cstdio>
 #include <vector>
 
 #include "gtest/gtest.h"  // NOLINT
@@ -267,6 +270,7 @@ class SrpcTest : public ::testing::Test {
   _supla_int_t DataRead(void *buf, _supla_int_t count);
   _supla_int_t DataWrite(void *buf, _supla_int_t count);
   void SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize);
+  void ReceiveSuplanMalformed(unsigned int call_id, void *data, int size);
   void OnVersionError(unsigned char remote_version);
   void OnRemoteCallReceived(unsigned _supla_int_t rr_id,
                             unsigned _supla_int_t call_id,
@@ -535,7 +539,15 @@ vector<int> SrpcTest::get_call_ids(int version) {
     case 26:
       return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
     case 29:
-      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE};
+      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE,
+              SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES,
+              SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+              SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION,
+              SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT,
+              SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION,
+              SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+              SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS,
+              SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT};
   }
 
   return {};
@@ -640,6 +652,16 @@ _supla_int_t SrpcTest::DataRead(void *buf, _supla_int_t count) {
 
 _supla_int_t SrpcTest::DataWrite(void *buf, _supla_int_t count) {
   if (count > 0) {
+#ifdef SRPC_WITHOUT_OUT_QUEUE
+    // Devices write the frame and its final tag in separate calls.
+    data_write = (char *)realloc(data_write, data_write_size + count);
+    if (data_write == NULL) {
+      data_write_size = 0;
+    } else {
+      memcpy(data_write + data_write_size, buf, count);
+      data_write_size += count;
+    }
+#else
     data_write = (char *)realloc(data_write, count);
     if (data_write == NULL) {
       data_write_size = 0;
@@ -647,6 +669,7 @@ _supla_int_t SrpcTest::DataWrite(void *buf, _supla_int_t count) {
       memcpy(data_write, buf, count);
       data_write_size = count;
     }
+#endif
   }
   return data_write_result == 0 ? count : data_write_result;
 }
@@ -4562,5 +4585,300 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_set_subdevice_details, TDS_SubdeviceDetails,
                      ds_subdevice_details);
 
 #endif /*SUPLA_PROTO_VERSION >= 25*/
+
+// SupLAN public v1: exercise the real SRPC encoder, transport and decoder.
+void SrpcTest::ReceiveSuplanMalformed(unsigned int call_id, void *data,
+                                      int size) {
+  srpc = srpcInit();
+  ASSERT_NE(nullptr, srpc);
+  // Build a complete wire frame to bypass the typed senders' validation.
+  const size_t header = offsetof(TSuplaDataPacket, data);
+  data_read_result = header + size + SUPLA_TAG_SIZE;
+  data_read = static_cast<char *>(calloc(1, data_read_result));
+  ASSERT_NE(nullptr, data_read);
+  TSuplaDataPacket *packet = reinterpret_cast<TSuplaDataPacket *>(data_read);
+  memcpy(packet->tag, sproto_tag, SUPLA_TAG_SIZE);
+  packet->version = SUPLA_PROTO_VERSION;
+  packet->rr_id = 1;
+  packet->call_id = call_id;
+  packet->data_size = size;
+  memcpy(data_read + header, data, size);
+  memcpy(data_read + header + size, sproto_tag, SUPLA_TAG_SIZE);
+  if (size > SUPLA_MAX_DATA_SIZE) {
+    EXPECT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+    EXPECT_EQ(SRPC_ITERATE_REASON_PROTOCOL_ERROR,
+              srpc_get_last_iterate_reason(srpc));
+  } else {
+    ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+    EXPECT_EQ(call_id, cr_call_id);
+    EXPECT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+    EXPECT_EQ(nullptr, cr_rd.data.dcs_ping);
+  }
+  srpc_free(srpc);
+  srpc = nullptr;
+  free(data_read);
+  data_read = nullptr;
+}
+
+#define SUPLAN_VARIABLE_ROUND_TRIP(FUNCTION, TYPE, CALL, MEMBER, COUNT, ARRAY, \
+                                   USED, SUFFIX)                               \
+  TEST_F(SrpcTest, FUNCTION##_##SUFFIX) {                                      \
+    data_read_result = -1;                                                     \
+    srpc = srpcInit();                                                         \
+    ASSERT_NE(nullptr, srpc);                                                  \
+    TYPE param;                                                                \
+    memset(&param, 0xA5, sizeof(param));                                       \
+    param.COUNT = USED;                                                        \
+    const size_t size =                                                        \
+        offsetof(TYPE, ARRAY) + param.COUNT * sizeof(param.ARRAY[0]);          \
+    ASSERT_GT(FUNCTION(srpc, &param), 0);                                      \
+    SendAndReceive(CALL, 23 + size);                                           \
+    ASSERT_NE(nullptr, cr_rd.data.MEMBER);                                     \
+    EXPECT_EQ(0, memcmp(cr_rd.data.MEMBER, &param, size));                     \
+    const unsigned char *decoded =                                             \
+        reinterpret_cast<const unsigned char *>(cr_rd.data.MEMBER);            \
+    for (size_t i = size; i < sizeof(TYPE); ++i) {                             \
+      EXPECT_EQ(0, decoded[i]);                                                \
+    }                                                                          \
+    srpc_rd_free(&cr_rd);                                                      \
+  }
+
+#define SUPLAN_VARIABLE_TESTS(FUNCTION, TYPE, CALL, MEMBER, COUNT, ARRAY, MAX) \
+  SUPLAN_VARIABLE_ROUND_TRIP(FUNCTION, TYPE, CALL, MEMBER, COUNT, ARRAY, 0,    \
+                             empty)                                            \
+  SUPLAN_VARIABLE_ROUND_TRIP(FUNCTION, TYPE, CALL, MEMBER, COUNT, ARRAY, 1,    \
+                             one)                                              \
+  SUPLAN_VARIABLE_ROUND_TRIP(FUNCTION, TYPE, CALL, MEMBER, COUNT, ARRAY, MAX,  \
+                             max)                                              \
+  TEST_F(SrpcTest, FUNCTION##_invalid_send) {                                  \
+    srpc = srpcInit();                                                         \
+    TYPE param = {};                                                           \
+    EXPECT_EQ(0, FUNCTION(srpc, nullptr));                                     \
+    param.COUNT = MAX + 1;                                                     \
+    EXPECT_EQ(0, FUNCTION(srpc, &param));                                      \
+    param.COUNT = 0;                                                           \
+    srpc_set_proto_version(srpc, 28);                                          \
+    EXPECT_EQ(SUPLA_RESULT_FALSE, FUNCTION(srpc, &param));                     \
+  }                                                                            \
+  TEST_F(SrpcTest, FUNCTION##_malformed_receive) {                             \
+    TYPE param = {};                                                           \
+    const int prefix = offsetof(TYPE, ARRAY);                                  \
+    for (int size = 0; size < prefix; ++size) {                                \
+      SCOPED_TRACE(size);                                                      \
+      ReceiveSuplanMalformed(CALL, &param, size);                              \
+    }                                                                          \
+    param.COUNT = MAX + 1;                                                     \
+    ReceiveSuplanMalformed(CALL, &param, sizeof(param));                       \
+    param.COUNT = 1;                                                           \
+    ReceiveSuplanMalformed(CALL, &param, prefix);                              \
+    ReceiveSuplanMalformed(CALL, &param, prefix + sizeof(param.ARRAY[0]) - 1); \
+    ReceiveSuplanMalformed(CALL, &param, prefix + sizeof(param.ARRAY[0]) + 1); \
+    param.COUNT = 0;                                                           \
+    ReceiveSuplanMalformed(CALL, &param, prefix + 1);                          \
+    param.COUNT = MAX;                                                         \
+    unsigned char oversized[sizeof(TYPE) + 1] = {};                            \
+    memcpy(oversized, &param, sizeof(param));                                  \
+    ReceiveSuplanMalformed(CALL, oversized, sizeof(oversized));                \
+  }
+
+SUPLAN_VARIABLE_TESTS(srpc_sd_async_suplan_device_identities,
+                      TSD_SuplaDeviceIdentities,
+                      SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES,
+                      sd_suplan_device_identities, ChannelCount, ChannelId,
+                      SUPLA_CHANNELMAXCOUNT)
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_suplan_device_identities_result,
+                     TDS_SuplaDeviceIdentitiesResult,
+                     SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT, 28,
+                     ds_suplan_device_identities_result)
+
+TEST_F(SrpcTest,
+       srpc_ds_async_suplan_device_identities_result_malformed_receive) {
+  TDS_SuplaDeviceIdentitiesResult param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+                           &param, size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+                         oversized, sizeof(oversized));
+}
+
+TEST_F(SrpcTest, srpc_ds_async_suplan_device_identities_result_invalid_send) {
+  srpc = srpcInit();
+  TDS_SuplaDeviceIdentitiesResult param = {};
+  EXPECT_EQ(0, srpc_ds_async_suplan_device_identities_result(srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(SUPLA_RESULT_FALSE,
+            srpc_ds_async_suplan_device_identities_result(srpc, &param));
+}
+
+SUPLAN_VARIABLE_TESTS(srpc_sd_async_set_suplan_source_association,
+                      TSDS_SuplaSetSuplanSourceAssociation,
+                      SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION,
+                      sd_set_suplan_source_association, AclEntryCount, Acl,
+                      SUPLA_SUPLAN_MAX_ACL_ENTRIES)
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_suplan_source_association_result,
+                     TDS_SuplaSetSuplanSourceAssociationResult,
+                     SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT, 88,
+                     ds_set_suplan_source_association_result)
+
+TEST_F(SrpcTest,
+       srpc_ds_async_set_suplan_source_association_result_malformed_receive) {
+  TDS_SuplaSetSuplanSourceAssociationResult param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT,
+                           &param, size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT,
+                         oversized, sizeof(oversized));
+}
+
+TEST_F(SrpcTest,
+       srpc_ds_async_set_suplan_source_association_result_invalid_send) {
+  srpc = srpcInit();
+  TDS_SuplaSetSuplanSourceAssociationResult param = {};
+  EXPECT_EQ(0,
+            srpc_ds_async_set_suplan_source_association_result(srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(SUPLA_RESULT_FALSE,
+            srpc_ds_async_set_suplan_source_association_result(srpc, &param));
+}
+
+SUPLAN_VARIABLE_TESTS(srpc_sd_async_set_suplan_destination_association,
+                      TSDS_SuplaSetSuplanDestinationAssociation,
+                      SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION,
+                      sd_set_suplan_destination_association, ResourceCount,
+                      Resources, SUPLA_SUPLAN_MAX_ACL_ENTRIES)
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_set_suplan_destination_association_result,
+                     TDS_SuplaSetSuplanDestinationAssociationResult,
+                     SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+                     55, ds_set_suplan_destination_association_result)
+
+TEST_F(
+    SrpcTest,
+    srpc_ds_async_set_suplan_destination_association_result_malformed_receive) {
+  TDS_SuplaSetSuplanDestinationAssociationResult param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(
+        SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT, &param, size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(
+      SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT, oversized,
+      sizeof(oversized));
+}
+
+TEST_F(SrpcTest,
+       srpc_ds_async_set_suplan_destination_association_result_invalid_send) {
+  srpc = srpcInit();
+  TDS_SuplaSetSuplanDestinationAssociationResult param = {};
+  EXPECT_EQ(0, srpc_ds_async_set_suplan_destination_association_result(
+                   srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(
+      SUPLA_RESULT_FALSE,
+      srpc_ds_async_set_suplan_destination_association_result(srpc, &param));
+}
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_ensure_suplan_resource_access,
+                     TDS_SuplaEnsureResourceAccess,
+                     SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 29,
+                     ds_ensure_suplan_resource_access)
+
+TEST_F(SrpcTest,
+       srpc_ds_async_ensure_suplan_resource_access_malformed_receive) {
+  TDS_SuplaEnsureResourceAccess param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, &param,
+                           size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, oversized,
+                         sizeof(oversized));
+}
+
+TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_invalid_send) {
+  srpc = srpcInit();
+  TDS_SuplaEnsureResourceAccess param = {};
+  EXPECT_EQ(0, srpc_ds_async_ensure_suplan_resource_access(srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(SUPLA_RESULT_FALSE,
+            srpc_ds_async_ensure_suplan_resource_access(srpc, &param));
+}
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_ensure_suplan_resource_access_result,
+                     TSD_SuplaEnsureResourceAccessResult,
+                     SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, 25,
+                     sd_ensure_suplan_resource_access_result)
+
+TEST_F(SrpcTest,
+       srpc_sd_async_ensure_suplan_resource_access_result_malformed_receive) {
+  TSD_SuplaEnsureResourceAccessResult param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT,
+                           &param, size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT,
+                         oversized, sizeof(oversized));
+}
+
+TEST_F(SrpcTest,
+       srpc_sd_async_ensure_suplan_resource_access_result_invalid_send) {
+  srpc = srpcInit();
+  TSD_SuplaEnsureResourceAccessResult param = {};
+  EXPECT_EQ(0,
+            srpc_sd_async_ensure_suplan_resource_access_result(srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(SUPLA_RESULT_FALSE,
+            srpc_sd_async_ensure_suplan_resource_access_result(srpc, &param));
+}
+
+TEST_F(SrpcTest, suplan_device_identities_negative_count) {
+  TSD_SuplaDeviceIdentities param = {};
+  param.ChannelCount = -1;
+  ReceiveSuplanMalformed(SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES, &param,
+                         offsetof(TSD_SuplaDeviceIdentities, ChannelId));
+  srpc = srpcInit();
+  EXPECT_EQ(0, srpc_sd_async_suplan_device_identities(srpc, &param));
+}
+
+TEST_F(SrpcTest, suplan_call_ids_and_versions) {
+  srpc = srpcInit();
+  const vector<int> calls = {
+      SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES,
+      SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+      SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION,
+      SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT,
+      SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION,
+      SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+      SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS,
+      SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT};
+  ASSERT_EQ(8U, calls.size());
+  for (size_t i = 0; i < calls.size(); ++i) {
+    EXPECT_EQ(1280 + 10 * i, static_cast<size_t>(calls[i]));
+    EXPECT_EQ(29, srpc_call_min_version_required(srpc, calls[i]));
+  }
+  // Includes existing calls, so collisions with the old namespace fail too.
+  vector<int> all_calls;
+  for (int version = 1; version <= SUPLA_PROTO_VERSION; ++version) {
+    const vector<int> ids = get_call_ids(version);
+    all_calls.insert(all_calls.end(), ids.begin(), ids.end());
+  }
+  for (size_t i = 0; i < all_calls.size(); ++i) {
+    for (size_t j = i + 1; j < all_calls.size(); ++j) {
+      EXPECT_NE(all_calls[i], all_calls[j]);
+    }
+  }
+}
 
 }  // namespace
