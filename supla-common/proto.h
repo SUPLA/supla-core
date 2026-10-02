@@ -318,6 +318,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS 1340         // ver. >= 29
 #define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT 1350  // ver. >= 29
 
+// Request a Source resource share with the owner of a Destination resource.
+#define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE 1360         // ver. >= 29
+#define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT 1370  // ver. >= 29
+
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
 #define SUPLA_RESULT_HOST_NOT_FOUND -6
@@ -859,6 +863,17 @@ typedef struct {
   unsigned char Result;
   unsigned char AccessStatus;
 } TSD_SuplaEnsureResourceAccessResult;
+
+typedef struct {
+  TSuplaSuplanResource SourceResource;
+  TSuplaSuplanResource DestinationResource;
+  unsigned char Permissions;
+} TDS_SuplaEnsureResourceShare;
+
+typedef struct {
+  unsigned char Result;
+  _supla_int_t DestinationDeviceId;  // meaningful only when Result == OK
+} TSD_SuplaEnsureResourceShareResult;
 
 typedef struct {
   char tag[SUPLA_TAG_SIZE];

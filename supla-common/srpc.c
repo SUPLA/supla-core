@@ -1261,6 +1261,23 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
+      case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE:
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaEnsureResourceShare)) {
+          rd->data.ds_ensure_suplan_resource_share =
+              (TDS_SuplaEnsureResourceShare *)calloc(
+                  1, sizeof(TDS_SuplaEnsureResourceShare));
+        }
+        break;
+
+      case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT:
+        if (srpc->sdp.data_size ==
+            sizeof(TSD_SuplaEnsureResourceShareResult)) {
+          rd->data.sd_ensure_suplan_resource_share_result =
+              (TSD_SuplaEnsureResourceShareResult *)calloc(
+                  1, sizeof(TSD_SuplaEnsureResourceShareResult));
+        }
+        break;
+
       case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
         call_with_no_data = 1;
         break;
@@ -2011,6 +2028,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT:
     case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS:
     case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT:
+    case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE:
+    case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT:
     case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
       return 29;
   }
@@ -2663,6 +2682,28 @@ srpc_sd_async_ensure_suplan_resource_access_result(
   return srpc_async_call(
       _srpc, SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, (char *)data,
       sizeof(TSD_SuplaEnsureResourceAccessResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_share(
+    void *_srpc, TDS_SuplaEnsureResourceShare *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE,
+                         (char *)data, sizeof(TDS_SuplaEnsureResourceShare));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_ensure_suplan_resource_share_result(
+    void *_srpc, TSD_SuplaEnsureResourceShareResult *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT, (char *)data,
+      sizeof(TSD_SuplaEnsureResourceShareResult));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_sync_done(void *_srpc) {

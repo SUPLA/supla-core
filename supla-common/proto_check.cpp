@@ -379,6 +379,8 @@ static_assert(sizeof(TSDS_SuplaSetSuplanDestinationAssociation) == 600);
 static_assert(sizeof(TDS_SuplaSetSuplanDestinationAssociationResult) == 32);
 static_assert(sizeof(TDS_SuplaEnsureResourceAccess) == 6);
 static_assert(sizeof(TSD_SuplaEnsureResourceAccessResult) == 2);
+static_assert(sizeof(TDS_SuplaEnsureResourceShare) == 11);
+static_assert(sizeof(TSD_SuplaEnsureResourceShareResult) == 5);
 static_assert(offsetof(TSD_SuplaDeviceIdentities, ChannelId) == 8);
 static_assert(offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl) == 34);
 static_assert(offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources) ==

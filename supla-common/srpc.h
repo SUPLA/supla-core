@@ -230,6 +230,8 @@ union TsrpcDataPacketData {
       *ds_set_suplan_destination_association_result;
   TDS_SuplaEnsureResourceAccess *ds_ensure_suplan_resource_access;
   TSD_SuplaEnsureResourceAccessResult *sd_ensure_suplan_resource_access_result;
+  TDS_SuplaEnsureResourceShare *ds_ensure_suplan_resource_share;
+  TSD_SuplaEnsureResourceShareResult *sd_ensure_suplan_resource_share_result;
 };
 
 typedef struct {
@@ -371,6 +373,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_access(
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_ensure_suplan_resource_access_result(
     void *_srpc, TSD_SuplaEnsureResourceAccessResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_share(
+    void *_srpc, TDS_SuplaEnsureResourceShare *data);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_ensure_suplan_resource_share_result(
+    void *_srpc, TSD_SuplaEnsureResourceShareResult *data);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH
