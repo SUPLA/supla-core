@@ -53,7 +53,11 @@
 // OTHER SUPLA_DEVICE
 // Linux target, other?
 #elif defined(SUPLA_DEVICE)
+#if defined(ESP_PLATFORM)
+#define SRPC_BUFFER_SIZE 256
+#else
 #define SRPC_BUFFER_SIZE 1024
+#endif
 
 // other not releated to supla-device
 #else

@@ -49,9 +49,10 @@
 extern "C" {
 #endif
 
-#if defined(SUPLA_DEVICE) || defined(ESP8266) || defined(ESP32) || \
-    defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
-    defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_AVR)
+#if SUPLA_SRPC_PACKET_LOG_ENABLED && !defined(SUPLA_DISABLE_LOGS) && \
+    (defined(SUPLA_DEVICE) || defined(ESP8266) || defined(ESP32) || \
+     defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
+     defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_AVR))
 #define SRPC_WITH_PACKET_LOG_HOOKS
 #endif
 

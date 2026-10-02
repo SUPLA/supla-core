@@ -4,6 +4,19 @@
 #ifndef supla_proto_H_
 #define supla_proto_H_
 
+// Controls compilation of detailed SRPC packet logging.  SUPLA_DISABLE_LOGS
+// always takes precedence over an explicit enable.
+#ifndef SUPLA_SRPC_PACKET_LOG_ENABLED
+#if defined(SUPLA_DISABLE_LOGS)
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 0
+#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP8266) || \
+    defined(__AVR__) || defined(ARDUINO_ARCH_AVR)
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 0
+#else
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 1
+#endif
+#endif
+
 #ifdef _WIN32
 // *** WINDOWS ***
 
