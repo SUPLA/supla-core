@@ -287,13 +287,21 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
 #define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
+
+// Assign server-managed device and channel identities used by SupLAN.
 #define SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES 1280           // ver. >= 29
 #define SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT 1290    // ver. >= 29
+
+// Configure the Source association and its resource access permissions.
 #define SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION 1300      // ver. >= 29
 #define SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT 1310  // ver. >= 29
+
+// Configure the Destination association with its peer key and resources.
 #define SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION 1320    // ver. >= 29
 #define SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT \
   1330                                                           // ver. >= 29
+
+// Request server authorization for access to a SupLAN resource.
 #define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS 1340         // ver. >= 29
 #define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT 1350  // ver. >= 29
 
@@ -704,24 +712,40 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x1000000000  // ver. >= 29; weekly schedule no-op program
 
 // SupLAN public v1 control-plane constants.
+
+// Authority managing peer identities and authorization: server or local.
 #define SUPLA_SUPLAN_AUTHORITY_TYPE_INVALID 0
 #define SUPLA_SUPLAN_AUTHORITY_TYPE_SERVER 1
 #define SUPLA_SUPLAN_AUTHORITY_TYPE_LOCAL 2
+
+// Namespace identifying a device, client or locally managed node.
 #define SUPLA_SUPLAN_NODE_ID_NAMESPACE_INVALID 0
 #define SUPLA_SUPLAN_NODE_ID_NAMESPACE_DEVICE_ID 1
 #define SUPLA_SUPLAN_NODE_ID_NAMESPACE_CLIENT_ID 2
 #define SUPLA_SUPLAN_NODE_ID_NAMESPACE_LOCAL_ID 3
+
+// Size in bytes of the key shared by an authorized Source/Destination pair.
 #define SUPLA_SUPLAN_PEER_KEY_SIZE 32
+
+// Kind of resource referenced by an access request or ACL entry.
 #define SUPLA_SUPLAN_RESOURCE_TYPE_INVALID 0
 #define SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL 1
 #define SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE 2
 // FDEV: enable only after SERVER SubDeviceId has a globally unique identity.
 // #define SUPLA_SUPLAN_RESOURCE_TYPE_SUBDEVICE 3
+
+// ACL permission bits for reading, controlling and receiving actions.
 #define SUPLA_SUPLAN_PERMISSION_READ 0x01
 #define SUPLA_SUPLAN_PERMISSION_CONTROL 0x02
 #define SUPLA_SUPLAN_PERMISSION_ACTION 0x04
+
+// Maximum number of resource entries in an association payload.
 #define SUPLA_SUPLAN_MAX_ACL_ENTRIES 89
+
+// Ask the Source to include the peer key in its association result.
 #define SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY 0x01
+
+// Result codes returned by SupLAN control-plane operations.
 #define SUPLA_SUPLAN_RESULT_OK 0
 #define SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT 1
 #define SUPLA_SUPLAN_RESULT_UNSUPPORTED 2
@@ -734,6 +758,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED 9
 #define SUPLA_SUPLAN_RESULT_NOT_FOUND 10
 #define SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED 11
+
+// Authorization outcome returned for a resource access request.
 #define SUPLA_SUPLAN_ACCESS_STATUS_INVALID 0
 #define SUPLA_SUPLAN_ACCESS_STATUS_GRANTED 1
 #define SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL 2
