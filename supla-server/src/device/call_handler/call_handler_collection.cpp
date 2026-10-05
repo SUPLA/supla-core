@@ -49,9 +49,11 @@
 #include "device/call_handler/set_device_config.h"
 #include "device/call_handler/set_device_config_result.h"
 #include "device/call_handler/set_subdevice_details.h"
+#include "device/call_handler/suplan_device_identities_result.h"
 
 supla_device_call_handler_collection::supla_device_call_handler_collection(void)
     : supla_abstract_srpc_call_handler_collection() {
+  add_handler(new supla_ch_suplan_device_identities_result());
   add_handler(new supla_ch_action_trigger());
   add_handler(new supla_ch_channel_set_value_result());
   add_handler(new supla_ch_device_channel_value_changed_c());

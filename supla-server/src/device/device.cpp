@@ -90,6 +90,63 @@ shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
       supla_abstract_connection_object::get_shared_ptr());
 }
 
+void supla_device::reset_suplan_identity_bootstrap(void) {
+  lock();
+  identity_bootstrap.reset();
+  registration_sync_pending = false;
+  unlock();
+}
+
+void supla_device::connection_will_close(void) {
+  reset_suplan_identity_bootstrap();
+  supla_abstract_connection_object::connection_will_close();
+}
+
+void supla_device::start_registration_sync(
+    supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
+  lock();
+  identity_bootstrap.start(srpc, flags, identities);
+  registration_sync_pending = identity_bootstrap.is_pending();
+  bool defer_sync = registration_sync_pending;
+  unlock();
+  if (!defer_sync) send_registration_config();
+}
+
+void supla_device::send_registration_config(void) {
+  send_config_to_device();
+  // Keep the existing fragment coordinator and sync-done ordering.
+  get_channels()->send_configs_to_device([](supla_device *device) -> void {
+    device->send_queued_calcfg_requests();
+    device->send_sync_done_to_device();
+  });
+}
+
+void supla_device::start_suplan_identity_bootstrap(
+    supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
+  lock();
+  identity_bootstrap.start(srpc, flags, identities);
+  unlock();
+}
+
+void supla_device::on_suplan_device_identities_result(
+    const TDS_SuplaDeviceIdentitiesResult *result) {
+  lock();
+  bool resume_sync = registration_sync_pending;
+  registration_sync_pending = false;
+  identity_bootstrap.on_result(result);
+  unlock();
+  // A rejected snapshot leaves SupLAN disabled, but ordinary SUPLA sync
+  // remains available. Future SupLAN-dependent config must check RootEpoch.
+  if (resume_sync) send_registration_config();
+}
+
+unsigned _supla_int_t supla_device::get_suplan_root_epoch(void) {
+  lock();
+  unsigned _supla_int_t result = identity_bootstrap.get_root_epoch();
+  unlock();
+  return result;
+}
+
 bool supla_device::is_sleeping_object(void) {
   return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
          channels->get_value_validity_time_left_msec() > 0;

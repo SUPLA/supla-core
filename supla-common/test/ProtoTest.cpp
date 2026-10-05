@@ -848,7 +848,9 @@ TEST_F(ProtoTest, suplan_frozen_wire_sizes) {
   EXPECT_EQ(65U, sizeof(TDS_SuplaSetSuplanSourceAssociationResult));
   EXPECT_EQ(600U, sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
   EXPECT_EQ(32U, sizeof(TDS_SuplaSetSuplanDestinationAssociationResult));
-  EXPECT_EQ(6U, sizeof(TDS_SuplaEnsureResourceAccess));
+  EXPECT_EQ(7U, sizeof(TDS_SuplaEnsureResourceAccess));
+  EXPECT_EQ(6U, offsetof(TDS_SuplaEnsureResourceAccess, Flags));
+  EXPECT_EQ(0x01, SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL);
   EXPECT_EQ(2U, sizeof(TSD_SuplaEnsureResourceAccessResult));
   EXPECT_EQ(11U, sizeof(TDS_SuplaEnsureResourceShare));
   EXPECT_EQ(5U, sizeof(TSD_SuplaEnsureResourceShareResult));

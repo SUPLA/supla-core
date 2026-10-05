@@ -52,6 +52,7 @@ class RegisterDeviceMock : public supla_abstract_register_device {
   void set_hold_time_on_failure_usec(__useconds_t usec);
   bool is_channel_added(void);
   int get_device_id();
+  using supla_abstract_register_device::get_device_identities;
 };
 
 } /* namespace testing */

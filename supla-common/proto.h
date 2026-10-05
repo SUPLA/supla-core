@@ -762,6 +762,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // Ask the Source to include the peer key in its association result.
 #define SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY 0x01
 
+// Optional approval request; does not authorize access. Zero is reconcile-only.
+#define SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL 0x01
+
 // Result codes returned by SupLAN control-plane operations.
 #define SUPLA_SUPLAN_RESULT_OK 0
 #define SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT 1
@@ -857,6 +860,7 @@ typedef struct {
 typedef struct {
   TSuplaSuplanResource Resource;
   unsigned char Permissions;
+  unsigned char Flags;  // Undefined bits are invalid.
 } TDS_SuplaEnsureResourceAccess;
 
 typedef struct {

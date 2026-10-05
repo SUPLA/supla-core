@@ -346,6 +346,10 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     }
 
     srpc_rd_free(&rd);
+  } else if (call_id == SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT &&
+             object && object->is_registered()) {
+    auto device = std::dynamic_pointer_cast<supla_device>(object);
+    if (device) device->on_suplan_device_identities_result(nullptr);
   } else if (object == nullptr || !object->is_registered()) {
     log_security_event_with_uint(LOG_WARNING, "invalid_call_payload", 1,
                                  "call_id", call_id);

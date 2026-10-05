@@ -4791,8 +4791,44 @@ TEST_F(SrpcTest,
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_ensure_suplan_resource_access,
                      TDS_SuplaEnsureResourceAccess,
-                     SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 29,
+                     SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30,
                      ds_ensure_suplan_resource_access)
+
+TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_reconcile_only) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TDS_SuplaEnsureResourceAccess param = {};
+  param.Resource.ResourceType = SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL;
+  param.Resource.ResourceId = 0x04030201;
+  param.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  param.Flags = 0;
+  const unsigned char expected[7] = {1, 1, 2, 3, 4, 1, 0};
+  ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
+  ASSERT_GT(srpc_ds_async_ensure_suplan_resource_access(srpc, &param), 0);
+  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30);
+  ASSERT_NE(nullptr, cr_rd.data.ds_ensure_suplan_resource_access);
+  EXPECT_EQ(0,
+            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected, 7));
+  srpc_rd_free(&cr_rd);
+}
+
+TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_allow_approval) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TDS_SuplaEnsureResourceAccess param = {};
+  param.Resource.ResourceType = SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL;
+  param.Resource.ResourceId = 0x04030201;
+  param.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  param.Flags = SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL;
+  const unsigned char expected[7] = {1, 1, 2, 3, 4, 1, 1};
+  ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
+  ASSERT_GT(srpc_ds_async_ensure_suplan_resource_access(srpc, &param), 0);
+  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30);
+  ASSERT_NE(nullptr, cr_rd.data.ds_ensure_suplan_resource_access);
+  EXPECT_EQ(0,
+            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected, 7));
+  srpc_rd_free(&cr_rd);
+}
 
 TEST_F(SrpcTest,
        srpc_ds_async_ensure_suplan_resource_access_malformed_receive) {
