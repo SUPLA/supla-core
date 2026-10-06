@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "device/devicechannel.h"
+#include "device/device.h"
 #include "lck.h"
 
 using std::vector;
@@ -149,7 +150,18 @@ void supla_channel_config_sync_coordinator::execute_step(
     sync_step step) {
   while (step.channel || step.on_finished) {
     if (step.channel) {
-      step.channel->send_configs_to_device(&step.configs);
+      bool sent = step.channel->send_configs_to_device(&step.configs);
+      if (!sent && device && device->get_suplan_root_epoch()) {
+        // An accepted identity requires authoritative configuration replay.
+        // Do not turn a failed enqueue into a successful sync on timeout.
+        lck_lock(lck);
+        on_finished = nullptr;
+        finish();
+        lck_unlock(lck);
+        device->reset_suplan_identity_bootstrap();
+        device->terminate();
+        return;
+      }
     }
 
     if (step.on_finished) {

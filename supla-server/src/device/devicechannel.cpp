@@ -1052,26 +1052,32 @@ bool supla_device_channel::send_config_to_device(unsigned char config_type) {
   return true;
 }
 
-void supla_device_channel::send_configs_to_device(
+bool supla_device_channel::send_configs_to_device(
     vector<TSDS_SetChannelConfig> *configs) {
   if (!configs) {
-    return;
+    return false;
   }
 
+  bool sent = true;
   for (auto it = configs->begin(); it != configs->end(); ++it) {
-    get_device()
+    if (get_device()
         ->get_connection()
         ->get_srpc_adapter()
-        ->sd_async_set_channel_config_request(&(*it));
+        ->sd_async_set_channel_config_request(&(*it)) <= 0) {
+      sent = false;
+    }
   }
 
   TSD_ChannelConfigFinished fin = {};
   fin.ChannelNumber = get_channel_number();
 
-  get_device()
+  if (get_device()
       ->get_connection()
       ->get_srpc_adapter()
-      ->sd_async_channel_config_finished(&fin);
+      ->sd_async_channel_config_finished(&fin) <= 0) {
+    sent = false;
+  }
+  return sent;
 }
 
 unsigned int supla_device_channel::send_config_to_device(void) {

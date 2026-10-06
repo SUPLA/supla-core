@@ -18,10 +18,21 @@
 
 #include <cstdio>
 #include <memory>
+#include <poll.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <vector>
 
+#include "conn/connection.h"
 #include "device/RegisterDeviceEssentialTest.h"
 #include "device/call_handler/register_device.h"
 #include "device/device.h"
+#include "device/devicechannels.h"
+#include "doubles/device/DeviceStub.h"
+#include "supla-socket.h"
+#include "sthread.h"
 #include "srpc/abstract_srpc_call_hanlder_collection.h"
 #include "suplan/identity_bootstrap.h"
 
@@ -468,5 +479,322 @@ TEST_F(SupLanIdentityBootstrapTest, malformedOrOldProtocolResultFailsBarrier) {
   device->get_srpc_call_handler_collection()->handle_call(
       device, &srpc, &rd, SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT, 28);
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
+}
+
+// Use the real registration config sender, ChannelConfig preparation,
+// coordinator and SRPC queue. Only the authoritative DB lookup is replaced.
+class SupLanRegistrationReplayTest : public Test {
+ protected:
+  void *listener = nullptr;
+  int client = -1;
+  supla_connection *connection = nullptr;
+  DeviceStub *device = nullptr;
+  supla_device_channels *channels = nullptr;
+  void *parser = nullptr;
+  void *worker = nullptr;
+  TSD_SuplaDeviceIdentities identities = {};
+
+  void SetUp() override {
+    supla_connection::init();
+    listener = ssocket_server_init(nullptr, nullptr, 0, 0);
+    ASSERT_NE(nullptr, listener);
+    ASSERT_TRUE(ssocket_openlistener(listener));
+    identities.DeviceId = 7654;
+    identities.ChannelCount = 1;
+    identities.ChannelId[0] = 991;
+    connect_device();
+  }
+
+  void disconnect_device() {
+    if (worker) {
+      sthread_terminate(worker, false);
+      connection->raise_event();
+      sthread_wait(worker);
+      sthread_free(worker);
+      worker = nullptr;
+    }
+    if (device) {
+      device->connection_will_close();
+      delete channels;
+      channels = nullptr;
+      device->set_channels(nullptr);
+      delete device;
+      device = nullptr;
+    }
+    delete connection;
+    connection = nullptr;
+    if (client >= 0) close(client);
+    client = -1;
+    if (parser) sproto_free(parser);
+    parser = nullptr;
+  }
+
+  void TearDown() override {
+    disconnect_device();
+    if (listener) ssocket_free(listener);
+    supla_connection::cleanup();
+  }
+
+  void connect_device() {
+    sockaddr_in address = {};
+    socklen_t size = sizeof(address);
+    ASSERT_EQ(0, getsockname(ssocket_get_fd(listener),
+                            reinterpret_cast<sockaddr *>(&address), &size));
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    client = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_GE(client, 0);
+    ASSERT_EQ(0, connect(client, reinterpret_cast<sockaddr *>(&address), size));
+    void *accepted = nullptr;
+    unsigned int ip = 0;
+    ASSERT_TRUE(ssocket_accept(listener, &ip, &accepted));
+    connection = new supla_connection(listener, accepted, ip);
+    int no_delay = 1;
+    ASSERT_EQ(0, setsockopt(connection->get_client_sd(), IPPROTO_TCP,
+                            TCP_NODELAY, &no_delay, sizeof(no_delay)));
+    connection->get_srpc_adapter()->set_proto_version(29);
+    device = new DeviceStub(connection);
+    device->set_id(7654);
+    device->set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED |
+                      SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
+    DeviceDaoMock dao;
+    EXPECT_CALL(dao, get_channels(device)).WillOnce([&](supla_device *) {
+      char value[SUPLA_CHANNELVALUE_SIZE] = {};
+      return std::vector<supla_device_channel *>{new supla_device_channel(
+          device, 991, 9, SUPLA_CHANNELTYPE_HVAC,
+          SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, nullptr, nullptr,
+          nullptr, false, SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE,
+          value, 0, nullptr, "{\"minOnTimeS\":17}", "{}", nullptr)};
+    });
+    channels = new supla_device_channels(&dao, device, nullptr, nullptr, 0);
+    device->set_channels(channels);
+    parser = sproto_init();
+    ASSERT_NE(nullptr, parser);
+    sthread_simple_run(
+        [](void *conn, void *thread) {
+          static_cast<supla_connection *>(conn)->execute(thread);
+        },
+        connection, false, &worker);
+    ASSERT_NE(nullptr, worker);
+    // Receiving a worker-flushed packet proves execute() initialized its
+    // thread context, including the production terminate() path.
+    ASSERT_GT(connection->get_srpc_adapter()->sdc_async_ping_server_result(),
+              0);
+    pollfd fd = {client, POLLIN, 0};
+    ASSERT_GT(poll(&fd, 1, 1000), 0);
+    char bytes[256];
+    int received = recv(client, bytes, sizeof(bytes), 0);
+    ASSERT_GT(received, 0);
+    ASSERT_EQ(SUPLA_RESULT_TRUE,
+              sproto_in_buffer_append(parser, bytes, received));
+    TSuplaDataPacket packet = {};
+    ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_pop_in_sdp(parser, &packet));
+    ASSERT_EQ(SUPLA_SDC_CALL_PING_SERVER_RESULT, packet.call_id);
+  }
+
+  std::vector<TSuplaDataPacket> receive() {
+    auto adapter = connection->get_srpc_adapter();
+    auto srpc = adapter->get_srpc();
+    // Flush the actual bounded queue onto TCP before inspecting the packets.
+    adapter->lock();
+    for (int i = 0; i < 32; ++i) {
+      srpc_iterate(srpc);
+      if (!srpc_out_queue_item_count(srpc)) break;
+    }
+    srpc_iterate(srpc);
+    adapter->unlock();
+    std::vector<TSuplaDataPacket> packets;
+    pollfd fd = {client, POLLIN, 0};
+    while (poll(&fd, 1, 20) > 0) {
+      char bytes[4096];
+      int size = recv(client, bytes, sizeof(bytes), MSG_DONTWAIT);
+      if (size <= 0) break;
+      EXPECT_EQ(SUPLA_RESULT_TRUE,
+                sproto_in_buffer_append(parser, bytes, size));
+      TSuplaDataPacket packet = {};
+      while (sproto_pop_in_sdp(parser, &packet) == SUPLA_RESULT_TRUE) {
+        packets.push_back(packet);
+      }
+    }
+    return packets;
+  }
+
+  void start_identity() {
+    device->start_registration_sync(connection->get_srpc_adapter(),
+                                    &identities);
+    auto packets = receive();
+    ASSERT_EQ(1U, packets.size());
+    EXPECT_EQ(SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES, packets[0].call_id);
+    EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  }
+
+  void accept_identity() {
+    TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+    device->on_suplan_device_identities_result(&result);
+    EXPECT_EQ(123U, device->get_suplan_root_epoch());
+  }
+
+  TSDS_SetChannelConfig expect_config() {
+    auto packets = receive();
+    EXPECT_EQ(2U, packets.size());
+    TSDS_SetChannelConfig config = {};
+    if (packets.size() != 2) return config;
+    EXPECT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packets[0].call_id);
+    EXPECT_EQ(SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED, packets[1].call_id);
+    memcpy(&config, packets[0].data, packets[0].data_size);
+    EXPECT_EQ(9, config.ChannelNumber);
+    EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, config.ConfigType);
+    EXPECT_EQ(sizeof(TChannelConfig_HVAC), config.ConfigSize);
+    TChannelConfig_HVAC hvac = {};
+    memcpy(&hvac, config.Config, sizeof(hvac));
+    EXPECT_EQ(17, hvac.MinOnTimeS);
+    return config;
+  }
+
+  void config_result() {
+    TSDS_SetChannelConfigResult result = {};
+    result.ChannelNumber = 9;
+    result.ConfigType = SUPLA_CONFIG_TYPE_DEFAULT;
+    result.Result = SUPLA_CONFIG_RESULT_TRUE;
+    channels->on_set_channel_config_result(&result);
+  }
+
+  void expect_sync_done() {
+    auto packets = receive();
+    ASSERT_EQ(1U, packets.size());
+    EXPECT_EQ(SUPLA_SD_CALL_DEVICE_SYNC_DONE, packets[0].call_id);
+  }
+};
+
+TEST_F(SupLanRegistrationReplayTest, identityOkThenConfigThenSyncDone) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  EXPECT_TRUE(receive().empty());
+  config_result();
+  expect_sync_done();
+}
+
+TEST_F(SupLanRegistrationReplayTest, disconnectBeforeConfigDeliveryReplays) {
+  start_identity();
+  accept_identity();
+  // Drop the connection before the queued configuration reaches the Device.
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       interruptedAndCompletedSyncReplayUnchanged) {
+  start_identity();
+  accept_identity();
+  auto original = expect_config();
+  // Crash after identity OK but before ChannelConfig ACK / SYNC_DONE.
+  disconnect_device();
+  for (int i = 0; i < 2; ++i) {
+    connect_device();
+    start_identity();
+    accept_identity();
+    auto replay = expect_config();
+    EXPECT_EQ(0, memcmp(&original, &replay, sizeof(original)));
+    config_result();
+    expect_sync_done();
+    // Even a completed sync must not suppress replay at next registration.
+    disconnect_device();
+  }
+}
+
+TEST_F(SupLanRegistrationReplayTest, failedConfigEnqueueCannotCompleteSync) {
+  start_identity();
+  // Fill the real SRPC queue to force configuration enqueue failure.
+  auto adapter = connection->get_srpc_adapter();
+  adapter->lock();
+  for (int i = 0; i < 10; ++i) {
+    EXPECT_GT(adapter->sdc_async_ping_server_result(), 0);
+  }
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  config_result();
+  channels->iterate();
+  for (auto &packet : receive()) {
+    EXPECT_NE(SUPLA_SD_CALL_DEVICE_SYNC_DONE, packet.call_id);
+    EXPECT_NE(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packet.call_id);
+  }
+  EXPECT_TRUE(sthread_isterminated(worker));
+  adapter->unlock();
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+
+TEST_F(SupLanRegistrationReplayTest, failedConfigFinishedCannotCompleteSync) {
+  start_identity();
+  auto adapter = connection->get_srpc_adapter();
+  adapter->lock();
+  // Leave room for the config, but not CHANNEL_CONFIG_FINISHED.
+  for (int i = 0; i < 9; ++i) {
+    EXPECT_GT(adapter->sdc_async_ping_server_result(), 0);
+  }
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  auto packets = receive();
+  EXPECT_EQ(10U, packets.size());
+  if (!packets.empty()) {
+    EXPECT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packets.back().call_id);
+  }
+  config_result();
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+  EXPECT_TRUE(sthread_isterminated(worker));
+  adapter->unlock();
+}
+
+TEST_F(SupLanRegistrationReplayTest, missingAuthoritativeChannelFailsClosed) {
+  delete channels;
+  DeviceDaoMock dao;
+  EXPECT_CALL(dao, get_channels(device))
+      .WillOnce(Return(std::vector<supla_device_channel *>{}));
+  channels = new supla_device_channels(&dao, device, nullptr, nullptr, 0);
+  device->set_channels(channels);
+  auto adapter = connection->get_srpc_adapter();
+  adapter->lock();
+  device->start_registration_sync(adapter, &identities);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  EXPECT_TRUE(sthread_isterminated(worker));
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  for (auto &packet : receive()) {
+    EXPECT_NE(SUPLA_SD_CALL_DEVICE_SYNC_DONE, packet.call_id);
+  }
+  adapter->unlock();
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       rejectedIdentityStillAllowsOrdinaryConfig) {
+  start_identity();
+  TDS_SuplaDeviceIdentitiesResult result = {
+      SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, 0};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  expect_config();
+  config_result();
+  expect_sync_done();
 }
 }  // namespace testing

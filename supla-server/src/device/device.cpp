@@ -107,10 +107,21 @@ void supla_device::start_registration_sync(
   lock();
   auto started = identity_bootstrap.start(srpc, flags, identities);
   registration_sync_pending = identity_bootstrap.is_pending();
+  if (registration_sync_pending && channels) {
+    for (int i = 0; i < identities->ChannelCount; ++i) {
+      if (!channels->channel_exists(identities->ChannelId[i])) {
+        // A failed/partial DAO load must not become an empty successful sync.
+        identity_bootstrap.reset();
+        registration_sync_pending = false;
+        started = supla_suplan_identity_bootstrap::StartResult::Failed;
+        break;
+      }
+    }
+  }
   bool defer_sync = registration_sync_pending;
   unlock();
   if (started == supla_suplan_identity_bootstrap::StartResult::Failed) {
-    supla_log(LOG_WARNING, "SupLAN identity bootstrap send failed: device=%d",
+    supla_log(LOG_WARNING, "SupLAN identity bootstrap start failed: device=%d",
               get_id());
     terminate();
     return;
