@@ -549,7 +549,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS,
               SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT,
               SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE,
-              SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT};
+              SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT,
+              SUPLA_SD_CALL_REMOTE_CHANNEL_STATE};
   }
 
   return {};
@@ -4791,7 +4792,7 @@ TEST_F(SrpcTest,
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_ensure_suplan_resource_access,
                      TDS_SuplaEnsureResourceAccess,
-                     SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30,
+                     SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 31,
                      ds_ensure_suplan_resource_access)
 
 TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_reconcile_only) {
@@ -4801,14 +4802,16 @@ TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_reconcile_only) {
   param.Resource.ResourceType = SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL;
   param.Resource.ResourceId = 0x04030201;
   param.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  param.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER;
   param.Flags = 0;
-  const unsigned char expected[7] = {1, 1, 2, 3, 4, 1, 0};
+  const unsigned char expected[8] = {1, 1, 2, 3, 4, 1, 1, 0};
   ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
   ASSERT_GT(srpc_ds_async_ensure_suplan_resource_access(srpc, &param), 0);
-  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30);
+  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 31);
   ASSERT_NE(nullptr, cr_rd.data.ds_ensure_suplan_resource_access);
   EXPECT_EQ(0,
-            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected, 7));
+            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected,
+                   sizeof(expected)));
   srpc_rd_free(&cr_rd);
 }
 
@@ -4819,14 +4822,16 @@ TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_allow_approval) {
   param.Resource.ResourceType = SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL;
   param.Resource.ResourceId = 0x04030201;
   param.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  param.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER;
   param.Flags = SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL;
-  const unsigned char expected[7] = {1, 1, 2, 3, 4, 1, 1};
+  const unsigned char expected[8] = {1, 1, 2, 3, 4, 1, 1, 1};
   ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
   ASSERT_GT(srpc_ds_async_ensure_suplan_resource_access(srpc, &param), 0);
-  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 30);
+  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 31);
   ASSERT_NE(nullptr, cr_rd.data.ds_ensure_suplan_resource_access);
   EXPECT_EQ(0,
-            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected, 7));
+            memcmp(cr_rd.data.ds_ensure_suplan_resource_access, expected,
+                   sizeof(expected)));
   srpc_rd_free(&cr_rd);
 }
 
@@ -4854,7 +4859,7 @@ TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_invalid_send) {
 
 SRPC_CALL_BASIC_TEST(srpc_sd_async_ensure_suplan_resource_access_result,
                      TSD_SuplaEnsureResourceAccessResult,
-                     SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, 25,
+                     SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, 26,
                      sd_ensure_suplan_resource_access_result)
 
 TEST_F(SrpcTest,
@@ -4958,8 +4963,9 @@ TEST_F(SrpcTest, suplan_call_ids_and_versions) {
       SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS,
       SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT,
       SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE,
-      SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT};
-  ASSERT_EQ(10U, calls.size());
+      SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT,
+      SUPLA_SD_CALL_REMOTE_CHANNEL_STATE};
+  ASSERT_EQ(11U, calls.size());
   for (size_t i = 0; i < calls.size(); ++i) {
     EXPECT_EQ(1280 + 10 * i, static_cast<size_t>(calls[i]));
     EXPECT_EQ(29, srpc_call_min_version_required(srpc, calls[i]));
@@ -4975,6 +4981,97 @@ TEST_F(SrpcTest, suplan_call_ids_and_versions) {
       EXPECT_NE(all_calls[i], all_calls[j]);
     }
   }
+}
+
+TEST_F(SrpcTest, srpc_ds_async_ensure_suplan_resource_access_server_stream) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TDS_SuplaEnsureResourceAccess param = {};
+  param.Resource.ResourceType = SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL;
+  param.Resource.ResourceId = 0x04030201;
+  param.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  param.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
+  const unsigned char expected[8] = {1, 1, 2, 3, 4, 1, 2, 0};
+  ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
+  ASSERT_GT(srpc_ds_async_ensure_suplan_resource_access(srpc, &param), 0);
+  SendAndReceive(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, 31);
+  ASSERT_NE(nullptr, cr_rd.data.ds_ensure_suplan_resource_access);
+  EXPECT_EQ(0, memcmp(cr_rd.data.ds_ensure_suplan_resource_access,
+                      expected, sizeof(expected)));
+  srpc_rd_free(&cr_rd);
+}
+
+TEST_F(SrpcTest, srpc_sd_async_ensure_suplan_resource_access_result_delivery) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TSD_SuplaEnsureResourceAccessResult param = {};
+  param.Result = SUPLA_SUPLAN_RESULT_OK;
+  param.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+  param.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
+  const unsigned char expected[3] = {0, 1, 2};
+  ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
+  ASSERT_GT(srpc_sd_async_ensure_suplan_resource_access_result(srpc, &param), 0);
+  SendAndReceive(SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT, 26);
+  ASSERT_NE(nullptr, cr_rd.data.sd_ensure_suplan_resource_access_result);
+  EXPECT_EQ(0, memcmp(cr_rd.data.sd_ensure_suplan_resource_access_result,
+                      expected, sizeof(expected)));
+  srpc_rd_free(&cr_rd);
+}
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_remote_channel_state,
+                     TSD_SuplaRemoteChannelState,
+                     SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, 63,
+                     sd_remote_channel_state)
+
+TEST_F(SrpcTest, srpc_sd_async_remote_channel_state_fixed_wire) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TSD_SuplaRemoteChannelState param = {};
+  param.ChannelId = 0x04030201;
+  param.Channel.Number = 0xFF;
+  param.Channel.Type = 0x08070605;
+  param.Channel.FuncList = 0x0C0B0A09;
+  param.Channel.Default = 0x100F0E0D;
+  param.Channel.Flags = 0x1817161514131211LL;
+  param.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
+  param.Channel.ValueValidityTimeSec = 0x1C1B1A19;
+  const unsigned char value[8] = {0x21, 0x22, 0x23, 0x24,
+                                 0x25, 0x26, 0x27, 0x28};
+  memcpy(param.Channel.value, value, sizeof(value));
+  param.Channel.DefaultIcon = 0x29;
+  param.Channel.SubDeviceId = 0x2A;
+  // Distinct field bytes detect dropped metadata, padding and reordering.
+  const unsigned char expected[40] = {
+      1, 2, 3, 4, 0xFF, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+      17, 18, 19, 20, 21, 22, 23, 24, 1, 25, 26, 27, 28,
+      0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A};
+  ASSERT_EQ(0, memcmp(&param, expected, sizeof(expected)));
+  ASSERT_GT(srpc_sd_async_remote_channel_state(srpc, &param), 0);
+  SendAndReceive(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, 63);
+  ASSERT_NE(nullptr, cr_rd.data.sd_remote_channel_state);
+  EXPECT_EQ(0, memcmp(cr_rd.data.sd_remote_channel_state,
+                      expected, sizeof(expected)));
+  srpc_rd_free(&cr_rd);
+}
+
+TEST_F(SrpcTest, srpc_sd_async_remote_channel_state_malformed_receive) {
+  TSD_SuplaRemoteChannelState param = {};
+  for (size_t size = 0; size < sizeof(param); ++size) {
+    SCOPED_TRACE(size);
+    ReceiveSuplanMalformed(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, &param, size);
+  }
+  unsigned char oversized[sizeof(param) + 1] = {};
+  ReceiveSuplanMalformed(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE,
+                         oversized, sizeof(oversized));
+}
+
+TEST_F(SrpcTest, srpc_sd_async_remote_channel_state_invalid_send) {
+  srpc = srpcInit();
+  TSD_SuplaRemoteChannelState param = {};
+  EXPECT_EQ(0, srpc_sd_async_remote_channel_state(srpc, nullptr));
+  srpc_set_proto_version(srpc, 28);
+  EXPECT_EQ(SUPLA_RESULT_FALSE,
+            srpc_sd_async_remote_channel_state(srpc, &param));
 }
 
 }  // namespace
