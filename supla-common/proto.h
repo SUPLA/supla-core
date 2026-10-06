@@ -322,6 +322,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE 1360         // ver. >= 29
 #define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT 1370  // ver. >= 29
 
+// Deliver a full remote Channel snapshot over the Device-to-Server connection.
+#define SUPLA_SD_CALL_REMOTE_CHANNEL_STATE 1380  // ver. >= 29
+
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
 #define SUPLA_RESULT_HOST_NOT_FOUND -6
@@ -765,6 +768,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // Optional approval request; does not authorize access. Zero is reconcile-only.
 #define SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL 0x01
 
+// Explicit delivery mode requested by ENSURE_RESOURCE_ACCESS.
+#define SUPLA_RESOURCE_DELIVERY_INVALID 0
+#define SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER 1
+#define SUPLA_RESOURCE_DELIVERY_SERVER_STREAM 2
+
 // Result codes returned by SupLAN control-plane operations.
 #define SUPLA_SUPLAN_RESULT_OK 0
 #define SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT 1
@@ -860,12 +868,14 @@ typedef struct {
 typedef struct {
   TSuplaSuplanResource Resource;
   unsigned char Permissions;
-  unsigned char Flags;  // Undefined bits are invalid.
+  unsigned char DeliveryMode;  // SUPLA_RESOURCE_DELIVERY_
+  unsigned char Flags;         // Undefined bits are invalid.
 } TDS_SuplaEnsureResourceAccess;
 
 typedef struct {
   unsigned char Result;
   unsigned char AccessStatus;
+  unsigned char DeliveryMode;  // SUPLA_RESOURCE_DELIVERY_
 } TSD_SuplaEnsureResourceAccessResult;
 
 typedef struct {
@@ -1215,6 +1225,12 @@ typedef struct {
   unsigned char DefaultIcon;
   unsigned char SubDeviceId;  // 0 - no subdevice, 1..255 - subdevice id
 } TDS_SuplaDeviceChannel_E;   // ver. >= 25
+
+typedef struct {
+  // server -> device; SERVER_STREAM delivery
+  _supla_int_t ChannelId;
+  TDS_SuplaDeviceChannel_E Channel;
+} TSD_SuplaRemoteChannelState;  // ver. >= 29
 
 typedef struct {
   // device -> server
