@@ -35,20 +35,26 @@ class supla_suplan_identity_bootstrap {
     root_epoch = 0;
   }
 
-  void start(supla_abstract_srpc_adapter *srpc, int flags,
+  enum class StartResult { Disabled, Pending, Failed };
+
+  StartResult start(supla_abstract_srpc_adapter *srpc, int flags,
              TSD_SuplaDeviceIdentities *identities) {
     reset();
     if (!(flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) ||
         !(flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) ||
-        srpc->get_proto_version() < 29 || identities->DeviceId <= 0 ||
+        srpc->get_proto_version() < 29) {
+      return StartResult::Disabled;
+    }
+    if (identities->DeviceId <= 0 ||
         identities->ChannelCount < 0 ||
         identities->ChannelCount > SUPLA_CHANNELMAXCOUNT) {
-      return;
+      return StartResult::Failed;
     }
     for (int i = 0; i < identities->ChannelCount; i++) {
-      if (identities->ChannelId[i] <= 0) return;
+      if (identities->ChannelId[i] <= 0) return StartResult::Failed;
     }
     pending = srpc->sd_async_suplan_device_identities(identities) > 0;
+    return pending ? StartResult::Pending : StartResult::Failed;
   }
 
   void on_result(const TDS_SuplaDeviceIdentitiesResult *result) {

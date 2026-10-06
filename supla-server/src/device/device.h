@@ -68,8 +68,6 @@ class supla_device : public supla_abstract_connection_object {
   void reset_suplan_identity_bootstrap(void);
   void start_registration_sync(supla_abstract_srpc_adapter *srpc,
                                TSD_SuplaDeviceIdentities *identities);
-  void start_suplan_identity_bootstrap(supla_abstract_srpc_adapter *srpc,
-                                     TSD_SuplaDeviceIdentities *identities);
   void on_suplan_device_identities_result(
       const TDS_SuplaDeviceIdentitiesResult *result);
   // Zero means not ready. M2 must check this before using SupLAN identities.

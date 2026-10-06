@@ -405,17 +405,31 @@ TEST_F(SupLanIdentityBootstrapTest, ordinaryOrInconsistentSyncsImmediately) {
   }
 }
 
-TEST_F(SupLanIdentityBootstrapTest, failedIdentitySendAllowsOrdinarySync) {
+TEST_F(SupLanIdentityBootstrapTest, failedIdentitySendCannotCompleteSync) {
   auto device = std::make_shared<SupLanSyncTestDevice>();
   EXPECT_CALL(srpc, sd_async_suplan_device_identities(_)).WillOnce(Return(0));
-  EXPECT_CALL(*device, send_registration_config()).Times(1);
+  EXPECT_CALL(srpc, sd_async_device_sync_done()).Times(0);
+  EXPECT_CALL(*device, send_registration_config()).Times(0);
   device->start_registration_sync(&srpc, &ids);
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0u, device->get_suplan_root_epoch());
+  device->connection_will_close();
+  Mock::VerifyAndClearExpectations(&srpc);
+  EXPECT_CALL(srpc, sd_async_suplan_device_identities(_)).WillOnce(Return(1));
+  device->start_registration_sync(&srpc, &ids);
+  EXPECT_EQ(0u, device->get_suplan_root_epoch());
+  Mock::VerifyAndClearExpectations(device.get());
+  EXPECT_CALL(*device, send_registration_config()).WillOnce([&]() {
+    EXPECT_EQ(123u, device->get_suplan_root_epoch());
+  });
+  device->on_suplan_device_identities_result(&result);
 }
 
 TEST_F(SupLanIdentityBootstrapTest, deviceDispatcherAndCloseUseSameBarrier) {
-  auto device = std::make_shared<SupLanTestDevice>();
-  device->start_suplan_identity_bootstrap(&srpc, &ids);
+  auto device = std::make_shared<SupLanSyncTestDevice>();
+  device->start_registration_sync(&srpc, &ids);
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
   TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
   TsrpcReceivedData rd = {};
@@ -425,15 +439,15 @@ TEST_F(SupLanIdentityBootstrapTest, deviceDispatcherAndCloseUseSameBarrier) {
   EXPECT_EQ(123u, device->get_suplan_root_epoch());
   device->connection_will_close();
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
-  device->start_suplan_identity_bootstrap(&srpc, &ids);
+  device->start_registration_sync(&srpc, &ids);
   device->connection_will_close();
   device->on_suplan_device_identities_result(&result);
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
 }
 
 TEST_F(SupLanIdentityBootstrapTest, repeatedRegistrationAbandonsOldExchange) {
-  auto device = std::make_shared<SupLanTestDevice>();
-  device->start_suplan_identity_bootstrap(&srpc, &ids);
+  auto device = std::make_shared<SupLanSyncTestDevice>();
+  device->start_registration_sync(&srpc, &ids);
   supla_register_device registration;
   registration.register_device(device, nullptr, nullptr, &srpc, 0, 0, 20);
   TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
@@ -442,13 +456,13 @@ TEST_F(SupLanIdentityBootstrapTest, repeatedRegistrationAbandonsOldExchange) {
 }
 
 TEST_F(SupLanIdentityBootstrapTest, malformedOrOldProtocolResultFailsBarrier) {
-  auto device = std::make_shared<SupLanTestDevice>();
+  auto device = std::make_shared<SupLanSyncTestDevice>();
   TsrpcReceivedData rd = {};
-  device->start_suplan_identity_bootstrap(&srpc, &ids);
+  device->start_registration_sync(&srpc, &ids);
   device->get_srpc_call_handler_collection()->handle_call(
       device, &srpc, &rd, SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT, 29);
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
-  device->start_suplan_identity_bootstrap(&srpc, &ids);
+  device->start_registration_sync(&srpc, &ids);
   TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
   rd.data.ds_suplan_device_identities_result = &result;
   device->get_srpc_call_handler_collection()->handle_call(

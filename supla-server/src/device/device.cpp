@@ -105,11 +105,23 @@ void supla_device::connection_will_close(void) {
 void supla_device::start_registration_sync(
     supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
   lock();
-  identity_bootstrap.start(srpc, flags, identities);
+  auto started = identity_bootstrap.start(srpc, flags, identities);
   registration_sync_pending = identity_bootstrap.is_pending();
   bool defer_sync = registration_sync_pending;
   unlock();
-  if (!defer_sync) send_registration_config();
+  if (started == supla_suplan_identity_bootstrap::StartResult::Failed) {
+    supla_log(LOG_WARNING, "SupLAN identity bootstrap send failed: device=%d",
+              get_id());
+    terminate();
+    return;
+  }
+  if (defer_sync) {
+    supla_log(LOG_INFO,
+              "SupLAN identity bootstrap sent: device=%d, channels=%d",
+              get_id(), identities->ChannelCount);
+  } else {
+    send_registration_config();
+  }
 }
 
 void supla_device::send_registration_config(void) {
@@ -121,20 +133,19 @@ void supla_device::send_registration_config(void) {
   });
 }
 
-void supla_device::start_suplan_identity_bootstrap(
-    supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
-  lock();
-  identity_bootstrap.start(srpc, flags, identities);
-  unlock();
-}
-
 void supla_device::on_suplan_device_identities_result(
     const TDS_SuplaDeviceIdentitiesResult *result) {
   lock();
   bool resume_sync = registration_sync_pending;
   registration_sync_pending = false;
   identity_bootstrap.on_result(result);
+  auto root_epoch = identity_bootstrap.get_root_epoch();
   unlock();
+  if (root_epoch) {
+    supla_log(LOG_INFO,
+              "SupLAN identity bootstrap accepted: device=%d, rootEpoch=%u",
+              get_id(), root_epoch);
+  }
   // A rejected snapshot leaves SupLAN disabled, but ordinary SUPLA sync
   // remains available. Future SupLAN-dependent config must check RootEpoch.
   if (resume_sync) send_registration_config();
@@ -307,7 +318,12 @@ void supla_device::send_config_to_device(void) {
 void supla_device::send_sync_done_to_device(void) {
   if (get_protocol_version() >= 29 &&
       (get_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED)) {
-    get_connection()->get_srpc_adapter()->sd_async_device_sync_done();
+    if (get_connection()->get_srpc_adapter()->sd_async_device_sync_done() > 0 &&
+        get_suplan_root_epoch()) {
+      supla_log(LOG_INFO,
+                "SupLAN registration sync done: device=%d, rootEpoch=%u",
+                get_id(), get_suplan_root_epoch());
+    }
   }
 }
 
