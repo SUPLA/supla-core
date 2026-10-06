@@ -1278,6 +1278,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
+      case SUPLA_SD_CALL_REMOTE_CHANNEL_STATE:
+        if (srpc->sdp.data_size == sizeof(TSD_SuplaRemoteChannelState)) {
+          rd->data.sd_remote_channel_state =
+              (TSD_SuplaRemoteChannelState *)calloc(
+                  1, sizeof(TSD_SuplaRemoteChannelState));
+        }
+        break;
+
       case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
         call_with_no_data = 1;
         break;
@@ -2030,6 +2038,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id) {
     case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT:
     case SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE:
     case SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT:
+    case SUPLA_SD_CALL_REMOTE_CHANNEL_STATE:
     case SUPLA_SD_CALL_DEVICE_SYNC_DONE:
       return 29;
   }
@@ -2704,6 +2713,16 @@ srpc_sd_async_ensure_suplan_resource_share_result(
   return srpc_async_call(
       _srpc, SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT, (char *)data,
       sizeof(TSD_SuplaEnsureResourceShareResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_remote_channel_state(
+    void *_srpc, TSD_SuplaRemoteChannelState *data) {
+  if (!data) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_REMOTE_CHANNEL_STATE,
+                         (char *)data, sizeof(TSD_SuplaRemoteChannelState));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_sync_done(void *_srpc) {
