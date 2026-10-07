@@ -63,3 +63,17 @@ void supla_suplan_server_peers::diagnostic(uint64_t id, int device,
             "SupLAN provisioning: association=%llu device=%d result=%u",
             static_cast<unsigned long long>(id), device, result);
 }
+
+bool supla_suplan_server_peers::channel_deleted(int user_id, int channel_id) {
+  supla_suplan::PeerService service(
+      [user_id]() { return std::make_unique<supla_suplan::PeerDao>(user_id); },
+      nullptr);
+  return service.delete_resource(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL,
+                                 channel_id);
+}
+bool supla_suplan_server_peers::device_deleted(int user_id, int device_id) {
+  supla_suplan::PeerService service(
+      [user_id]() { return std::make_unique<supla_suplan::PeerDao>(user_id); },
+      nullptr);
+  return service.remove_device(device_id);
+}

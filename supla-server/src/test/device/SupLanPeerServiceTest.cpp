@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "suplan/peer_provisioner.h"
+#include "test/doubles/suplan/PeerProvisionerTestAccess.h"
 using namespace supla_suplan;  // NOLINT
 namespace {
 struct Store {
@@ -266,26 +267,28 @@ TEST_F(SupLanPeerTest, OneGrantSourceKeyThenDestination) {
 }
 TEST_F(SupLanPeerTest, CompletedNewContextRetiresFlow) {
   add();
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   source_ok();
-  EXPECT_EQ(1u, peers.transient_flow_count());  // Destination still pending.
+  // Destination still pending.
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   destination_result();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
   EXPECT_EQ(123u, store.a.root);
 }
 TEST_F(SupLanPeerTest, CompletedAclOnlyUpdateRetiresFlow) {
   installed();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   grant.permissions = 2;
   ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(0, transport.sources.back().Flags);
   EXPECT_EQ(0, transport.destination_key_sizes.back());
   destination_result();
-  EXPECT_EQ(1u, peers.transient_flow_count());  // Source still pending.
+  // Source still pending.
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   source_ok();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
   EXPECT_EQ(2u, store.a.revision);
 }
@@ -293,27 +296,27 @@ TEST_F(SupLanPeerTest, SourceOnlyRetiresAndDestinationReconstructsKeyRecovery) {
   transport.online[2] = false;
   add();
   source_ok();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_TRUE(transport.destinations.empty());
   EXPECT_EQ(123u, store.a.root);
   transport.online[2] = true;
   peers.reconnect(2);
   auto no_key = transport.sources.size() - 1;
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(0, transport.sources.back().Flags);
   EXPECT_EQ(0, transport.destination_key_sizes.back());
   destination_result(SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED);
   source_ok(no_key);
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY,
             transport.sources.back().Flags);
   source_ok(no_key);  // Duplicate must not retire the pending rederive.
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   source_ok();
   EXPECT_EQ(32, transport.destination_key_sizes.back());
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   destination_result();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_TRUE(transport.errors.empty());
 }
 TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
@@ -323,7 +326,7 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   remove();
   auto empty = transport.sources.size() - 1;
   source_ok();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
   EXPECT_TRUE(store.a.source_acked);
   auto writes = store.writes;
@@ -331,17 +334,17 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   source_ok(nonempty);
   peers.reconcile(store.a.id);
   peers.reconnect(1);
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(writes, store.writes);
   EXPECT_EQ(sends, transport.order.size());
   transport.online[2] = true;
   peers.reconnect(2);
   auto destination_empty = transport.destinations.size() - 1;
   EXPECT_EQ(0, transport.destination_key_sizes.back());
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   destination_result();
   EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   add();
   writes = store.writes;
   sends = transport.order.size();
@@ -349,16 +352,16 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   destination_result(0, destination_empty);
   EXPECT_EQ(writes, store.writes);
   EXPECT_EQ(sends, transport.order.size());
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
   EXPECT_EQ(2u, store.a.generation);
   source_ok();
   destination_result();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, DelayedRepliesAfterRetirementCannotMutateDb) {
   installed();
-  ASSERT_EQ(0u, peers.transient_flow_count());
+  ASSERT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   auto writes = store.writes;
   auto sends = transport.order.size();
   source_ok();  // Helper also verifies that the ignored key is wiped.
@@ -369,7 +372,7 @@ TEST_F(SupLanPeerTest, DelayedRepliesAfterRetirementCannotMutateDb) {
   EXPECT_EQ(sends, transport.order.size());
   EXPECT_EQ(0, transport.refreshes);
   EXPECT_TRUE(transport.errors.empty());
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, SequentialCompletedAssociationsExceedFormerLifetimeCap) {
   // Advance the repository double through independent ACTIVE association IDs.
@@ -386,7 +389,8 @@ TEST_F(SupLanPeerTest, SequentialCompletedAssociationsExceedFormerLifetimeCap) {
     source_ok();
     ASSERT_EQ(id, transport.destinations.size());
     destination_result();
-    ASSERT_EQ(0u, peers.transient_flow_count()) << "association=" << id;
+    ASSERT_EQ(0u, PeerProvisionerTestAccess::count(peers))
+        << "association=" << id;
     ASSERT_TRUE(transport.errors.empty());
     ASSERT_EQ(Lifecycle::Active, store.a.lifecycle);
   }
@@ -403,7 +407,7 @@ TEST_F(SupLanPeerTest, ConcurrentLiveWorkStillHonorsSafetyCapAndReusesSlot) {
     if (id == 1) first = store.a;
     peers.reconcile(id);  // Leave each Source response pending.
   }
-  ASSERT_EQ(4096u, peers.transient_flow_count());
+  ASSERT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
   ASSERT_EQ(4096u, transport.sources.size());
   ASSERT_EQ(1u, transport.errors.size());
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED, transport.errors.back());
@@ -411,26 +415,26 @@ TEST_F(SupLanPeerTest, ConcurrentLiveWorkStillHonorsSafetyCapAndReusesSlot) {
   store.a = first;
   source_ok(0);
   destination_result();
-  ASSERT_EQ(4095u, peers.transient_flow_count());
+  ASSERT_EQ(4095u, PeerProvisionerTestAccess::count(peers));
   store.a = next;
   peers.reconcile(next.id);
   ASSERT_EQ(4097u, transport.sources.size());
-  EXPECT_EQ(4096u, peers.transient_flow_count());
+  EXPECT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
   source_ok();
   destination_result();
-  EXPECT_EQ(4095u, peers.transient_flow_count());
+  EXPECT_EQ(4095u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, OfflineUnsentWorkDoesNotNeedResidentFlow) {
   transport.online[1] = transport.online[2] = false;
   add();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_TRUE(transport.order.empty());
   transport.online[1] = transport.online[2] = true;
   peers.reconnect(1);
-  EXPECT_EQ(1u, peers.transient_flow_count());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   source_ok();
   destination_result();
-  EXPECT_EQ(0u, peers.transient_flow_count());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, OriginsUnionControlNormalizationAndNoopRemoval) {
   installed();

@@ -23,6 +23,7 @@ class PeerTransport {
   virtual void diagnostic(uint64_t association, int device, uint8_t result) = 0;
 };
 class PeerProvisioner {
+  friend class PeerProvisionerTestAccess;
   struct Side {
     bool sent = false;
     bool pending = false;
@@ -61,7 +62,6 @@ class PeerProvisioner {
   void on_destination(
       int device, const TDS_SuplaSetSuplanDestinationAssociationResult *result);
   void disconnected(int device);
-  size_t transient_flow_count();
 };
 void wipe_key(void *buffer, size_t size);
 }  // namespace supla_suplan

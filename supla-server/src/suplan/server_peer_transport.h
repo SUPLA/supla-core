@@ -9,6 +9,9 @@ class supla_suplan_server_peers : public supla_suplan::PeerTransport {
   supla_suplan::PeerProvisioner provisioner;
 
  public:
+  // Durable delete handling without constructing a runtime user or transport.
+  static bool channel_deleted(int user_id, int channel_id);
+  static bool device_deleted(int user_id, int device_id);
   explicit supla_suplan_server_peers(supla_user *user);
   supla_suplan::PeerProvisioner *peers() { return &provisioner; }
   bool ready(int device) override;

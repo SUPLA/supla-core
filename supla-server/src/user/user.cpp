@@ -511,8 +511,15 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
                                    const supla_caller &caller) {
   supla_user *user = supla_user::find(UserID, false);
 
+  bool cleaned =
+      user
+          ? user->get_suplan_peers()->peers()->grants()->remove_device(DeviceID)
+          : supla_suplan_server_peers::device_deleted(UserID, DeviceID);
+  if (!cleaned)
+    supla_log(LOG_WARNING,
+              "SupLAN device delete cleanup failed: user=%d device=%d", UserID,
+              DeviceID);
   if (user) {
-    user->get_suplan_peers()->peers()->grants()->remove_device(DeviceID);
     user->get_devices()->on_device_deleted(DeviceID);
     user->get_clients()->on_device_deleted(DeviceID);
 
@@ -527,9 +534,15 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
                                     const supla_caller &caller) {
   supla_user *user = supla_user::find(user_id, false);
 
+  bool cleaned =
+      user ? user->get_suplan_peers()->peers()->grants()->delete_resource(
+                 SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel_id)
+           : supla_suplan_server_peers::channel_deleted(user_id, channel_id);
+  if (!cleaned)
+    supla_log(LOG_WARNING,
+              "SupLAN channel delete cleanup failed: user=%d channel=%d",
+              user_id, channel_id);
   if (user) {
-    user->get_suplan_peers()->peers()->grants()->delete_resource(
-        SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel_id);
     user->get_devices()->on_channel_deleted(device_id, channel_id);
     user->get_clients()->on_channel_deleted(channel_id);
 

@@ -43,10 +43,6 @@ std::shared_ptr<PeerProvisioner::Flow> PeerProvisioner::flow(uint64_t id,
   flows[id] = f;
   return f;
 }
-size_t PeerProvisioner::transient_flow_count() {
-  std::lock_guard<std::mutex> lock(flows_mutex);
-  return flows.size();
-}
 void PeerProvisioner::retire_completed(uint64_t id,
                                       const std::shared_ptr<Flow> &f) {
   // Caller holds the association gate. Finish phase transitions/forwarding
