@@ -3915,12 +3915,14 @@ srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
 
     // offset + header_size < size <= sizeof(ev->value), so the subtraction
     // below cannot underflow and next->size cannot wrap the sum around.
+    // Elements are validated against the declared container size (ev->size),
+    // not only against the physical capacity of ev->value.
     while (offset + header_size < size) {
       TSuplaChannelExtendedValue *next =
           (TSuplaChannelExtendedValue *)&ev->value[offset];
 
       if (next->type == EV_TYPE_NONE || next->size == 0 ||
-          next->size > sizeof(ev->value) - offset - header_size) {
+          next->size > size - offset - header_size) {
         return 0;
       }
 

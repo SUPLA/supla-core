@@ -40,6 +40,25 @@ bool supla_ch_get_channel_value_with_auth::can_handle_call(
   return call_id == SUPLA_CS_CALL_GET_CHANNEL_VALUE_WITH_AUTH;
 }
 
+supla_ch_get_channel_value_with_auth::authentication_result
+supla_ch_get_channel_value_with_auth::authenticate(
+    shared_ptr<supla_client> client, TCS_ClientAuthorizationDetails* auth,
+    supla_abstract_srpc_adapter* srpc_adapter,
+    supla_mariadb_access_provider* dba, supla_connection_dao* conn_dao,
+    supla_client_dao* client_dao) {
+  supla_register_client regcli;
+  regcli.authenticate(client, auth, srpc_adapter, dba, conn_dao, client_dao,
+                      true, nullptr);
+
+  return {regcli.get_result_code(), regcli.get_client_id(),
+          regcli.get_user_id()};
+}
+
+bool supla_ch_get_channel_value_with_auth::channel_exists(
+    supla_client_dao* client_dao, int client_id, int channel_id) {
+  return client_dao->channel_exists(client_id, channel_id);
+}
+
 void supla_ch_get_channel_value_with_auth::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
@@ -47,8 +66,14 @@ void supla_ch_get_channel_value_with_auth::handle_call(
     return;
   }
 
-  TCS_ClientAuthorizationDetails* auth = &rd->data.cs_get_value_with_auth->Auth;
-  int channel_id = rd->data.cs_get_value_with_auth->ChannelId;
+  handle_request(client, srpc_adapter, rd->data.cs_get_value_with_auth);
+}
+
+void supla_ch_get_channel_value_with_auth::handle_request(
+    shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
+    TCS_GetChannelValueWithAuth* request) {
+  TCS_ClientAuthorizationDetails* auth = &request->Auth;
+  int channel_id = request->ChannelId;
 
   auth->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
   auth->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE - 1] = 0;
@@ -57,24 +82,23 @@ void supla_ch_get_channel_value_with_auth::handle_call(
   supla_client_dao client_dao(&dba);
   supla_connection_dao conn_dao(&dba);
 
-  supla_register_client regcli;
-  regcli.authenticate(client, auth, srpc_adapter, &dba, &conn_dao, &client_dao,
-                      true, nullptr);
+  authentication_result auth_result =
+      authenticate(client, auth, srpc_adapter, &dba, &conn_dao, &client_dao);
 
   TSC_GetChannelValueResult result = {};
   result.ChannelId = channel_id;
 
-  if (regcli.get_result_code() != SUPLA_RESULTCODE_TRUE) {
-    result.ResultCode = regcli.get_result_code();
+  if (auth_result.result_code != SUPLA_RESULTCODE_TRUE) {
+    result.ResultCode = auth_result.result_code;
   } else if (channel_id == 0 ||
-             !client_dao.channel_exists(regcli.get_client_id(), channel_id)) {
+             !channel_exists(&client_dao, auth_result.client_id, channel_id)) {
     // The channel must be available to the authenticated client (its
     // AccessID), not just belong to the same user.
     result.ResultCode = SUPLA_RESULTCODE_SUBJECT_NOT_FOUND;
   } else {
     result.ResultCode = SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE;
 
-    supla_user* user = supla_user::find(regcli.get_user_id(), false);
+    supla_user* user = supla_user::find(auth_result.user_id, false);
     if (user) {
       supla_channel_availability_status status(true);
 
@@ -93,9 +117,11 @@ void supla_ch_get_channel_value_with_auth::handle_call(
         result.ResultCode = SUPLA_RESULTCODE_TRUE;
       }
     }
-
-    srpc_adapter->sc_async_get_channel_value_result(&result);
   }
+
+  // Always respond, also on authentication failure or when the channel is
+  // not available to the client, so the caller does not wait for a timeout.
+  srpc_adapter->sc_async_get_channel_value_result(&result);
 }
 
 bool supla_ch_get_channel_value_with_auth::is_registration_required(void) {

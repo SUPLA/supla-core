@@ -3814,6 +3814,82 @@ TEST_F(SrpcTest, srpc_evtool_value_get) {
   }
 }
 
+TEST_F(SrpcTest, srpc_evtool_value_get_truncated_multi_value) {
+  const unsigned int header_size =
+      sizeof(TSuplaChannelExtendedValue) - SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+
+  TSuplaChannelExtendedValue b = {};
+  TSuplaChannelExtendedValue c = {};
+  TSuplaChannelExtendedValue multi = {};
+
+  b.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  b.size = 10;
+  set_random(b.value, b.size);
+  c.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  c.size = 20;
+  set_random(c.value, c.size);
+
+  ASSERT_EQ(srpc_evtool_value_add(&multi, &b), 1);
+  ASSERT_EQ(srpc_evtool_value_add(&multi, &c), 1);
+  ASSERT_EQ(multi.type, EV_TYPE_MULTI_VALUE);
+
+  const unsigned int full_size = 2 * header_size + b.size + c.size;
+  ASSERT_EQ(multi.size, full_size);
+
+  TSuplaChannelExtendedValue ev = {};
+  TSuplaChannelExtendedValue x = {};
+
+  // Empty container
+  ev = multi;
+  ev.size = 0;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Truncated inside the header of the first element
+  ev = multi;
+  ev.size = header_size - 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Complete header of the first element, truncated payload
+  ev = multi;
+  ev.size = header_size + 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+  ev.size = header_size + b.size - 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Valid first element, second truncated inside its header
+  ev = multi;
+  ev.size = header_size + b.size + 2;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+
+  // Valid first element, second with complete header and truncated payload
+  ev = multi;
+  ev.size = full_size - 1;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+
+  // Declared size larger than the physical capacity of the buffer
+  ev = multi;
+  ev.size = 0xFFFFFFFF;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 1);
+  EXPECT_EQ(memcmp(&x, &c, header_size + c.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 2, &x), 0);
+
+  // Element size that would wrap the bounds arithmetic around
+  ev = multi;
+  ((TSuplaChannelExtendedValue *)&ev.value[header_size + b.size])->size =
+      0xFFFFFFF0;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+}
+
 //---------------------------------------------------------
 // GET USER LOCALTIME
 //---------------------------------------------------------
