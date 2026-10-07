@@ -3932,6 +3932,10 @@ srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
       offset += header_size + next->size;
       n++;
     }
+
+    // Element not found (or the container is empty/truncated). Do not fall
+    // through to the single-value branch below.
+    return 0;
   }
 
   if (index == 0) {
