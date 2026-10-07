@@ -43,6 +43,25 @@ std::shared_ptr<PeerProvisioner::Flow> PeerProvisioner::flow(uint64_t id,
   flows[id] = f;
   return f;
 }
+size_t PeerProvisioner::transient_flow_count() {
+  std::lock_guard<std::mutex> lock(flows_mutex);
+  return flows.size();
+}
+void PeerProvisioner::retire_completed(uint64_t id,
+                                      const std::shared_ptr<Flow> &f) {
+  // Caller holds the association gate. Finish phase transitions/forwarding
+  // before this check: their pending replies still need the duplicate fences.
+  for (const Side *side : {&f->source, &f->destination}) {
+    if (side->pending || side->blocked ||
+        (side->sent && !side->acknowledged))
+      return;
+  }
+  // Offline/unsent sides need no resident work: reconnect reconstructs them
+  // from DB. Keep unfinished failed/unknown work's existing retry policy.
+  std::lock_guard<std::mutex> lock(flows_mutex);
+  auto it = flows.find(id);
+  if (it != flows.end() && it->second == f) flows.erase(it);
+}
 bool PeerProvisioner::accepted(int device, const Identity &identity) {
   auto repo = factory();
   return repo->accept_identity(device, identity);
@@ -175,6 +194,7 @@ void PeerProvisioner::reconcile(uint64_t id, bool meaningful_event) {
       send_source(f.get(), false);
     if (!a.destination_acked && !a.destination_removed)
       send_destination(f.get(), nullptr);
+    retire_completed(id, f);
     return;
   }
   bool new_context = a.root != root ||
@@ -192,10 +212,12 @@ void PeerProvisioner::reconcile(uint64_t id, bool meaningful_event) {
     send_source(f.get(), false);
     send_destination(f.get(), nullptr);
   }
+  retire_completed(id, f);
 }
 void PeerProvisioner::result(Flow *f, bool source, uint8_t code) {
   Side &side = source ? f->source : f->destination;
   side.pending = false;
+  side.acknowledged = code == SUPLA_SUPLAN_RESULT_OK;
   if (code == SUPLA_SUPLAN_RESULT_OK) return;
   if (!source && code == SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED &&
       f->desired.lifecycle == Lifecycle::Active && !f->key_recovery_started) {
@@ -290,6 +312,7 @@ void PeerProvisioner::on_source(int device,
         send_source(f.get(), true);
       }
     }
+    retire_completed(pair.id, f);
   }
   if (ack) service.cleanup_ack(cleanup, true);
 }
@@ -328,6 +351,7 @@ void PeerProvisioner::on_destination(
       cleanup = a;
       ack = true;
     }
+    retire_completed(pair.id, f);
   }
   if (ack) service.cleanup_ack(cleanup, false);
 }

@@ -27,6 +27,7 @@ class PeerProvisioner {
     bool sent = false;
     bool pending = false;
     bool blocked = false;
+    bool acknowledged = false;
     bool key_requested = false;
     std::chrono::steady_clock::time_point deadline;
   };
@@ -44,6 +45,7 @@ class PeerProvisioner {
   std::mutex flows_mutex;
   std::map<uint64_t, std::shared_ptr<Flow>> flows;
   std::shared_ptr<Flow> flow(uint64_t id, bool create = true);
+  void retire_completed(uint64_t id, const std::shared_ptr<Flow> &flow);
   bool current(Repository *repo, const Flow &flow, Association *a);
   void send_source(Flow *flow, bool key);
   void send_destination(Flow *flow, const unsigned char *key);
@@ -59,6 +61,7 @@ class PeerProvisioner {
   void on_destination(
       int device, const TDS_SuplaSetSuplanDestinationAssociationResult *result);
   void disconnected(int device);
+  size_t transient_flow_count();
 };
 void wipe_key(void *buffer, size_t size);
 }  // namespace supla_suplan
