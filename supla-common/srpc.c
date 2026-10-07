@@ -152,10 +152,41 @@ void SRPC_ICACHE_FLASH srpc_unlock(void *_srpc) {
   lck_unlock(((Tsrpc *)_srpc)->lck);
 }
 
+// Server peer keys must not remain in reusable SRPC packet staging/slots.
+// This does not alter wire encoding or device-side behavior.
+#if defined(__SUPLA_SERVER)
+#ifdef SRPC_WITH_PACKET_LOG_HOOKS
+static unsigned char srpc_server_secret_call(unsigned int call_id) {
+  return call_id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT ||
+         call_id == SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION;
+}
+
+#endif
+
+static void srpc_server_wipe_peer_key(TSuplaDataPacket *sdp) {
+  unsigned int offset;
+  if (sdp->call_id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT) {
+    offset = offsetof(TDS_SuplaSetSuplanSourceAssociationResult, PeerKey);
+  } else if (sdp->call_id == SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION) {
+    offset = offsetof(TSDS_SuplaSetSuplanDestinationAssociation, PeerKey);
+  } else {
+    return;
+  }
+  if (sdp->data_size >= offset + SUPLA_SUPLAN_PEER_KEY_SIZE) {
+    volatile unsigned char *key = (unsigned char *)sdp->data + offset;
+    unsigned int i;
+    for (i = 0; i < SUPLA_SUPLAN_PEER_KEY_SIZE; ++i) key[i] = 0;
+  }
+}
+#else
+#define srpc_server_wipe_peer_key(sdp) ((void)0)
+#endif
+
 void SRPC_ICACHE_FLASH srpc_queue_free(Tsrpc_Queue *queue) {
   _supla_int_t a;
   for (a = 0; a < SRPC_QUEUE_SIZE; a++) {
     if (queue->item[a] != NULL) {
+      srpc_server_wipe_peer_key(queue->item[a]);
       free(queue->item[a]);
     }
   }
@@ -179,6 +210,7 @@ void SRPC_ICACHE_FLASH srpc_free(void *_srpc) {
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
     lck_free(srpc->lck);
 
+    srpc_server_wipe_peer_key(&srpc->sdp);
     free(srpc);
   }
 }
@@ -213,6 +245,7 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(Tsrpc_Queue *queue, TSuplaDataPacket *sdp,
   for (a = 0; a < queue->item_count; a++)
     if (rr_id == 0 || queue->item[a]->rr_id == rr_id) {
       memcpy(sdp, queue->item[a], sizeof(TSuplaDataPacket));
+      srpc_server_wipe_peer_key(queue->item[a]);
 
       if (queue->alloc_count > SRPC_QUEUE_MIN_ALLOC_COUNT) {
         queue->alloc_count--;
@@ -267,6 +300,7 @@ char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
 
     srpc->params.data_write(buff, data_size + SUPLA_TAG_SIZE,
                             srpc->params.user_params);
+    srpc_server_wipe_peer_key((TSuplaDataPacket *)buff);
     free(buff);
   }
 #else
@@ -410,8 +444,11 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
       result != SUPLA_RESULT_FALSE) {
     supla_log(LOG_DEBUG, "sproto_out_buffer_append error: %i", result);
     srpc->last_iterate_reason = SRPC_ITERATE_REASON_OUTPUT_BUFFER_ERROR;
+    srpc_server_wipe_peer_key(&srpc->sdp);
     return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
   }
+
+  srpc_server_wipe_peer_key(&srpc->sdp);
 
   data_size = sproto_pop_out_data(srpc->proto, data_buffer, SRPC_BUFFER_SIZE);
 
@@ -862,7 +899,11 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
     rd->rr_id = srpc->sdp.rr_id;
 
 #ifdef SRPC_WITH_PACKET_LOG_HOOKS
-    if (srpc->params.on_packet_received != NULL) {
+    if (srpc->params.on_packet_received != NULL
+#if defined(__SUPLA_SERVER)
+        && !srpc_server_secret_call(rd->call_id)
+#endif
+    ) {
       srpc->params.on_packet_received(_srpc,
                                       rd->call_id,
                                       srpc->sdp.data,
@@ -1851,11 +1892,13 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
     if (rd->data.dcs_ping != NULL) {
       if (srpc->sdp.data_size > 0) {
         memcpy(rd->data.dcs_ping, srpc->sdp.data, srpc->sdp.data_size);
+        srpc_server_wipe_peer_key(&srpc->sdp);
       }
 
       return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
     }
 
+    srpc_server_wipe_peer_key(&srpc->sdp);
     return lck_unlock_r(srpc->lck, SUPLA_RESULT_DATA_ERROR);
   }
 
@@ -2092,7 +2135,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
           sproto_set_data(&srpc->sdp, data, data_size, call_id) &&
       srpc_out_queue_push(srpc, &srpc->sdp)) {
 #ifdef SRPC_WITH_PACKET_LOG_HOOKS
-    if (srpc->params.on_packet_sent != NULL) {
+    if (srpc->params.on_packet_sent != NULL
+#if defined(__SUPLA_SERVER)
+        && !srpc_server_secret_call(call_id)
+#endif
+    ) {
       srpc->params.on_packet_sent(_srpc,
                                   call_id,
                                   data,
@@ -2106,9 +2153,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
     }
 #endif
 
+    srpc_server_wipe_peer_key(&srpc->sdp);
     return lck_unlock_r(srpc->lck, srpc->sdp.rr_id);
   }
 
+  srpc_server_wipe_peer_key(&srpc->sdp);
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_FALSE);
 }
 

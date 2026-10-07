@@ -96,6 +96,7 @@ RM := rm -rf
 -include src/device/extended_value/subdir.mk
 -include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
+-include src/suplan/subdir.mk
 -include src/db/subdir.mk
 -include src/date/subdir.mk
 -include src/datalogger/subdir.mk

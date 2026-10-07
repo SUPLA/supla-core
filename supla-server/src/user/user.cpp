@@ -17,6 +17,7 @@
  */
 
 #include "user.h"
+#include "suplan/server_peer_transport.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -75,6 +76,7 @@ char supla_user::find_user_by_suid(void *ptr, void *suid) {
 void supla_user::user_init(int UserID, const char *short_unique_id,
                            const char *long_unique_id) {
   this->UserID = UserID;
+  this->suplan_peers = new supla_suplan_server_peers(this);
 
   this->latitude = 0;
   this->longitude = 0;
@@ -127,6 +129,7 @@ supla_user::~supla_user() {
   delete google_home_credentials;
   delete state_webhook_credentials;
 
+  delete suplan_peers;
   delete devices;
   delete clients;
 }
@@ -509,6 +512,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
+    user->get_suplan_peers()->peers()->grants()->remove_device(DeviceID);
     user->get_devices()->on_device_deleted(DeviceID);
     user->get_clients()->on_device_deleted(DeviceID);
 
@@ -524,6 +528,8 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
   supla_user *user = supla_user::find(user_id, false);
 
   if (user) {
+    user->get_suplan_peers()->peers()->grants()->delete_resource(
+        SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel_id);
     user->get_devices()->on_channel_deleted(device_id, channel_id);
     user->get_clients()->on_channel_deleted(channel_id);
 
@@ -989,4 +995,8 @@ std::string supla_user::get_timezone(double *latitude, double *longitude) {
   lck_unlock(lck);
 
   return result;
+}
+
+supla_suplan_server_peers *supla_user::get_suplan_peers(void) {
+  return suplan_peers;
 }

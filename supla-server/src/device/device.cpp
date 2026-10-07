@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <list>
 #include <memory>
 
@@ -40,6 +41,7 @@
 #include "safearray.h"
 #include "srpc/srpc.h"
 #include "user.h"
+#include "suplan/server_peer_transport.h"
 #include "vbt/value_based_triggers.h"
 
 using std::dynamic_pointer_cast;
@@ -94,10 +96,15 @@ void supla_device::reset_suplan_identity_bootstrap(void) {
   lock();
   identity_bootstrap.reset();
   registration_sync_pending = false;
+  suplan_peer_ready = false;
+  suplan_registration_channels.clear();
   unlock();
 }
 
 void supla_device::connection_will_close(void) {
+  if (get_user()) {
+    get_user()->get_suplan_peers()->peers()->disconnected(get_id());
+  }
   reset_suplan_identity_bootstrap();
   supla_abstract_connection_object::connection_will_close();
 }
@@ -105,7 +112,15 @@ void supla_device::connection_will_close(void) {
 void supla_device::start_registration_sync(
     supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
   lock();
+  suplan_peer_ready = false;
+  suplan_registration_channels.clear();
   auto started = identity_bootstrap.start(srpc, flags, identities);
+  if (identity_bootstrap.is_pending()) {
+    for (int i = 0; i < identities->ChannelCount; ++i)
+      suplan_registration_channels.push_back(identities->ChannelId[i]);
+    std::sort(suplan_registration_channels.begin(),
+              suplan_registration_channels.end());
+  }
   registration_sync_pending = identity_bootstrap.is_pending();
   if (registration_sync_pending && channels) {
     for (int i = 0; i < identities->ChannelCount; ++i) {
@@ -140,6 +155,7 @@ void supla_device::send_registration_config(void) {
   // Keep the existing fragment coordinator and sync-done ordering.
   get_channels()->send_configs_to_device([](supla_device *device) -> void {
     device->send_queued_calcfg_requests();
+    device->reconcile_suplan_peers();
     device->send_sync_done_to_device();
   });
 }
@@ -160,6 +176,26 @@ void supla_device::on_suplan_device_identities_result(
   // A rejected snapshot leaves SupLAN disabled, but ordinary SUPLA sync
   // remains available. Future SupLAN-dependent config must check RootEpoch.
   if (resume_sync) send_registration_config();
+}
+
+void supla_device::reconcile_suplan_peers(void) {
+  if (!get_user() || !get_connection()) return;
+  lock();
+  supla_suplan::Identity identity;
+  identity.root = identity_bootstrap.get_root_epoch();
+  identity.channels = suplan_registration_channels;
+  unlock();
+  if (!identity.root) return;
+  auto peers = get_user()->get_suplan_peers()->peers();
+  if (!peers->accepted(get_id(), identity)) {
+    supla_log(LOG_WARNING, "SupLAN peer identity persistence failed: device=%d",
+              get_id());
+    return;
+  }
+  lock();
+  suplan_peer_ready = true;
+  unlock();
+  peers->reconnect(get_id());
 }
 
 unsigned _supla_int_t supla_device::get_suplan_root_epoch(void) {
@@ -497,4 +533,11 @@ bool supla_device::set_cfg_mode_password(const char *password,
   }
 
   return false;
+}
+
+bool supla_device::is_suplan_peer_ready(void) {
+  lock();
+  bool result = suplan_peer_ready && identity_bootstrap.is_ready();
+  unlock();
+  return result;
 }

@@ -23,6 +23,8 @@
 
 #include <list>
 #include <memory>
+#include <vector>
+#include <cstdint>
 
 #include "device/calcfg_queue.h"
 #include "device/devicechannels.h"
@@ -35,6 +37,8 @@ class supla_device : public supla_abstract_connection_object {
  private:
   supla_suplan_identity_bootstrap identity_bootstrap;
   bool registration_sync_pending = false;
+  bool suplan_peer_ready = false;
+  std::vector<uint32_t> suplan_registration_channels;
   int flags;
   short manufacturer_id;
   static supla_device_call_handler_collection call_handler_collection;
@@ -66,6 +70,8 @@ class supla_device : public supla_abstract_connection_object {
   virtual void iterate(void);
   virtual void connection_will_close(void);
   void reset_suplan_identity_bootstrap(void);
+  bool is_suplan_peer_ready(void);
+  void reconcile_suplan_peers(void);
   void start_registration_sync(supla_abstract_srpc_adapter *srpc,
                                TSD_SuplaDeviceIdentities *identities);
   void on_suplan_device_identities_result(
