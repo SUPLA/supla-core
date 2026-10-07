@@ -79,6 +79,12 @@ void supla_abstract_register_client::send_result(int resultcode) {
   }
 
   if (dont_send_result) {
+    // authenticate() (EXECUTE_ACTION_WITH_AUTH, GET_CHANNEL_VALUE_WITH_AUTH,
+    // REGISTER_PN_CLIENT_TOKEN) must be throttled just like a regular
+    // registration. Otherwise it can be used as a fast credentials oracle.
+    if (resultcode != SUPLA_RESULTCODE_TRUE) {
+      usleep(get_hold_time_on_failure_usec());
+    }
     return;
   }
 

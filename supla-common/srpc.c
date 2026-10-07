@@ -1219,21 +1219,21 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (VALID_SIZE(TSDS_SetChannelConfig, char, ConfigSize,
                        SUPLA_CHANNEL_CONFIG_MAXSIZE)) {
           rd->data.sds_set_channel_config_request =
-              (TSDS_SetChannelConfig *)malloc(sizeof(TSDS_SetChannelConfig));
+              (TSDS_SetChannelConfig *)calloc(1, sizeof(TSDS_SetChannelConfig));
         }
         break;
       case SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT:
       case SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT:
         if (srpc->sdp.data_size == sizeof(TSDS_SetChannelConfigResult)) {
           rd->data.sds_set_channel_config_result =
-              (TSDS_SetChannelConfigResult *)malloc(
+              (TSDS_SetChannelConfigResult *)calloc(1,
                   sizeof(TSDS_SetChannelConfigResult));
         }
         break;
       case SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED:
         if (srpc->sdp.data_size == sizeof(TSD_ChannelConfigFinished)) {
           rd->data.sd_channel_config_finished =
-              (TSD_ChannelConfigFinished *)malloc(
+              (TSD_ChannelConfigFinished *)calloc(1,
                   sizeof(TSD_ChannelConfigFinished));
         }
         break;
@@ -1242,21 +1242,21 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (VALID_SIZE(TSDS_SetDeviceConfig, char, ConfigSize,
                        SUPLA_DEVICE_CONFIG_MAXSIZE)) {
           rd->data.sds_set_device_config_request =
-              (TSDS_SetDeviceConfig *)malloc(sizeof(TSDS_SetDeviceConfig));
+              (TSDS_SetDeviceConfig *)calloc(1, sizeof(TSDS_SetDeviceConfig));
         }
         break;
       case SUPLA_SD_CALL_SET_DEVICE_CONFIG_RESULT:
       case SUPLA_DS_CALL_SET_DEVICE_CONFIG_RESULT:
         if (srpc->sdp.data_size == sizeof(TSDS_SetDeviceConfigResult)) {
           rd->data.sds_set_device_config_result =
-              (TSDS_SetDeviceConfigResult *)malloc(
+              (TSDS_SetDeviceConfigResult *)calloc(1,
                   sizeof(TSDS_SetDeviceConfigResult));
         }
         break;
       case SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS:
         if (srpc->sdp.data_size == sizeof(TDS_SubdeviceDetails)) {
           rd->data.ds_subdevice_details =
-              (TDS_SubdeviceDetails *)malloc(sizeof(TDS_SubdeviceDetails));
+              (TDS_SubdeviceDetails *)calloc(1, sizeof(TDS_SubdeviceDetails));
         }
         break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
@@ -1680,7 +1680,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (VALID_SIZE(TSCS_ChannelConfig, char, ConfigSize,
                        SUPLA_CHANNEL_CONFIG_MAXSIZE)) {
           rd->data.scs_channel_config =
-              (TSCS_ChannelConfig *)malloc(sizeof(TSCS_ChannelConfig));
+              (TSCS_ChannelConfig *)calloc(1, sizeof(TSCS_ChannelConfig));
         }
         break;
       case SUPLA_CS_CALL_GET_CHANNEL_CONFIG:
@@ -1701,7 +1701,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
       case SUPLA_CS_CALL_GET_DEVICE_CONFIG:
         if (srpc->sdp.data_size == sizeof(TCS_GetDeviceConfigRequest)) {
           rd->data.cs_get_device_config_request =
-              (TCS_GetDeviceConfigRequest *)malloc(
+              (TCS_GetDeviceConfigRequest *)calloc(1,
                   sizeof(TCS_GetDeviceConfigRequest));
         }
         break;
@@ -1709,7 +1709,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (VALID_SIZE(TSC_DeviceConfigUpdateOrResult, char, Config.ConfigSize,
                        SUPLA_DEVICE_CONFIG_MAXSIZE)) {
           rd->data.sc_device_config_update_or_result =
-              (TSC_DeviceConfigUpdateOrResult *)malloc(
+              (TSC_DeviceConfigUpdateOrResult *)calloc(1,
                   sizeof(TSC_DeviceConfigUpdateOrResult));
         }
         break;
@@ -3910,16 +3910,17 @@ srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
     if (size > sizeof(ev->value)) {
       size = sizeof(ev->value);
     }
-    size -= header_size;
 
     unsigned short n = 0;
 
-    while (offset < size) {
+    // offset + header_size < size <= sizeof(ev->value), so the subtraction
+    // below cannot underflow and next->size cannot wrap the sum around.
+    while (offset + header_size < size) {
       TSuplaChannelExtendedValue *next =
           (TSuplaChannelExtendedValue *)&ev->value[offset];
 
       if (next->type == EV_TYPE_NONE || next->size == 0 ||
-          next->size + offset + header_size > sizeof(ev->value)) {
+          next->size > sizeof(ev->value) - offset - header_size) {
         return 0;
       }
 

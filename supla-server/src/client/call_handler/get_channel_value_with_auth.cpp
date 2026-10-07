@@ -66,6 +66,11 @@ void supla_ch_get_channel_value_with_auth::handle_call(
 
   if (regcli.get_result_code() != SUPLA_RESULTCODE_TRUE) {
     result.ResultCode = regcli.get_result_code();
+  } else if (channel_id == 0 ||
+             !client_dao.channel_exists(regcli.get_client_id(), channel_id)) {
+    // The channel must be available to the authenticated client (its
+    // AccessID), not just belong to the same user.
+    result.ResultCode = SUPLA_RESULTCODE_SUBJECT_NOT_FOUND;
   } else {
     result.ResultCode = SUPLA_RESULTCODE_CHANNEL_IS_OFFLINE;
 

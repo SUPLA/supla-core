@@ -701,6 +701,16 @@ int supla_abstract_common_channel_properties::set_user_config(
     return SUPLA_CONFIG_RESULT_FALSE;
   }
 
+  // Several branches below cast the buffer to a TChannelConfig_* structure
+  // without comparing config_size with its size. Work on a zero-padded copy
+  // so that bytes not sent by the peer are never interpreted (and stored in
+  // the JSON config) as configuration values.
+  char zero_padded_config[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+  if (config_size) {
+    memcpy(zero_padded_config, config, config_size);
+  }
+  config = zero_padded_config;
+
   int result = SUPLA_CONFIG_RESULT_FALSE;
 
   supla_mariadb_access_provider dba;
