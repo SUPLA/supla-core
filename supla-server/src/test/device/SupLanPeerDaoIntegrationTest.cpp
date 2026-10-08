@@ -15,6 +15,9 @@
 #include <vector>
 
 #include "conn/connection.h"
+#include "amazon/alexa_discover_request_search_condition.h"
+#include "asynctask/asynctask_queue.h"
+#include "google/google_home_sync_search_condition.h"
 #include "device/device_dao.h"
 #include "device/devicechannels.h"
 #include "ipc/on_channel_config_changed_command.h"
@@ -1126,6 +1129,17 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     if (client >= 0) close(client);
     if (wire) sproto_free(wire);
     if (listener) ssocket_free(listener);
+    // The real IPC handler also schedules delayed voice-assistant work. Its
+    // credentials belong to this runtime user, which cleanup destroys below.
+    // Remove only this fixture's requests; keep the global pool usable by
+    // subsequent suites.
+    supla_alexa_discover_request_search_condition alexa(99126);
+    supla_google_home_sync_search_condition google(99126);
+    auto queue = supla_asynctask_queue::global_instance();
+    queue->cancel_tasks(&alexa);
+    queue->cancel_tasks(&google);
+    EXPECT_EQ(0u, queue->get_task_count(&alexa));
+    EXPECT_EQ(0u, queue->get_task_count(&google));
     supla_connection::cleanup();
   }
 
