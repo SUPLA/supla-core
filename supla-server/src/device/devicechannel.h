@@ -19,6 +19,8 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <atomic>
+
 #include <functional>
 #include <list>
 #include <map>
@@ -65,11 +67,18 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   supla_abstract_channel_extended_value *logger_purpose_extended_value;
   supla_abstract_data_analyzer *data_analyzer;
 
+  // Cross-thread producers store intent only; the connection thread owns
+  // config reload, cache publication and SRPC enqueue. No snapshot is queued.
+  std::atomic<unsigned int> pending_config_types{0};
+  // Connection-thread cursor prevents frequent defaults starving schedules.
+  unsigned char next_config_type = SUPLA_CONFIG_TYPE_DEFAULT;
+
   void db_set_properties(supla_json_config *config);
   void db_set_params(int param1, int param2, int param3, int param4);
   supla_abstract_channel_value *_get_value(void);
   bool prepare_config_for_device(unsigned char config_type,
-                                 TSDS_SetChannelConfig *config);
+                                 TSDS_SetChannelConfig *config,
+                                 bool *failed = nullptr);
 
   void on_value_changed(supla_abstract_channel_value *old_value,
                         supla_abstract_channel_value *new_value,
@@ -82,6 +91,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_abstract_channel_extended_value *new_value);
+  virtual bool reload_hvac_config();
+  ChannelReferenceEncoding device_reference_encoding() override;
   virtual void for_each(
       bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
@@ -146,7 +157,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
                          char command, char white_temperature);
   void get_double(double *value);
   void get_char(char *value);
-  void get_config(TSD_ChannelConfig *config, unsigned char config_type,
+  bool get_config(TSD_ChannelConfig *config, unsigned char config_type,
                   unsigned _supla_int_t flags);
   void set_action_trigger_config(unsigned int capabilities,
                                  int related_channel_id,
@@ -160,10 +171,17 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   void access_data_analyzer(
       std::function<void(supla_abstract_data_analyzer *analyzer)>
           on_data_analyzer);
-  bool send_config_to_device(unsigned char config_type);
+  // IPC/Client entry point: coalesces intent without reading config or SRPC.
+  bool request_config_publication(unsigned char config_type);
+  // Connection-thread only; processes at most one config type per call.
+  bool publish_pending_config();
+  // HVAC preparation and sends belong exclusively to the connection thread.
+  // False with failed=false means unsupported/absent optional configuration.
+  bool send_config_to_device(unsigned char config_type, bool *failed = nullptr);
   // Contains only SetChannelConfig requests. ChannelConfigFinished is sent
   // separately and is not counted as an expected result.
-  bool prepare_config_for_device(std::vector<TSDS_SetChannelConfig> *configs);
+  bool prepare_config_for_device(std::vector<TSDS_SetChannelConfig> *configs,
+                                 bool *failed = nullptr);
   bool send_configs_to_device(std::vector<TSDS_SetChannelConfig> *configs);
   unsigned int send_config_to_device(void);
 

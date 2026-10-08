@@ -98,7 +98,7 @@ bool PeerDao::read(const std::string &where, Association *a, bool lock) {
   return ok;
 }
 bool PeerDao::begin(int source, int destination, Association *a) {
-  if (!execute("START TRANSACTION")) return false;
+  if (!transaction && !execute("START TRANSACTION")) return false;
   transaction = true;
   // Unique ordered pair serializes concurrent first creation as well.
   return execute(
@@ -112,7 +112,7 @@ bool PeerDao::begin(int source, int destination, Association *a) {
          a->id;
 }
 bool PeerDao::begin(uint64_t id, Association *a) {
-  if (!execute("START TRANSACTION")) return false;
+  if (!transaction && !execute("START TRANSACTION")) return false;
   transaction = true;
   return read("id=" + to_string(id), a, true) && a->id;
 }
@@ -293,6 +293,26 @@ bool PeerDao::owner(uint8_t type, uint32_t resource, int *device) {
   *device = rows.empty() ? 0 : rows[0][0];
   return true;
 }
+bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
+  *out = {};
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT c.iodevice_id,c.type,c.func,d.flags,c.channel_number "
+              "FROM supla_dev_channel c JOIN supla_iodevice d "
+              "ON d.id=c.iodevice_id AND d.user_id=c.user_id "
+              "WHERE c.user_id=" +
+                  to_string(user) + " AND c.id=" + to_string(id),
+              &rows, 5))
+    return false;
+  if (!rows.empty()) {
+    const auto &r = rows.front();
+    out->device = r[0];
+    out->type = r[1];
+    out->function = r[2];
+    out->device_flags = r[3];
+    out->number = r[4];
+  }
+  return true;
+}
 bool PeerDao::device_exists(int device) {
   int owner_id = 0;
   return owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, device, &owner_id) &&
@@ -356,6 +376,18 @@ bool PeerDao::for_origin(uint16_t type, uint64_t origin,
   ids(rows, out);
   return ok;
 }
+// Business references survive a temporarily invalid Source and revoked Grant.
+bool PeerDao::hvac_dependents(uint32_t source, std::vector<uint64_t> *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  bool ok = select(
+      "SELECT id FROM supla_dev_channel WHERE user_id=" + to_string(user) +
+          " AND type=" + to_string(SUPLA_CHANNELTYPE_HVAC) +
+          " AND JSON_VALUE(user_config,'$.mainThermometerChannelId')=" +
+          to_string(source), &rows, 1);
+  ids(rows, out);
+  return ok;
+}
+
 bool PeerDao::for_resource(uint8_t type, uint32_t resource,
                            std::vector<uint64_t> *out) {
   std::vector<std::vector<uint64_t>> rows;

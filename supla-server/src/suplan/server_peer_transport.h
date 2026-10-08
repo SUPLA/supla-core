@@ -2,14 +2,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #ifndef SUPLA_SUPLAN_SERVER_PEER_TRANSPORT_H_
 #define SUPLA_SUPLAN_SERVER_PEER_TRANSPORT_H_
+#include <memory>
+
 #include "suplan/peer_provisioner.h"
 class supla_user;
+class supla_json_config;
 class supla_suplan_server_peers : public supla_suplan::PeerTransport {
   supla_user *user;
   supla_suplan::PeerProvisioner provisioner;
 
  public:
   // Durable delete handling without constructing a runtime user or transport.
+  static bool reconcile_dependencies(int user_id, int source_channel_id);
+  static bool reconcile_hvac(
+      int user_id, int channel_id,
+      std::unique_ptr<supla_json_config> *current = nullptr);
   static bool channel_deleted(int user_id, int channel_id);
   static bool device_deleted(int user_id, int device_id);
   explicit supla_suplan_server_peers(supla_user *user);

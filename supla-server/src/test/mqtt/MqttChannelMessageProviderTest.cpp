@@ -1122,12 +1122,12 @@ TEST_F(MqttChannelMessageProviderTest, thermostat) {
   row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
 
   TChannelConfig_HVAC raw_config = {};
-  raw_config.MainThermometerChannelNo = 15;
+  raw_config.MainThermometerChannelId = 15;
   hvac_config hvac;
-  hvac.set_config(&raw_config, 0);
+  hvac.set_config(&raw_config);
   row_channel.json_config = hvac;
 
-  EXPECT_CALL(*provider, get_channel_fragment(Eq(555), Eq(15)))
+  EXPECT_CALL(*provider, get_channel_fragment(Eq(0), Eq(15)))
       .WillOnce(Return(supla_channel_fragment(
           555, 1234, 15, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
           SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 0, false)));
@@ -1195,12 +1195,12 @@ TEST_F(MqttChannelMessageProviderTest, thermostatWithoutHumidity) {
   row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
 
   TChannelConfig_HVAC raw_config = {};
-  raw_config.MainThermometerChannelNo = 15;
+  raw_config.MainThermometerChannelId = 15;
   hvac_config hvac;
-  hvac.set_config(&raw_config, 0);
+  hvac.set_config(&raw_config);
   row_channel.json_config = hvac;
 
-  EXPECT_CALL(*provider, get_channel_fragment(Eq(555), Eq(15)))
+  EXPECT_CALL(*provider, get_channel_fragment(Eq(0), Eq(15)))
       .WillOnce(Return(
           supla_channel_fragment(555, 1234, 15, SUPLA_CHANNELTYPE_THERMOMETER,
                                  SUPLA_CHANNELFNC_THERMOMETER, 0, false)));
@@ -1267,12 +1267,12 @@ TEST_F(MqttChannelMessageProviderTest, thermostatHeatCool) {
   row_channel.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL;
 
   TChannelConfig_HVAC raw_config = {};
-  raw_config.MainThermometerChannelNo = 15;
+  raw_config.MainThermometerChannelId = 15;
   hvac_config hvac;
-  hvac.set_config(&raw_config, 0);
+  hvac.set_config(&raw_config);
   row_channel.json_config = hvac;
 
-  EXPECT_CALL(*provider, get_channel_fragment(Eq(555), Eq(15)))
+  EXPECT_CALL(*provider, get_channel_fragment(Eq(0), Eq(15)))
       .WillOnce(Return(supla_channel_fragment(
           555, 1234, 15, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
           SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 0, false)));

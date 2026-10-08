@@ -203,9 +203,9 @@ TEST_F(DeviceDaoIntegrationTest, getChannelConfig) {
 
 TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
   TChannelConfig_HVAC ds_hvac = {};
-  ds_hvac.MainThermometerChannelNo = 1;
+  ds_hvac.MainThermometerChannelId = 1;
   hvac_config cfg1;
-  cfg1.set_config(&ds_hvac, 0);
+  cfg1.set_config(&ds_hvac);
 
   EXPECT_TRUE(dao->set_channel_config(2, 144, &cfg1));
 
@@ -218,15 +218,15 @@ TEST_F(DeviceDaoIntegrationTest, setChannelHvacUserConfig) {
     EXPECT_STREQ(
         str,
         "{\"pricePerUnit\":0.56,\"currency\":\"PLN\","
-        "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":null,"
-        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelNo\":null,"
+        "\"mainThermometerChannelId\":1,\"auxThermometerChannelId\":null,"
+        "\"auxThermometerType\":\"NOT_SET\",\"binarySensorChannelId\":null,"
         "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":"
         "\"\",\"minOnTimeS\":0,\"minOffTimeS\":0,\"outputValueOnError\":0,"
         "\"subfunction\":\"NOT_SET\","
         "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
         "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":"
-        "false,\"temperatures\":{},\"masterThermostatChannelNo\":null,"
-        "\"heatOrColdSourceSwitchChannelNo\":null,\"pumpSwitchChannelNo\":null,"
+        "false,\"temperatures\":{},\"masterThermostatChannelId\":null,"
+        "\"heatOrColdSourceSwitchChannelId\":null,\"pumpSwitchChannelId\":null,"
         "\"temperatureControlType\":\"NOT_SUPPORTED\",\"localUILock\":[],"
         "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
         "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");

@@ -102,14 +102,11 @@ void ChannelHvacValueWithTempHumTest::_ExpandHvacToHavacWithTempHum(
   EXPECT_CALL(getter, _get_detached_json_config(Eq(5), Eq(10), Eq(20)))
       .WillOnce([&native_config](int user_id, int device_id, int channel_id) {
         hvac_config *cfg = new hvac_config();
-        cfg->set_config(&native_config, 1);
+        cfg->set_config(&native_config);
         return cfg;
       });
 
-  EXPECT_CALL(getter, _get_channel_id(Eq(5), Eq(10), Eq(3)))
-      .WillOnce(Return(789));
-
-  EXPECT_CALL(getter, _get_value(Eq(5), Eq(10), Eq(789), IsNull(), IsNull()))
+  EXPECT_CALL(getter, _get_value(Eq(5), Eq(0), Eq(789), IsNull(), IsNull()))
       .WillOnce(Return(new supla_channel_temphum_value(
           SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
           SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE, 22.33, 35.36)));
@@ -134,14 +131,14 @@ void ChannelHvacValueWithTempHumTest::_ExpandHvacToHavacWithTempHum(
 
 TEST_F(ChannelHvacValueWithTempHumTest, expandHvacToHavacWithTempHum) {
   TChannelConfig_HVAC native_config = {};
-  native_config.MainThermometerChannelNo = 3;
+  native_config.MainThermometerChannelId = 789;
   _ExpandHvacToHavacWithTempHum(native_config);
 }
 
 TEST_F(ChannelHvacValueWithTempHumTest,
        AuxGenericHeater_ExpandHvacToHavacWithTempHum) {
   TChannelConfig_HVAC native_config = {};
-  native_config.AuxThermometerChannelNo = 3;
+  native_config.AuxThermometerChannelId = 789;
   native_config.TemperatureControlType =
       SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE;
 

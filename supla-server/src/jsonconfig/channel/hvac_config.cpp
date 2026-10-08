@@ -18,15 +18,16 @@
 
 #include "hvac_config.h"
 
+#include <cstdint>
 #include <string>
 
 using std::map;
 using std::string;
 
-#define FIELD_MAIN_THERMOMETER_CHANNEL_NO 1
-#define FIELD_AUX_THERMOMETER_CHANNEL_NO 2
+#define FIELD_MAIN_THERMOMETER_CHANNEL_ID 1
+#define FIELD_AUX_THERMOMETER_CHANNEL_ID 2
 #define FIELD_AUX_THERMOMETER_TYPE 3
-#define FIELD_BINARY_SENSOR_CHANNEL_NO 4
+#define FIELD_BINARY_SENSOR_CHANNEL_ID 4
 #define FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED 5
 #define FIELD_AVAILABLE_ALGORITHMS 6
 #define FIELD_USED_ALGORITHM 7
@@ -39,7 +40,7 @@ using std::string;
 #define FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS 14
 #define FIELD_TEMPERATURES 15
 
-#define FIELD_MASTER_THERMOSTAT_CHANNEL_NO 16
+#define FIELD_MASTER_THERMOSTAT_CHANNEL_ID 16
 #define FIELD_HEAT_OR_COLD_SOURCE_SWITCH 17
 #define FIELD_PUMP_SWITCH 18
 #define FIELD_TEMPERATURE_CONTROL_TYPE 19
@@ -55,12 +56,12 @@ using std::string;
 #define FIELD_MAX_ALLOWED_TEMPERATURE_SETPOINT_FROM_LOCAL_UI 27
 
 const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
-    {FIELD_MAIN_THERMOMETER_CHANNEL_NO, "mainThermometerChannelNo"},
-    {FIELD_AUX_THERMOMETER_CHANNEL_NO, "auxThermometerChannelNo"},
+    {FIELD_MAIN_THERMOMETER_CHANNEL_ID, "mainThermometerChannelId"},
+    {FIELD_AUX_THERMOMETER_CHANNEL_ID, "auxThermometerChannelId"},
     {FIELD_AUX_THERMOMETER_TYPE, "auxThermometerType"},
     {FIELD_AUX_MIN_MAX_SETPOINT_ENABLED, "auxMinMaxSetpointEnabled"},
     {FIELD_USE_SEPARATE_HEAT_COOL_OUTPUTS, "useSeparateHeatCoolOutputs"},
-    {FIELD_BINARY_SENSOR_CHANNEL_NO, "binarySensorChannelNo"},
+    {FIELD_BINARY_SENSOR_CHANNEL_ID, "binarySensorChannelId"},
     {FIELD_ANTI_FREEZE_AND_OVERHEAT_PRETECTION_ENABLED,
      "antiFreezeAndOverheatProtectionEnabled"},
     {FIELD_AVAILABLE_ALGORITHMS, "availableAlgorithms"},
@@ -72,9 +73,9 @@ const map<unsigned _supla_int16_t, string> hvac_config::field_map = {
     {FIELD_TEMPERATURE_SETPOINT_CHANGE_SWITCHES_TO_MANUAL_MODE,
      "temperatureSetpointChangeSwitchesToManualMode"},
     {FIELD_TEMPERATURES, "temperatures"},
-    {FIELD_MASTER_THERMOSTAT_CHANNEL_NO, "masterThermostatChannelNo"},
-    {FIELD_HEAT_OR_COLD_SOURCE_SWITCH, "heatOrColdSourceSwitchChannelNo"},
-    {FIELD_PUMP_SWITCH, "pumpSwitchChannelNo"},
+    {FIELD_MASTER_THERMOSTAT_CHANNEL_ID, "masterThermostatChannelId"},
+    {FIELD_HEAT_OR_COLD_SOURCE_SWITCH, "heatOrColdSourceSwitchChannelId"},
+    {FIELD_PUMP_SWITCH, "pumpSwitchChannelId"},
     {FIELD_TEMPERATURE_CONTROL_TYPE, "temperatureControlType"},
     {FIELD_HIDDEN_CONFIG_FIELDS, "hiddenConfigFields"},
     {FIELD_READONLY_CONFIG_FIELDS, "readOnlyConfigFields"},
@@ -232,8 +233,22 @@ unsigned char hvac_config::string_to_temperature_control_type(
 
 void hvac_config::merge(supla_json_config *_dst) {
   hvac_config dst(_dst);
-  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
-                           true);
+  hvac_config input;
+  input = *this;
+  // Evaluate against the freshly reloaded authoritative state on every DAO
+  // optimistic retry, never against the Device's cached copy.
+  if (device_local_reference) {
+    for (size_t field = 0; field < 6; ++field) {
+      unsigned int current = dst.reference(field);
+      unsigned int incoming = reference(field);
+      if ((current && !device_local_reference(field, current)) ||
+          !device_local_reference(field, incoming)) {
+        input.set_reference(field, current);
+      }
+    }
+  }
+  supla_json_config::merge(input.get_user_root(), dst.get_user_root(),
+                           field_map, true);
   supla_json_config::merge(get_properties_root(), dst.get_properties_root(),
                            field_map, true);
 }
@@ -251,29 +266,33 @@ void hvac_config::add_algorithm_to_array(cJSON *root, cJSON *algs,
   }
 }
 
-void hvac_config::set_channel_number(cJSON *root, int field,
-                                     unsigned char cfg_channel_number,
-                                     unsigned char channel_number) {
-  set_item_value(
-      root, field_map.at(field).c_str(),
-      channel_number == cfg_channel_number ? cJSON_NULL : cJSON_Number, true,
-      nullptr, nullptr, cfg_channel_number);
+void hvac_config::set_channel_id(cJSON *root, int field,
+                                 unsigned _supla_int_t id) {
+  set_item_value(root, field_map.at(field).c_str(),
+                 id == 0 ? cJSON_NULL : cJSON_Number, true, nullptr, nullptr,
+                 id);
 }
 
-bool hvac_config::get_channel_number(cJSON *root, int field,
-                                     unsigned char channel_number,
-                                     unsigned char *result, bool *is_null) {
+bool hvac_config::get_channel_id(cJSON *root, int field, _supla_int_t *result,
+                                 bool *is_null) {
   if (is_null) {
     *is_null = false;
   }
 
   double dbl_value = 0;
   if (get_double(root, field_map.at(field).c_str(), &dbl_value)) {
-    *result = dbl_value;
+    if (dbl_value < 0 || dbl_value > UINT32_MAX ||
+        dbl_value != static_cast<unsigned _supla_int_t>(dbl_value)) {
+      *result = 0;
+      return false;
+    }
+    *result = static_cast<_supla_int_t>(
+        static_cast<unsigned _supla_int_t>(dbl_value));
+    if (is_null && !*result) *is_null = true;
     return true;
   }
 
-  *result = channel_number;
+  *result = 0;
   cJSON *item = cJSON_GetObjectItem(root, field_map.at(field).c_str());
   if (item != nullptr && cJSON_IsNull(item)) {
     if (is_null) {
@@ -399,8 +418,7 @@ unsigned char hvac_config::json_array_to_locking_caps(
   return result;
 }
 
-void hvac_config::set_config(TChannelConfig_HVAC *config,
-                             unsigned char channel_number) {
+void hvac_config::set_config(TChannelConfig_HVAC *config) {
   if (!config) {
     return;
   }
@@ -415,11 +433,11 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
     return;
   }
 
-  set_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
-                     config->MainThermometerChannelNo, channel_number);
+  set_channel_id(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_ID,
+                 config->MainThermometerChannelId);
 
-  set_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
-                     config->AuxThermometerChannelNo, channel_number);
+  set_channel_id(user_root, FIELD_AUX_THERMOMETER_CHANNEL_ID,
+                 config->AuxThermometerChannelId);
 
   set_item_value(
       user_root, field_map.at(FIELD_AUX_THERMOMETER_TYPE).c_str(), cJSON_String,
@@ -436,8 +454,8 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                  config->UseSeparateHeatCoolOutputs ? cJSON_True : cJSON_False,
                  true, nullptr, nullptr, 0);
 
-  set_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
-                     config->BinarySensorChannelNo, channel_number);
+  set_channel_id(user_root, FIELD_BINARY_SENSOR_CHANNEL_ID,
+                 config->BinarySensorChannelId);
 
   set_item_value(
       user_root,
@@ -496,22 +514,13 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                                                             : cJSON_False,
       true, nullptr, nullptr, 0);
 
-  set_channel_number(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_NO,
-                     config->MasterThermostatIsSet
-                         ? config->MasterThermostatChannelNo
-                         : channel_number,
-                     channel_number);
+  set_channel_id(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_ID,
+                 config->MasterThermostatChannelId);
 
-  set_channel_number(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
-                     config->HeatOrColdSourceSwitchIsSet
-                         ? config->HeatOrColdSourceSwitchChannelNo
-                         : channel_number,
-                     channel_number);
+  set_channel_id(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
+                 config->HeatOrColdSourceSwitchChannelId);
 
-  set_channel_number(
-      user_root, FIELD_PUMP_SWITCH,
-      config->PumpSwitchIsSet ? config->PumpSwitchChannelNo : channel_number,
-      channel_number);
+  set_channel_id(user_root, FIELD_PUMP_SWITCH, config->PumpSwitchChannelId);
 
   set_item_value(
       user_root, field_map.at(FIELD_TEMPERATURE_CONTROL_TYPE).c_str(),
@@ -549,37 +558,37 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
   if (config->ParameterFlags.MainThermometerChannelNoReadonly) {
     cJSON_AddItemToArray(
         readonly, cJSON_CreateString(
-                      field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str()));
+                      field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.MainThermometerChannelNoHidden) {
     cJSON_AddItemToArray(
         hidden, cJSON_CreateString(
-                    field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO).c_str()));
+                    field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.AuxThermometerChannelNoReadonly) {
     cJSON_AddItemToArray(
         readonly, cJSON_CreateString(
-                      field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str()));
+                      field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.AuxThermometerChannelNoHidden) {
     cJSON_AddItemToArray(
         hidden, cJSON_CreateString(
-                    field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO).c_str()));
+                    field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.BinarySensorChannelNoReadonly) {
     cJSON_AddItemToArray(
         readonly, cJSON_CreateString(
-                      field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str()));
+                      field_map.at(FIELD_BINARY_SENSOR_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.BinarySensorChannelNoHidden) {
     cJSON_AddItemToArray(
         hidden, cJSON_CreateString(
-                    field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO).c_str()));
+                    field_map.at(FIELD_BINARY_SENSOR_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.AuxThermometerTypeReadonly) {
@@ -696,13 +705,13 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
     cJSON_AddItemToArray(
         readonly,
         cJSON_CreateString(
-            field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO).c_str()));
+            field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.MasterThermostatChannelNoHidden) {
     cJSON_AddItemToArray(
         hidden, cJSON_CreateString(
-                    field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO).c_str()));
+                    field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_ID).c_str()));
   }
 
   if (config->ParameterFlags.HeatOrColdSourceSwitchReadonly) {
@@ -922,8 +931,7 @@ void hvac_config::set_config(TChannelConfig_HVAC *config,
                  cJSON_Object, true, locking_caps, nullptr, 0);
 }
 
-bool hvac_config::get_config(TChannelConfig_HVAC *config,
-                             unsigned char channel_number) {
+bool hvac_config::get_config(TChannelConfig_HVAC *config) {
   if (!config) {
     return false;
   }
@@ -942,15 +950,13 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
   bool result = false;
 
-  if (get_channel_number(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->MainThermometerChannelNo,
-                         nullptr)) {
+  if (get_channel_id(user_root, FIELD_MAIN_THERMOMETER_CHANNEL_ID,
+                     &config->MainThermometerChannelId, nullptr)) {
     result = true;
   }
 
-  if (get_channel_number(user_root, FIELD_AUX_THERMOMETER_CHANNEL_NO,
-                         channel_number, &config->AuxThermometerChannelNo,
-                         nullptr)) {
+  if (get_channel_id(user_root, FIELD_AUX_THERMOMETER_CHANNEL_ID,
+                     &config->AuxThermometerChannelId, nullptr)) {
     result = true;
   }
 
@@ -976,9 +982,8 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
     result = true;
   }
 
-  if (get_channel_number(user_root, FIELD_BINARY_SENSOR_CHANNEL_NO,
-                         channel_number, &config->BinarySensorChannelNo,
-                         nullptr)) {
+  if (get_channel_id(user_root, FIELD_BINARY_SENSOR_CHANNEL_ID,
+                     &config->BinarySensorChannelId, nullptr)) {
     result = true;
   }
 
@@ -1051,31 +1056,18 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
 
   bool is_null = false;
 
-  if (get_channel_number(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_NO,
-                         channel_number, &config->MasterThermostatChannelNo,
-                         &is_null)) {
-    if (!is_null) {
-      config->MasterThermostatIsSet = 1;
-    }
-
+  if (get_channel_id(user_root, FIELD_MASTER_THERMOSTAT_CHANNEL_ID,
+                     &config->MasterThermostatChannelId, &is_null)) {
     result = true;
   }
 
-  if (get_channel_number(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
-                         channel_number,
-                         &config->HeatOrColdSourceSwitchChannelNo, &is_null)) {
-    if (!is_null) {
-      config->HeatOrColdSourceSwitchIsSet = 1;
-    }
-
+  if (get_channel_id(user_root, FIELD_HEAT_OR_COLD_SOURCE_SWITCH,
+                     &config->HeatOrColdSourceSwitchChannelId, &is_null)) {
     result = true;
   }
 
-  if (get_channel_number(user_root, FIELD_PUMP_SWITCH, channel_number,
-                         &config->PumpSwitchChannelNo, &is_null)) {
-    if (!is_null) {
-      config->PumpSwitchIsSet = 1;
-    }
+  if (get_channel_id(user_root, FIELD_PUMP_SWITCH, &config->PumpSwitchChannelId,
+                     &is_null)) {
     result = true;
   }
 
@@ -1130,15 +1122,15 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
           continue;
         }
 
-        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_ID)) {
           config->ParameterFlags.MainThermometerChannelNoReadonly = 1;
         }
 
-        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_ID)) {
           config->ParameterFlags.AuxThermometerChannelNoReadonly = 1;
         }
 
-        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_ID)) {
           config->ParameterFlags.BinarySensorChannelNoReadonly = 1;
         }
 
@@ -1180,7 +1172,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
           config->ParameterFlags.UseSeparateHeatCoolOutputsReadonly = 1;
         }
 
-        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_ID)) {
           config->ParameterFlags.MasterThermostatChannelNoReadonly = 1;
         }
 
@@ -1216,15 +1208,15 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
           continue;
         }
 
-        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_MAIN_THERMOMETER_CHANNEL_ID)) {
           config->ParameterFlags.MainThermometerChannelNoHidden = 1;
         }
 
-        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_AUX_THERMOMETER_CHANNEL_ID)) {
           config->ParameterFlags.AuxThermometerChannelNoHidden = 1;
         }
 
-        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_BINARY_SENSOR_CHANNEL_ID)) {
           config->ParameterFlags.BinarySensorChannelNoHidden = 1;
         }
 
@@ -1266,7 +1258,7 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
           config->ParameterFlags.UseSeparateHeatCoolOutputsHidden = 1;
         }
 
-        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_NO)) {
+        if (str == field_map.at(FIELD_MASTER_THERMOSTAT_CHANNEL_ID)) {
           config->ParameterFlags.MasterThermostatChannelNoHidden = 1;
         }
 
@@ -1416,4 +1408,23 @@ bool hvac_config::get_config(TChannelConfig_HVAC *config,
       FIELD_LOCAL_UI_LOCKING_CAPABILITIES, properties_root);
 
   return result;
+}
+
+const char *hvac_config::reference_keys[6] = {
+    "mainThermometerChannelId", "auxThermometerChannelId",
+    "binarySensorChannelId",    "masterThermostatChannelId",
+    "pumpSwitchChannelId",      "heatOrColdSourceSwitchChannelId"};
+
+unsigned int hvac_config::reference(size_t field) {
+  cJSON *item = cJSON_GetObjectItem(get_user_root(), reference_keys[field]);
+  if (!cJSON_IsNumber(item) || item->valuedouble <= 0 ||
+      item->valuedouble > UINT32_MAX ||
+      item->valuedouble != static_cast<unsigned int>(item->valuedouble))
+    return 0;
+  return static_cast<unsigned int>(item->valuedouble);
+}
+
+void hvac_config::set_reference(size_t field, unsigned int id) {
+  set_item_value(get_user_root(), reference_keys[field],
+                 id ? cJSON_Number : cJSON_NULL, true, nullptr, nullptr, id);
 }

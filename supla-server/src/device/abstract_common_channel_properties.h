@@ -24,6 +24,8 @@
 
 #include "device/channel_relation.h"
 
+enum class ChannelReferenceEncoding { ChannelId, LocalChannelNumber };
+
 enum e_relation_kind {
   relation_any = 0,
   relation_with_sub_channel = 1,
@@ -44,6 +46,9 @@ class supla_abstract_common_channel_properties {
                             int parent_channel_func, int related_channel_func);
 
  protected:
+  virtual ChannelReferenceEncoding device_reference_encoding() {
+    return ChannelReferenceEncoding::LocalChannelNumber;
+  }
   virtual unsigned char get_protocol_version(void) = 0;
 
   virtual void for_each(
@@ -60,7 +65,7 @@ class supla_abstract_common_channel_properties {
 
   void get_config(char *config, unsigned _supla_int16_t *config_size,
                   unsigned char config_type, unsigned _supla_int_t flags,
-                  bool resolve_channel_identifiers);
+                  ChannelReferenceEncoding encoding);
 
  public:
   supla_abstract_common_channel_properties(void);

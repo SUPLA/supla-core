@@ -14,6 +14,18 @@
 
 namespace supla_suplan {
 
+// Internal business origin namespace; never a wire discriminator.
+constexpr uint16_t CHANNEL_CONFIG_ORIGIN = 1;
+inline uint64_t main_thermometer_origin(uint32_t channel) {
+  return (static_cast<uint64_t>(channel) << 8) | 1;
+}
+struct ChannelInfo {
+  int device = 0;
+  int type = 0;
+  int function = 0;
+  uint32_t device_flags = 0;
+  unsigned char number = 0;
+};
 enum class Lifecycle : uint8_t { Active = 1, Draining = 2, Dormant = 3 };
 struct Grant {
   uint8_t resource_type;
@@ -63,6 +75,8 @@ class Repository {
   virtual bool identity(int device, Identity *out) = 0;
   virtual bool accept_identity(int device, const Identity &identity) = 0;
   virtual bool owner(uint8_t type, uint32_t resource, int *device) = 0;
+  virtual bool channel(uint32_t id, ChannelInfo *out) { return false; }
+  virtual bool supports_batch() const { return false; }
   virtual bool device_exists(int device) = 0;
   virtual bool owns_acl(int source, int destination, const Acl &acl);
   virtual bool for_device(int device, bool include_dormant,
@@ -96,6 +110,9 @@ class PeerService {
  private:
   Factory factory;
   Changed changed;
+  bool reconcile_origin_locked(uint16_t type, uint64_t origin, int source,
+                               int destination, const Grant *desired,
+                               std::unique_lock<std::mutex> &origin_lock);
   bool recompute(Repository *repo, Association *a, uint32_t current_root);
   bool mutate(uint64_t id,
               const std::function<bool(Repository *, Association *)> &fn);
@@ -103,6 +120,14 @@ class PeerService {
  public:
   PeerService(Factory factory, Changed changed);
   bool upsert(int source, int destination, const Grant &grant);
+  // Replace one origin atomically, then notify M2 after the shared commit.
+  bool reconcile_origin(uint16_t type, uint64_t origin, int source,
+                        int destination, const Grant *desired);
+  bool reconcile_main_thermometer(uint32_t destination_channel,
+                                  uint32_t source_channel);
+  bool reconcile_main_thermometer(
+      uint32_t destination_channel,
+      const std::function<bool(uint32_t *)> &read_current_source);
   bool delete_origin(uint16_t type, uint64_t origin);
   bool delete_resource(uint8_t type, uint32_t resource);
   bool delete_resource(uint64_t association, uint8_t type, uint32_t resource);

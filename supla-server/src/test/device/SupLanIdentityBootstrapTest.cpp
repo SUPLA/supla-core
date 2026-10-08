@@ -16,13 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <cstdio>
-#include <memory>
-#include <poll.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include <chrono>
+#include <cstdio>
+#include <functional>
+#include <future>
+#include <memory>
 #include <vector>
 
 #include "conn/connection.h"
@@ -31,12 +35,36 @@
 #include "device/device.h"
 #include "device/devicechannels.h"
 #include "doubles/device/DeviceStub.h"
-#include "supla-socket.h"
-#include "sthread.h"
+#include "jsonconfig/channel/weekly_schedule_config.h"
 #include "srpc/abstract_srpc_call_hanlder_collection.h"
+#include "sthread.h"
+#include "supla-socket.h"
 #include "suplan/identity_bootstrap.h"
 
 namespace testing {
+
+// M1's transport fixture already supplies Channels through DeviceDaoMock.
+// Its authoritative config is that fixture; M3's DB/Grant reconciliation is
+// tested independently through the real DAO in SupLanHvacIntegrationTest.
+class SupLanReplayHvacChannel : public supla_device_channel {
+ protected:
+  bool reload_hvac_config() override {
+    return on_reload ? on_reload() : config_available;
+  }
+
+ public:
+  bool config_available = true;
+  std::function<bool()> on_reload;
+  unsigned _supla_int64_t extra_flags = 0;
+  bool runtime_config_supported = true;
+  unsigned _supla_int64_t get_flags() override {
+    auto flags = supla_device_channel::get_flags() | extra_flags;
+    return runtime_config_supported
+               ? flags
+               : flags & ~SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE;
+  }
+  using supla_device_channel::supla_device_channel;
+};
 
 class SupLanTestDevice : public supla_device {
  public:
@@ -481,6 +509,14 @@ TEST_F(SupLanIdentityBootstrapTest, malformedOrOldProtocolResultFailsBarrier) {
   EXPECT_EQ(0u, device->get_suplan_root_epoch());
 }
 
+class SupLanReplayDevice : public DeviceStub {
+ public:
+  explicit SupLanReplayDevice(supla_connection *connection)
+      : DeviceStub(connection) {
+    set_registered(true);
+  }
+};
+
 // Use the real registration config sender, ChannelConfig preparation,
 // coordinator and SRPC queue. Only the authoritative DB lookup is replaced.
 class SupLanRegistrationReplayTest : public Test {
@@ -552,14 +588,14 @@ class SupLanRegistrationReplayTest : public Test {
     ASSERT_EQ(0, setsockopt(connection->get_client_sd(), IPPROTO_TCP,
                             TCP_NODELAY, &no_delay, sizeof(no_delay)));
     connection->get_srpc_adapter()->set_proto_version(29);
-    device = new DeviceStub(connection);
+    device = new SupLanReplayDevice(connection);
     device->set_id(7654);
     device->set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED |
                       SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
     DeviceDaoMock dao;
     EXPECT_CALL(dao, get_channels(device)).WillOnce([&](supla_device *) {
       char value[SUPLA_CHANNELVALUE_SIZE] = {};
-      return std::vector<supla_device_channel *>{new supla_device_channel(
+      return std::vector<supla_device_channel *>{new SupLanReplayHvacChannel(
           device, 991, 9, SUPLA_CHANNELTYPE_HVAC,
           SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, nullptr, nullptr,
           nullptr, false, SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE,
@@ -707,6 +743,32 @@ TEST_F(SupLanRegistrationReplayTest,
   }
 }
 
+TEST_F(SupLanRegistrationReplayTest,
+       failedConfigPreparationCannotCompleteSync) {
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    static_cast<SupLanReplayHvacChannel *>(channel)->config_available = false;
+  });
+  start_identity();
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  config_result();
+  channels->iterate();
+  for (auto &packet : receive()) {
+    EXPECT_NE(SUPLA_SD_CALL_DEVICE_SYNC_DONE, packet.call_id);
+    EXPECT_NE(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packet.call_id);
+    EXPECT_NE(SUPLA_SD_CALL_CHANNEL_CONFIG_FINISHED, packet.call_id);
+  }
+  EXPECT_TRUE(sthread_isterminated(worker));
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+
 TEST_F(SupLanRegistrationReplayTest, failedConfigEnqueueCannotCompleteSync) {
   start_identity();
   // Fill the real SRPC queue to force configuration enqueue failure.
@@ -796,5 +858,298 @@ TEST_F(SupLanRegistrationReplayTest,
   expect_config();
   config_result();
   expect_sync_done();
+}
+// The fixture's socket worker only flushes SRPC; this test thread represents
+// the Device connection owner. Producers never load config or touch its cache.
+TEST_F(SupLanRegistrationReplayTest,
+       pendingPushWaitsForReplayAndCoalesces) {
+  start_identity();
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    for (int i = 0; i < 100; ++i)
+      EXPECT_TRUE(
+          channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+    EXPECT_FALSE(channel->request_config_publication(255));
+  });
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+  accept_identity();
+  expect_config();
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+  config_result();
+  expect_sync_done();
+  channels->iterate();
+  auto packets = receive();
+  ASSERT_EQ(1U, packets.size());
+  EXPECT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packets[0].call_id);
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       stalledReadCannotBlockProducersOrReplayOld) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  SupLanReplayHvacChannel *channel = nullptr;
+  channels->access_channel(991, [&](supla_device_channel *c) {
+    channel = static_cast<SupLanReplayHvacChannel *>(c);
+  });
+  ASSERT_NE(nullptr, channel);
+  std::promise<void> reading, resume;
+  auto resumed = resume.get_future().share();
+  int loads = 0;
+  channel->on_reload = [&]() {
+    if (++loads == 1) {
+      reading.set_value();
+      resumed.wait();
+      // The paused publication completes its older authoritative read first.
+      auto config = new supla_json_config();
+      config->set_user_config("{\"minOnTimeS\":17}");
+      channel->set_json_config(config);
+    } else {
+      auto config = new supla_json_config();
+      config->set_user_config("{\"minOnTimeS\":23}");
+      channel->set_json_config(config);
+    }
+    return true;
+  };
+  auto owner = std::async(std::launch::async, [&]() {
+    TDS_GetChannelConfigRequest request = {};
+    request.ChannelNumber = 9;
+    request.ConfigType = SUPLA_CONFIG_TYPE_DEFAULT;
+    TsrpcReceivedData rd = {};
+    rd.data.ds_get_channel_config_request = &request;
+    auto borrowed =
+        std::shared_ptr<supla_device>(device, [](supla_device *) {});
+    return device->get_srpc_call_handler_collection()->handle_call(
+        borrowed, connection->get_srpc_adapter(), &rd,
+        SUPLA_DS_CALL_GET_CHANNEL_CONFIG, 29);
+  });
+  auto started = reading.get_future().wait_for(std::chrono::seconds(2));
+  auto producer = std::async(std::launch::async, [&]() {
+    bool ok = true;
+    for (int i = 0; i < 100; ++i)
+      ok &= channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT);
+    return ok;
+  });
+  auto submitted = producer.wait_for(std::chrono::seconds(2));
+  // Always release the owner, even on a failed readiness assertion.
+  resume.set_value();
+  EXPECT_EQ(std::future_status::ready, started);
+  EXPECT_EQ(std::future_status::ready, submitted);
+  EXPECT_TRUE(producer.get());
+  EXPECT_TRUE(owner.get());
+  channels->iterate();
+  auto packets = receive();
+  ASSERT_EQ(2U, packets.size());
+  for (size_t i = 0; i < packets.size(); ++i) {
+    EXPECT_EQ(i ? SUPLA_SD_CALL_SET_CHANNEL_CONFIG
+                : SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
+              packets[i].call_id);
+    TSDS_SetChannelConfig config = {};
+    memcpy(&config, packets[i].data, packets[i].data_size);
+    TChannelConfig_HVAC hvac = {};
+    memcpy(&hvac, config.Config, sizeof(hvac));
+    EXPECT_EQ(i ? 23 : 17, hvac.MinOnTimeS);
+  }
+  EXPECT_EQ(2, loads);
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       pendingPushReadFailureDisconnectsAndReplays) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    static_cast<SupLanReplayHvacChannel *>(channel)->config_available = false;
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+  });
+  channels->iterate();
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  EXPECT_TRUE(sthread_isterminated(worker));
+  EXPECT_TRUE(receive().empty());
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       pendingPushFullQueueDisconnectsAndReplays) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  auto adapter = connection->get_srpc_adapter();
+  adapter->lock();
+  for (int i = 0; i < 10; ++i)
+    EXPECT_GT(adapter->sdc_async_ping_server_result(), 0);
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+  });
+  channels->iterate();
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  EXPECT_TRUE(sthread_isterminated(worker));
+  for (auto &packet : receive())
+    EXPECT_NE(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packet.call_id);
+  adapter->unlock();
+  disconnect_device();
+  connect_device();
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+}
+TEST_F(SupLanRegistrationReplayTest, pendingScheduleLoadsAuthoritativeRoot) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  int loads = 0;
+  channels->access_channel(991, [&](supla_device_channel *c) {
+    auto channel = static_cast<SupLanReplayHvacChannel *>(c);
+    channel->extra_flags = SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+    channel->on_reload = [&, channel]() {
+      ++loads;
+      auto config = new weekly_schedule_config();
+      TChannelConfig_WeeklySchedule weekly = {};
+      weekly.Program[0].Mode = SUPLA_HVAC_MODE_HEAT;
+      weekly.Program[0].SetpointTemperatureHeat = 2300;
+      config->set_config(&weekly, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+      channel->set_json_config(config);
+      return true;
+    };
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+    EXPECT_TRUE(
+        channel->request_config_publication(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE));
+    EXPECT_TRUE(
+        channel->request_config_publication(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE));
+  });
+  channels->iterate();
+  auto first = receive();
+  ASSERT_EQ(1U, first.size());
+  TSDS_SetChannelConfig config = {};
+  memcpy(&config, first[0].data, first[0].data_size);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, config.ConfigType);
+  // Even another default intent cannot starve the pending schedule.
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+  });
+  channels->iterate();
+  auto second = receive();
+  ASSERT_EQ(1U, second.size());
+  EXPECT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, second[0].call_id);
+  memcpy(&config, second[0].data, second[0].data_size);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, config.ConfigType);
+  ASSERT_EQ(sizeof(TChannelConfig_WeeklySchedule), config.ConfigSize);
+  TChannelConfig_WeeklySchedule weekly = {};
+  memcpy(&weekly, config.Config, sizeof(weekly));
+  EXPECT_EQ(SUPLA_HVAC_MODE_HEAT, weekly.Program[0].Mode);
+  EXPECT_EQ(2300, weekly.Program[0].SetpointTemperatureHeat);
+  EXPECT_EQ(2, loads);
+  channels->iterate();
+  auto last = receive();
+  ASSERT_EQ(1U, last.size());
+  memcpy(&config, last[0].data, last[0].data_size);
+  EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, config.ConfigType);
+  EXPECT_EQ(3, loads);
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+}
+
+TEST_F(SupLanRegistrationReplayTest, unsupportedPushDoesNotDisconnect) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    static_cast<SupLanReplayHvacChannel *>(channel)->runtime_config_supported =
+        false;
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+  });
+  channels->iterate();
+  EXPECT_EQ(123U, device->get_suplan_root_epoch());
+  EXPECT_FALSE(sthread_isterminated(worker));
+  EXPECT_TRUE(receive().empty());
+}
+TEST_F(SupLanRegistrationReplayTest, absentPendingSchedulesDoNotDisconnect) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  channels->access_channel(991, [](supla_device_channel *c) {
+    auto channel = static_cast<SupLanReplayHvacChannel *>(c);
+    channel->extra_flags = SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+    EXPECT_TRUE(
+        channel->request_config_publication(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE));
+    EXPECT_TRUE(channel->request_config_publication(
+        SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE));
+  });
+  channels->iterate();
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+  EXPECT_EQ(123U, device->get_suplan_root_epoch());
+  EXPECT_FALSE(sthread_isterminated(worker));
+  // The missing optional configs do not prevent the next ordinary update.
+  channels->access_channel(991, [](supla_device_channel *channel) {
+    EXPECT_TRUE(channel->request_config_publication(SUPLA_CONFIG_TYPE_DEFAULT));
+  });
+  channels->iterate();
+  auto packets = receive();
+  ASSERT_EQ(1U, packets.size());
+  EXPECT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packets[0].call_id);
+}
+
+TEST_F(SupLanRegistrationReplayTest, pendingScheduleReadFailureDisconnects) {
+  start_identity();
+  accept_identity();
+  expect_config();
+  config_result();
+  expect_sync_done();
+  channels->access_channel(991, [](supla_device_channel *c) {
+    auto channel = static_cast<SupLanReplayHvacChannel *>(c);
+    channel->extra_flags = SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+    channel->config_available = false;
+    EXPECT_TRUE(
+        channel->request_config_publication(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE));
+  });
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  EXPECT_TRUE(sthread_isterminated(worker));
+}
+
+TEST_F(SupLanRegistrationReplayTest,
+       optionalReadFailureAbortsEntireReplayBatch) {
+  channels->access_channel(991, [](supla_device_channel *c) {
+    auto channel = static_cast<SupLanReplayHvacChannel *>(c);
+    channel->extra_flags = SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+    channel->on_reload = [count = 0]() mutable { return ++count == 1; };
+  });
+  start_identity();
+  TDS_SuplaDeviceIdentitiesResult result = {SUPLA_SUPLAN_RESULT_OK, 123u};
+  device->on_suplan_device_identities_result(&result);
+  // Default preparation succeeded, but the optional config reload failed.
+  EXPECT_TRUE(receive().empty());
+  EXPECT_EQ(0U, device->get_suplan_root_epoch());
+  EXPECT_TRUE(sthread_isterminated(worker));
+  config_result();
+  channels->iterate();
+  EXPECT_TRUE(receive().empty());
 }
 }  // namespace testing

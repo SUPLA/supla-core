@@ -205,6 +205,165 @@ bool PeerService::upsert(int source, int destination, const Grant &grant) {
            recompute(r, state, identity.root);
   });
 }
+static std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin) {
+  using Key = std::pair<uint16_t, uint64_t>;
+  static std::mutex registry_mutex;
+  static std::map<Key, std::weak_ptr<std::mutex>> registry;
+  Key key{type, origin};
+  std::lock_guard<std::mutex> lock(registry_mutex);
+  auto gate = registry[key].lock();
+  if (!gate) {
+    gate = std::shared_ptr<std::mutex>(new std::mutex(), [key](std::mutex *m) {
+      delete m;
+      std::lock_guard<std::mutex> cleanup(registry_mutex);
+      auto entry = registry.find(key);
+      if (entry != registry.end() && entry->second.expired())
+        registry.erase(entry);
+    });
+    registry[key] = gate;
+  }
+  return gate;
+}
+
+bool PeerService::reconcile_origin(uint16_t type, uint64_t origin, int source,
+                                   int destination, const Grant *desired) {
+  // Serialize discovery of the origin's affected pairs. Association send gates
+  // are still acquired in ascending order, before any row transaction.
+  auto origin_mutex = origin_gate(type, origin);
+  std::unique_lock<std::mutex> origin_lock(*origin_mutex);
+  return reconcile_origin_locked(type, origin, source, destination, desired,
+                                 origin_lock);
+}
+
+bool PeerService::reconcile_origin_locked(
+    uint16_t type, uint64_t origin, int source, int destination,
+    const Grant *desired, std::unique_lock<std::mutex> &origin_lock) {
+  auto repo = factory();
+  if (!repo->supports_batch() || !type || !origin) return false;
+  uint64_t target = 0;
+  if (desired) {
+    int owner = 0;
+    if (desired->origin_type != type || desired->origin_id != origin ||
+        source <= 0 || destination <= 0 || source == destination ||
+        !valid_permissions(desired->permissions) ||
+        !repo->owner(desired->resource_type, desired->resource_id, &owner) ||
+        owner != source || !repo->device_exists(destination))
+      return false;
+    Association a;
+    if (!repo->find(source, destination, &a)) return false;
+    if (!a.id && (!repo->begin(source, destination, &a) || !repo->commit()))
+      return false;
+    target = a.id;
+  }
+  std::vector<uint64_t> ids;
+  if (!repo->for_origin(type, origin, &ids)) return false;
+  if (target) ids.push_back(target);
+  std::sort(ids.begin(), ids.end());
+  ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
+  if (ids.empty()) return true;
+  std::vector<std::shared_ptr<std::mutex>> gates;
+  std::vector<std::unique_lock<std::mutex>> locks;
+  for (auto id : ids) {
+    gates.push_back(association_gate(id));
+    locks.emplace_back(*gates.back());
+  }
+  std::vector<uint64_t> notifications;
+  for (auto id : ids) {
+    Association a;
+    std::vector<Grant> grants;
+    Identity identity;
+    if (!repo->begin(id, &a) || !repo->grants(id, &grants) ||
+        !repo->identity(a.source, &identity)) {
+      repo->rollback();
+      return false;
+    }
+    size_t matches = 0;
+    bool exact = false;
+    for (const auto &g : grants) {
+      if (g.origin_type != type || g.origin_id != origin) continue;
+      ++matches;
+      exact = desired && id == target &&
+              g.resource_type == desired->resource_type &&
+              g.resource_id == desired->resource_id &&
+              g.permissions == desired->permissions;
+    }
+    if ((id == target && matches == 1 && exact) ||
+        (id != target && matches == 0))
+      continue;
+    Association before = a;
+    int current_owner = 0;
+    if (id == target &&
+        (!repo->owner(desired->resource_type, desired->resource_id,
+                      &current_owner) ||
+         current_owner != source || !repo->device_exists(destination))) {
+      repo->rollback();
+      return false;
+    }
+    if (!repo->erase_origin(id, type, origin) ||
+        (id == target && (a.source_removed || a.destination_removed ||
+                          !repo->put(id, *desired))) ||
+        !recompute(repo.get(), &a, identity.root)) {
+      repo->rollback();
+      return false;
+    }
+    if (!same_state(before, a)) notifications.push_back(id);
+  }
+  if (!repo->commit()) {
+    repo->rollback();
+    return false;
+  }
+  locks.clear();
+  origin_lock.unlock();
+  for (auto id : notifications)
+    if (changed) changed(id);
+  return true;
+}
+
+bool PeerService::reconcile_main_thermometer(uint32_t destination_channel,
+                                             uint32_t source_channel) {
+  return reconcile_main_thermometer(
+      destination_channel, [source_channel](uint32_t *current) {
+        *current = source_channel;
+        return true;
+      });
+}
+
+bool PeerService::reconcile_main_thermometer(
+    uint32_t destination_channel,
+    const std::function<bool(uint32_t *)> &read_current_source) {
+  const uint64_t origin = main_thermometer_origin(destination_channel);
+  auto gate = origin_gate(CHANNEL_CONFIG_ORIGIN, origin);
+  std::unique_lock<std::mutex> origin_lock(*gate);
+  uint32_t source_channel = 0;
+  if (!read_current_source(&source_channel)) return false;
+  auto repo = factory();
+  ChannelInfo source, destination;
+  if (!repo->channel(destination_channel, &destination) ||
+      (source_channel && !repo->channel(source_channel, &source)))
+    return false;
+  const bool compatible =
+      (source.type == SUPLA_CHANNELTYPE_THERMOMETER ||
+       source.type == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+      (source.function == SUPLA_CHANNELFNC_THERMOMETER ||
+       source.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+  const bool hvac =
+      destination.type == SUPLA_CHANNELTYPE_HVAC &&
+      (destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
+       destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+       destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
+       destination.function == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER);
+  const bool remote =
+      destination.device && source.device &&
+      destination.device != source.device && compatible && hvac &&
+      (source.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+      (destination.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+  Grant grant{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, source_channel,
+              CHANNEL_CONFIG_ORIGIN, origin, SUPLA_SUPLAN_PERMISSION_READ};
+  return reconcile_origin_locked(CHANNEL_CONFIG_ORIGIN, origin, source.device,
+                                 destination.device, remote ? &grant : nullptr,
+                                 origin_lock);
+}
+
 bool PeerService::delete_origin(uint16_t type, uint64_t origin) {
   auto repo = factory();
   std::vector<uint64_t> ids;

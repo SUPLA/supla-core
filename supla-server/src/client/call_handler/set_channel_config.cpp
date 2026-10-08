@@ -105,10 +105,14 @@ void supla_client_ch_set_channel_config::handle_call(
     if (device) {
       device->get_channels()->access_channel(
           config->ChannelId, [&](supla_device_channel* channel) -> void {
-            channel->set_json_config(
-                json_config ? new supla_json_config(json_config, true)
-                            : nullptr);
-            channel->send_config_to_device(real_config_type);
+            if (channel->get_type() == SUPLA_CHANNELTYPE_HVAC) {
+              channel->request_config_publication(real_config_type);
+            } else {
+              channel->set_json_config(
+                  json_config ? new supla_json_config(json_config, true)
+                              : nullptr);
+              channel->send_config_to_device(real_config_type);
+            }
           });
     }
   }

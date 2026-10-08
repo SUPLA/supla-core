@@ -162,11 +162,11 @@ TEST_F(CommonChannelPropertiesTest,
       EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
       EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-      EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MasterThermostatIsSet = 1;
-        config->set_config(&hvac, 5);
+        hvac.MasterThermostatChannelId = 5000;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -223,12 +223,12 @@ TEST_F(CommonChannelPropertiesTest,
         return version;
       });
 
-      EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MasterThermostatIsSet = 1;
-        hvac.MasterThermostatChannelNo = 10;
-        config->set_config(&hvac, 5);
+
+        hvac.MasterThermostatChannelId = 5000;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -291,8 +291,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.HeatOrColdSourceSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.HeatOrColdSourceSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -340,8 +341,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.HeatOrColdSourceSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.HeatOrColdSourceSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -413,8 +415,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.PumpSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.PumpSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -462,8 +465,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.PumpSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.PumpSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -696,11 +700,11 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_MainThermometer) {
       EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(*it + 100));
       EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(*it));
 
-      EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MainThermometerChannelNo = 5;
-        config->set_config(&hvac, 10);
+        hvac.MainThermometerChannelId = *tit + 50;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -773,11 +777,11 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_MainThermometer) {
                     .WillRepeatedly(Return(*it));
 
                 EXPECT_CALL(related_props_mock, get_json_config)
-                    .WillRepeatedly([]() {
+                    .WillRepeatedly([&]() {
                       hvac_config *config = new hvac_config();
                       TChannelConfig_HVAC hvac = {};
-                      hvac.MainThermometerChannelNo = 5;
-                      config->set_config(&hvac, 10);
+                      hvac.MainThermometerChannelId = *tit + 50;
+                      config->set_config(&hvac);
                       return config;
                     });
 
@@ -818,12 +822,12 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_AuxThermometer) {
         EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(*it + 100));
         EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(*it));
 
-        EXPECT_CALL(mock, get_json_config).WillRepeatedly([a]() {
+        EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
           hvac_config *config = new hvac_config();
           TChannelConfig_HVAC hvac = {};
-          hvac.AuxThermometerChannelNo = 5;
+          hvac.AuxThermometerChannelId = *tit + 50;
           hvac.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR + a;
-          config->set_config(&hvac, 10);
+          config->set_config(&hvac);
           return config;
         });
 
@@ -898,13 +902,13 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_AuxThermometer) {
                       .WillRepeatedly(Return(*it));
 
                   EXPECT_CALL(related_props_mock, get_json_config)
-                      .WillRepeatedly([a]() {
+                      .WillRepeatedly([&]() {
                         hvac_config *config = new hvac_config();
                         TChannelConfig_HVAC hvac = {};
-                        hvac.AuxThermometerChannelNo = 5;
+                        hvac.AuxThermometerChannelId = *tit + 50;
                         hvac.AuxThermometerType =
                             SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR + a;
-                        config->set_config(&hvac, 10);
+                        config->set_config(&hvac);
                         return config;
                       });
 
@@ -943,8 +947,8 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_BinarySensor) {
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.BinarySensorChannelNo = 5;
-      config->set_config(&hvac, 10);
+      hvac.BinarySensorChannelId = 50;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -1012,8 +1016,8 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_BinarySensor) {
           EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
             hvac_config *config = new hvac_config();
             TChannelConfig_HVAC hvac = {};
-            hvac.BinarySensorChannelNo = 5;
-            config->set_config(&hvac, 10);
+            hvac.BinarySensorChannelId = 50;
+            config->set_config(&hvac);
             return config;
           });
 
@@ -1191,3 +1195,72 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_Sensor) {
 }
 
 } /* namespace testing */
+
+namespace testing {
+namespace {
+class ReferenceEncodingProperties : public CommonChannelPropertiesMock {
+ public:
+  using supla_abstract_common_channel_properties::get_config;
+};
+}  // namespace
+TEST_F(CommonChannelPropertiesTest, explicitAllSixRecipientEncoding) {
+  ReferenceEncodingProperties destination;
+  ON_CALL(destination, get_type).WillByDefault(Return(SUPLA_CHANNELTYPE_HVAC));
+  ON_CALL(destination, get_id).WillByDefault(Return(5000));
+  ON_CALL(destination, get_device_id).WillByDefault(Return(50));
+  ON_CALL(destination, get_channel_number).WillByDefault(Return(9));
+  ON_CALL(destination, get_json_config).WillByDefault([] {
+    auto config = new hvac_config();
+    TChannelConfig_HVAC wire = {};
+    wire.MainThermometerChannelId = 70000;
+    wire.AuxThermometerChannelId = 70001;
+    wire.BinarySensorChannelId = 70002;
+    wire.MasterThermostatChannelId = 70003;
+
+    wire.PumpSwitchChannelId = 70004;
+
+    wire.HeatOrColdSourceSwitchChannelId = 70005;
+
+    config->set_config(&wire);
+    return config;
+  });
+  ON_CALL(destination, for_each).WillByDefault([](bool any_device, auto visit) {
+    EXPECT_FALSE(any_device);
+    for (int i = 0; i < 6; ++i) {
+      CommonChannelPropertiesMock source;
+      ON_CALL(source, get_id).WillByDefault(Return(70000 + i));
+      ON_CALL(source, get_device_id).WillByDefault(Return(50));
+      ON_CALL(source, get_channel_number).WillByDefault(Return(20 + i));
+      bool more = true;
+      visit(&source, &more);
+      if (!more) break;
+    }
+  });
+  for (auto encoding : {ChannelReferenceEncoding::ChannelId,
+                        ChannelReferenceEncoding::LocalChannelNumber}) {
+    char buffer[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+    unsigned _supla_int16_t size = 0;
+    destination.get_config(buffer, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0,
+                           encoding);
+    ASSERT_EQ(sizeof(TChannelConfig_HVAC), size);
+    auto wire = reinterpret_cast<TChannelConfig_HVAC *>(buffer);
+    unsigned int base =
+        encoding == ChannelReferenceEncoding::ChannelId ? 70000 : 20;
+    EXPECT_EQ(base, wire->MainThermometerChannelId);
+    EXPECT_EQ(base + 1, wire->AuxThermometerChannelId);
+    EXPECT_EQ(base + 2, wire->BinarySensorChannelId);
+    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+                  ? base + 3
+                  : ((base + 3) << 8) | 1,
+              wire->MasterThermostatChannelId);
+    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+                  ? base + 4
+                  : ((base + 4) << 8) | 1,
+              wire->PumpSwitchChannelId);
+    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+                  ? base + 5
+                  : ((base + 5) << 8) | 1,
+              wire->HeatOrColdSourceSwitchChannelId);
+  }
+}
+}  // namespace testing
