@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_extended_value.h"
@@ -543,6 +544,145 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
 TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
   ASSERT_TRUE(dba->connect());
   EXPECT_EQ(dao->get_device_limit_left(2), 89);
+}
+
+TEST_F(DeviceDaoIntegrationTest, virtualDevicesCannotRegisterOverSrpc) {
+  ASSERT_TRUE(dba->connect());
+  // NULL auth keys remain valid for legacy physical devices. Eligibility is
+  // checked separately, including after a cached email/key authentication.
+  for (int is_virtual : {0, 1}) {
+    string sql =
+        "UPDATE supla_iodevice SET enabled=1,auth_key=NULL,is_virtual=" +
+        std::to_string(is_virtual) + " WHERE id=73";
+    ASSERT_EQ(0, dba->query(sql.c_str(), true));
+    bool enabled = true, location_enabled = false, addition_blocked = false;
+    int original_location = 0, location = 0, flags = 0;
+    EXPECT_TRUE(dao->get_device_variables(
+        73, &enabled, &original_location, &location, &location_enabled, &flags,
+        &addition_blocked));
+    EXPECT_EQ(is_virtual == 0, enabled);
+    string result;
+    sqlQuery("SELECT CAST(enabled AS unsigned integer) enabled "
+             "FROM supla_iodevice WHERE id=73",
+             &result);
+    EXPECT_EQ("enabled\n1\n", result);  // Only SRPC eligibility is disabled.
+  }
+}
+
+TEST_F(DeviceDaoIntegrationTest, ocppCoalescesPersistenceAndRetriesFailures) {
+  ASSERT_TRUE(dba->connect());
+  ASSERT_EQ(
+      0, dba->query("INSERT INTO supla_ocpp_charging_station VALUES (1,2,73)",
+                    true));
+  ASSERT_EQ(
+      0, dba->query(
+             "UPDATE supla_dev_channel SET is_virtual=1 WHERE id IN (140,141)",
+             true));
+  ASSERT_EQ(
+      0,
+      dba->query(
+          "DELETE FROM supla_dev_channel_value WHERE channel_id IN (140,141)",
+          true));
+  ASSERT_EQ(0, dba->query("DELETE FROM supla_dev_channel_extended_value WHERE "
+                          "channel_id IN (140,141)",
+                          true));
+  supla_ocpp_device_config config;
+  config.device_id = 73;
+  config.meter.id = 141;
+  config.meter.type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  config.meter.func = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  config.power_switch.id = 140;
+  config.power_switch.type = SUPLA_CHANNELTYPE_RELAY;
+  config.power_switch.func = SUPLA_CHANNELFNC_POWERSWITCH;
+  supla_user::user_free();
+  supla_user::init();
+  supla_user user(2, "ocpp-persistence-test", nullptr);
+  auto device = std::make_shared<supla_ocpp_device>(&user, config);
+  auto stored_voltage = [&]() {
+    std::unique_ptr<supla_abstract_channel_extended_value> value(
+        dao->get_channel_extended_value(2, 141));
+    auto em = dynamic_cast<supla_channel_em_extended_value *>(value.get());
+    EXPECT_NE(nullptr, em);
+    return em ? em->get_voltage(1) : -1;
+  };
+  supla_ocpp_meter_report report;
+  report.energy = 1000;
+  report.voltage[0] = 230000;
+  device->update_meter(report, 90);
+  EXPECT_DOUBLE_EQ(230, stored_voltage());
+  report.energy.reset();  // Extended-only changes must also be retained.
+  for (int i = 0; i < 100; i++) {
+    report.voltage[0] = 240000 + i;
+    device->update_meter(report, 90);
+    device->renew_validity(90);
+  }
+  EXPECT_DOUBLE_EQ(230, stored_voltage());
+  std::this_thread::sleep_for(std::chrono::milliseconds(5100));
+  device->renew_validity(90);  // Flushes without another meter report.
+  EXPECT_NEAR(240.09, stored_voltage(), 0.01);
+
+  report.voltage[0] = 250000;
+  device->update_meter(report, 90);
+  device->update_state(true, 90);  // A switch change is never delayed.
+  EXPECT_DOUBLE_EQ(250, stored_voltage());
+  string result;
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
+      &result);
+  EXPECT_EQ("v\n0100000000000000\n", result);
+
+  // A partial SQL failure must keep the latest data, without retrying on
+  // every incoming heartbeat. MyISAM records attempts even on SIGNAL rollback.
+  ASSERT_EQ(0,
+            dba->query("CREATE TABLE ocpp_write_attempts (n INT) ENGINE=MyISAM",
+                       true));
+  ASSERT_EQ(0,
+            dba->query("CREATE TRIGGER ocpp_fail_write BEFORE UPDATE ON "
+                       "supla_dev_channel_extended_value FOR EACH ROW BEGIN "
+                       "INSERT INTO ocpp_write_attempts VALUES (1); SIGNAL "
+                       "SQLSTATE '45000' SET MESSAGE_TEXT='test failure'; END",
+                       true));
+  report.voltage[0] = 260000;
+  device->update_meter(report, 90);
+  device->update_state(false, 90);  // Immediate attempt, extended save fails.
+  EXPECT_DOUBLE_EQ(250, stored_voltage());
+  for (int i = 0; i < 100; i++) device->renew_validity(90);
+  result.clear();
+  sqlQuery("SELECT COUNT(*) n FROM ocpp_write_attempts", &result);
+  EXPECT_EQ("n\n1\n", result);
+  ASSERT_EQ(0, dba->query("DROP TRIGGER ocpp_fail_write", true));
+  std::this_thread::sleep_for(std::chrono::milliseconds(5100));
+  device->renew_validity(90);
+  EXPECT_DOUBLE_EQ(260, stored_voltage());
+
+  report.voltage[0] = 270000;
+  device->update_meter(report, 90);
+  device->disconnect();  // Includes deferred measurements and zero validity.
+  EXPECT_DOUBLE_EQ(270, stored_voltage());
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id IN "
+      "(140,141) AND valid_to<=UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("n\n2\n", result);
+  report.voltage[0] = 280000;
+  device->update_state(true, 2);
+  ASSERT_EQ(0,
+            dba->query("UPDATE supla_dev_channel_value SET "
+                       "valid_to=UTC_TIMESTAMP() WHERE channel_id IN (140,141)",
+                       true));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+  device->renew_validity(2);
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id IN "
+      "(140,141) AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("n\n2\n", result);  // Short validity overrides normal coalescing.
+  device->deactivate();
+  device->update_meter(report, 90);
+  device->disconnect();
+  EXPECT_DOUBLE_EQ(270, stored_voltage());
 }
 
 TEST_F(DeviceDaoIntegrationTest, updateChannelConflictDetails) {

@@ -314,9 +314,13 @@ bool supla_device_dao::get_device_variables(int device_id, bool *device_enabled,
 
   bool result = false;
 
+  // Virtual devices exist, but cannot register over SRPC. Report them as
+  // disabled for registration only, without changing enabled in the database
+  // or treating their GUID as a new device.
   if (dba->stmt_execute(
           (void **)&stmt,
-          "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
+          "SELECT CAST(d.`enabled` AND IFNULL(d.is_virtual, 0) = 0 "
+          "AS unsigned integer) `d_enabled`, "
           "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, 0), "
           "IFNULL(CAST(l.`enabled` AS unsigned integer), 0) `l_enabled`, "
           "IFNULL(d.flags, 0), IFNULL(d.channel_addition_blocked, 0) FROM "

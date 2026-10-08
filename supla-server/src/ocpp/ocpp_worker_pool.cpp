@@ -3,6 +3,8 @@
 
 #include "ocpp/ocpp_worker_pool.h"
 
+#include <mariadb/mysql.h>
+
 #include <exception>
 #include <utility>
 
@@ -32,6 +34,8 @@ supla_ocpp_worker_pool::supla_ocpp_worker_pool() {
 supla_ocpp_worker_pool::~supla_ocpp_worker_pool() { stop(); }
 
 void supla_ocpp_worker_pool::run(worker *target) {
+  // Unlike sthread, std::thread does not install the MySQL thread lifecycle.
+  mysql_thread_init();
   while (true) {
     std::function<void()> task;
     {
@@ -39,7 +43,7 @@ void supla_ocpp_worker_pool::run(worker *target) {
       target->ready.wait(lock, [target]() {
         return target->stopping || !target->tasks.empty();
       });
-      if (target->stopping && target->tasks.empty()) return;
+      if (target->stopping && target->tasks.empty()) break;
       task = std::move(target->tasks.front());
       target->tasks.pop_front();
     }
@@ -53,6 +57,7 @@ void supla_ocpp_worker_pool::run(worker *target) {
     }
     task_finished();
   }
+  mysql_thread_end();
 }
 
 void supla_ocpp_worker_pool::task_finished(void) {

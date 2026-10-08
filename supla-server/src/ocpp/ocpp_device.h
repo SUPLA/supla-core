@@ -116,7 +116,13 @@ class supla_ocpp_device
   bool active = true;
   unsigned long long configuration_revision = 0;
   bool connected = false;
-  bool db_sync_pending = false;
+  // Accessed only by serializer jobs. Deferred reports retain the latest
+  // state, not a queue of historical SQL writes. Failures retain these flags.
+  bool meter_save_pending = false;
+  bool switch_save_pending = false;
+  bool extended_save_pending = false;
+  bool validity_save_pending = false;
+  std::chrono::steady_clock::time_point next_db_attempt;
   bool aggregate_energy_counter = false;
   unsigned char energy_phase_mask = 0;
   bool restoring_phase_energy = false;
@@ -141,7 +147,8 @@ class supla_ocpp_device
   // The caller must hold mutex.
   void set_power_switch_channel_value(bool on);
   void persist(const supla_ocpp_channel &before_meter,
-               const supla_ocpp_channel &before_switch, bool renew_validity);
+               const supla_ocpp_channel &before_switch, bool renew_validity,
+               bool force = false);
   void notify_channel_change(const supla_ocpp_channel &before,
                              const supla_ocpp_channel &after);
   void raise_value_change_events(const supla_ocpp_channel &before,

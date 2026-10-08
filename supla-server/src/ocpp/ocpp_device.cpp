@@ -238,46 +238,58 @@ void supla_ocpp_device::renew_validity_locked(
 
 void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
                                 const supla_ocpp_channel &before_switch,
-                                bool renew_validity) {
-  // Normally write only changed values. After any failure, the next update
-  // or heartbeat retries the whole known state, not a backlog of old values.
+                                bool renew_validity, bool force) {
+  // Coalesce meter/validity writes for five seconds, including retries after
+  // SQL failures. The next report or heartbeat flushes the latest state.
+  // Switch and availability changes remain immediate; IPC/UI/analyzers are
+  // never delayed. Removed mappings are not flushed by deactivate().
   // Mutations are serialized, so a later report cannot overtake
   // this write. SQL runs outside the state lock and never rolls back live data.
   if (!user) return;
   supla_ocpp_channel meter_value, switch_value;
-  bool full_sync;
   {
     std::lock_guard<std::mutex> lock(mutex);
     if (!active) return;
     meter_value = meter.channel;
     switch_value = power_switch.channel;
-    full_sync = db_sync_pending;
   }
-  auto needs_value_save = [full_sync](const supla_ocpp_channel &before,
-                                      const supla_ocpp_channel &after) {
+  auto needs_value_save = [](const supla_ocpp_channel &before,
+                             const supla_ocpp_channel &after) {
     return after.value &&
-           (full_sync || !before.value || before.raw_value != after.raw_value);
+           (!before.value || before.raw_value != after.raw_value);
   };
-  bool save_meter = needs_value_save(before_meter, meter_value);
-  bool save_switch = needs_value_save(before_switch, switch_value);
-  bool save_extended = meter_value.extended_value &&
-                       (full_sync || !before_meter.extended_value ||
-                        meter_value.extended_value->is_differ(
-                            before_meter.extended_value.get()));
-  bool touch = renew_validity || full_sync;
-  if (!save_meter && !save_switch && !save_extended && !touch) return;
-
+  bool switch_changed = needs_value_save(before_switch, switch_value);
+  meter_save_pending |= needs_value_save(before_meter, meter_value);
+  switch_save_pending |= switch_changed;
+  extended_save_pending |=
+      meter_value.extended_value &&
+      (!before_meter.extended_value || meter_value.extended_value->is_differ(
+                                           before_meter.extended_value.get()));
+  validity_save_pending |= renew_validity;
+  bool availability_changed =
+      before_meter.get_availability_status().is_online() !=
+          meter_value.get_availability_status().is_online() ||
+      before_switch.get_availability_status().is_online() !=
+          switch_value.get_availability_status().is_online();
+  if (!meter_save_pending && !switch_save_pending && !extended_save_pending &&
+      !validity_save_pending)
+    return;
+  auto now = std::chrono::steady_clock::now();
+  if (!force && !switch_changed && !availability_changed &&
+      now < next_db_attempt)
+    return;
   supla_mariadb_access_provider dba;
   bool success = dba.connect();
   if (success) {
     supla_ocpp_dao dao(&dba);
-    if (save_meter && !dao.save_value(get_user_id(), meter_value))
+    if (meter_save_pending && !dao.save_value(get_user_id(), meter_value))
       success = false;
-    if (save_switch && !dao.save_value(get_user_id(), switch_value))
+    if (switch_save_pending && !dao.save_value(get_user_id(), switch_value))
       success = false;
-    if (save_extended && !dao.save_extended_value(get_user_id(), meter_value))
+    if (extended_save_pending &&
+        !dao.save_extended_value(get_user_id(), meter_value))
       success = false;
-    if (touch) {
+    if (validity_save_pending) {
       // Connection/retry latency must not extend the charger's deadline.
       unsigned int seconds =
           std::max(meter_value.get_value_validity_time_sec(),
@@ -285,9 +297,28 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
       if (!dao.renew_validity(get_user_id(), id, seconds)) success = false;
     }
   }
-  {
-    std::lock_guard<std::mutex> lock(mutex);
-    db_sync_pending = !success;
+  // Measure from completion: even a slow failed connection attempt must not
+  // make every already queued report immediately retry the same outage.
+  now = std::chrono::steady_clock::now();
+  next_db_attempt = now + std::chrono::seconds(5);
+  if (success) {
+    meter_save_pending = switch_save_pending = extended_save_pending =
+        validity_save_pending = false;
+    // Very short heartbeat/replay validity must be refreshed before the
+    // stored deadline, not after the normal five-second coalescing window.
+    unsigned int seconds = std::max(meter_value.get_value_validity_time_sec(),
+                                    switch_value.get_value_validity_time_sec());
+    if (seconds) {
+      next_db_attempt =
+          now + std::chrono::milliseconds(std::min(5000U, seconds * 500U));
+    }
+  } else {
+    // A partial write is repaired from the current state on the next allowed
+    // attempt. Never restore an older report over a newer live value.
+    meter_save_pending = meter_value.value != nullptr;
+    switch_save_pending = switch_value.value != nullptr;
+    extended_save_pending = meter_value.extended_value != nullptr;
+    validity_save_pending = true;
   }
 }
 
@@ -386,7 +417,7 @@ void supla_ocpp_device::reload(const supla_ocpp_device_config &config) {
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
     }
-    self->persist(before[0], before[1], false);
+    self->persist(before[0], before[1], false, true);
     for (int i = 0; i < 2; i++)
       self->notify_channel_change(before[i], after[i]);
   });
@@ -701,7 +732,7 @@ void supla_ocpp_device::disconnect(void) {
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
     }
-    self->persist(before[0], before[1], true);
+    self->persist(before[0], before[1], true, true);
     for (int i = 0; i < 2; i++)
       self->notify_channel_change(before[i], after[i]);
   });

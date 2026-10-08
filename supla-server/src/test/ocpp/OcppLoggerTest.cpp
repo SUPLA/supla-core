@@ -19,7 +19,9 @@
 #include <vector>
 
 #include "actions/action_executor.h"
+#include "amazon/alexa_discover_request_search_condition.h"
 #include "analyzer/electricity_analyzer.h"
+#include "asynctask/asynctask_queue.h"
 #include "datalogger/current_logger.h"
 #include "datalogger/power_active_logger.h"
 #include "datalogger/total_energy_logger.h"
@@ -29,6 +31,7 @@
 #include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_onoff_value.h"
+#include "google/google_home_sync_search_condition.h"
 #include "integration/IntegrationTest.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "ocpp/ocpp_dao.h"
@@ -249,6 +252,18 @@ class OcppLoggerIntegrationTest : public IntegrationTest, public Test {
     gateway.on_connected(suid, 73, 90);
   }
 
+  void TearDown() override {
+    if (user) {
+      // reconnect() queues delayed voice-assistant synchronization holding the
+      // user's credentials. Cancel it before this fixture destroys the user.
+      supla_alexa_discover_request_search_condition alexa(user->getUserID());
+      supla_google_home_sync_search_condition google(user->getUserID());
+      auto queue = supla_asynctask_queue::global_instance();
+      queue->cancel_tasks(&alexa);
+      queue->cancel_tasks(&google);
+    }
+  }
+
   void run_logger(supla_abstract_cyclictask *logger) {
     std::vector<supla_user *> users = {user.get()};
     timeval now = {};
@@ -270,6 +285,12 @@ class OcppLoggerIntegrationTest : public IntegrationTest, public Test {
     supla_device_dao dao(&dba);
     EXPECT_DOUBLE_EQ(displayed,
                      meter_energy(dao.get_channel_extended_value(2, 141)));
+  }
+
+  void wait_for_database_window() {
+    // Keep the production steady clock: these integration assertions exercise
+    // the actual deferred-write/retry path, not a forced config reload.
+    std::this_thread::sleep_for(std::chrono::milliseconds(5100));
   }
 };
 
@@ -502,6 +523,10 @@ TEST_F(OcppLoggerIntegrationTest, RestartWaitsForRawEnergyBeforeLogging) {
   expect_query("SELECT COUNT(*) n FROM supla_em_log", "n\n0\n");
 
   gateway.on_meter(suid, 73, 1, {{"energy", 13000}}, 90);
+  channel = user->get_devices()->get_ocpp_channel(141);
+  EXPECT_DOUBLE_EQ(18, displayed_energy(&channel));  // Live value is immediate.
+  wait_for_database_window();
+  gateway.on_alive(suid, 73, 90);
   expect_meter_values(18, 13, 18);
 }
 
@@ -853,12 +878,18 @@ TEST_F(OcppLoggerIntegrationTest, TargetedReloadUpdatesOnlyRequestedDevice) {
 TEST_F(OcppLoggerIntegrationTest, UnchangedSwitchValueSkipsDatabaseWrite) {
   gateway.on_state(suid, 73, 1, false, 90);
   // Detect an unnecessary basic-value rewrite independently of the validity
-  // UPDATE, which legitimately changes update_time on every heartbeat.
+  // UPDATE, which is coalesced until the next persistence window.
   ASSERT_EQ(0, dba.query("UPDATE supla_dev_channel_value SET "
                          "value=X'0900000000000000',valid_to='2020-01-01 "
                          "00:00:00' WHERE channel_id=140",
                          true));
   gateway.on_state(suid, 73, 1, false, 90);
+  expect_query(
+      "SELECT HEX(value) v,valid_to>UTC_TIMESTAMP() online FROM "
+      "supla_dev_channel_value WHERE channel_id=140",
+      "v\tonline\n0900000000000000\t0\n");
+  wait_for_database_window();
+  gateway.on_alive(suid, 73, 90);
   expect_query(
       "SELECT HEX(value) v,valid_to>UTC_TIMESTAMP() online FROM "
       "supla_dev_channel_value WHERE channel_id=140",
@@ -1208,6 +1239,12 @@ TEST_F(OcppLoggerIntegrationTest,
   gateway.on_alive(suid, 73, 90);
   gateway.on_meter(suid, 73, 1, {{"energy", 12000}, {"voltage", {230000}}}, 90);
   expect_query(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id IN "
+      "(140,141) AND valid_to>UTC_TIMESTAMP()",
+      "n\n0\n");
+  wait_for_database_window();
+  gateway.on_alive(suid, 73, 90);
+  expect_query(
       "SELECT channel_id,HEX(value) v,valid_to>UTC_TIMESTAMP() online "
       "FROM supla_dev_channel_value WHERE channel_id IN (140,141) "
       "ORDER BY channel_id",
@@ -1235,6 +1272,7 @@ TEST_F(OcppLoggerIntegrationTest,
                 "supla_dev_channel_extended_value FOR EACH ROW "
                 "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test write failure'",
                 true));
+  wait_for_database_window();
   gateway.on_meter(suid, 73, 1, {{"energy", 13000}}, 90);
   supla_device_dao dao(&dba);
   EXPECT_DOUBLE_EQ(17, meter_energy(dao.get_channel_extended_value(2, 141)));
@@ -1247,6 +1285,11 @@ TEST_F(OcppLoggerIntegrationTest,
   gateway.on_meter(suid, 73, 1, {{"energy", 14000}}, 90);
   expect_query(
       "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
+      "v\n0900000000000000\n");  // A failure does not bypass the interval.
+  wait_for_database_window();
+  gateway.on_alive(suid, 73, 90);
+  expect_query(
+      "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
       "v\n0000000000000000\n");
 
   // Successful basic/validity writes cannot clear the pending synchronization
@@ -1254,12 +1297,14 @@ TEST_F(OcppLoggerIntegrationTest,
   ASSERT_EQ(0, dba.query("UPDATE supla_dev_channel_value SET "
                          "value=X'0900000000000000' WHERE channel_id=140",
                          true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   expect_query(
       "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
       "v\n0000000000000000\n");
   EXPECT_DOUBLE_EQ(17, meter_energy(dao.get_channel_extended_value(2, 141)));
   ASSERT_EQ(0, dba.query("DROP TRIGGER reject_ocpp_extended", true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   expect_meter_values(19, 14, 14);
   char raw[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -1280,6 +1325,7 @@ TEST_F(OcppLoggerIntegrationTest,
   ASSERT_EQ(0, dba.query("UPDATE supla_dev_channel_extended_value SET "
                          "update_time='2020-01-01' WHERE channel_id=141",
                          true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   expect_query(
       "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
@@ -1306,6 +1352,7 @@ TEST_F(OcppLoggerIntegrationTest,
                 true));
   gateway.on_state(suid, 73, 1, true, 90);
   ASSERT_EQ(0, dba.query("DROP TRIGGER reject_ocpp_update", true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   expect_query(
       "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
@@ -1329,11 +1376,13 @@ TEST_F(OcppLoggerIntegrationTest,
                 "supla_dev_channel_value FOR EACH ROW "
                 "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='test write failure'",
                 true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   ASSERT_EQ(0, dba.query("DROP TRIGGER reject_ocpp_validity", true));
   ASSERT_EQ(0, dba.query("UPDATE supla_dev_channel_value SET "
                          "value=X'0900000000000000' WHERE channel_id=140",
                          true));
+  wait_for_database_window();
   gateway.on_alive(suid, 73, 90);
   expect_query(
       "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
