@@ -41,6 +41,10 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     return;
   }
 
+  if (!user->get_devices()->get(device_id)) {
+    user->get_devices()->on_channel_config_changed(device_id, channel_id);
+  }
+
   if (scope & CONFIG_CHANGE_SCOPE_ALEXA_INTEGRATION_ENABLED) {
     supla_alexa_delete_request::new_request(user, channel_id, func);
   }

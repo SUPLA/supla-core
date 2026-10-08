@@ -115,6 +115,9 @@ class supla_device_dao : public supla_abstract_device_dao {
   virtual void update_channel_extended_value(
       int channel_id, int user_id, supla_abstract_channel_extended_value *ev);
 
+  bool touch_channel_values(int device_id, int user_id,
+                            unsigned int validity_time_sec);
+
   virtual void update_channel_functions(int channel_id, int user_id, int flist);
 
   virtual supla_json_config *get_channel_config(int channel_id,

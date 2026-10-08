@@ -38,6 +38,7 @@
 #include "lck.h"
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "ocpp/ocpp_device.h"
 #include "safearray.h"
 #include "scene/scene_asynctask.h"
 #include "serverstatus.h"
@@ -341,6 +342,17 @@ bool supla_user::get_channel_value(
 
   shared_ptr<supla_device> device = devices->get(device_id, channel_id);
   if (!device) {
+    auto channel = devices->get_ocpp_channel(channel_id);
+    if (channel.get_channel_id()) {
+      if (value) channel.get_value(value);
+      if (function) *function = channel.get_func();
+      if (status) *status = channel.get_availability_status();
+      if (validity_time_sec) {
+        *validity_time_sec = channel.get_value_validity_time_sec();
+      }
+      if (extended_value) *extended_value = channel.get_extended_value();
+      return true;
+    }
     supla_virtual_channel vc = get_devices()->get_virtual_channel(channel_id);
     if (vc.get_channel_id()) {
       if (value) {
@@ -725,6 +737,9 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
 
   if (all_devices) {
     devices->reconnect_all();
+    // OCPP devices are virtual but own a separate, stateful runtime. They do
+    // not reconnect through SRPC; reload applies enabled/configuration changes.
+    devices->reload_ocpp_devices();
   }
 
   if (all_clients) {

@@ -36,6 +36,7 @@ class supla_channel_em_extended_value
                      const char *text_param1, int *param2);
 
  public:
+  supla_channel_em_extended_value(void);
   explicit supla_channel_em_extended_value(
       const TSuplaChannelExtendedValue *value);
   supla_channel_em_extended_value(const TSuplaChannelExtendedValue *value,
@@ -73,6 +74,11 @@ class supla_channel_em_extended_value
   double get_rae(int phase);
   double get_rae_sum(void);
   double get_rae_balanced(void);
+
+  bool set_voltage(int phase, double value);
+  bool set_current(int phase, double value);
+  bool set_power_active(int phase, double value);
+  bool set_fae(int phase, double value);
 
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value,

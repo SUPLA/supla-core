@@ -35,6 +35,46 @@ TEST_F(ChannelEmExtendedValueTest, defaults) {
   EXPECT_EQ(ev.get_price_per_unit(), 0.0);
 }
 
+TEST_F(ChannelEmExtendedValueTest, setters) {
+  supla_channel_em_extended_value value;
+
+  EXPECT_TRUE(value.set_voltage(1, 230.125));
+  EXPECT_DOUBLE_EQ(value.get_voltage(1), 230.13);
+  EXPECT_TRUE(value.set_current(1, 12.345));
+  EXPECT_DOUBLE_EQ(value.get_current(1), 12.345);
+
+  EXPECT_TRUE(value.set_current(2, 70.0));
+  EXPECT_DOUBLE_EQ(value.get_current(1), 12.35);
+  EXPECT_DOUBLE_EQ(value.get_current(2), 70.0);
+  EXPECT_TRUE(value.get_measured_values() & EM_VAR_CURRENT_OVER_65A);
+  EXPECT_FALSE(value.get_measured_values() & EM_VAR_CURRENT);
+
+  EXPECT_TRUE(value.set_current(2, 10.0));
+  EXPECT_DOUBLE_EQ(value.get_current(1), 12.35);
+  EXPECT_DOUBLE_EQ(value.get_current(2), 10.0);
+  EXPECT_TRUE(value.get_measured_values() & EM_VAR_CURRENT);
+  EXPECT_FALSE(value.get_measured_values() & EM_VAR_CURRENT_OVER_65A);
+
+  EXPECT_TRUE(value.set_power_active(1, 1234.56));
+  EXPECT_DOUBLE_EQ(value.get_power_active(1), 1234.56);
+  EXPECT_TRUE(value.set_fae(1, 12.34567));
+  EXPECT_DOUBLE_EQ(value.get_fae(1), 12.34567);
+  EXPECT_DOUBLE_EQ(value.get_fae(2), 0);
+  EXPECT_DOUBLE_EQ(value.get_fae(3), 0);
+  EXPECT_TRUE(value.get_measured_values() & EM_VAR_FORWARD_ACTIVE_ENERGY);
+  EXPECT_FALSE(value.get_measured_values() &
+               EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED);
+  EXPECT_TRUE(value.set_fae(3, 1.5));
+  EXPECT_DOUBLE_EQ(value.get_fae_sum(), 13.84567);
+
+  EXPECT_FALSE(value.set_voltage(0, 230));
+  EXPECT_FALSE(value.set_current(4, 10));
+  EXPECT_FALSE(value.set_power_active(0, 100));
+  EXPECT_FALSE(value.set_fae(1, -1));
+  EXPECT_FALSE(value.set_fae(0, 1));
+  EXPECT_FALSE(value.set_fae(4, 1));
+}
+
 TEST_F(ChannelEmExtendedValueTest, defaultConstructor) {
   TSuplaChannelExtendedValue ev_raw1 = {};
   TSuplaChannelExtendedValue ev_raw2 = {};

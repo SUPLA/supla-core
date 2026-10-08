@@ -30,6 +30,8 @@ class supla_channel_em_value : public supla_abstract_channel_value {
   virtual supla_abstract_channel_value *copy(void) const;  // NOLINT
 
   const TElectricityMeter_Value *get_em_value(void);
+  bool set_phase_on(int phase, bool on);
+  bool set_total_forward_active_energy(double value);
   virtual void apply_channel_properties(int type,
                                         unsigned char protocol_version,
                                         int param1, int param2, int param3,

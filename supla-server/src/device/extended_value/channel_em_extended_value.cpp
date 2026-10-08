@@ -20,7 +20,10 @@
 
 #include <string.h>
 
+#include <algorithm>
+#include <cmath>
 #include <cstdio>
+#include <limits>
 #include <string>
 
 #include "db/mariadb_access_provider.h"
@@ -30,6 +33,12 @@
 
 using std::map;
 using std::string;
+
+supla_channel_em_extended_value::supla_channel_em_extended_value(void)
+    : supla_abstract_channel_extended_value(), supla_channel_billing_value() {
+  TElectricityMeter_ExtendedValue_V3 value = {};
+  set_raw_value(&value, nullptr, nullptr);
+}
 
 supla_channel_em_extended_value::supla_channel_em_extended_value(
     const TSuplaChannelExtendedValue *value)
@@ -396,6 +405,102 @@ double supla_channel_em_extended_value::get_rae_balanced(void) {
   }
 
   return 0.0;
+}
+
+bool supla_channel_em_extended_value::set_voltage(int phase, double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value) || value < 0) {
+    return false;
+  }
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  long double raw = std::round(static_cast<long double>(value) * 100.0L);
+  raw = std::min(raw, static_cast<long double>(
+                          std::numeric_limits<unsigned _supla_int16_t>::max()));
+  em_ev.m[0].voltage[phase - 1] = static_cast<unsigned _supla_int16_t>(raw);
+  em_ev.measured_values |= EM_VAR_VOLTAGE;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
+bool supla_channel_em_extended_value::set_current(int phase, double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value) || value < 0) {
+    return false;
+  }
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  bool previous_over_65a = (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+                           !(em_ev.measured_values & EM_VAR_CURRENT);
+  long double currents_ma[3] = {};
+  for (int a = 0; a < 3; a++) {
+    currents_ma[a] = em_ev.m[0].current[a] * (previous_over_65a ? 10.0L : 1.0L);
+  }
+  currents_ma[phase - 1] =
+      std::round(static_cast<long double>(value) * 1000.0L);
+
+  bool over_65a = *std::max_element(currents_ma, currents_ma + 3) > 65535.0L;
+  for (int a = 0; a < 3; a++) {
+    long double raw = std::round(currents_ma[a] / (over_65a ? 10.0L : 1.0L));
+    raw =
+        std::min(raw, static_cast<long double>(
+                          std::numeric_limits<unsigned _supla_int16_t>::max()));
+    em_ev.m[0].current[a] = static_cast<unsigned _supla_int16_t>(raw);
+  }
+
+  em_ev.measured_values &= ~(EM_VAR_CURRENT | EM_VAR_CURRENT_OVER_65A);
+  em_ev.measured_values |= over_65a ? EM_VAR_CURRENT_OVER_65A : EM_VAR_CURRENT;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
+bool supla_channel_em_extended_value::set_power_active(int phase,
+                                                       double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value)) {
+    return false;
+  }
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  bool previous_kw = em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW;
+  long double power[3] = {};
+  for (int a = 0; a < 3; a++) {
+    power[a] = em_ev.m[0].power_active[a] * (previous_kw ? 0.01L : 0.00001L);
+  }
+  power[phase - 1] = value;
+
+  for (int a = 0; a < 3; a++) {
+    long double raw = std::round(power[a] * 100.0L);
+    raw = std::max(raw, static_cast<long double>(
+                            std::numeric_limits<_supla_int_t>::min()));
+    raw = std::min(raw, static_cast<long double>(
+                            std::numeric_limits<_supla_int_t>::max()));
+    em_ev.m[0].power_active[a] = static_cast<_supla_int_t>(raw);
+  }
+
+  em_ev.measured_values |= EM_VAR_POWER_ACTIVE | EM_VAR_POWER_ACTIVE_KW;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
+bool supla_channel_em_extended_value::set_fae(int phase, double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value) || value < 0) {
+    return false;
+  }
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  long double raw = std::round(static_cast<long double>(value) * 100000.0L);
+  raw = std::min(raw, static_cast<long double>(
+                          std::numeric_limits<unsigned _supla_int64_t>::max()));
+  em_ev.total_forward_active_energy[phase - 1] =
+      static_cast<unsigned _supla_int64_t>(raw);
+  em_ev.measured_values |= EM_VAR_FORWARD_ACTIVE_ENERGY;
+  set_raw_value(&em_ev);
+  return true;
 }
 
 bool supla_channel_em_extended_value::get_raw_value(

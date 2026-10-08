@@ -4005,4 +4005,13 @@ where (`c`.`func` is not null and `c`.`func` <> 0 or `c`.`type` = 8000)
   and `d`.`enabled` = 1
   and `l`.`enabled` = 1
   and `a`.`enabled` = 1;;
+-- OCPP ownership/mapping columns used by supla-server. Credentials belong to
+-- the cloud/gateway and are not needed by these integration fixtures.
+CREATE TABLE `supla_ocpp_charging_station` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `iodevice_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ocpp_iodevice` (`iodevice_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;;
 -- Dump completed on 2024-07-02 22:29:54

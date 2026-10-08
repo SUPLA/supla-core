@@ -17,6 +17,7 @@ RM := rm -rf
 -include src/test/srpc/subdir.mk
 -include src/test/scene/subdir.mk
 -include src/test/push/subdir.mk
+-include src/test/ocpp/subdir.mk
 -include src/test/mqtt/subdir.mk
 -include src/test/jsonconfig/device/subdir.mk
 -include src/test/jsonconfig/channel/subdir.mk
@@ -81,6 +82,7 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/push/subdir.mk
 -include src/mqtt/subdir.mk
+-include src/ocpp/subdir.mk
 -include src/jsonconfig/device/subdir.mk
 -include src/jsonconfig/channel/subdir.mk
 -include src/jsonconfig/subdir.mk

@@ -35,7 +35,7 @@ using std::vector;
 using std::weak_ptr;
 
 supla_user_devices::supla_user_devices(supla_user *user)
-    : supla_connection_objects() {
+    : supla_connection_objects(), ocpp_devices(user) {
   virtual_channels_update_time = {};
   this->user = user;
 }
@@ -289,6 +289,10 @@ supla_user_devices::get_channel_availability_status(int device_id,
     supla_virtual_channel vchannel = get_virtual_channel(channel_id);
     if (vchannel.get_channel_id()) {
       result = vchannel.get_availability_status();
+    } else {
+      auto ocpp = get_ocpp_device(device_id, channel_id);
+      if (ocpp)
+        result = ocpp->get_channel(channel_id).get_availability_status();
     }
   }
 
@@ -312,6 +316,9 @@ bool supla_user_devices::is_online(int id) {
     unlock();
   }
 
+  if (!result) {
+    result = ocpp_devices.is_online(id);
+  }
   return result;
 }
 
@@ -319,6 +326,8 @@ void supla_user_devices::on_channel_added(int device_id, int channel_id) {
   lock();
   virtual_channels_update_time = {};
   unlock();
+
+  ocpp_devices.reload(device_id);
 }
 
 void supla_user_devices::on_channel_deleted(int device_id, int channel_id) {
@@ -332,8 +341,39 @@ void supla_user_devices::on_channel_deleted(int device_id, int channel_id) {
     }
   }
   unlock();
+
+  ocpp_devices.on_channel_deleted(device_id, channel_id);
 }
 
 void supla_user_devices::on_device_deleted(int device_id) {
   terminate(device_id);
+  ocpp_devices.on_device_deleted(device_id);
+}
+
+std::shared_ptr<supla_ocpp_device> supla_user_devices::get_ocpp_device(
+    int device_id, int channel_id) {
+  return ocpp_devices.get(device_id, channel_id);
+}
+
+supla_ocpp_channel supla_user_devices::get_ocpp_channel(int channel_id) {
+  return ocpp_devices.get_channel(channel_id);
+}
+
+void supla_user_devices::reload_ocpp_devices(int device_id) {
+  ocpp_devices.reload(device_id);
+}
+
+void supla_user_devices::access_ocpp_data_analyzers(
+    std::function<void(supla_electricity_analyzer *)> callback) {
+  ocpp_devices.access_data_analyzers(callback);
+}
+
+void supla_user_devices::get_ocpp_meter_values(
+    std::vector<supla_abstract_channel_extended_value_envelope *> *values) {
+  ocpp_devices.get_meter_values(values);
+}
+
+void supla_user_devices::on_channel_config_changed(int device_id,
+                                                   int channel_id) {
+  ocpp_devices.reload(device_id);
 }

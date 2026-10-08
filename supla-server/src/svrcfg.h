@@ -105,6 +105,11 @@ extern "C" {
 #define CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC 60
 #define CFG_HTTP_MAX_RESPONSE_BODY_SIZE 61
 
+#define CFG_OCPP_ENABLED 62
+#define CFG_OCPP_SOCKET_PATH 63
+#define CFG_OCPP_MAX_MESSAGE_BYTES 64
+#define CFG_OCPP_SOCKET_GROUP 65
+
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
 

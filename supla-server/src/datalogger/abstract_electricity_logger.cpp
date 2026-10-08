@@ -19,6 +19,7 @@
 #include "abstract_electricity_logger.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "device/devicechannel.h"
@@ -37,7 +38,7 @@ bool supla_abstract_electricity_logger::is_tsdb_preffered(void) { return true; }
 
 void supla_abstract_electricity_logger::run(
     const vector<supla_user *> *users, supla_abstract_db_access_provider *dba) {
-  std::vector<supla_electricity_analyzer *> vel;
+  std::vector<std::unique_ptr<supla_abstract_data_analyzer>> vel;
 
   for (auto uit = users->cbegin(); uit != users->cend(); ++uit) {
     (*uit)->get_devices()->for_each(
@@ -53,15 +54,15 @@ void supla_abstract_electricity_logger::run(
                         dynamic_cast<supla_electricity_analyzer *>(analyzer);
                     if (el_analyzer &&
                         is_any_data_for_logging_purposes(el_analyzer)) {
-                      supla_abstract_data_analyzer *copy = analyzer->copy();
+                      std::unique_ptr<supla_abstract_data_analyzer> copy(
+                          analyzer->copy());
                       if (copy) {
                         supla_electricity_analyzer *el_analyzer_copy =
-                            dynamic_cast<supla_electricity_analyzer *>(copy);
+                            dynamic_cast<supla_electricity_analyzer *>(
+                                copy.get());
                         if (el_analyzer_copy) {
-                          vel.push_back(el_analyzer_copy);
+                          vel.push_back(std::move(copy));
                           reset(el_analyzer);
-                        } else {
-                          delete copy;
                         }
                       }
                     }
@@ -69,16 +70,27 @@ void supla_abstract_electricity_logger::run(
             }
           });
         });
+    (*uit)->get_devices()->access_ocpp_data_analyzers(
+        [&vel, this](supla_electricity_analyzer *analyzer) {
+          if (is_any_data_for_logging_purposes(analyzer)) {
+            std::unique_ptr<supla_abstract_data_analyzer> copy(analyzer->copy());
+            auto el_copy =
+                dynamic_cast<supla_electricity_analyzer *>(copy.get());
+            if (el_copy) {
+              vel.push_back(std::move(copy));
+              reset(analyzer);
+            }
+          }
+        });
   }
 
   if (vel.size()) {
-    supla_abstract_electricity_logger_dao *dao = get_dao(dba);
+    std::unique_ptr<supla_abstract_electricity_logger_dao> dao(get_dao(dba));
     if (dao) {
-      for (auto it = vel.begin(); it != vel.end(); ++it) {
-        dao->add(*it);
-        delete *it;
+      for (auto &copy : vel) {
+        dao->add(static_cast<supla_electricity_analyzer *>(copy.get()));
+        copy.reset();
       }
-      delete dao;
     }
   }
 }

@@ -50,6 +50,22 @@ TEST_F(ChannelEmValueTest, emValueConstructor) {
   EXPECT_EQ(v.get_em_value()->total_forward_active_energy, 2);
 }
 
+TEST_F(ChannelEmValueTest, setters) {
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  supla_channel_em_value value(raw_value);
+
+  EXPECT_TRUE(value.set_phase_on(1, true));
+  EXPECT_TRUE(value.set_phase_on(3, true));
+  EXPECT_TRUE(value.set_phase_on(1, false));
+  EXPECT_FALSE(value.set_phase_on(0, true));
+  EXPECT_FALSE(value.set_phase_on(4, true));
+  EXPECT_EQ(value.get_em_value()->flags, EM_VALUE_FLAG_PHASE3_ON);
+
+  EXPECT_TRUE(value.set_total_forward_active_energy(12.34));
+  EXPECT_EQ(value.get_em_value()->total_forward_active_energy, 1234U);
+  EXPECT_FALSE(value.set_total_forward_active_energy(-1));
+}
+
 TEST_F(ChannelEmValueTest, applyChannelProperties) {
   electricity_meter_config config;
   config.set_user_config(

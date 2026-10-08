@@ -29,6 +29,8 @@
 class supla_action_executor : public supla_abstract_action_executor {
  public:
   supla_action_executor(void);
+  bool set_on_with_result(bool on, unsigned long long duration_ms);
+  bool toggle_with_result(void);
 
   virtual void set_on(bool on, unsigned long long duration_ms);
   virtual void set_color(unsigned int color);

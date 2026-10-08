@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
@@ -36,6 +37,7 @@
 #include "lck.h"
 #include "log.h"
 #include "mqtt_client_suite.h"
+#include "ocpp/ocpp_gateway.h"
 #include "proto.h"
 #include "push/pn_delivery_task_thread_pool.h"
 #include "serverstatus.h"
@@ -62,6 +64,9 @@ int main(int argc, char *argv[]) {
   void *ipc_accept_loop_thread = nullptr;
   supla_cyclictasks_agent *cyclictasks_agent = nullptr;
   supla_vbt_scheduler *vbt_scheduler = nullptr;
+  bool database_initialized = false;
+  bool remote_gateway_service_started = false;
+  int exit_code = EXIT_SUCCESS;
 
   SSL_library_init();
   SSL_load_error_strings();
@@ -91,13 +96,13 @@ int main(int argc, char *argv[]) {
   if (database::mainthread_init() == false) {
     goto exit_fail;
   }
+  database_initialized = true;
 
   {
     database db;
     supla_tsdb_access_provider tsdb;
 
     if (!db.check_db_version(DB_VERSION, 60)) {
-      database::mainthread_end();
       goto exit_fail;
     }
   }
@@ -105,6 +110,7 @@ int main(int argc, char *argv[]) {
   // Start service only when the server configuration is already loaded.
   supla_remote_gateway_access_token_provider::global_instance()
       ->start_service();
+  remote_gateway_service_started = true;
 
   supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
 
@@ -168,8 +174,12 @@ int main(int argc, char *argv[]) {
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();
 
+  if (!supla_ocpp_gateway::global_instance()->start()) {
+    exit_code = EXIT_FAILURE;
+  }
+
   // MAIN LOOP
-  while (st_app_terminate == 0) {
+  while (exit_code == EXIT_SUCCESS && st_app_terminate == 0) {
     st_mainloop_wait(1000000);
     serverstatus::globalInstance()->mainLoopHeartbeat();
     supla_connection::log_limits();
@@ -187,6 +197,8 @@ int main(int argc, char *argv[]) {
                                                 // before ipcsocket_free !
     ipcsocket_free(ipc);
   }
+
+  supla_ocpp_gateway::global_instance()->stop();
 
   if (ssd_ssl != NULL) {
     ssocket_close(ssd_ssl);
@@ -217,9 +229,11 @@ int main(int argc, char *argv[]) {
   supla_remote_gateway_access_token_provider::global_instance()
       ->stop_service();  // Stop the service before calling
                          // curl_global_cleanup()
+  remote_gateway_service_started = false;
 
   supla_user::user_free();
   database::mainthread_end();
+  database_initialized = false;
 
   st_mainloop_free();  // Almost at the end
   st_delpidfile(pidfile_path);
@@ -231,12 +245,21 @@ int main(int argc, char *argv[]) {
     supla_log(LOG_INFO, "Stopped at %s", st_get_datetime_str(dt));
   }
 
-  return EXIT_SUCCESS;
+  return exit_code;
 
 exit_fail:
 
+  supla_ocpp_gateway::global_instance()->stop();
+  if (ipc) ipcsocket_free(ipc);
   ssocket_free(ssd_ssl);
   ssocket_free(ssd_tcp);
+  if (remote_gateway_service_started) {
+    supla_remote_gateway_access_token_provider::global_instance()
+        ->stop_service();
+  }
+  if (database_initialized) {
+    database::mainthread_end();
+  }
   svrcfg_free();
   curl_global_cleanup();
 

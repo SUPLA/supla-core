@@ -23,6 +23,7 @@
 
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "ocpp/ocpp_gateway.h"
 #include "push/pn_delivery_task.h"
 #include "scene/scene_asynctask.h"
 #include "schedule/schedule_dao.h"
@@ -36,14 +37,28 @@ supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
 
 void supla_action_executor::set_on(bool on, unsigned long long duration_ms) {
-  execute_action([this, on](supla_user_channelgroups *channel_groups,
-                            supla_device_channels *channels) -> void {
+  set_on_with_result(on, duration_ms);
+}
+
+bool supla_action_executor::set_on_with_result(bool on,
+                                               unsigned long long duration_ms) {
+  if (!get_group_id()) {
+    auto ocpp = supla_ocpp_gateway::global_instance()->try_set_charging(
+        get_user(), get_channel_id(), on);
+    if (ocpp != supla_ocpp_action_result::not_ocpp)
+      return ocpp == supla_ocpp_action_result::accepted;
+  }
+  bool result = false;
+  execute_action([this, on, &result](supla_user_channelgroups *channel_groups,
+                                     supla_device_channels *channels) -> void {
     if (channel_groups) {
-      channel_groups->set_on(get_caller(), get_group_id(), on);
+      result = channel_groups->set_on(get_caller(), get_group_id(), on);
     } else {
-      channels->set_on(get_caller(), get_channel_id(), 0, 0, on ? 1 : 0);
+      result =
+          channels->set_on(get_caller(), get_channel_id(), 0, 0, on ? 1 : 0);
     }
   });
+  return result;
 }
 
 void supla_action_executor::set_color(unsigned int color) {
@@ -102,15 +117,25 @@ void supla_action_executor::set_rgbw(unsigned int *color,
   });
 }
 
-void supla_action_executor::toggle(void) {
-  execute_action([this](supla_user_channelgroups *channel_groups,
-                        supla_device_channels *channels) -> void {
+void supla_action_executor::toggle(void) { toggle_with_result(); }
+
+bool supla_action_executor::toggle_with_result(void) {
+  if (!get_group_id()) {
+    auto ocpp = supla_ocpp_gateway::global_instance()->try_toggle_charging(
+        get_user(), get_channel_id());
+    if (ocpp != supla_ocpp_action_result::not_ocpp)
+      return ocpp == supla_ocpp_action_result::accepted;
+  }
+  bool result = false;
+  execute_action([this, &result](supla_user_channelgroups *channel_groups,
+                                 supla_device_channels *channels) -> void {
     if (channel_groups) {
-      channel_groups->action_toggle(get_caller(), get_group_id());
+      result = channel_groups->action_toggle(get_caller(), get_group_id());
     } else {
-      channels->action_toggle(get_caller(), get_channel_id(), 0, 0);
+      result = channels->action_toggle(get_caller(), get_channel_id(), 0, 0);
     }
   });
+  return result;
 }
 
 void supla_action_executor::shut(

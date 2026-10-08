@@ -60,6 +60,7 @@ src/jsonconfig \
 src/jsonconfig/channel \
 src/jsonconfig/device \
 src/mqtt \
+src/ocpp \
 src/push \
 src/scene \
 src/schedule \
@@ -68,4 +69,3 @@ src/tsdb \
 src/user \
 src/vbt \
 src/webhook \
-

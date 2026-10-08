@@ -1392,6 +1392,31 @@ void supla_device_dao::update_channel_value(
   }
 }
 
+bool supla_device_dao::touch_channel_values(
+    int device_id, int user_id, unsigned int validity_time_sec) {
+  const char sql[] =
+      "UPDATE supla_dev_channel_value v JOIN supla_dev_channel c "
+      "ON c.id = v.channel_id AND c.user_id = v.user_id "
+      "SET v.valid_to = TIMESTAMPADD(SECOND, ?, UTC_TIMESTAMP()), "
+      "v.update_time = UTC_TIMESTAMP() "
+      "WHERE c.iodevice_id = ? AND c.user_id = ? AND c.is_virtual = 1 "
+      "AND v.value IS NOT NULL";
+  MYSQL_BIND bind[3] = {};
+  bind[0].buffer_type = MYSQL_TYPE_LONG;
+  bind[0].buffer = &validity_time_sec;
+  bind[0].is_unsigned = true;
+  bind[1].buffer_type = MYSQL_TYPE_LONG;
+  bind[1].buffer = &device_id;
+  bind[2].buffer_type = MYSQL_TYPE_LONG;
+  bind[2].buffer = &user_id;
+  MYSQL_STMT *stmt = nullptr;
+  bool result = dba->stmt_execute((void **)&stmt, sql, bind, 3, true);
+  if (stmt) {
+    mysql_stmt_close(stmt);
+  }
+  return result;
+}
+
 void supla_device_dao::update_channel_extended_value(
     int channel_id, int user_id, supla_abstract_channel_extended_value *ev) {
   if (!ev) {
