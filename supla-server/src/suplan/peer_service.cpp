@@ -331,36 +331,172 @@ bool PeerService::reconcile_main_thermometer(uint32_t destination_channel,
 bool PeerService::reconcile_main_thermometer(
     uint32_t destination_channel,
     const std::function<bool(uint32_t *)> &read_current_source) {
-  const uint64_t origin = main_thermometer_origin(destination_channel);
+  return reconcile_reference(destination_channel, 1, read_current_source);
+}
+
+// Match Cloud ChannelType::functions()[SENSORNO], not a per-consumer label.
+static bool active_binary_source(const ChannelInfo &info) {
+  if (info.type != SUPLA_CHANNELTYPE_BINARYSENSOR) return false;
+  switch (info.function) {
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_HOTELCARDSENSOR:
+    case SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+    case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
+    case SUPLA_CHANNELFNC_FLOOD_SENSOR:
+    case SUPLA_CHANNELFNC_MOTION_SENSOR:
+    case SUPLA_CHANNELFNC_BINARY_SENSOR:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool hvac_function(const ChannelInfo &info) {
+  return info.type == SUPLA_CHANNELTYPE_HVAC &&
+         (info.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
+          info.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+          info.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
+          info.function == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER);
+}
+
+bool PeerService::reconcile_reference(
+    uint32_t consumer, uint8_t field,
+    const std::function<bool(uint32_t *)> &read_current) {
+  return reconcile_reference(consumer, field, read_current,
+                             ReferenceReconciliation::Desired);
+}
+
+bool PeerService::reconcile_access_reference(
+    uint32_t consumer, uint8_t field, uint32_t resource, int destination,
+    const std::function<bool(uint32_t *)> &read_current) {
+  return reconcile_reference(consumer, field, read_current,
+                             ReferenceReconciliation::RequestedAccess,
+                             resource, destination);
+}
+
+bool PeerService::revoke_stale_reference(
+    uint32_t consumer, uint8_t field,
+    const std::function<bool(uint32_t *)> &read_current) {
+  return reconcile_reference(consumer, field, read_current,
+                             ReferenceReconciliation::RevokeStale);
+}
+
+bool PeerService::reconcile_reference(
+    uint32_t consumer, uint8_t field,
+    const std::function<bool(uint32_t *)> &read_current,
+    ReferenceReconciliation mode, uint32_t requested_channel,
+    int requested_destination) {
+  if (!((field >= 1 && field <= 6) || (field >= 32 && field < 42) ||
+        (field >= 64 && field < 84))) {
+    return false;
+  }
+  const uint64_t origin = channel_config_origin(consumer, field);
   auto gate = origin_gate(CHANNEL_CONFIG_ORIGIN, origin);
   std::unique_lock<std::mutex> origin_lock(*gate);
-  uint32_t source_channel = 0;
-  if (!read_current_source(&source_channel)) return false;
-  auto repo = factory();
-  ChannelInfo source, destination;
-  if (!repo->channel(destination_channel, &destination) ||
-      (source_channel && !repo->channel(source_channel, &source)))
+  uint32_t referenced = 0;
+  if (!read_current(&referenced)) {
     return false;
-  const bool compatible =
-      (source.type == SUPLA_CHANNELTYPE_THERMOMETER ||
-       source.type == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
-      (source.function == SUPLA_CHANNELFNC_THERMOMETER ||
-       source.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
-  const bool hvac =
-      destination.type == SUPLA_CHANNELTYPE_HVAC &&
-      (destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
-       destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
-       destination.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
-       destination.function == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER);
-  const bool remote =
-      destination.device && source.device &&
-      destination.device != source.device && compatible && hvac &&
-      (source.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
-      (destination.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
-  Grant grant{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, source_channel,
+  }
+  if (mode == ReferenceReconciliation::RequestedTarget) {
+    mode = referenced == requested_channel
+               ? ReferenceReconciliation::Desired
+               : ReferenceReconciliation::RevokeStale;
+  }
+  auto repo = factory();
+  ChannelInfo owner, target;
+  if (!repo->channel(consumer, &owner) ||
+      (referenced && !repo->channel(referenced, &target))) {
+    return false;
+  }
+  bool eligible = false;
+  if (field <= 6 && hvac_function(owner)) {
+    if (field <= 2) {
+      eligible = (target.type == SUPLA_CHANNELTYPE_THERMOMETER ||
+                  target.type == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+                 (target.function == SUPLA_CHANNELFNC_THERMOMETER ||
+                  target.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+    } else if (field == 3) {
+      eligible = active_binary_source(target);
+    } else if (field == 4) {
+      uint32_t master = 0;
+      bool has_slaves = false;
+      eligible = hvac_function(target);
+      if (eligible) {
+        if (!repo->reference(referenced, 4, &master) ||
+            !repo->has_master_dependents(consumer, &has_slaves)) {
+          return false;
+        }
+        // Preserve the existing no-master-chain contract.
+        eligible = master == 0 && !has_slaves;
+      }
+    } else {
+      eligible = target.type == SUPLA_CHANNELTYPE_RELAY &&
+                 target.function ==
+                     (field == 5 ? SUPLA_CHANNELFNC_PUMPSWITCH
+                                 : SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH);
+    }
+  } else if (field >= 32 && field < 42) {
+    eligible = owner.type == SUPLA_CHANNELTYPE_CONTAINER &&
+               (owner.function == SUPLA_CHANNELFNC_CONTAINER ||
+                owner.function == SUPLA_CHANNELFNC_SEPTIC_TANK ||
+                owner.function == SUPLA_CHANNELFNC_WATER_TANK) &&
+               active_binary_source(target);
+  } else if (field >= 64) {
+    eligible = (owner.type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+                owner.type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) &&
+               (owner.function == SUPLA_CHANNELFNC_VALVE_OPENCLOSE ||
+                owner.function == SUPLA_CHANNELFNC_VALVE_PERCENTAGE) &&
+               active_binary_source(target);
+  }
+  bool remote = owner.device && target.device &&
+                owner.device != target.device && consumer != referenced &&
+                eligible &&
+                (owner.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+                (target.device_flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+  const bool binding = field == 5 || field == 6;
+  // Pump/HOCS: HVAC owns the resource; referenced relay owns Destination.
+  uint32_t resource = binding ? consumer : referenced;
+  int source = binding ? owner.device : target.device;
+  int destination = binding ? target.device : owner.device;
+  if (mode == ReferenceReconciliation::RequestedAccess) {
+    // The resource alone is insufficient for Source-first bindings: the
+    // current relay must still belong to this requesting Destination Device.
+    mode = resource == requested_channel && destination == requested_destination
+               ? ReferenceReconciliation::Desired
+               : ReferenceReconciliation::RevokeStale;
+  }
+  Grant grant{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, resource,
               CHANNEL_CONFIG_ORIGIN, origin, SUPLA_SUPLAN_PERMISSION_READ};
-  return reconcile_origin_locked(CHANNEL_CONFIG_ORIGIN, origin, source.device,
-                                 destination.device, remote ? &grant : nullptr,
+  if (remote && mode == ReferenceReconciliation::RevokeStale) {
+    Association current;
+    std::vector<Grant> grants;
+    if (!repo->find(source, destination, &current) ||
+        (current.id && !repo->grants(current.id, &grants))) {
+      return false;
+    }
+    remote = false;
+    for (const auto &existing : grants) {
+      if (existing.origin_type == grant.origin_type &&
+          existing.origin_id == grant.origin_id &&
+          existing.resource_type == grant.resource_type &&
+          existing.resource_id == grant.resource_id &&
+          existing.permissions == grant.permissions &&
+          !current.source_removed && !current.destination_removed) {
+        remote = true;
+        break;
+      }
+    }
+  }
+  return reconcile_origin_locked(CHANNEL_CONFIG_ORIGIN, origin, source,
+                                 destination, remote ? &grant : nullptr,
                                  origin_lock);
 }
 
@@ -525,8 +661,8 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
     if (changed) changed(a.id);
   } else {
-    // M3 authoritative configuration origin and M5 approval are future
-    // adapters. Neither the mode nor ALLOW_APPROVAL can manufacture a grant.
+    // The SRPC adapter reconciles current config origins first.
+    // Neither the mode nor ALLOW_APPROVAL can manufacture a manual grant.
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
   }
   return result;
@@ -549,16 +685,91 @@ TSD_SuplaEnsureResourceShareResult PeerService::ensure_share(
   if (!repo->owner(q.SourceResource.ResourceType, q.SourceResource.ResourceId,
                    &owner) ||
       !repo->owner(q.DestinationResource.ResourceType,
-                   q.DestinationResource.ResourceId, &destination))
+                   q.DestinationResource.ResourceId, &destination)) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
-  else if (!owner || !destination)
+  } else if (!owner || !destination) {
     result.Result = SUPLA_SUPLAN_RESULT_NOT_FOUND;
-  else if (owner != source || destination == source)
+  } else if (owner != source || destination == source) {
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
-  else
-    // An unrelated grant is not evidence of a source-first binding relation.
-    // Only M3/M4 can supply the authoritative resource-to-resource origin.
+  } else if (q.Permissions != SUPLA_SUPLAN_PERMISSION_READ) {
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+  } else {
+    // Neither an arbitrary existing ACL nor ENSURE can authorize topology.
+    // Re-read the config under the same field origin gate as trusted updates.
+    Association previous;
+    std::vector<Grant> previous_grants;
+    if (!repo->find(source, destination, &previous) ||
+        (previous.id && !repo->grants(previous.id, &previous_grants))) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    bool matched = false;
+    for (uint8_t field : {5, 6}) {
+      uint32_t target = 0;
+      if (!repo->reference(q.SourceResource.ResourceId, field, &target)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      bool relevant = target == q.DestinationResource.ResourceId;
+      for (const auto &grant : previous_grants) {
+        relevant |= grant.origin_type == CHANNEL_CONFIG_ORIGIN &&
+                    grant.origin_id ==
+                        channel_config_origin(q.SourceResource.ResourceId,
+                                              field) &&
+                    grant.resource_type == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+                    grant.resource_id == q.SourceResource.ResourceId;
+      }
+      // Include stale origins for this pair, but do not project another
+      // relay's pending configuration just to answer this request.
+      if (!relevant) continue;
+      // Decide the policy from a fresh read under the origin gate. An origin
+      // left on this pair after moving elsewhere needs only revocation here.
+      auto read_current = [&](uint32_t *current) {
+        return repo->reference(q.SourceResource.ResourceId, field, current);
+      };
+      if (!reconcile_reference(
+              q.SourceResource.ResourceId, field, read_current,
+              ReferenceReconciliation::RequestedTarget,
+              q.DestinationResource.ResourceId)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      // Check both current target and exact config origin, not a manual grant.
+      uint32_t latest = 0;
+      if (!repo->reference(q.SourceResource.ResourceId, field, &latest)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      Association a;
+      if (!repo->find(source, destination, &a)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      std::vector<Grant> grants;
+      if (a.id && !repo->grants(a.id, &grants)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      if (latest == q.DestinationResource.ResourceId &&
+          a.lifecycle == Lifecycle::Active) {
+        for (const auto &g : grants) {
+          if (g.origin_type == CHANNEL_CONFIG_ORIGIN &&
+              g.origin_id ==
+                  channel_config_origin(q.SourceResource.ResourceId, field) &&
+              g.resource_type == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+              g.resource_id == q.SourceResource.ResourceId &&
+              g.permissions == SUPLA_SUPLAN_PERMISSION_READ) {
+            matched = true;
+          }
+        }
+      }
+    }
+    result.Result =
+        matched ? SUPLA_SUPLAN_RESULT_OK : SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+    if (matched) {
+      result.DestinationDeviceId = destination;
+    }
+  }
   return result;
 }
 }  // namespace supla_suplan

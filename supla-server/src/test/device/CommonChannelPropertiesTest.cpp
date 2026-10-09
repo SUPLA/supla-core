@@ -1060,10 +1060,8 @@ void CommonChannelPropertiesTest::relationWithSubchannel_Sensor(
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       config_classT *config = new config_classT();
       raw_config_T raw_cfg = {};
-      raw_cfg.SensorInfo[1].IsSet = 1;
-      raw_cfg.SensorInfo[1].ChannelNo = 5;
-      raw_cfg.SensorInfo[5].IsSet = 1;
-      raw_cfg.SensorInfo[5].ChannelNo = 15;
+      raw_cfg.SensorInfo[1].ChannelId = 55;
+      raw_cfg.SensorInfo[5].ChannelId = 65;
       config->set_config(&raw_cfg);
       return config;
     });
@@ -1162,8 +1160,7 @@ void CommonChannelPropertiesTest::relationWithParentChannel_Sensor(
                   .WillRepeatedly([]() {
                     config_classT *config = new config_classT();
                     raw_config_T raw_cfg = {};
-                    raw_cfg.SensorInfo[5].IsSet = 1;
-                    raw_cfg.SensorInfo[5].ChannelNo = 15;
+                    raw_cfg.SensorInfo[5].ChannelId = 65;
                     config->set_config(&raw_cfg);
                     return config;
                   });

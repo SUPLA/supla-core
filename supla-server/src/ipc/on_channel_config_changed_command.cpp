@@ -42,14 +42,22 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
   std::unique_ptr<supla_json_config> authoritative;
-  if (type == SUPLA_CHANNELTYPE_HVAC) {
+  bool reconciled = true;
+  if (type == SUPLA_CHANNELTYPE_HVAC || type == SUPLA_CHANNELTYPE_CONTAINER ||
+      (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+       type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) ||
+      (scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
     if (!supla_suplan_server_peers::reconcile_hvac(user_id, channel_id,
                                                    &authoritative))
-      return;
+      reconciled = false;
   }
-  if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) &&
-      !supla_suplan_server_peers::reconcile_dependencies(user_id, channel_id))
-    return;
+  if (((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+       (type == SUPLA_CHANNELTYPE_HVAC &&
+        (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT))) &&
+      !supla_suplan_server_peers::reconcile_dependencies(user_id, channel_id)) {
+    reconciled = false;
+  }
+  if (!reconciled) return;
   supla_user *user = supla_user::find(user_id, false);
   if (!user) {
     return;
@@ -75,6 +83,8 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
     case SUPLA_CHANNELTYPE_CONTAINER:
+    case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELTYPE_VALVE_PERCENTAGE:
       break;
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
     case SUPLA_CHANNELTYPE_SENSORNO:
@@ -123,21 +133,15 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
                 (scope & CONFIG_CHANGE_SCOPE_OCR))) {
       device->get_channels()->access_channel(
           channel_id, [&](supla_device_channel *channel) -> void {
-            bool deferred = channel->get_type() == SUPLA_CHANNELTYPE_HVAC;
-            if (!deferred) {
-              channel->set_json_config(
-                  new supla_json_config(json_config, true));
-            }
             auto publish = [&](unsigned char type) {
-              if (deferred) {
-                channel->request_config_publication(type);
-              } else {
-                channel->send_config_to_device(type);
-              }
+              channel->request_config_publication(type);
             };
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
               publish(SUPLA_CONFIG_TYPE_DEFAULT);
+              if (channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+                publish(SUPLA_CONFIG_TYPE_EXTENDED);
+              }
             }
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {

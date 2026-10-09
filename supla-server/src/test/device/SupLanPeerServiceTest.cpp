@@ -149,6 +149,11 @@ class MemoryRepo : public Repository {
     *device = 0;
     return true;
   }
+  bool supports_batch() const override { return true; }
+  bool channel(uint32_t id, ChannelInfo *out) override {
+    *out = {};
+    return owner(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, id, &out->device);
+  }
   bool device_exists(int d) override { return d == 1 || d == 2; }
   bool for_device(int d, bool dormant, std::vector<uint64_t> *out) override {
     out->clear();

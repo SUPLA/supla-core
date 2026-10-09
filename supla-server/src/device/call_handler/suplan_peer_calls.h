@@ -36,6 +36,21 @@ class supla_ch_suplan_peer_calls
                         rd->data.ds_set_suplan_destination_association_result);
     } else if (id == SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS &&
                rd->data.ds_ensure_suplan_resource_access) {
+      auto request = rd->data.ds_ensure_suplan_resource_access;
+      if (request->Resource.ResourceType ==
+              SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+          !supla_suplan_server_peers::reconcile_access_dependencies(
+              d->get_user()->getUserID(), request->Resource.ResourceId,
+              d->get_id())) {
+        TSD_SuplaEnsureResourceAccessResult failure = {
+            SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR,
+            SUPLA_SUPLAN_ACCESS_STATUS_INVALID, request->DeliveryMode};
+        srpc->lock();
+        srpc_sd_async_ensure_suplan_resource_access_result(srpc->get_srpc(),
+                                                           &failure);
+        srpc->unlock();
+        return;
+      }
       auto result = p->grants()->ensure_access(
           d->get_id(), *rd->data.ds_ensure_suplan_resource_access);
       srpc->lock();

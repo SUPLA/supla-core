@@ -1156,6 +1156,13 @@ void supla_device_dao::erase_channel_properties(int user_id, int channel_id) {
 supla_json_config *supla_device_dao::get_channel_config(
     int channel_id, std::string *user_config_md5sum,
     std::string *properties_md5sum) {
+  return get_channel_config(channel_id, user_config_md5sum,
+                            properties_md5sum, nullptr);
+}
+
+supla_json_config *supla_device_dao::get_channel_config(
+    int channel_id, std::string *user_config_md5sum,
+    std::string *properties_md5sum, int *selected_function) {
   bool already_connected = dba->is_connected();
 
   if (!already_connected && !dba->connect()) {
@@ -1167,7 +1174,8 @@ supla_json_config *supla_device_dao::get_channel_config(
   MYSQL_STMT *stmt = nullptr;
   const char sql[] =
       "SELECT user_config, properties, MD5(IFNULL(user_config, '')), "
-      "MD5(IFNULL(properties, '')) FROM supla_dev_channel WHERE id = ?";
+      "MD5(IFNULL(properties, '')), IFNULL(func,0) "
+      "FROM supla_dev_channel WHERE id = ?";
 
   MYSQL_BIND pbind = {};
 
@@ -1193,7 +1201,8 @@ supla_json_config *supla_device_dao::get_channel_config(
     unsigned long properties_md5_size = 0;
     my_bool properties_md5_is_null = true;
 
-    MYSQL_BIND rbind[4] = {};
+    MYSQL_BIND rbind[5] = {};
+    int function = 0;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = user_config;
@@ -1219,6 +1228,9 @@ supla_json_config *supla_device_dao::get_channel_config(
     rbind[3].buffer_length = sizeof(properties_md5);
     rbind[3].length = &properties_md5_size;
 
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = reinterpret_cast<char *>(&function);
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1237,6 +1249,7 @@ supla_json_config *supla_device_dao::get_channel_config(
         dba->set_terminating_byte(properties_md5, sizeof(properties_md5),
                                   properties_md5_size, properties_md5_is_null);
 
+        if (selected_function) *selected_function = function;
         result = new supla_json_config();
         result->set_user_config(user_config);
         result->set_properties(properties);

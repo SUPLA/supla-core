@@ -32,6 +32,8 @@
 
 class supla_abstract_connection_object;
 class supla_connection {
+  friend class supla_connection_test_access;
+
  private:
   std::shared_ptr<supla_abstract_connection_object> object;
   unsigned int client_ipv4;

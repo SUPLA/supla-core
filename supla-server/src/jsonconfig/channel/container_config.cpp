@@ -18,6 +18,7 @@
 
 #include "container_config.h"
 
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -33,7 +34,7 @@ using std::string;
 #define FIELD_MUTE_ALARM_SOUND_WITHOUT_ADDITIONAL_AUTH 5
 #define FIELD_SENSORS 6
 
-#define SENSOR_FIELD_CHANNEL_NO 1
+#define SENSOR_FIELD_CHANNEL_ID 1
 #define SENSOR_FIELD_FILL_LEVEL 2
 
 const map<unsigned _supla_int16_t, string> container_config::field_map = {
@@ -48,7 +49,7 @@ const map<unsigned _supla_int16_t, string> container_config::field_map = {
 
 const std::map<unsigned _supla_int16_t, std::string>
     container_config::sensor_field_map = {
-        {SENSOR_FIELD_CHANNEL_NO, "channelNo"},
+        {SENSOR_FIELD_CHANNEL_ID, "channelId"},
         {SENSOR_FIELD_FILL_LEVEL, "fillLevel"},
 };
 
@@ -87,37 +88,18 @@ void container_config::set_config(TChannelConfig_Container *config) {
 
   cJSON *sensors = cJSON_CreateArray();
 
-  for (size_t a = 0;
-       a < sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo); a++) {
-    if (config->SensorInfo[a].IsSet) {
-      for (int b = 0; b < cJSON_GetArraySize(sensors); b++) {
-        cJSON *item = cJSON_GetArrayItem(sensors, b);
-        double channel_no = -1;
-        if (get_double(item,
-                       sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
-                       &channel_no) &&
-            channel_no == config->SensorInfo[a].ChannelNo) {
-          cJSON_Delete(cJSON_DetachItemViaPointer(sensors, item));
-          break;
-        }
-      }
-
-      cJSON *sensor = cJSON_CreateObject();
-
-      unsigned char fill_level = config->SensorInfo[a].FillLevel;
-
-      set_item_value(sensor,
-                     sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
-                     cJSON_Number, true, nullptr, nullptr,
-                     config->SensorInfo[a].ChannelNo);
-
-      set_item_value(
-          sensor, sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
-          fill_level >= 0 && fill_level <= 100 ? cJSON_Number : cJSON_NULL,
-          true, nullptr, nullptr, fill_level);
-
-      cJSON_AddItemToArray(sensors, sensor);
-    }
+  // Canonical fixed slots: never compact or deduplicate reference positions.
+  for (const auto &entry : config->SensorInfo) {
+    cJSON *sensor = cJSON_CreateObject();
+    cJSON_AddItemToObject(sensor, "channelId",
+                          entry.ChannelId > 0
+                              ? cJSON_CreateNumber(entry.ChannelId)
+                              : cJSON_CreateNull());
+    cJSON_AddItemToObject(sensor, "fillLevel",
+                          entry.FillLevel <= 100
+                              ? cJSON_CreateNumber(entry.FillLevel)
+                              : cJSON_CreateNull());
+    cJSON_AddItemToArray(sensors, sensor);
   }
 
   set_item_value(user_root, field_map.at(FIELD_SENSORS).c_str(), cJSON_Object,
@@ -166,53 +148,19 @@ bool container_config::get_config(TChannelConfig_Container *config) {
     result = true;
   }
 
-  double dbl_value = 0;
-  size_t m = 0;
-
-  cJSON *sensors =
-      cJSON_GetObjectItem(user_root, field_map.at(FIELD_SENSORS).c_str());
-  if (sensors) {
-    for (int a = 0; a < cJSON_GetArraySize(sensors); a++) {
-      cJSON *item = cJSON_GetArrayItem(sensors, a);
-      if (item && cJSON_IsObject(item)) {
-        double channel_no = -1;
-        if (get_double(item,
-                       sensor_field_map.at(SENSOR_FIELD_CHANNEL_NO).c_str(),
-                       &channel_no) &&
-            channel_no >= 0) {
-          bool duplicate = false;
-          size_t n = m;
-
-          for (size_t b = 0;
-               b < sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo);
-               b++) {
-            if (config->SensorInfo[b].IsSet &&
-                config->SensorInfo[b].ChannelNo == channel_no) {
-              duplicate = true;
-              n = b;
-              break;
-            }
-          }
-
-          if (get_double(item,
-                         sensor_field_map.at(SENSOR_FIELD_FILL_LEVEL).c_str(),
-                         &dbl_value) &&
-              dbl_value >= 0 && dbl_value <= 100) {
-            config->SensorInfo[n].FillLevel = dbl_value;
-          }
-
-          config->SensorInfo[n].ChannelNo = channel_no;
-          config->SensorInfo[n].IsSet = 1;
-          result = true;
-
-          if (!duplicate) {
-            m++;
-            if (m >=
-                sizeof(config->SensorInfo) / sizeof(TContainer_SensorInfo)) {
-              break;
-            }
-          }
-        }
+  cJSON *sensors = cJSON_GetObjectItem(user_root, "sensors");
+  if (cJSON_IsArray(sensors)) {
+    result = true;
+    for (int slot = 0; slot < 10; ++slot) {
+      cJSON *item = cJSON_GetArrayItem(sensors, slot);
+      double id = 0, level = 0;
+      if (get_double(item, "channelId", &id) && id > 0 && id <= INT32_MAX &&
+          id == static_cast<int32_t>(id)) {
+        config->SensorInfo[slot].ChannelId = static_cast<int32_t>(id);
+      }
+      if (get_double(item, "fillLevel", &level) && level >= 0 && level <= 100 &&
+          level == static_cast<int>(level)) {
+        config->SensorInfo[slot].FillLevel = level;
       }
     }
   }
@@ -222,6 +170,22 @@ bool container_config::get_config(TChannelConfig_Container *config) {
 
 void container_config::merge(supla_json_config *_dst) {
   container_config dst(_dst);
-  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
-                           true);
+  container_config input;
+  input = *this;
+  if (device_local_reference) {
+    TChannelConfig_Container incoming = {}, current = {};
+    input.get_config(&incoming);
+    dst.get_config(&current);
+    for (size_t slot = 0; slot < 10; ++slot) {
+      unsigned int old_id = current.SensorInfo[slot].ChannelId;
+      unsigned int new_id = incoming.SensorInfo[slot].ChannelId;
+      if ((old_id && !device_local_reference(old_id)) ||
+          !device_local_reference(new_id)) {
+        incoming.SensorInfo[slot].ChannelId = old_id;
+      }
+    }
+    input.set_config(&incoming);
+  }
+  supla_json_config::merge(input.get_user_root(), dst.get_user_root(),
+                           field_map, true);
 }

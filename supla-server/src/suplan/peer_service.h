@@ -19,6 +19,10 @@ constexpr uint16_t CHANNEL_CONFIG_ORIGIN = 1;
 inline uint64_t main_thermometer_origin(uint32_t channel) {
   return (static_cast<uint64_t>(channel) << 8) | 1;
 }
+// Low-byte field codes are stable; Main=1 remains unchanged from M3B.
+inline uint64_t channel_config_origin(uint32_t channel, uint8_t field) {
+  return (static_cast<uint64_t>(channel) << 8) | field;
+}
 struct ChannelInfo {
   int device = 0;
   int type = 0;
@@ -76,6 +80,14 @@ class Repository {
   virtual bool accept_identity(int device, const Identity &identity) = 0;
   virtual bool owner(uint8_t type, uint32_t resource, int *device) = 0;
   virtual bool channel(uint32_t id, ChannelInfo *out) { return false; }
+  virtual bool reference(uint32_t channel, uint8_t field, uint32_t *out) {
+    *out = 0;
+    return true;
+  }
+  virtual bool has_master_dependents(uint32_t channel, bool *out) {
+    *out = false;
+    return true;
+  }
   virtual bool supports_batch() const { return false; }
   virtual bool device_exists(int device) = 0;
   virtual bool owns_acl(int source, int destination, const Acl &acl);
@@ -108,6 +120,14 @@ class PeerService {
   using Changed = std::function<void(uint64_t)>;
 
  private:
+  enum class ReferenceReconciliation {
+    Desired, RevokeStale, RequestedTarget, RequestedAccess
+  };
+  bool reconcile_reference(
+      uint32_t channel, uint8_t field,
+      const std::function<bool(uint32_t *)> &read_current,
+      ReferenceReconciliation mode, uint32_t requested_channel = 0,
+      int requested_destination = 0);
   Factory factory;
   Changed changed;
   bool reconcile_origin_locked(uint16_t type, uint64_t origin, int source,
@@ -128,6 +148,19 @@ class PeerService {
   bool reconcile_main_thermometer(
       uint32_t destination_channel,
       const std::function<bool(uint32_t *)> &read_current_source);
+  // HVAC 1..6; Container slots 32..41; Valve slots 64..83.
+  bool reconcile_reference(uint32_t channel, uint8_t field,
+                           const std::function<bool(uint32_t *)> &read_current);
+  // ENSURE_ACCESS derives only origins for this resource/recipient; other
+  // persisted origins are audited for revocation under the same origin gate.
+  bool reconcile_access_reference(
+      uint32_t channel, uint8_t field, uint32_t resource, int destination,
+      const std::function<bool(uint32_t *)> &read_current);
+  // Deletion audit: retain current authorization, revoke stale origins;
+  // never derive a new Grant or expand an unrelated desired ACL.
+  bool revoke_stale_reference(
+      uint32_t channel, uint8_t field,
+      const std::function<bool(uint32_t *)> &read_current);
   bool delete_origin(uint16_t type, uint64_t origin);
   bool delete_resource(uint8_t type, uint32_t resource);
   bool delete_resource(uint64_t association, uint8_t type, uint32_t resource);

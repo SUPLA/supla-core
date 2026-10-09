@@ -48,6 +48,10 @@ class DeviceChannelWithProtocolVersion : public supla_device_channel {
 
  protected:
   unsigned char get_protocol_version(void) override { return 29; }
+  // These serialization tests supply a fixed authoritative fixture at the
+  // loader boundary. DB reload, concurrent writers and transport recovery
+  // are exercised by SupLanHvacWireIntegrationTest with real connections.
+  bool reload_channel_config() override { return true; }
 };
 
 TSD_DeviceCalCfgRequest request(_supla_int_t command) {

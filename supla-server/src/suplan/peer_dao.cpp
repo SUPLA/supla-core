@@ -293,6 +293,37 @@ bool PeerDao::owner(uint8_t type, uint32_t resource, int *device) {
   *device = rows.empty() ? 0 : rows[0][0];
   return true;
 }
+bool PeerDao::reference(uint32_t channel, uint8_t field, uint32_t *out) {
+  std::string path;
+  static const char *hvac_keys[] = {
+      "mainThermometerChannelId", "auxThermometerChannelId",
+      "binarySensorChannelId",    "masterThermostatChannelId",
+      "pumpSwitchChannelId",      "heatOrColdSourceSwitchChannelId"};
+  if (field >= 1 && field <= 6) {
+    path = "$." + std::string(hvac_keys[field - 1]);
+  } else if (field >= 32 && field < 42) {
+    path = "$.sensors[" + to_string(field - 32) + "].channelId";
+  } else if (field >= 64 && field < 84) {
+    path = "$.floodSensorChannelIds[" + to_string(field - 64) + "]";
+  } else {
+    return false;
+  }
+  std::vector<std::vector<uint64_t>> rows;
+  // ENSURE must not coerce strings or fractional JSON into a different ID.
+  std::string value = "JSON_VALUE(user_config,'" + path + "')";
+  std::string type = "JSON_TYPE(JSON_EXTRACT(user_config,'" + path + "'))";
+  if (!select("SELECT CASE WHEN " + type + " IN ('INTEGER','DOUBLE') AND " +
+                  value + ">0 AND " + value + "<=2147483647 AND " + value +
+                  "=FLOOR(" + value + ") THEN " + value +
+                  " ELSE 0 END FROM supla_dev_channel WHERE user_id=" +
+                  to_string(user) + " AND id=" + to_string(channel),
+              &rows, 1)) {
+    return false;
+  }
+  *out = rows.empty() || rows[0][0] > INT32_MAX ? 0 : rows[0][0];
+  return true;
+}
+
 bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
@@ -376,14 +407,77 @@ bool PeerDao::for_origin(uint16_t type, uint64_t origin,
   ids(rows, out);
   return ok;
 }
+bool PeerDao::has_master_dependents(uint32_t channel, bool *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select(
+          "SELECT COUNT(*) FROM supla_dev_channel WHERE user_id=" +
+              to_string(user) +
+              " AND type=" + to_string(SUPLA_CHANNELTYPE_HVAC) + " AND id<>" +
+              to_string(channel) +
+              " AND JSON_VALUE(user_config,'$.masterThermostatChannelId')=" +
+              to_string(channel),
+          &rows, 1) ||
+      rows.size() != 1) {
+    return false;
+  }
+  *out = rows[0][0] != 0;
+  return true;
+}
+
+// Rare deletion audit: the referenced target is not the READ resource and
+// Cloud may already have cleared its config key. Active binding origins remain
+// discoverable without relying on an orphan business reference.
+bool PeerDao::binding_consumers(std::vector<uint64_t> *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  bool ok = select(
+      "SELECT DISTINCT (g.origin_id >> 8) FROM supla_suplan_grant g "
+      "JOIN supla_suplan_peer_association a ON a.id=g.association_id WHERE a." +
+          scope() + " AND g.origin_type=" + to_string(CHANNEL_CONFIG_ORIGIN) +
+          " AND (g.origin_id & 255) IN (5,6)",
+      &rows, 1);
+  ids(rows, out);
+  return ok;
+}
+
+bool PeerDao::config_origin_fields(uint32_t consumer,
+                                   std::vector<uint64_t> *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  bool ok = select(
+      "SELECT DISTINCT (g.origin_id & 255) FROM supla_suplan_grant g "
+      "JOIN supla_suplan_peer_association a ON a.id=g.association_id WHERE a." +
+          scope() + " AND g.origin_type=" + to_string(CHANNEL_CONFIG_ORIGIN) +
+          " AND (g.origin_id >> 8)=" + to_string(consumer),
+      &rows, 1);
+  ids(rows, out);
+  return ok;
+}
+
 // Business references survive a temporarily invalid Source and revoked Grant.
 bool PeerDao::hvac_dependents(uint32_t source, std::vector<uint64_t> *out) {
   std::vector<std::vector<uint64_t>> rows;
-  bool ok = select(
-      "SELECT id FROM supla_dev_channel WHERE user_id=" + to_string(user) +
-          " AND type=" + to_string(SUPLA_CHANNELTYPE_HVAC) +
-          " AND JSON_VALUE(user_config,'$.mainThermometerChannelId')=" +
-          to_string(source), &rows, 1);
+  std::string predicates;
+  for (uint8_t field = 1; field <= 6; ++field) {
+    static const char *keys[] = {
+        "mainThermometerChannelId", "auxThermometerChannelId",
+        "binarySensorChannelId",    "masterThermostatChannelId",
+        "pumpSwitchChannelId",      "heatOrColdSourceSwitchChannelId"};
+    if (!predicates.empty()) {
+      predicates += " OR ";
+    }
+    predicates += "JSON_VALUE(user_config,'$." + std::string(keys[field - 1]) +
+                  "')=" + to_string(source);
+  }
+  for (unsigned slot = 0; slot < 20; ++slot) {
+    predicates += " OR JSON_VALUE(user_config,'$.floodSensorChannelIds[" +
+                  to_string(slot) + "]')=" + to_string(source);
+    if (slot < 10) {
+      predicates += " OR JSON_VALUE(user_config,'$.sensors[" + to_string(slot) +
+                    "].channelId')=" + to_string(source);
+    }
+  }
+  bool ok = select("SELECT id FROM supla_dev_channel WHERE user_id=" +
+                       to_string(user) + " AND (" + predicates + ")",
+                   &rows, 1);
   ids(rows, out);
   return ok;
 }

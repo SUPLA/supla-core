@@ -38,8 +38,12 @@ class PeerDao : public Repository {
   bool identity(int device, Identity *out) override;
   bool accept_identity(int device, const Identity &identity) override;
   bool owner(uint8_t type, uint32_t resource, int *device) override;
+  bool binding_consumers(std::vector<uint64_t> *out);
+  bool config_origin_fields(uint32_t consumer, std::vector<uint64_t> *out);
   bool hvac_dependents(uint32_t source, std::vector<uint64_t> *out);
+  bool reference(uint32_t channel, uint8_t field, uint32_t *out) override;
   bool channel(uint32_t id, ChannelInfo *out) override;
+  bool has_master_dependents(uint32_t channel, bool *out) override;
   bool supports_batch() const override { return true; }
   bool device_exists(int device) override;
   bool owns_acl(int source, int destination, const Acl &acl) override;

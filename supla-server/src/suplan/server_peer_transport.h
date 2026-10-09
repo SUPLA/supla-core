@@ -14,9 +14,13 @@ class supla_suplan_server_peers : public supla_suplan::PeerTransport {
  public:
   // Durable delete handling without constructing a runtime user or transport.
   static bool reconcile_dependencies(int user_id, int source_channel_id);
+  // Access checks audit only origins capable of authorizing this request.
+  static bool reconcile_access_dependencies(
+      int user_id, int resource_channel_id, int destination_device_id);
   static bool reconcile_hvac(
       int user_id, int channel_id,
-      std::unique_ptr<supla_json_config> *current = nullptr);
+      std::unique_ptr<supla_json_config> *current = nullptr,
+      int *selected_function = nullptr);
   static bool channel_deleted(int user_id, int channel_id);
   static bool device_deleted(int user_id, int device_id);
   explicit supla_suplan_server_peers(supla_user *user);

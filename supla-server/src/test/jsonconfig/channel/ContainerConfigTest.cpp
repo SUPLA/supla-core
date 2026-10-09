@@ -18,197 +18,149 @@
 
 #include "ContainerConfigTest.h"
 
+#include <string>
+
 #include "TestHelper.h"
 #include "jsonconfig/channel/container_config.h"
 
 namespace testing {
-
 ContainerConfigTest::ContainerConfigTest(void) {}
-
 ContainerConfigTest::~ContainerConfigTest(void) {}
 
-TEST_F(ContainerConfigTest, setAndGetConfig) {
-  TChannelConfig_Container raw1 = {};
-  raw1.WarningAboveLevel = 20;
-  raw1.AlarmAboveLevel = 30;
-  raw1.WarningBelowLevel = 50;
-  raw1.AlarmBelowLevel = 40;
-
-  for (size_t a = 0;
-       a < sizeof(raw1.SensorInfo) / sizeof(TContainer_SensorInfo); a++) {
-    raw1.SensorInfo[a].FillLevel = 11 + a;
-    raw1.SensorInfo[a].ChannelNo = a;
-    raw1.SensorInfo[a].IsSet = 1;
-  }
-
-  container_config config1;
-  config1.set_config(&raw1);
-
-  char *str = config1.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(
-      str,
-      "{\"warningAboveLevel\":19,\"alarmAboveLevel\":29,\"warningBelowLevel\":"
-      "49,\"alarmBelowLevel\":39,\"muteAlarmSoundWithoutAdditionalAuth\":false,"
-      "\"sensors\":[{\"channelNo\":0,\"fillLevel\":11},{\"channelNo\":1,"
-      "\"fillLevel\":12},{\"channelNo\":2,\"fillLevel\":13},{\"channelNo\":3,"
-      "\"fillLevel\":14},{\"channelNo\":4,\"fillLevel\":15},{\"channelNo\":5,"
-      "\"fillLevel\":16},{\"channelNo\":6,\"fillLevel\":17},{\"channelNo\":7,"
-      "\"fillLevel\":18},{\"channelNo\":8,\"fillLevel\":19},{\"channelNo\":9,"
-      "\"fillLevel\":20}]}");
-
-  container_config config2;
-  config2.set_user_config(str);
-  free(str);
-
-  TChannelConfig_Container raw2 = {};
-  EXPECT_TRUE(config2.get_config(&raw2));
-
-  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
-}
-
-TEST_F(ContainerConfigTest, null) {
-  TChannelConfig_Container raw1 = {};
-
-  container_config config1;
-  config1.set_config(&raw1);
-
-  char *str = config1.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
-               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":[]}");
-
-  container_config config2;
-  config2.set_user_config(str);
-  free(str);
-
-  TChannelConfig_Container raw2 = {};
-  EXPECT_TRUE(config2.get_config(&raw2));
-
-  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
-}
-
-TEST_F(ContainerConfigTest, oversize) {
-  const char cfg[] =
-      "{\"sensors\":[{\"channelNo\":0,\"fillLevel\":11},{\"channelNo\":1,"
-      "\"fillLevel\":12},{\"channelNo\":2,\"fillLevel\":13},{\"channelNo\":3,"
-      "\"fillLevel\":14},{\"channelNo\":4,\"fillLevel\":15},{\"channelNo\":5,"
-      "\"fillLevel\":16},{\"channelNo\":6,\"fillLevel\":17},{\"channelNo\":7,"
-      "\"fillLevel\":18},{\"channelNo\":8,\"fillLevel\":19},{\"channelNo\":9,"
-      "\"fillLevel\":20},{\"channelNo\":10,\"fillLevel\":20}]}";
-
-  container_config config;
-  config.set_user_config(cfg);
-
+TEST_F(ContainerConfigTest, CanonicalAllSlotsRoundTrip) {
   TChannelConfig_Container raw = {};
-  EXPECT_TRUE(config.get_config(&raw));
-
-  for (size_t a = 0; a < sizeof(raw.SensorInfo) / sizeof(TContainer_SensorInfo);
-       a++) {
-    EXPECT_EQ(raw.SensorInfo[a].FillLevel, 11 + a);
-    EXPECT_EQ(raw.SensorInfo[a].ChannelNo, a);
-    EXPECT_EQ(raw.SensorInfo[a].IsSet, 1);
+  for (unsigned slot = 0; slot < 10; ++slot) {
+    raw.SensorInfo[slot].ChannelId = 100000 + slot;
   }
+  raw.WarningAboveLevel = 20;
+  raw.AlarmBelowLevel = 40;
+  raw.MuteAlarmSoundWithoutAdditionalAuth = 1;
+  for (unsigned slot = 0; slot < 10; ++slot) {
+    raw.SensorInfo[slot].FillLevel = slot * 10;
+  }
+  container_config writer;
+  writer.set_config(&raw);
+  char *json = writer.get_user_config();
+  ASSERT_NE(nullptr, json);
+  EXPECT_EQ(nullptr, strstr(json, "channelNo"));
+  EXPECT_EQ(nullptr, strstr(json, "sensorChannelNumbers"));
+  container_config reader;
+  reader.set_user_config(json);
+  free(json);
+  TChannelConfig_Container restored = {};
+  ASSERT_TRUE(reader.get_config(&restored));
+  EXPECT_EQ(0, memcmp(&raw, &restored, sizeof(raw)));
 }
 
-TEST_F(ContainerConfigTest, duplicateJson) {
-  const char cfg[] =
-      "{\"sensors\":[{\"channelNo\":1,\"fillLevel\":11},{\"channelNo\":1,"
-      "\"fillLevel\":12}]}";
-
-  container_config config;
-  config.set_user_config(cfg);
-
+TEST_F(ContainerConfigTest, SparseDuplicateSlotsAreNotCompacted) {
   TChannelConfig_Container raw = {};
-  EXPECT_TRUE(config.get_config(&raw));
-
-  for (size_t a = 0; a < sizeof(raw.SensorInfo) / sizeof(TContainer_SensorInfo);
-       a++) {
-    if (a == 0) {
-      EXPECT_EQ(raw.SensorInfo[a].FillLevel, 12);
-      EXPECT_EQ(raw.SensorInfo[a].ChannelNo, 1);
-      EXPECT_EQ(raw.SensorInfo[a].IsSet, 1);
-    } else {
-      EXPECT_EQ(raw.SensorInfo[a].FillLevel, 0);
-      EXPECT_EQ(raw.SensorInfo[a].ChannelNo, 0);
-      EXPECT_EQ(raw.SensorInfo[a].IsSet, 0);
-    }
-  }
-}
-
-TEST_F(ContainerConfigTest, duplicateRaw) {
-  TChannelConfig_Container raw = {};
-
-  raw.SensorInfo[1].FillLevel = 11;
-  raw.SensorInfo[1].ChannelNo = 10;
-  raw.SensorInfo[1].IsSet = 1;
-
-  raw.SensorInfo[2].FillLevel = 11;
-  raw.SensorInfo[2].ChannelNo = 5;
-  raw.SensorInfo[2].IsSet = 1;
-
-  raw.SensorInfo[3].FillLevel = 8;
-  raw.SensorInfo[3].ChannelNo = 15;
-  raw.SensorInfo[3].IsSet = 1;
-
-  raw.SensorInfo[5].FillLevel = 21;
-  raw.SensorInfo[5].ChannelNo = 5;
-  raw.SensorInfo[5].IsSet = 1;
-
+  raw.SensorInfo[1].ChannelId = 17;
+  raw.SensorInfo[9].ChannelId = 17;
+  raw.SensorInfo[0].FillLevel = 40;
+  raw.SensorInfo[1].FillLevel = 10;
+  raw.SensorInfo[9].FillLevel = 90;
   container_config config;
   config.set_config(&raw);
-
-  char *str = config.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
-               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-               "\"muteAlarmSoundWithoutAdditionalAuth\":false,\"sensors\":[{"
-               "\"channelNo\":10,\"fillLevel\":11},{\"channelNo\":15,"
-               "\"fillLevel\":8},{\"channelNo\":5,\"fillLevel\":21}]}");
-
-  free(str);
+  TChannelConfig_Container restored = {};
+  ASSERT_TRUE(config.get_config(&restored));
+  EXPECT_EQ(0, memcmp(&raw, &restored, sizeof(raw)));
 }
 
-TEST_F(ContainerConfigTest, mute) {
-  TChannelConfig_Container raw1 = {};
-  raw1.MuteAlarmSoundWithoutAdditionalAuth = 1;
-
-  container_config config1;
-  config1.set_config(&raw1);
-
-  char *str = config1.get_user_config();
-  ASSERT_NE(str, nullptr);
-  EXPECT_STREQ(str,
-               "{\"warningAboveLevel\":null,\"alarmAboveLevel\":null,"
-               "\"warningBelowLevel\":null,\"alarmBelowLevel\":null,"
-               "\"muteAlarmSoundWithoutAdditionalAuth\":true,\"sensors\":[]}");
-
-  container_config config2;
-  config2.set_user_config(str);
-  free(str);
-
-  TChannelConfig_Container raw2 = {};
-  EXPECT_TRUE(config2.get_config(&raw2));
-
-  EXPECT_EQ(0, memcmp(&raw1, &raw2, sizeof(raw1)));
+TEST_F(ContainerConfigTest, HistoricalNumbersAreNotBusinessIds) {
+  container_config config;
+  config.set_user_config(R"({"sensors":[{"channelNo":0,"fillLevel":50}]})");
+  TChannelConfig_Container raw = {};
+  config.get_config(&raw);
+  for (const auto &entry : raw.SensorInfo) {
+    EXPECT_EQ(0, entry.ChannelId);
+  }
 }
 
-TEST_F(ContainerConfigTest, merge) {
-  container_config cfg1, cfg2;
-
-  cfg1.set_user_config("{\"yxyz\":123,\"abcd\":567,\"warningAboveLevel\":85}");
-
-  cfg2.set_user_config("{\"warningAboveLevel\":10}");
-
-  cfg2.merge(&cfg1);
-
-  char *str = cfg1.get_user_config();
-  ASSERT_TRUE(str != nullptr);
-  EXPECT_STREQ(str, "{\"yxyz\":123,\"abcd\":567,\"warningAboveLevel\":10}");
-  free(str);
+TEST_F(ContainerConfigTest, MalformedAndOversizeSlotsFailSafe) {
+  container_config config;
+  config.set_user_config(
+      R"({"sensors":[{"channelId":null},{"channelId":-1},{"channelId":2147483648},{"channelId":1.5},{"channelId":"17"},{"channelId":17,"fillLevel":50}]})");
+  TChannelConfig_Container raw = {};
+  ASSERT_TRUE(config.get_config(&raw));
+  for (unsigned slot = 0; slot < 5; ++slot) {
+    EXPECT_EQ(0, raw.SensorInfo[slot].ChannelId);
+  }
+  EXPECT_EQ(17, raw.SensorInfo[5].ChannelId);
 }
 
-} /* namespace testing */
+TEST_F(ContainerConfigTest, ProtectedRemoteMergeMatrixAndScalar) {
+  for (int incomingId : {17, 0, 18, 19}) {
+    TChannelConfig_Container raw = {};
+    raw.SensorInfo[2].ChannelId = 17;
+    container_config authority;
+    authority.set_config(&raw);
+    raw.SensorInfo[2].ChannelId = incomingId;
+    raw.SensorInfo[3].ChannelId = 18;
+    raw.WarningAboveLevel = 51;
+    raw.SensorInfo[2].FillLevel = 60;
+    container_config device;
+    device.set_config(&raw);
+    device.protect_device_references(
+        [](unsigned id) { return id == 0 || id == 18; });
+    device.merge(&authority);
+    TChannelConfig_Container merged = {};
+    ASSERT_TRUE(authority.get_config(&merged));
+    EXPECT_EQ(17, merged.SensorInfo[2].ChannelId);
+    EXPECT_EQ(18, merged.SensorInfo[3].ChannelId);
+    EXPECT_EQ(51, merged.WarningAboveLevel);
+    EXPECT_EQ(60, merged.SensorInfo[2].FillLevel);
+  }
+}
+
+TEST_F(ContainerConfigTest, ProtectedLocalUnsetCannotCreateRemote) {
+  for (int oldId : {0, 18}) {
+    TChannelConfig_Container raw = {};
+    raw.SensorInfo[0].ChannelId = oldId;
+    container_config authority;
+    authority.set_config(&raw);
+    raw.SensorInfo[0].ChannelId = 19;
+    container_config device;
+    device.set_config(&raw);
+    device.protect_device_references(
+        [](unsigned id) { return id == 0 || id == 18; });
+    device.merge(&authority);
+    ASSERT_TRUE(authority.get_config(&raw));
+    EXPECT_EQ(oldId, raw.SensorInfo[0].ChannelId);
+  }
+}
+
+TEST_F(ContainerConfigTest, OversizeArrayDoesNotWritePastProtocolSlots) {
+  std::string json = "{\"sensors\":[";
+  for (unsigned slot = 0; slot < 10 + 2; ++slot) {
+    if (slot) {
+      json += ",";
+    }
+    json += "{\"channelId\":" + std::to_string(slot + 1) + ",\"fillLevel\":50}";
+  }
+  json += "]}";
+  container_config config;
+  config.set_user_config(json.c_str());
+  struct {
+    TChannelConfig_Container raw;
+    unsigned int canary;
+  } guarded = {};
+  guarded.canary = 0x12345678;
+  ASSERT_TRUE(config.get_config(&guarded.raw));
+  EXPECT_EQ(10, guarded.raw.SensorInfo[9].ChannelId);
+  EXPECT_EQ(0x12345678u, guarded.canary);
+}
+
+TEST_F(ContainerConfigTest, AllScalarSettingsSurviveCanonicalRoundTrip) {
+  TChannelConfig_Container raw = {};
+  raw.WarningAboveLevel = 101;
+  raw.AlarmAboveLevel = 0;
+  raw.WarningBelowLevel = 51;
+  raw.AlarmBelowLevel = 100;
+  raw.MuteAlarmSoundWithoutAdditionalAuth = 1;
+  container_config config;
+  config.set_config(&raw);
+  TChannelConfig_Container restored = {};
+  ASSERT_TRUE(config.get_config(&restored));
+  EXPECT_EQ(0, memcmp(&raw, &restored, sizeof(raw)));
+}
+}  // namespace testing

@@ -91,7 +91,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_abstract_channel_extended_value *new_value);
-  virtual bool reload_hvac_config();
+  virtual bool reload_channel_config();
   ChannelReferenceEncoding device_reference_encoding() override;
   virtual void for_each(
       bool any_device,
@@ -175,7 +175,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   bool request_config_publication(unsigned char config_type);
   // Connection-thread only; processes at most one config type per call.
   bool publish_pending_config();
-  // HVAC preparation and sends belong exclusively to the connection thread.
+  bool is_config_identity_ready(unsigned char config_type);
+  // ChannelConfig preparation/sends belong to the connection thread.
   // False with failed=false means unsupported/absent optional configuration.
   bool send_config_to_device(unsigned char config_type, bool *failed = nullptr);
   // Contains only SetChannelConfig requests. ChannelConfigFinished is sent

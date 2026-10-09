@@ -806,15 +806,11 @@ bool supla_device_channels::get_channel_config(unsigned char channel_number,
   supla_device_channel *channel = find_channel_by_number(channel_number);
 
   if (channel) {
-    if (!channel->get_config(config, type, flags)) return false;
-    if (channel->get_type() == SUPLA_CHANNELTYPE_HVAC &&
-        (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
-        !device->get_suplan_root_epoch()) {
-      std::unique_ptr<supla_json_config> json(channel->get_json_config());
-      hvac_config hvac(json.get());
-      for (size_t field = 0; field < 6; ++field) {
-        if (hvac.reference(field)) return false;
-      }
+    if (!channel->get_config(config, type, flags) ||
+        !channel->is_config_identity_ready(type)) {
+      device->reset_suplan_identity_bootstrap();
+      device->terminate();
+      return false;
     }
     return true;
   }
@@ -1814,9 +1810,9 @@ void supla_device_channels::iterate(void) {
   // Keep pending pushes until replay completes so their ACKs cannot satisfy it.
   if (!channel_config_sync_coordinator.is_finished()) return;
   for (auto channel : channels) {
-    if (channel->get_type() == SUPLA_CHANNELTYPE_HVAC &&
-        !channel->publish_pending_config())
+    if (!channel->publish_pending_config()) {
       return;
+    }
   }
 }
 

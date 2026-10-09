@@ -89,12 +89,11 @@ void supla_abstract_common_channel_properties::get_sensor_relations(
       if (config.get_config(&raw_cfg)) {
         for (size_t a = 0;
              a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T); a++) {
-          if (raw_cfg.SensorInfo[a].IsSet) {
+          if (raw_cfg.SensorInfo[a].ChannelId > 0) {
             for_each(false,
                      [&](supla_abstract_common_channel_properties *props,
                          bool *will_continue) -> void {
-                       if (raw_cfg.SensorInfo[a].ChannelNo ==
-                               props->get_channel_number() &&
+                       if (raw_cfg.SensorInfo[a].ChannelId == props->get_id() &&
                            props->get_func() == related_channel_func) {
                          add_relation(relations, props->get_id(), get_id(),
                                       CHANNEL_RELATION_TYPE_DEFAULT);
@@ -126,8 +125,8 @@ void supla_abstract_common_channel_properties::get_sensor_relations(
                 for (size_t a = 0;
                      a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T);
                      a++) {
-                  if (raw_cfg.SensorInfo[a].IsSet &&
-                      raw_cfg.SensorInfo[a].ChannelNo == get_channel_number()) {
+                  if (raw_cfg.SensorInfo[a].ChannelId > 0 &&
+                      raw_cfg.SensorInfo[a].ChannelId == get_id()) {
                     add_relation(relations, get_id(), props->get_id(),
                                  CHANNEL_RELATION_TYPE_DEFAULT);
                     *will_continue = false;
@@ -481,18 +480,23 @@ void supla_abstract_common_channel_properties::json_to_config(
 template <typename configT, typename sensorT>
 void supla_abstract_common_channel_properties::resolve_sensor_identifiers(
     configT *config) {
-  for (size_t a = 0; a < sizeof(config->SensorInfo) / sizeof(sensorT); a++) {
-    if (config->SensorInfo[a].IsSet) {
-      for_each(false,
-               [&](supla_abstract_common_channel_properties *props,
-                   bool *will_continue) -> void {
-                 if (config->SensorInfo[a].ChannelNo ==
-                     props->get_channel_number()) {
-                   config->SensorInfo[a].ChannelId = props->get_id();
-                   *will_continue = false;
-                 }
-               });
+  // Business state is always IDs. Legacy encoding clears a remote/unknown
+  // reference instead of aliasing its low byte to a local ChannelNumber.
+  for (auto &entry : config->SensorInfo) {
+    unsigned int id = entry.ChannelId;
+    entry.ChannelId = 0;
+    if (!id) {
+      continue;
     }
+    for_each(false,
+             [&](supla_abstract_common_channel_properties *props, bool *stop) {
+               if (props->get_device_id() == get_device_id() &&
+                   props->get_id() == static_cast<int>(id)) {
+                 entry.IsSet = 1;
+                 entry.ChannelNo = props->get_channel_number();
+                 *stop = false;
+               }
+             });
   }
 }
 
@@ -617,17 +621,18 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(container_config, TChannelConfig_Container, config,
                    config_size);
 
-    if (encoding == ChannelReferenceEncoding::ChannelId) {
+    if (encoding == ChannelReferenceEncoding::LocalChannelNumber) {
       resolve_sensor_identifiers<TChannelConfig_Container,
                                  TContainer_SensorInfo>(
           (TChannelConfig_Container *)config);
     }
 
     return;
-  } else if (get_type() == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) {
+  } else if ((get_type() == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+              get_type() == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE)) {
     JSON_TO_CONFIG(valve_config, TChannelConfig_Valve, config, config_size);
 
-    if (encoding == ChannelReferenceEncoding::ChannelId) {
+    if (encoding == ChannelReferenceEncoding::LocalChannelNumber) {
       resolve_sensor_identifiers<TChannelConfig_Valve, TValve_SensorInfo>(
           (TChannelConfig_Valve *)config);
     }
@@ -745,29 +750,40 @@ int supla_abstract_common_channel_properties::set_user_config(
     auto hvac = new hvac_config();
     hvac->set_config(&incoming);
     {
-      int user = get_user_id(), device = get_device_id();
-      hvac->protect_device_references([user, device](size_t field,
-                                                     unsigned int id) {
+      int user = get_user_id(), device = get_device_id(), consumer = get_id();
+      hvac->protect_device_references([user, device, consumer](
+                                          size_t field, unsigned int id) {
         supla_suplan::PeerDao repo(user);
         supla_suplan::ChannelInfo info;
         if (!repo.channel(id, &info)) return false;
         if (!id) return true;
-        if (info.device != device) return false;
+        if (info.device != device ||
+            id == static_cast<unsigned int>(consumer)) {
+          return false;
+        }
         switch (field) {
           case 0:
           case 1:
             return (info.type == SUPLA_CHANNELTYPE_THERMOMETER ||
+                    info.type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
                     info.type == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
                    (info.function == SUPLA_CHANNELFNC_THERMOMETER ||
                     info.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
           case 2:
             return info.type == SUPLA_CHANNELTYPE_BINARYSENSOR;
-          case 3:
-            return info.type == SUPLA_CHANNELTYPE_HVAC;
+          case 3: {
+            uint32_t master = 0;
+            bool slaves = false;
+            return info.type == SUPLA_CHANNELTYPE_HVAC && info.function != 0 &&
+                   repo.reference(id, 4, &master) && !master &&
+                   repo.has_master_dependents(consumer, &slaves) && !slaves;
+          }
           case 4:
-            return info.function == SUPLA_CHANNELFNC_PUMPSWITCH;
           case 5:
-            return info.function == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH;
+            return info.type == SUPLA_CHANNELTYPE_RELAY &&
+                   info.function ==
+                       (field == 4 ? SUPLA_CHANNELFNC_PUMPSWITCH
+                                   : SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH);
         }
         return false;
       });
@@ -858,14 +874,53 @@ int supla_abstract_common_channel_properties::set_user_config(
     json_config = new power_switch_config();
     static_cast<power_switch_config *>(json_config)
         ->set_config((TChannelConfig_PowerSwitch *)config, this);
-  } else if (type == SUPLA_CHANNELTYPE_CONTAINER) {
-    json_config = new container_config(nullptr);
-    static_cast<container_config *>(json_config)
-        ->set_config((TChannelConfig_Container *)config);
-  } else if (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) {
-    json_config = new valve_config(nullptr);
-    static_cast<valve_config *>(json_config)
-        ->set_config((TChannelConfig_Valve *)config);
+  } else if ((type == SUPLA_CHANNELTYPE_CONTAINER ||
+              (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+               type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE)) &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT) {
+    const bool container = type == SUPLA_CHANNELTYPE_CONTAINER;
+    if (config_size != (container ? sizeof(TChannelConfig_Container)
+                                  : sizeof(TChannelConfig_Valve))) {
+      return SUPLA_CONFIG_RESULT_FALSE;
+    }
+    auto translate = [&](auto *incoming) {
+      if (device_reference_encoding() !=
+          ChannelReferenceEncoding::LocalChannelNumber) {
+        return;
+      }
+      for (auto &entry : incoming->SensorInfo) {
+        unsigned int id = entry.IsSet ? get_channel_id(entry.ChannelNo) : 0;
+        entry.ChannelId = id;
+      }
+    };
+    int user = get_user_id(), device = get_device_id(), consumer = get_id();
+    auto legal_local = [user, device, consumer](unsigned int id) {
+      if (!id) {
+        return true;
+      }
+      if (id == static_cast<unsigned int>(consumer)) {
+        return false;
+      }
+      supla_suplan::PeerDao repo(user);
+      supla_suplan::ChannelInfo info;
+      return repo.channel(id, &info) && info.device == device &&
+             info.type == SUPLA_CHANNELTYPE_BINARYSENSOR;
+    };
+    if (container) {
+      auto incoming = *reinterpret_cast<TChannelConfig_Container *>(config);
+      translate(&incoming);
+      auto cfg = new container_config();
+      cfg->set_config(&incoming);
+      cfg->protect_device_references(legal_local);
+      json_config = cfg;
+    } else {
+      auto incoming = *reinterpret_cast<TChannelConfig_Valve *>(config);
+      translate(&incoming);
+      auto cfg = new valve_config();
+      cfg->set_config(&incoming);
+      cfg->protect_device_references(legal_local);
+      json_config = cfg;
+    }
   } else {
     result = SUPLA_CONFIG_RESULT_NOT_ALLOWED;
   }

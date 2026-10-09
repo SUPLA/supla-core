@@ -19,6 +19,7 @@
 #ifndef VALVE_CONFIG_H_
 #define VALVE_CONFIG_H_
 
+#include <functional>
 #include <map>
 #include <string>
 
@@ -27,12 +28,17 @@
 
 class valve_config : public supla_json_config {
  private:
+  std::function<bool(unsigned int)> device_local_reference;
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   std::string close_on_flood_type_to_string(unsigned char type);
   unsigned char string_to_close_on_flood_type(const std::string &type);
 
  protected:
  public:
+  // Applied against freshly read authority on every DAO CAS retry.
+  void protect_device_references(std::function<bool(unsigned int)> local) {
+    device_local_reference = local;
+  }
   explicit valve_config(supla_json_config *root);
   valve_config(void);
   virtual void merge(supla_json_config *dst);
