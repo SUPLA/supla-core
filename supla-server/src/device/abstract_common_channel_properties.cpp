@@ -765,7 +765,6 @@ int supla_abstract_common_channel_properties::set_user_config(
           case 0:
           case 1:
             return (info.type == SUPLA_CHANNELTYPE_THERMOMETER ||
-                    info.type == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
                     info.type == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
                    (info.function == SUPLA_CHANNELFNC_THERMOMETER ||
                     info.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);

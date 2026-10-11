@@ -1764,7 +1764,7 @@ TEST_F(SupLanHvacIntegrationTest,
 }
 
 TEST_F(SupLanHvacIntegrationTest,
-       Ds18b20NeverGetsRemoteReadButLocalWireCompatibilitySurvives) {
+       DeprecatedThermometerCannotAuthorizeRemoteOrNewLocalHvacReferences) {
   for (const auto &field : {std::make_pair("mainThermometerChannelId", 1),
                             std::make_pair("auxThermometerChannelId", 2)}) {
     SCOPED_TRACE(field.first);
@@ -1812,10 +1812,11 @@ TEST_F(SupLanHvacIntegrationTest,
       TChannelConfig_HVAC received = {};
       ASSERT_EQ(sizeof(received), published.ConfigSize);
       memcpy(&received, published.Config, sizeof(received));
-      EXPECT_EQ(flags ? local : 241u, received.MainThermometerChannelId);
-      EXPECT_EQ(flags ? local : 241u, received.AuxThermometerChannelId);
+      unsigned int unset = flags ? 0 : channel->get_channel_number();
+      EXPECT_EQ(unset, received.MainThermometerChannelId);
+      EXPECT_EQ(unset, received.AuxThermometerChannelId);
     }, flags);
-    EXPECT_EQ(local, scalar("SELECT JSON_VALUE(user_config,"
+    EXPECT_EQ(0, scalar("SELECT JSON_VALUE(user_config,"
                             "'$.mainThermometerChannelId') "
                             "FROM supla_dev_channel WHERE id=" +
                             std::to_string(hvac)));
