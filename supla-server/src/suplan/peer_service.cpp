@@ -25,6 +25,93 @@ bool Repository::owns_acl(int source, int destination, const Acl &acl) {
 
 bool valid_permissions(uint8_t p) { return p && !(p & ~7); }
 uint8_t normalize(uint8_t p) { return p & 2 ? p & ~1 : p; }
+uint8_t missing_permissions(uint8_t requested, uint8_t effective) {
+  if (effective & SUPLA_SUPLAN_PERMISSION_CONTROL)
+    effective |= SUPLA_SUPLAN_PERMISSION_READ;
+  return normalize(requested) & ~effective;
+}
+static bool active_binary_source(const ChannelInfo &info);
+static bool manual_permissions_supported(const ChannelInfo &c, uint8_t p) {
+  if (!c.device || !c.type || !c.function || !valid_permissions(p))
+    return false;
+  if (c.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
+      c.function == SUPLA_CHANNELFNC_ACTIONTRIGGER)
+    return c.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER &&
+           c.function == SUPLA_CHANNELFNC_ACTIONTRIGGER &&
+           c.action_capabilities && p == SUPLA_SUPLAN_PERMISSION_ACTION;
+  if (p & SUPLA_SUPLAN_PERMISSION_ACTION) return false;
+  if (!(p & SUPLA_SUPLAN_PERMISSION_CONTROL)) {
+    switch (c.type) {
+      case SUPLA_CHANNELTYPE_BINARYSENSOR: return active_binary_source(c);
+      case SUPLA_CHANNELTYPE_THERMOMETER:
+        return c.function == SUPLA_CHANNELFNC_THERMOMETER;
+      case SUPLA_CHANNELTYPE_HUMIDITYSENSOR:
+        return c.function == SUPLA_CHANNELFNC_HUMIDITY;
+      case SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR:
+        return c.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
+        return c.function == SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
+        return c.function == SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER;
+      case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+        return c.function == SUPLA_CHANNELFNC_ELECTRICITY_METER;
+      case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+        return c.function == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER ||
+               c.function == SUPLA_CHANNELFNC_IC_GAS_METER ||
+               c.function == SUPLA_CHANNELFNC_IC_WATER_METER ||
+               c.function == SUPLA_CHANNELFNC_IC_HEAT_METER ||
+               c.function == SUPLA_CHANNELFNC_IC_EVENTS ||
+               c.function == SUPLA_CHANNELFNC_IC_SECONDS;
+      case SUPLA_CHANNELTYPE_CONTAINER:
+        return c.function == SUPLA_CHANNELFNC_CONTAINER ||
+               c.function == SUPLA_CHANNELFNC_SEPTIC_TANK ||
+               c.function == SUPLA_CHANNELFNC_WATER_TANK;
+      default:
+        return manual_permissions_supported(c, SUPLA_SUPLAN_PERMISSION_CONTROL);
+    }
+  }
+  switch (c.type) {
+    case SUPLA_CHANNELTYPE_RELAY:
+      switch (c.function) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        case SUPLA_CHANNELFNC_PUMPSWITCH:
+        case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+        case SUPLA_CHANNELFNC_TERRACE_AWNING:
+        case SUPLA_CHANNELFNC_PROJECTOR_SCREEN:
+        case SUPLA_CHANNELFNC_CURTAIN:
+        case SUPLA_CHANNELFNC_VERTICAL_BLIND:
+        case SUPLA_CHANNELFNC_ROLLER_GARAGE_DOOR: return true;
+      }
+      return false;
+    case SUPLA_CHANNELTYPE_HVAC:
+      return c.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
+             c.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
+             c.function == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
+             c.function == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER;
+    case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+      return c.function == SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
+    case SUPLA_CHANNELTYPE_VALVE_PERCENTAGE:
+      return c.function == SUPLA_CHANNELFNC_VALVE_PERCENTAGE;
+    case SUPLA_CHANNELTYPE_DIMMER:
+      return c.function == SUPLA_CHANNELFNC_DIMMER ||
+             c.function == SUPLA_CHANNELFNC_DIMMER_CCT;
+    case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
+      return c.function == SUPLA_CHANNELFNC_RGBLIGHTING;
+    case SUPLA_CHANNELTYPE_DIMMERANDRGBLED:
+      return c.function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ||
+             c.function == SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB;
+  }
+  return false;
+}
 bool canonicalize(const std::vector<Grant> &grants, Acl *acl) {
   std::map<std::pair<uint8_t, uint32_t>, uint8_t> entries;
   for (const auto &g : grants) {
@@ -611,31 +698,263 @@ bool PeerService::provisioned(const Association &sent, uint32_t root) {
     return r->save(*a);
   });
 }
+
+bool PeerService::reconcile_approvals(uint32_t resource, int device,
+                                      std::vector<ApprovalPair> *failed) {
+  if (failed) failed->clear();
+  auto repo = factory();
+  bool available = false;
+  if (!repo->approval_schema(&available)) return false;
+  if (!available) return true;  // M2/M3/M4-only deployments have no M5 state.
+  std::vector<ApprovalPair> pairs;
+  if (!repo->approval_pairs(resource, device, &pairs)) return false;
+  bool success = true;
+  for (const auto &pair : pairs) {
+    if (!reconcile_approval_pair(pair, 0, false, nullptr)) {
+      success = false;
+      if (failed) failed->push_back(pair);
+    }
+  }
+  return success;
+}
+bool PeerService::reconcile_approval_pair(
+    ApprovalPair pair, uint8_t requested, bool allow_approval,
+    TSD_SuplaEnsureResourceAccessResult *result) {
+  // If a just-accepted pair has no M2 association, create its empty stable
+  // identity outside the pair transaction. Never wait for a gate while holding
+  // an association row lock. Two bounded attempts cover first creation.
+  for (int attempt = 0; attempt < 2; ++attempt) {
+    auto repo = factory();
+    Association existing;
+    if (!repo->find(pair.source, pair.destination, &existing) ||
+        !repo->approval_lock(&pair, allow_approval)) return false;
+    ChannelInfo channel;
+    DeviceInfo source, destination;
+    Identity identity;
+    std::vector<ApprovalDecision> decisions;
+    if (!repo->approval_context(pair, &channel, &source, &destination,
+                                &identity) ||
+        !repo->approval_decisions(pair.id, &decisions)) return false;
+    bool valid = channel.device == pair.source &&
+                 pair.source != pair.destination && identity.root &&
+                 source.protocol >= 29 && destination.protocol >= 29 &&
+                 (source.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+                 (destination.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+                 std::find(identity.channels.begin(), identity.channels.end(),
+                           pair.resource) != identity.channels.end();
+    if ((!valid || !manual_permissions_supported(channel, requested)) &&
+        decisions.empty() && allow_approval) {
+      repo->rollback();
+      if (result) {
+        result->Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+        result->AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_INVALID;
+      }
+      return true;
+    }
+    bool needs_association = false;
+    for (const auto &d : decisions)
+      needs_association |= d.status == ApprovalStatus::Accepted && valid &&
+                           manual_permissions_supported(channel, d.permissions);
+    if (needs_association && !existing.id) {
+      repo->rollback();
+      if (!repo->begin(pair.source, pair.destination, &existing) ||
+          !repo->commit()) return false;
+      continue;
+    }
+    std::shared_ptr<std::mutex> gate;
+    std::unique_lock<std::mutex> lock;
+    Association current;
+    bool notify = false;
+    if (existing.id) {
+      gate = association_gate(existing.id);
+      lock = std::unique_lock<std::mutex>(*gate);
+      if (!repo->begin(existing.id, &current)) return false;
+    }
+    Association before = current;
+    std::vector<Grant> grants;
+    if (current.id && !repo->grants(current.id, &grants)) return false;
+    bool grant_change = false;
+    for (const auto &d : decisions) {
+      bool accepted = d.status == ApprovalStatus::Accepted && valid &&
+                      manual_permissions_supported(channel, d.permissions) &&
+                      !current.source_removed && !current.destination_removed;
+      const Grant *old = nullptr;
+      for (const auto &g : grants)
+        if (g.origin_type == USER_APPROVAL_ORIGIN && g.origin_id == d.id)
+          old = &g;
+      if (accepted) {
+        const Grant desired{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, pair.resource,
+                            USER_APPROVAL_ORIGIN, d.id,
+                            normalize(d.permissions)};
+        if (!old || old->permissions != desired.permissions ||
+            old->resource_id != desired.resource_id) {
+          if (!repo->erase_origin(current.id, USER_APPROVAL_ORIGIN, d.id) ||
+              !repo->put(current.id, desired)) return false;
+          grant_change = true;
+        }
+      } else {
+        if (old) {
+          if (!repo->erase_origin(current.id, USER_APPROVAL_ORIGIN, d.id))
+            return false;
+          grant_change = true;
+        }
+        // Validation revokes projection, not the Cloud business decision.
+        // Only an explicit Cloud Remove changes Accepted to Removed.
+      }
+    }
+    if (grant_change && !recompute(repo.get(), &current, identity.root))
+      return false;
+    notify = !same_state(before, current);
+    if (result) {
+      uint8_t effective = 0;
+      for (const auto &entry : current.acl)
+        if ((entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+             entry.ResourceId == pair.resource) ||
+            (entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE &&
+             entry.ResourceId == static_cast<uint32_t>(pair.source)))
+          effective |= entry.Permissions;
+      uint8_t missing = missing_permissions(requested, effective);
+      const ApprovalDecision *open = nullptr;
+      for (const auto &d : decisions)
+        if (d.status == ApprovalStatus::Pending ||
+            d.status == ApprovalStatus::Rejected) open = &d;
+      if (!valid || !manual_permissions_supported(channel, requested)) {
+        result->Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+        result->AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_INVALID;
+      } else if (!missing) {
+        result->Result = SUPLA_SUPLAN_RESULT_OK;
+        result->AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+      } else if (open && open->status == ApprovalStatus::Rejected) {
+        result->Result = SUPLA_SUPLAN_RESULT_OK;
+        result->AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_REJECTED;
+      } else {
+        uint8_t pending = normalize(missing | (open ? open->permissions : 0));
+        if (!repo->approval_pending(pair.id, pending, open)) return false;
+        result->Result = SUPLA_SUPLAN_RESULT_OK;
+        result->AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
+      }
+    }
+    if (!repo->commit()) return false;
+    if (lock.owns_lock()) lock.unlock();
+    if (notify && changed) changed(current.id);
+    return true;
+  }
+  return false;
+}
 TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
-    int destination, const TDS_SuplaEnsureResourceAccess &q) {
+    int destination, const TDS_SuplaEnsureResourceAccess &q,
+    const std::function<bool()> &reconcile) {
   TSD_SuplaEnsureResourceAccessResult result = {
       SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT, SUPLA_SUPLAN_ACCESS_STATUS_INVALID,
       SUPLA_RESOURCE_DELIVERY_INVALID};
   if ((q.Flags & ~SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL) ||
       (q.DeliveryMode != SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER &&
        q.DeliveryMode != SUPLA_RESOURCE_DELIVERY_SERVER_STREAM) ||
-      !q.Resource.ResourceId || !valid_permissions(q.Permissions))
+      destination <= 0 || !q.Resource.ResourceId ||
+      q.Resource.ResourceId > INT32_MAX || !valid_permissions(q.Permissions))
     return result;
   result.DeliveryMode = q.DeliveryMode;
   if (q.DeliveryMode == SUPLA_RESOURCE_DELIVERY_SERVER_STREAM ||
       (q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
-       q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE)) {
+       q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE) ||
+      (q.Flags && q.Resource.ResourceType !=
+                      SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL)) {
     result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
     return result;
   }
   auto repo = factory();
+  int requester = 0;
+  if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, destination,
+                   &requester)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (requester != destination) {
+    result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+    return result;
+  }
   int source = 0;
   if (!repo->owner(q.Resource.ResourceType, q.Resource.ResourceId, &source)) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;
   }
   if (!source) {
+    // A missing resource still requires authoritative cleanup of existing
+    // origins. The authenticated requester and wire shape are checked first.
+    if ((reconcile && !reconcile()) ||
+        (q.Resource.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+         !reconcile_approvals(q.Resource.ResourceId, destination))) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
     result.Result = SUPLA_SUPLAN_RESULT_NOT_FOUND;
+    return result;
+  }
+  int owner = 0;
+  if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, source, &owner)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (requester != destination || owner != source || source == destination) {
+    result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+    return result;
+  }
+  // ACTION is event permission, not CONTROL_ACTION. Even an old broad ACL
+  // cannot make a non-AT channel a supported event resource.
+  if (q.Resource.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+      (q.Flags || (q.Permissions & SUPLA_SUPLAN_PERMISSION_ACTION))) {
+    ChannelInfo info;
+    if (!repo->channel(q.Resource.ResourceId, &info)) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    if (info.device != source) {
+      result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+      return result;
+    }
+    if ((q.Flags && !manual_permissions_supported(info, q.Permissions)) ||
+        !info.function ||
+        ((q.Permissions & SUPLA_SUPLAN_PERMISSION_ACTION) &&
+         (info.type != SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
+          info.function != SUPLA_CHANNELFNC_ACTIONTRIGGER ||
+          !info.action_capabilities))) {
+      result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
+      return result;
+    }
+  }
+  if (q.Flags) {
+    DeviceInfo from, to;
+    Identity identity;
+    if (!repo->device(source, &from) || !repo->device(destination, &to) ||
+        !repo->identity(source, &identity)) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    if (from.protocol < 29 || to.protocol < 29 ||
+        !(from.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) ||
+        !(to.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)) {
+      result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
+      return result;
+    }
+    if (!identity.root ||
+        std::find(identity.channels.begin(), identity.channels.end(),
+                  q.Resource.ResourceId) == identity.channels.end()) {
+      result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+      return result;
+    }
+  }
+  // Validate before a hint can touch config-derived authorization. Transport
+  // remains outside any approval transaction (the Cloud schema is required).
+  if (reconcile && !reconcile()) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  bool approval_available = false;
+  if (!repo->approval_schema(&approval_available) ||
+      (approval_available && q.Resource.ResourceType ==
+                                 SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+       !reconcile_approvals(q.Resource.ResourceId, destination))) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;
   }
   Association a;
@@ -654,15 +973,32 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
         allowed |= e.Permissions;
     }
   }
-  if (allowed & SUPLA_SUPLAN_PERMISSION_CONTROL)
-    allowed |= SUPLA_SUPLAN_PERMISSION_READ;
-  if ((allowed & q.Permissions) == q.Permissions) {
+  if (!missing_permissions(q.Permissions, allowed)) {
+    Identity current;
+    if (!repo->identity(source, &current)) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
     result.Result = SUPLA_SUPLAN_RESULT_OK;
     result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
-    if (changed) changed(a.id);
+    // Mutations and reconnect already reconcile ACL-only/offline work. A
+    // status ENSURE must not recreate a retired, fully acknowledged flow.
+    if (changed && (a.root != current.root ||
+                    a.provisioned_generation != a.generation))
+      changed(a.id);
   } else {
-    // The SRPC adapter reconciles current config origins first.
-    // Neither the mode nor ALLOW_APPROVAL can manufacture a manual grant.
+    if (q.Flags && approval_available) {
+      if (!reconcile_approval_pair({0, source, destination,
+                                    q.Resource.ResourceId},
+                                  q.Permissions, true, &result)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_INVALID;
+      }
+      return result;
+    }
+    // The Cloud migration is required for a durable pending decision.
+    // Fail closed; never pretend an in-memory request is PENDING_APPROVAL.
+    // Existing partial grants remain untouched.
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
   }
   return result;

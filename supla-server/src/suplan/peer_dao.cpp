@@ -327,12 +327,15 @@ bool PeerDao::reference(uint32_t channel, uint8_t field, uint32_t *out) {
 bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
-  if (!select("SELECT c.iodevice_id,c.type,c.func,d.flags,c.channel_number "
+  if (!select("SELECT c.iodevice_id,c.type,c.func,d.flags,c.channel_number,"
+              "CASE WHEN JSON_VALID(c.properties) THEN COALESCE(JSON_LENGTH("
+              "JSON_EXTRACT(c.properties,'$.actionTriggerCapabilities')),0) "
+              "ELSE 0 END "
               "FROM supla_dev_channel c JOIN supla_iodevice d "
               "ON d.id=c.iodevice_id AND d.user_id=c.user_id "
               "WHERE c.user_id=" +
                   to_string(user) + " AND c.id=" + to_string(id),
-              &rows, 5))
+              &rows, 6))
     return false;
   if (!rows.empty()) {
     const auto &r = rows.front();
@@ -341,6 +344,7 @@ bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
     out->function = r[2];
     out->device_flags = r[3];
     out->number = r[4];
+    out->action_capabilities = r[5];
   }
   return true;
 }
@@ -348,6 +352,18 @@ bool PeerDao::device_exists(int device) {
   int owner_id = 0;
   return owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, device, &owner_id) &&
          owner_id == device;
+}
+bool PeerDao::device(int id, DeviceInfo *out) {
+  *out = {};
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT flags,protocol_version FROM supla_iodevice WHERE " +
+                  scope() + " AND id=" + to_string(id), &rows, 2))
+    return false;
+  if (!rows.empty()) {
+    out->flags = rows.front()[0];
+    out->protocol = rows.front()[1];
+  }
+  return true;
 }
 bool PeerDao::owns_acl(int source, int destination, const Acl &acl) {
   std::vector<std::vector<uint64_t>> rows;
@@ -494,4 +510,117 @@ bool PeerDao::for_resource(uint8_t type, uint32_t resource,
   ids(rows, out);
   return ok;
 }
+
+bool PeerDao::approval_schema(bool *available) {
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT COUNT(*) FROM information_schema.tables WHERE "
+              "table_schema=DATABASE() AND table_name IN "
+              "('supla_resource_access_pair','supla_resource_access_decision')",
+              &rows, 1) || rows.size() != 1) return false;
+  *available = rows[0][0] == 2;
+  return true;
+}
+bool PeerDao::approval_pairs(uint32_t resource, int device,
+                              std::vector<ApprovalPair> *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  std::string filter = resource
+                           ? " AND source_channel_id=" + to_string(resource)
+                               : " AND (source_device_id=" + to_string(device) +
+                                 " OR destination_device_id=" +
+                                 to_string(device) + ")";
+  if (resource && device)
+    filter += " AND destination_device_id=" + to_string(device);
+  if (!select("SELECT id,source_device_id,destination_device_id,"
+              "source_channel_id "
+              "FROM supla_resource_access_pair WHERE " + scope() + filter +
+              " ORDER BY id", &rows, 4)) return false;
+  out->clear();
+  for (const auto &r : rows)
+    out->push_back({r[0], static_cast<int>(r[1]), static_cast<int>(r[2]),
+                    static_cast<uint32_t>(r[3])});
+  return true;
+}
+bool PeerDao::approval_lock(ApprovalPair *pair, bool create) {
+  if (!execute("SET SESSION innodb_lock_wait_timeout=5") ||
+      !execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED") ||
+      !execute("START TRANSACTION")) return false;
+  transaction = true;
+  std::vector<std::vector<uint64_t>> rows;
+  const std::string where = scope() + " AND destination_device_id=" +
+      to_string(pair->destination) + " AND source_channel_id=" +
+      to_string(pair->resource);
+  // Plain discovery avoids taking an absent-key gap lock before concurrent
+  // unique INSERT. Existing requests issue no no-op UPDATE/write statement.
+  if (!select("SELECT id FROM supla_resource_access_pair WHERE " + where,
+              &rows, 1)) return false;
+  if (rows.empty() && create && !execute(
+      "INSERT INTO supla_resource_access_pair (user_id,destination_device_id,"
+      "source_channel_id,source_device_id) VALUES (" + to_string(user) + "," +
+      to_string(pair->destination) + "," + to_string(pair->resource) + "," +
+      to_string(pair->source) + ") ON DUPLICATE KEY UPDATE id=id"))
+    return false;
+  if (!select("SELECT id,source_device_id,destination_device_id,"
+              "source_channel_id FROM supla_resource_access_pair WHERE " +
+              where + " FOR UPDATE", &rows, 4) || rows.size() != 1)
+    return false;
+  const auto &r = rows.front();
+  *pair = {r[0], static_cast<int>(r[1]), static_cast<int>(r[2]),
+            static_cast<uint32_t>(r[3])};
+  return true;
+}
+bool PeerDao::approval_decisions(uint64_t pair,
+                                 std::vector<ApprovalDecision> *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  if (!transaction || !select(
+      "SELECT id,permissions,revision,CASE status WHEN 'PENDING' THEN 1 "
+      "WHEN 'ACCEPTED' THEN 2 WHEN 'REJECTED' THEN 3 ELSE 4 END "
+      "FROM supla_resource_access_decision WHERE pair_id=" + to_string(pair) +
+      " ORDER BY id FOR UPDATE", &rows, 4)) return false;
+  out->clear();
+  for (const auto &r : rows) {
+    if (!valid_permissions(r[1]) || !r[2]) return false;
+    out->push_back({r[0], static_cast<uint8_t>(r[1]),
+                    static_cast<uint32_t>(r[2]),
+                    static_cast<ApprovalStatus>(r[3])});
+  }
+  return true;
+}
+bool PeerDao::approval_pending(uint64_t pair, uint8_t permissions,
+                               const ApprovalDecision *pending) {
+  if (!transaction || !valid_permissions(permissions)) return false;
+  if (pending) {
+    if (pending->permissions == permissions) return true;
+    return execute("UPDATE supla_resource_access_decision SET permissions=" +
+                   to_string(permissions) + " WHERE id=" +
+                   to_string(pending->id) + " AND pair_id=" + to_string(pair) +
+                   " AND status='PENDING' AND revision=" +
+                   to_string(pending->revision));
+  }
+  return execute("INSERT INTO supla_resource_access_decision "
+                 "(pair_id,open_pair_id,status,permissions,revision) VALUES (" +
+                 to_string(pair) + "," + to_string(pair) + ",'PENDING'," +
+                 to_string(permissions) + ",1)");
+}
+bool PeerDao::approval_context(const ApprovalPair &pair, ChannelInfo *info,
+                               DeviceInfo *source, DeviceInfo *destination,
+                               Identity *accepted) {
+  // Pair -> sorted Devices -> Source Channel -> identity -> association.
+  // Match Cloud's order; missing rows are invalid context, not SELECT failure.
+  std::vector<std::vector<uint64_t>> rows;
+  std::vector<int> devices{pair.source, pair.destination};
+  std::sort(devices.begin(), devices.end());
+  for (auto id : devices) {
+    if (!select("SELECT id FROM supla_iodevice WHERE id=" + to_string(id) +
+                " FOR UPDATE", &rows, 1)) return false;
+  }
+  if (!select("SELECT id FROM supla_dev_channel WHERE id=" +
+              to_string(pair.resource) + " FOR UPDATE", &rows, 1) ||
+      !select("SELECT device_id FROM supla_suplan_device_state "
+              "WHERE device_id=" +
+              to_string(pair.source) + " FOR UPDATE", &rows, 1)) return false;
+  return channel(pair.resource, info) && device(pair.source, source) &&
+         device(pair.destination, destination) &&
+         identity(pair.source, accepted);
+}
+
 }  // namespace supla_suplan

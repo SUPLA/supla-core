@@ -73,6 +73,16 @@ void supla_suplan_server_peers::diagnostic(uint64_t id, int device,
             static_cast<unsigned long long>(id), device, result);
 }
 
+bool supla_suplan_server_peers::reconcile_manual(int user_id,
+                                                 uint32_t source_channel) {
+  supla_suplan::PeerService service(
+      [user_id]() { return std::make_unique<supla_suplan::PeerDao>(user_id); },
+      [user_id](uint64_t id) {
+        auto user = supla_user::find(user_id, false);
+        if (user) user->get_suplan_peers()->peers()->reconcile(id);
+      });
+  return service.reconcile_approvals(source_channel);
+}
 bool supla_suplan_server_peers::reconcile_dependencies(int user_id,
                                                        int source_channel_id) {
   supla_suplan::PeerDao repo(user_id);

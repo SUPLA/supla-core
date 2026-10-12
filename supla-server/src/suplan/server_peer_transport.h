@@ -14,6 +14,7 @@ class supla_suplan_server_peers : public supla_suplan::PeerTransport {
  public:
   // Durable delete handling without constructing a runtime user or transport.
   static bool reconcile_dependencies(int user_id, int source_channel_id);
+  static bool reconcile_manual(int user_id, uint32_t source_channel);
   // Access checks audit only origins capable of authorizing this request.
   static bool reconcile_access_dependencies(
       int user_id, int resource_channel_id, int destination_device_id);

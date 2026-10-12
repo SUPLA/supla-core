@@ -8,6 +8,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <future>
 #include <memory>
 #include <string>
@@ -101,6 +102,53 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
     ASSERT_GT(resource, 0u);
     auto dao = factory();
     ASSERT_TRUE(dao->accept_identity(source, {123, {resource}}));
+  }
+  void manual_schema() {
+    runSqlScript("SupLanM5TestSchema.sql");
+    std::string out;
+    sqlQuery(("UPDATE supla_iodevice SET flags=flags | " +
+              std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
+              ",protocol_version=29 WHERE user_id=2").c_str(), &out);
+    sqlQuery(("UPDATE supla_dev_channel SET type=" +
+              std::to_string(SUPLA_CHANNELTYPE_RELAY) + ",func=" +
+              std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
+              " WHERE id=" + std::to_string(resource)).c_str(), &out);
+  }
+  std::vector<ApprovalDecision> decisions() {
+    auto repo = factory();
+    std::vector<ApprovalPair> pairs;
+    EXPECT_TRUE(repo->approval_pairs(resource, destination, &pairs));
+    std::vector<ApprovalDecision> rows;
+    if (!pairs.empty()) {
+      EXPECT_TRUE(repo->approval_lock(&pairs.front(), false));
+      EXPECT_TRUE(repo->approval_decisions(pairs.front().id, &rows));
+    }
+    return rows;
+  }
+  TSD_SuplaEnsureResourceAccessResult manual_ensure(uint8_t permissions,
+                                                   uint8_t flags = 1) {
+    TDS_SuplaEnsureResourceAccess q = {
+        {1, resource}, permissions, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, flags};
+    return service.ensure_access(destination, q);
+  }
+  int decide(const ApprovalDecision &snapshot, const char *status) {
+    // Cloud business transaction boundary, not a Grant/ACL fixture. Guard the
+    // displayed snapshot and take the same pair lock used by the real service.
+    std::string out;
+    std::string id = std::to_string(snapshot.id);
+    std::string query =
+        "START TRANSACTION; SELECT pair_id INTO @pair FROM "
+        "supla_resource_access_decision WHERE id=" + id +
+        "; SELECT id INTO @locked FROM supla_resource_access_pair "
+        "WHERE id=@pair FOR UPDATE; UPDATE supla_resource_access_decision "
+        "SET status='" + status + "',open_pair_id=" +
+        (std::string(status) == "REJECTED" ? "pair_id" : "NULL") +
+        " WHERE id=" + id + " AND revision=" +
+        std::to_string(snapshot.revision) + " AND permissions=" +
+        std::to_string(snapshot.permissions) +
+        " AND status<>'REMOVED'; SELECT ROW_COUNT() AS changed; COMMIT";
+    sqlQuery(query.c_str(), &out);
+    return out == "changed\n1\n" ? 1 : 0;
   }
   Association state() {
     Association a;
@@ -1920,14 +1968,14 @@ TEST_F(SupLanHvacIntegrationTest,
 }
 
 TEST_F(SupLanHvacIntegrationTest,
-       SharedDatabaseVersionCheckRequiresM4Migration) {
-  EXPECT_STREQ("20261008160000", DB_VERSION);
+       SharedDatabaseVersionCheckRequiresM5Migration) {
+  EXPECT_STREQ("20261011120000", DB_VERSION);
   query("DELETE FROM migration_versions");
   query("INSERT INTO migration_versions(version) "
-        "VALUES('Version20261008160000')");
+        "VALUES('Version20261011120000')");
   database db;
   EXPECT_TRUE(db.check_db_version(DB_VERSION, 0));
-  query("UPDATE migration_versions SET version='Version20261008120000'");
+  query("UPDATE migration_versions SET version='Version20261008160000'");
   EXPECT_FALSE(db.check_db_version(DB_VERSION, 0));
 }
 
@@ -2153,10 +2201,11 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     ASSERT_TRUE(registered && synced);
   }
 
-  void expect_access(uint32_t channel, uint8_t result, uint8_t status) {
+  void expect_access(uint32_t channel, uint8_t result, uint8_t status,
+                     uint8_t flags = 0, uint8_t permissions = 1) {
     TDS_SuplaEnsureResourceAccess request = {
         {SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel},
-        SUPLA_SUPLAN_PERMISSION_READ, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 0};
+        permissions, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, flags};
     send_packet(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, &request,
                 sizeof(request));
     TSuplaDataPacket packet = {};
@@ -3167,3 +3216,602 @@ TEST_F(SupLanHvacWireIntegrationTest,
 }
 
 }  // namespace
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5EnsureUsesCommittedOwnershipCapabilityAndIdentityWithoutApprovalRows) {
+  std::string out;
+  sqlQuery(("UPDATE supla_iodevice SET flags=flags | " +
+            std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
+            ",protocol_version=29 WHERE user_id=2").c_str(), &out);
+  sqlQuery(("UPDATE supla_dev_channel SET type=" +
+            std::to_string(SUPLA_CHANNELTYPE_RELAY) + ",func=" +
+            std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
+            " WHERE id=" + std::to_string(resource)).c_str(), &out);
+  const Grant read{1, resource, CHANNEL_CONFIG_ORIGIN, 12345, 1};
+  ASSERT_TRUE(service.upsert(source, destination, read));
+  ASSERT_TRUE(service.provisioned(state(), 123));
+  const auto before = state();
+  TDS_SuplaEnsureResourceAccess q = {
+      {1, resource}, 1, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+              service.ensure_access(destination, q).AccessStatus);
+  q.Permissions = 2;
+  for (int i = 0; i < 10; ++i) {
+    auto result = service.ensure_access(destination, q);
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, result.Result);
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, result.AccessStatus);
+  }
+  EXPECT_TRUE(same_state(before, state()));
+  std::vector<Grant> grants;
+  ASSERT_TRUE(factory()->grants(before.id, &grants));
+  ASSERT_EQ(1u, grants.size());
+  EXPECT_EQ(read.origin_id, grants.front().origin_id);
+  EXPECT_EQ(read.permissions, grants.front().permissions);
+  q.Permissions = 4;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
+            service.ensure_access(destination, q).Result);
+  q.Permissions = 1;
+  sqlQuery(("UPDATE supla_iodevice SET protocol_version=28 WHERE id=" +
+            std::to_string(destination)).c_str(), &out);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
+            service.ensure_access(destination, q).Result);
+  sqlQuery(("UPDATE supla_iodevice SET protocol_version=29 WHERE id=" +
+            std::to_string(destination)).c_str(), &out);
+  PeerService foreign{[] { return std::make_unique<PeerDao>(1); }, nullptr};
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+            foreign.ensure_access(destination, q).Result);
+  ASSERT_TRUE(factory()->accept_identity(source, {123, {}}));
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+            service.ensure_access(destination, q).Result);
+  EXPECT_TRUE(same_state(before, state()));
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5PendingRejectWidenReconsiderAndRemovalUseDurableBusinessState) {
+  manual_schema();
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, manual_ensure(1, 0).Result);
+  EXPECT_TRUE(decisions().empty());
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  auto rows = decisions();
+  ASSERT_EQ(1u, rows.size());
+  auto read = rows.front();
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+              manual_ensure(1).AccessStatus);
+  EXPECT_EQ(read.revision, decisions().front().revision);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  auto control = decisions().front();
+  EXPECT_EQ(2, control.permissions);
+  EXPECT_EQ(read.revision + 1, control.revision);
+  EXPECT_EQ(0, decide(read, "ACCEPTED"));  // stale displayed mask/revision
+  ASSERT_EQ(1, decide(control, "REJECTED"));
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_REJECTED,
+              manual_ensure(3).AccessStatus);
+  auto rejected = decisions().front();
+  EXPECT_EQ(2, rejected.permissions);
+  EXPECT_EQ(control.revision + 1, rejected.revision);
+  EXPECT_EQ(0u, state().id);
+  // Direct reconsideration, no new ENSURE/ConsumeIntent needed.
+  ASSERT_EQ(1, decide(rejected, "ACCEPTED"));
+  ASSERT_TRUE(supla_suplan_server_peers::reconcile_manual(2, resource));
+  auto accepted = state();
+  ASSERT_EQ(1u, accepted.acl.size());
+  EXPECT_EQ(2, accepted.acl.front().Permissions);
+  std::vector<Grant> grants;
+  ASSERT_TRUE(factory()->grants(accepted.id, &grants));
+  ASSERT_EQ(1u, grants.size());
+  EXPECT_EQ(USER_APPROVAL_ORIGIN, grants.front().origin_type);
+  EXPECT_EQ(rejected.id, grants.front().origin_id);
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_TRUE(state().acl.empty());
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  rows = decisions();
+  ASSERT_EQ(2u, rows.size());
+  EXPECT_NE(read.id, rows.back().id);
+  ASSERT_EQ(1, decide(rows.back(), "REMOVED"));  // remove Pending
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  rows = decisions();
+  ASSERT_EQ(1, decide(rows.back(), "REJECTED"));
+  ASSERT_EQ(1, decide(decisions().back(), "REMOVED"));  // clear sticky deny
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5AcceptedReadSurvivesRejectedControlAndIndependentOriginRemoval) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  auto read = state();
+  ASSERT_TRUE(service.provisioned(read, 123));
+  Grant independent{1, resource, CHANNEL_CONFIG_ORIGIN, 88888, 1};
+  ASSERT_TRUE(service.upsert(source, destination, independent));
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  auto rows = decisions();
+  ASSERT_EQ(2u, rows.size());
+  EXPECT_EQ(2, rows.back().permissions);
+  EXPECT_EQ(1, state().acl.front().Permissions);
+  auto pending_state = state();
+  ASSERT_EQ(1, decide(rows.back(), "REJECTED"));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_REJECTED,
+            manual_ensure(2).AccessStatus);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_TRUE(same_state(pending_state, state()));
+  ASSERT_EQ(1, decide(decisions().back(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_EQ(2, state().acl.front().Permissions);
+  EXPECT_EQ(read.revision + 1, state().revision);
+  ASSERT_EQ(1, decide(decisions().back(), "REMOVED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_EQ(1, state().acl.front().Permissions);
+  EXPECT_EQ(read.generation, state().generation);
+  EXPECT_EQ(read.revision + 2, state().revision);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5ConcurrentEnsureDeduplicatesAndStaleFunctionCannotGrant) {
+  manual_schema();
+  std::atomic<int> pending{0};
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 6; ++i) threads.emplace_back([&] {
+    mysql_thread_init();
+    if (manual_ensure(1).AccessStatus ==
+        SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL) ++pending;
+    mysql_thread_end();
+  });
+  for (auto &thread : threads) thread.join();
+  EXPECT_EQ(6, pending);
+  auto rows = decisions();
+  ASSERT_EQ(1u, rows.size());
+  EXPECT_EQ(1u, rows.front().revision);
+  ASSERT_EQ(1, decide(rows.front(), "ACCEPTED"));
+  std::string out;
+  sqlQuery(("UPDATE supla_dev_channel SET func=0 WHERE id=" +
+            std::to_string(resource)).c_str(), &out);
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_TRUE(state().acl.empty());
+  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  sqlQuery(("UPDATE supla_dev_channel SET func=" +
+            std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) + " WHERE id=" +
+            std::to_string(resource)).c_str(), &out);
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_TRUE(state().acl.empty());  // explicit Remove cannot be resurrected
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5ConcurrentDisplayedApprovalAndExtensionCannotEscalate) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  const auto displayed = decisions().front();
+  std::atomic<int> accepted{0};
+  std::thread cloud([&] {
+    mysql_thread_init();
+    accepted = decide(displayed, "ACCEPTED");
+    mysql_thread_end();
+  });
+  std::thread device([&] {
+    mysql_thread_init();
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+              manual_ensure(2).AccessStatus);
+    mysql_thread_end();
+  });
+  cloud.join();
+  device.join();
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  const auto rows = decisions();
+  ASSERT_FALSE(rows.empty());
+  EXPECT_EQ(ApprovalStatus::Pending, rows.back().status);
+  EXPECT_EQ(2, rows.back().permissions);
+  if (accepted) {
+    ASSERT_EQ(2u, rows.size());
+    ASSERT_EQ(1u, state().acl.size());
+    EXPECT_EQ(1, state().acl.front().Permissions);
+  } else {
+    ASSERT_EQ(1u, rows.size());
+    EXPECT_TRUE(state().acl.empty());
+    EXPECT_EQ(0, decide(displayed, "ACCEPTED"));
+  }
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5AtActionApprovalIsIndependentAndRejectsStateOrControl) {
+  manual_schema();
+  std::string out;
+  sqlQuery(("UPDATE supla_dev_channel SET type=" +
+            std::to_string(SUPLA_CHANNELTYPE_ACTIONTRIGGER) + ",func=" +
+            std::to_string(SUPLA_CHANNELFNC_ACTIONTRIGGER) +
+            ",properties=JSON_OBJECT('actionTriggerCapabilities',"
+            "JSON_ARRAY('TURN_ON')) "
+            "WHERE id=" + std::to_string(resource)).c_str(), &out);
+  for (uint8_t mask : {1, 2, 3, 5, 6, 7})
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, manual_ensure(mask).Result);
+  EXPECT_TRUE(decisions().empty());
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(4).AccessStatus);
+  auto action = decisions().front();
+  EXPECT_EQ(4, action.permissions);
+  ASSERT_EQ(1, decide(action, "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  auto before = state();
+  ASSERT_EQ(1u, before.acl.size());
+  EXPECT_EQ(4, before.acl.front().Permissions);
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+              manual_ensure(4).AccessStatus);
+  EXPECT_TRUE(same_state(before, state()));
+  EXPECT_EQ(action.revision + 1, decisions().front().revision);
+  sqlQuery(("UPDATE supla_dev_channel SET properties='{}' WHERE id=" +
+            std::to_string(resource)).c_str(), &out);
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_TRUE(state().acl.empty());
+  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+}
+
+
+class ManualPairFailureTransport : public DeleteTransport {
+ public:
+  int errors = 0;
+  void diagnostic(uint64_t, int, uint8_t result) override {
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, result);
+    ++errors;
+  }
+};
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5CapacityFailureDoesNotBlockOtherDestinationRevocationOrEnsure) {
+  manual_schema();
+  const int healthy = destination;
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  void *stmt = nullptr;
+  int full = 0;
+  ASSERT_TRUE(db.stmt_get_int(&stmt, &full, nullptr, nullptr, nullptr,
+      ("SELECT MIN(id) FROM supla_iodevice WHERE user_id=2 AND id<>" +
+       std::to_string(source) + " AND id<>" + std::to_string(healthy)).c_str(),
+      nullptr, 0, true));
+  ASSERT_GT(full, 0);
+  // Create the failing pair first, matching authoritative fan-out ordering.
+  destination = full;
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  const auto full_pending = decisions().front();
+  destination = healthy;
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 1, 777, 1}));
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  ASSERT_EQ(2, state().acl.front().Permissions);
+
+  Identity identity{123, {resource}};
+  for (int i = 0; i < SUPLA_SUPLAN_MAX_ACL_ENTRIES; ++i) {
+    const std::string number = std::to_string(100 + i);
+    const std::string query = "INSERT INTO supla_dev_channel "
+        "(iodevice_id,user_id,channel_number,type,func,param1,param2,param3) "
+        "VALUES (" + std::to_string(source) + ",2," + number + "," +
+        std::to_string(SUPLA_CHANNELTYPE_RELAY) + "," +
+        std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) + ",0,0,0)";
+    ASSERT_EQ(0, db.query(query.c_str(), true));
+    int channel = 0;
+    ASSERT_TRUE(db.stmt_get_int(&stmt, &channel, nullptr, nullptr, nullptr,
+        ("SELECT id FROM supla_dev_channel WHERE iodevice_id=" +
+         std::to_string(source) + " AND channel_number=" + number).c_str(),
+        nullptr, 0, true));
+    identity.channels.push_back(channel);
+    ASSERT_TRUE(service.upsert(source, full,
+        {1, static_cast<uint32_t>(channel), 1,
+         static_cast<uint64_t>(1000 + i), 1}));
+  }
+  ASSERT_TRUE(factory()->accept_identity(source, identity));
+  ASSERT_EQ(1, decide(full_pending, "ACCEPTED"));
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  const auto before = state();
+  // Same Source/resource, two real DAO transactions. The first cannot project
+  // a 90th ACL entry; the second must still retract CONTROL, retaining READ.
+  std::vector<ApprovalPair> failed;
+  EXPECT_FALSE(service.reconcile_approvals(resource, 0, &failed));
+  ASSERT_EQ(1u, failed.size());
+  EXPECT_EQ(full, failed.front().destination);
+  ASSERT_EQ(1u, state().acl.size());
+  EXPECT_EQ(1, state().acl.front().Permissions);
+  EXPECT_EQ(before.revision + 1, state().revision);
+  const auto read = state();
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, manual_ensure(1).AccessStatus);
+  EXPECT_TRUE(same_state(read, state()));
+
+  // A new accepted extension on the healthy pair still works. Lose its remove
+  // notice, then reconnect the shared Source: publish only the healthy pair's
+  // current READ ACL, never stale authorization for the failed pair.
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().back(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  ASSERT_EQ(2, state().acl.front().Permissions);
+  ASSERT_EQ(1, decide(decisions().back(), "REMOVED"));
+  ManualPairFailureTransport transport;
+  PeerProvisioner peers(factory, &transport);
+  peers.reconnect(source);
+  EXPECT_EQ(1, transport.errors);
+  ASSERT_EQ(1u, transport.sources.size());
+  EXPECT_EQ(healthy, transport.sources.front().PeerContext.DestinationNodeId);
+  EXPECT_EQ(1, transport.sources.front().Acl[0].Permissions);
+  EXPECT_TRUE(transport.destinations.empty());
+  Association unchanged;
+  ASSERT_TRUE(factory()->find(source, full, &unchanged));
+  EXPECT_EQ(SUPLA_SUPLAN_MAX_ACL_ENTRIES, unchanged.acl.size());
+}
+
+class ManualOfflineTransport : public DeleteTransport {
+ public:
+  int source = 0;
+  bool online = false;
+  bool ready(int device) override { return device != source || online; }
+};
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5OfflineApprovalRevocationAndLostNoticeConvergeOnReconnect) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ManualOfflineTransport transport;
+  transport.source = source;
+  PeerProvisioner peers(factory, &transport);
+  // No Cloud notice: Destination reconnect reloads committed business state.
+  peers.reconnect(destination);
+  ASSERT_EQ(1u, state().acl.size());
+  EXPECT_TRUE(transport.sources.empty());
+  EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_EQ(0u, state().root);
+  transport.online = true;
+  peers.reconnect(source);
+  ASSERT_EQ(1u, transport.sources.size());
+  EXPECT_TRUE(transport.destinations.empty());  // Source first, no fake key.
+  auto q = transport.sources.back();
+  TDS_SuplaSetSuplanSourceAssociationResult reply = {};
+  reply.PeerContext = q.PeerContext;
+  reply.AclRevision = q.AclRevision;
+  reply.Result = SUPLA_SUPLAN_RESULT_OK;
+  reply.PeerKeySize = 32;
+  memset(reply.PeerKey, 0xA5, sizeof(reply.PeerKey));
+  peers.on_source(source, &reply);
+  ASSERT_EQ(1u, transport.destinations.size());
+  const auto destination_q = transport.destinations.back();
+  TDS_SuplaSetSuplanDestinationAssociationResult accepted = {};
+  accepted.PeerContext = destination_q.PeerContext;
+  accepted.AclRevision = destination_q.AclRevision;
+  accepted.Result = SUPLA_SUPLAN_RESULT_OK;
+  peers.on_destination(destination, &accepted);
+  auto provisioned = state();
+  EXPECT_EQ(123u, provisioned.root);
+  transport.online = false;
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  peers.reconnect(destination);  // recover a second lost notice
+  EXPECT_TRUE(state().acl.empty());
+  EXPECT_EQ(provisioned.generation, state().generation);
+  EXPECT_EQ(provisioned.root, state().root);
+  EXPECT_EQ(provisioned.revision + 1, state().revision);
+  EXPECT_EQ(1u, transport.sources.size());  // offline Source cannot apply yet
+  transport.online = true;
+  peers.reconnect(source);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_EQ(0, transport.sources.back().AclEntryCount);
+  EXPECT_EQ(ApprovalStatus::Removed, decisions().front().status);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5DeletedResourceInvalidatesAcceptedWithoutResurrectingOrOtherOrigins) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  Grant independent{SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE,
+                    static_cast<uint32_t>(source), 99, 9876, 1};
+  ASSERT_TRUE(service.upsert(source, destination, independent));
+  std::string out;
+  sqlQuery(("DELETE FROM supla_dev_channel WHERE id=" +
+            std::to_string(resource)).c_str(), &out);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_FOUND, manual_ensure(1).Result);
+  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+  std::vector<Grant> grants;
+  ASSERT_TRUE(factory()->grants(state().id, &grants));
+  ASSERT_EQ(1u, grants.size());
+  EXPECT_EQ(99, grants.front().origin_type);
+  EXPECT_EQ(9876u, grants.front().origin_id);
+  EXPECT_EQ(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE,
+            state().acl.front().ResourceType);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       M5RegisteredDeviceEnsureAndCommittedIpcDecisionUseProductionDispatch) {
+  runSqlScript("SupLanM5TestSchema.sql");
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  query("UPDATE supla_iodevice SET protocol_version=29 WHERE user_id=99126");
+  PeerDao repo(99126);
+  ASSERT_TRUE(repo.accept_identity(source, {123, {resource}}));
+  expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+                SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
+  EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_resource_access_decision"));
+  for (int i = 0; i < 3; ++i)
+    expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                  SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL, 1);
+  ASSERT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_decision"));
+  EXPECT_EQ(1, scalar("SELECT revision FROM supla_resource_access_decision"));
+  EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_suplan_grant"));
+  // Committed Cloud boundary; the same existing IPC command carries no grant.
+  query("UPDATE supla_resource_access_decision SET status='ACCEPTED',"
+        "open_pair_id=NULL WHERE status='PENDING' AND revision=1");
+  testing::IpcSocketAdapterMock socket(-1);
+  EXPECT_CALL(socket, send_data(std::string("OK:99126\n"))).Times(1);
+  supla_on_channel_config_changed_command command(&socket);
+  std::string input = "USER-ON-CHANNEL-CONFIG-CHANGED:99126," +
+      std::to_string(source) + "," + std::to_string(resource) + "," +
+      std::to_string(SUPLA_CHANNELTYPE_THERMOMETER) + "," +
+      std::to_string(SUPLA_CHANNELFNC_THERMOMETER) + "," +
+      std::to_string(CONFIG_CHANGE_SCOPE_RELATIONS) + "\n";
+  std::vector<char> buffer(input.begin(), input.end());
+  buffer.push_back(0);
+  ASSERT_TRUE(command.process_command(buffer.data(), buffer.size(),
+                                      input.size()));
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 1);
+  EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_suplan_grant WHERE "
+                     "origin_type=2 AND permissions=1"));
+  EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_decision"));
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5RevisionExhaustionRejectsMutationAndKeepsIndependentRead) {
+  manual_schema();
+  Grant independent{1, resource, CHANNEL_CONFIG_ORIGIN, 778899, 1};
+  ASSERT_TRUE(service.upsert(source, destination, independent));
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  // A terminal revision cannot accept a new displayed mask/status. Use real
+  // trigger exhaustion rather than a fake DAO failure or guessed method order.
+  std::string out;
+  sqlQuery("DROP TRIGGER resource_access_decision_revision", &out);
+  sqlQuery("UPDATE supla_resource_access_decision SET revision=2147483647",
+           &out);
+  runSqlScript("SupLanM5TestSchema.sql");
+  const auto before = state();
+  const auto displayed = decisions().front();
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  EXPECT_NE(0, db.query(("UPDATE supla_resource_access_decision SET "
+                         "status='ACCEPTED',open_pair_id=NULL WHERE id=" +
+                         std::to_string(displayed.id)).c_str(), true));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  EXPECT_EQ(ApprovalStatus::Pending, decisions().front().status);
+  EXPECT_TRUE(same_state(before, state()));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            manual_ensure(1).AccessStatus);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5StateReadAndIndependentAtActionDoNotShareDecisionsOrRevocation) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  const auto state_resource = resource;
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  const std::string insert = "INSERT INTO supla_dev_channel "
+      "(iodevice_id,user_id,channel_number,type,func,param1,param2,param3,"
+      "properties) VALUES (" + std::to_string(source) + ",2,254," +
+      std::to_string(SUPLA_CHANNELTYPE_ACTIONTRIGGER) + "," +
+      std::to_string(SUPLA_CHANNELFNC_ACTIONTRIGGER) +
+      ",0,0,0,JSON_OBJECT('actionTriggerCapabilities',JSON_ARRAY('TURN_ON')))";
+  ASSERT_EQ(0, db.query(insert.c_str(), true));
+  int at = 0;
+  void *stmt = nullptr;
+  ASSERT_TRUE(db.stmt_get_int(&stmt, &at, nullptr, nullptr, nullptr,
+      ("SELECT id FROM supla_dev_channel WHERE iodevice_id=" +
+       std::to_string(source) + " AND channel_number=254").c_str(),
+      nullptr, 0, true));
+  ASSERT_GT(at, static_cast<int>(state_resource));
+  resource = at;
+  ASSERT_TRUE(factory()->accept_identity(source, {123, {state_resource,
+                                                       resource}}));
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(4).AccessStatus);
+  ASSERT_EQ(1u, decisions().size());
+  ASSERT_EQ(1, decide(decisions().front(), "REJECTED"));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_REJECTED,
+            manual_ensure(4).AccessStatus);
+  resource = state_resource;
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            manual_ensure(1).AccessStatus);
+  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+  resource = at;
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  ASSERT_EQ(2u, state().acl.size());
+  EXPECT_EQ(1, state().acl.front().Permissions);
+  EXPECT_EQ(4, state().acl.back().Permissions);
+  ASSERT_EQ(1, decide(decisions().front(), "REMOVED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  ASSERT_EQ(1u, state().acl.size());
+  EXPECT_EQ(state_resource, state().acl.front().ResourceId);
+  EXPECT_EQ(1, state().acl.front().Permissions);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5AccountDeletionCascadesBusinessAndProjectionWithoutOtherAccounts) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  const auto independent = state();
+  const auto independent_factory = factory;
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  auto query = [&](const std::string &sql) {
+    EXPECT_EQ(0, db.query(sql.c_str(), true)) << sql;
+  };
+  query("INSERT INTO supla_user (id,short_unique_id,long_unique_id,salt,"
+        "email,enabled,reg_date,timezone,home_latitude,home_longitude) "
+        "SELECT 99131,REPEAT('e',32),'m5-account-test',salt,"
+        "'m5-account@test.invalid',enabled,reg_date,timezone,"
+        "home_latitude,home_longitude FROM supla_user WHERE id=2");
+  for (const char *guid : {"ee", "ff"}) {
+    query("INSERT INTO supla_iodevice "
+          "(location_id,user_id,guid,enabled,reg_date,protocol_version,flags) "
+          "SELECT location_id,99131,UNHEX(REPEAT('" + std::string(guid) +
+          "',16)),1,reg_date,29," +
+          std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
+          " FROM supla_iodevice WHERE id=" + std::to_string(source));
+  }
+  void *stmt = nullptr;
+  ASSERT_TRUE(db.stmt_get_int(&stmt, &source, &destination, nullptr, nullptr,
+      "SELECT MIN(id),MAX(id) FROM supla_iodevice WHERE user_id=99131",
+      nullptr, 0, true));
+  query("INSERT INTO supla_dev_channel "
+        "(iodevice_id,user_id,channel_number,type,func,param1,param2,param3) "
+        "VALUES(" + std::to_string(source) + ",99131,0," +
+        std::to_string(SUPLA_CHANNELTYPE_RELAY) + "," +
+        std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) + ",0,0,0)");
+  int channel = 0;
+  ASSERT_TRUE(db.stmt_get_int(&stmt, &channel, nullptr, nullptr, nullptr,
+      ("SELECT id FROM supla_dev_channel WHERE iodevice_id=" +
+       std::to_string(source)).c_str(), nullptr, 0, true));
+  resource = channel;
+  factory = [] { return std::make_unique<PeerDao>(99131); };
+  service = PeerService(factory, nullptr);
+  ASSERT_TRUE(factory()->accept_identity(source, {123, {resource}}));
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  const auto removed = state();
+  ASSERT_FALSE(removed.acl.empty());
+  // Existing Cloud account removal deletes its Device children first; both
+  // actual schema cascades then remove business/technical authorization.
+  query("DELETE FROM supla_iodevice WHERE user_id=99131");
+  query("DELETE FROM supla_user WHERE id=99131");
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, manual_ensure(1).Result);
+  EXPECT_TRUE(decisions().empty());
+  Association gone, survivor;
+  ASSERT_TRUE(factory()->load(removed.id, &gone));
+  EXPECT_EQ(0u, gone.id);
+  ASSERT_TRUE(independent_factory()->load(independent.id, &survivor));
+  EXPECT_TRUE(same_state(independent, survivor));
+}

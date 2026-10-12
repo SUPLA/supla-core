@@ -43,6 +43,10 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_device_dao dao(&dba);
   std::unique_ptr<supla_json_config> authoritative;
   bool reconciled = true;
+  if ((scope &
+       (CONFIG_CHANGE_SCOPE_RELATIONS | CONFIG_CHANGE_SCOPE_FUNCTION)) &&
+      !supla_suplan_server_peers::reconcile_manual(user_id, channel_id))
+    reconciled = false;
   if (type == SUPLA_CHANNELTYPE_HVAC || type == SUPLA_CHANNELTYPE_CONTAINER ||
       (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
        type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) ||

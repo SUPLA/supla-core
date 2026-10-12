@@ -19,7 +19,9 @@
 #include "DelayedValueBasedTriggerIntegrationTest.h"
 
 #include <chrono>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "device/value/channel_onoff_value.h"
@@ -50,8 +52,8 @@ void DelayedValueBasedTriggerIntegrationTest::SetUp() {
 
 void DelayedValueBasedTriggerIntegrationTest::TearDown() {
   Test::TearDown();
-  delete triggers;
   delete scheduler;
+  delete triggers;
   delete user;
 }
 
@@ -136,14 +138,18 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest, resumeAndFireAgain) {
 
   auto start = std::chrono::steady_clock::now();
   int counter = 0;
+  std::mutex mutex;
+  std::condition_variable completed;
 
   EXPECT_CALL(*actionExecutor, set_on(true, _))
       .Times(2)
-      .WillRepeatedly([&start, &counter, &oldv, &newv, this](
+      .WillRepeatedly(
+          [&start, &counter, &oldv, &newv, &mutex, &completed, this](
                           bool on, unsigned long long duration_ms) -> void {
+        std::lock_guard<std::mutex> lock(mutex);
         auto fire = std::chrono::steady_clock::now();
         auto ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(fire - start)
+            std::chrono::duration<double, std::milli>(fire - start)
                 .count();
         EXPECT_GT(ms, 1000);
         EXPECT_LT(ms, 1300);
@@ -165,14 +171,21 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest, resumeAndFireAgain) {
         }
 
         counter++;
+        completed.notify_one();
       });
 
   triggers->on_value_changed(supla_caller(ctIPC), 158, &oldv, &newv,
                              actionExecutor, propertyGetter);
 
-  usleep(2500000);
-
+  std::unique_lock<std::mutex> lock(mutex);
+  EXPECT_TRUE(completed.wait_for(lock, std::chrono::seconds(3),
+                                [&] { return counter == 2; }));
   EXPECT_EQ(counter, 2);
+  lock.unlock();
+  // The callbacks borrow this method's values. Join before they leave scope,
+  // including the timeout path; TearDown also joins before freeing triggers.
+  delete scheduler;
+  scheduler = nullptr;
 }
 
 TEST_F(DelayedValueBasedTriggerIntegrationTest, fireAgainWithoutResume) {

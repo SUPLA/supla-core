@@ -21,6 +21,10 @@ struct Store {
   std::vector<Grant> grants;
   Identity identity{123, {10, 11}};
   int writes = 0;
+  ChannelInfo channel_info{1, SUPLA_CHANNELTYPE_THERMOMETER,
+                           SUPLA_CHANNELFNC_THERMOMETER,
+                           SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 0};
+  DeviceInfo device_info{SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 29};
 };
 class MemoryRepo : public Repository {
   Store *store;
@@ -151,8 +155,12 @@ class MemoryRepo : public Repository {
   }
   bool supports_batch() const override { return true; }
   bool channel(uint32_t id, ChannelInfo *out) override {
-    *out = {};
+    *out = store->channel_info;
     return owner(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, id, &out->device);
+  }
+  bool device(int, DeviceInfo *out) override {
+    *out = store->device_info;
+    return true;
   }
   bool device_exists(int d) override { return d == 1 || d == 2; }
   bool for_device(int d, bool dormant, std::vector<uint64_t> *out) override {
@@ -985,7 +993,7 @@ TEST_F(SupLanPeerTest, DeviceScopeUnionCoversLeafEnsure) {
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
             peers.grants()->ensure_access(2, q).AccessStatus);
   q.Permissions = 4;
-  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
             peers.grants()->ensure_access(2, q).Result);
 }
 TEST(SupLanCanonicalTest, CapacityIsExplicitAndNeverTruncates) {
@@ -1011,3 +1019,160 @@ TEST(SupLanCanonicalTest, DeterministicByteEncodingAndRejectNoncanonicalInput) {
   EXPECT_FALSE(decode_acl(data.data(), data.size() - 1, &decoded));
 }
 }  // namespace
+
+TEST(SupLanCanonicalTest, MissingApprovalRightsUseCanonicalControlAndAction) {
+  struct Case { uint8_t requested, effective, missing; };
+  const Case cases[] = {{1, 0, 1}, {2, 0, 2}, {3, 0, 2}, {1, 2, 0},
+                        {3, 2, 0}, {2, 1, 2}, {7, 1, 6}, {7, 2, 4},
+                        {7, 4, 2}, {4, 1, 4}, {1, 4, 1}, {7, 6, 0}};
+  for (const auto &c : cases)
+    EXPECT_EQ(c.missing, missing_permissions(c.requested, c.effective));
+}
+
+TEST_F(SupLanPeerTest, M5InvalidEnsureCannotReconcileOrTouchAuthorization) {
+  installed();
+  const auto before = store.a;
+  const auto writes = store.writes;
+  int reconciliations = 0;
+  auto request = [&](int requester, const TDS_SuplaEnsureResourceAccess &q) {
+    return peers.grants()->ensure_access(requester, q, [&] {
+      ++reconciliations;
+      return true;
+    });
+  };
+  const TDS_SuplaEnsureResourceAccess valid = {
+      {1, 10}, 1, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  for (int field = 0; field < 7; ++field) {
+    auto q = valid;
+    switch (field) {
+      case 0: q.Flags = 2; break;
+      case 1: q.Permissions = 0; break;
+      case 2: q.Permissions = 8; break;
+      case 3: q.Resource.ResourceId = 0; break;
+      case 4: q.Resource.ResourceId = UINT32_MAX; break;
+      case 5: q.DeliveryMode = 77; break;
+      case 6: q.Resource.ResourceType = 99; break;
+    }
+    EXPECT_NE(SUPLA_SUPLAN_RESULT_OK, request(2, q).Result);
+  }
+  for (int requester : {0, -1, 1, 99})
+    EXPECT_NE(SUPLA_SUPLAN_RESULT_OK, request(requester, valid).Result);
+  auto q = valid;
+  q.Resource.ResourceId = 99;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_FOUND, request(2, q).Result);
+  q = valid;
+  q.Resource = {2, 1};
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, request(2, q).Result);
+  q = valid;
+  q.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
+  const auto stream = request(2, q);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, stream.Result);
+  EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SERVER_STREAM, stream.DeliveryMode);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, stream.AccessStatus);
+  // The valid missing resource audits stale origins before NOT_FOUND.
+  EXPECT_EQ(1, reconciliations);
+  EXPECT_TRUE(same_state(before, store.a));
+  EXPECT_EQ(writes, store.writes);
+}
+
+TEST_F(SupLanPeerTest,
+       M5ManualEnsureChecksCapabilityFunctionAndAcceptedIdentity) {
+  installed();
+  const TDS_SuplaEnsureResourceAccess q = {
+      {1, 10}, 1, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  int reconciliations = 0;
+  auto ensure = [&] {
+    return peers.grants()->ensure_access(2, q, [&] {
+      ++reconciliations;
+      return true;
+    });
+  };
+  store.device_info.flags = 0;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, ensure().Result);
+  store.device_info.flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED;
+  store.device_info.protocol = 28;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, ensure().Result);
+  store.device_info.protocol = 29;
+  store.channel_info.function = 0;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, ensure().Result);
+  store.channel_info.function = SUPLA_CHANNELFNC_THERMOMETER;
+  store.identity.channels = {11};
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, ensure().Result);
+  store.identity.channels = {10, 11};
+  EXPECT_EQ(0, reconciliations);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, ensure().AccessStatus);
+  EXPECT_EQ(1, reconciliations);
+}
+
+TEST_F(SupLanPeerTest,
+       M5UnsupportedActionPreservesExistingReadEvenWithBroadAcl) {
+  installed();
+  Grant broad{2, 1, 7, 700, 4};
+  ASSERT_TRUE(peers.grants()->upsert(1, 2, broad));
+  const auto before = store.a;
+  const auto writes = store.writes;
+  TDS_SuplaEnsureResourceAccess q = {
+      {1, 10}, 5, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  const auto rejected = peers.grants()->ensure_access(2, q);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, rejected.Result);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, rejected.AccessStatus);
+  EXPECT_TRUE(same_state(before, store.a));
+  EXPECT_EQ(writes, store.writes);
+  q.Permissions = 1;
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            peers.grants()->ensure_access(2, q).AccessStatus);
+}
+
+TEST_F(SupLanPeerTest,
+       M5ExistingAtActionIsIndependentAndNeedsNoApprovalOrigin) {
+  store.channel_info.type = SUPLA_CHANNELTYPE_ACTIONTRIGGER;
+  store.channel_info.function = SUPLA_CHANNELFNC_ACTIONTRIGGER;
+  store.channel_info.action_capabilities = 2;
+  grant.permissions = 4;
+  installed();
+  const auto before = store.a;
+  const auto writes = store.writes;
+  const auto sends = transport.order.size();
+  TDS_SuplaEnsureResourceAccess q = {
+      {1, 10}, 4, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  for (int i = 0; i < 20; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+              peers.grants()->ensure_access(2, q).AccessStatus);
+  EXPECT_EQ(writes, store.writes);
+  EXPECT_EQ(sends, transport.order.size());
+  EXPECT_TRUE(same_state(before, store.a));
+  store.channel_info.action_capabilities = 0;
+  q.Flags = 0;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
+            peers.grants()->ensure_access(2, q).Result);
+  EXPECT_TRUE(same_state(before, store.a));
+  store.channel_info.action_capabilities = 2;
+  q.Flags = 1;
+  q.Permissions = 1;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
+            peers.grants()->ensure_access(2, q).Result);
+}
+
+TEST_F(SupLanPeerTest, M5MissingExtensionFailsClosedWithoutCloudSchema) {
+  store.channel_info.type = SUPLA_CHANNELTYPE_RELAY;
+  store.channel_info.function = SUPLA_CHANNELFNC_POWERSWITCH;
+  installed();
+  const auto before = store.a;
+  const auto writes = store.writes;
+  const auto sends = transport.order.size();
+  TDS_SuplaEnsureResourceAccess q = {
+      {1, 10}, 2, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
+  for (int i = 0; i < 20; ++i) {
+    const auto result = peers.grants()->ensure_access(2, q);
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, result.Result);
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, result.AccessStatus);
+  }
+  EXPECT_TRUE(same_state(before, store.a));
+  EXPECT_EQ(writes, store.writes);
+  EXPECT_EQ(sends, transport.order.size());
+  ASSERT_EQ(1u, store.grants.size());
+  EXPECT_EQ(1, store.grants.front().permissions);
+  q.Permissions = 1;
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            peers.grants()->ensure_access(2, q).AccessStatus);
+}

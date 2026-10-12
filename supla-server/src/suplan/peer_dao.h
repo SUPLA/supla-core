@@ -43,6 +43,18 @@ class PeerDao : public Repository {
   bool hvac_dependents(uint32_t source, std::vector<uint64_t> *out);
   bool reference(uint32_t channel, uint8_t field, uint32_t *out) override;
   bool channel(uint32_t id, ChannelInfo *out) override;
+  bool device(int id, DeviceInfo *out) override;
+  bool approval_schema(bool *available) override;
+  bool approval_pairs(uint32_t resource, int device,
+                      std::vector<ApprovalPair> *out) override;
+  bool approval_lock(ApprovalPair *pair, bool create) override;
+  bool approval_decisions(uint64_t pair,
+                          std::vector<ApprovalDecision> *out) override;
+  bool approval_pending(uint64_t pair, uint8_t permissions,
+                        const ApprovalDecision *pending) override;
+  bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
+                        DeviceInfo *source, DeviceInfo *destination,
+                        Identity *identity) override;
   bool has_master_dependents(uint32_t channel, bool *out) override;
   bool supports_batch() const override { return true; }
   bool device_exists(int device) override;

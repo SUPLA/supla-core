@@ -63,6 +63,11 @@ bool PeerProvisioner::accepted(int device, const Identity &identity) {
   return repo->accept_identity(device, identity);
 }
 void PeerProvisioner::reconnect(int device) {
+  std::vector<ApprovalPair> failed;
+  if (!service.reconcile_approvals(0, device, &failed)) {
+    transport->diagnostic(0, device, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
+    if (failed.empty()) return;  // Unknown scope: fail closed.
+  }
   auto repo = factory();
   std::vector<uint64_t> ids;
   if (!repo->for_device(device, false, &ids)) {
@@ -73,6 +78,11 @@ void PeerProvisioner::reconnect(int device) {
     Association a;
     int owner = 0;
     if (!repo->load(id, &a) || !a.id) continue;
+    // Do not publish stale authorization for a failed pair, but keep
+    // independent associations converging (including revocations).
+    if (std::any_of(failed.begin(), failed.end(), [&](const ApprovalPair &p) {
+          return p.source == a.source && p.destination == a.destination;
+        })) continue;
     // Recover missed deletion notifications after Server downtime. Query
     // failure is never interpreted as authoritative endpoint/resource removal.
     if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, a.source, &owner))

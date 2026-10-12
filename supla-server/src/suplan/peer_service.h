@@ -16,6 +16,7 @@ namespace supla_suplan {
 
 // Internal business origin namespace; never a wire discriminator.
 constexpr uint16_t CHANNEL_CONFIG_ORIGIN = 1;
+constexpr uint16_t USER_APPROVAL_ORIGIN = 2;
 inline uint64_t main_thermometer_origin(uint32_t channel) {
   return (static_cast<uint64_t>(channel) << 8) | 1;
 }
@@ -29,6 +30,7 @@ struct ChannelInfo {
   int function = 0;
   uint32_t device_flags = 0;
   unsigned char number = 0;
+  uint32_t action_capabilities = 0;
 };
 enum class Lifecycle : uint8_t { Active = 1, Draining = 2, Dormant = 3 };
 struct Grant {
@@ -58,6 +60,25 @@ struct Identity {
   uint32_t root = 0;
   std::vector<uint32_t> channels;
 };
+struct DeviceInfo {
+  uint32_t flags = 0;
+  unsigned char protocol = 0;
+};
+enum class ApprovalStatus : uint8_t {
+  Pending = 1, Accepted = 2, Rejected = 3, Removed = 4
+};
+struct ApprovalPair {
+  uint64_t id = 0;
+  int source = 0;
+  int destination = 0;
+  uint32_t resource = 0;
+};
+struct ApprovalDecision {
+  uint64_t id = 0;
+  uint8_t permissions = 0;
+  uint32_t revision = 0;
+  ApprovalStatus status = ApprovalStatus::Removed;
+};
 
 // Each instance owns one existing MariaDB access provider/transaction. Errors
 // must fail closed; an absent row is distinguished from a failed SELECT.
@@ -80,6 +101,32 @@ class Repository {
   virtual bool accept_identity(int device, const Identity &identity) = 0;
   virtual bool owner(uint8_t type, uint32_t resource, int *device) = 0;
   virtual bool channel(uint32_t id, ChannelInfo *out) { return false; }
+  virtual bool device(int id, DeviceInfo *out) { return false; }
+  virtual bool approval_schema(bool *available) {
+    *available = false;
+    return true;
+  }
+  // Resource + device selects that Destination only; device alone selects
+  // both endpoint roles for reconnect. Resource alone selects all Destinations.
+  virtual bool approval_pairs(uint32_t resource, int device,
+                              std::vector<ApprovalPair> *out) {
+    out->clear();
+    return true;
+  }
+  // Same DB transaction as Grant/effective ACL projection. Pair is locked
+  // before metadata/association rows, matching the Cloud mutation contract.
+  virtual bool approval_lock(ApprovalPair *pair, bool create) { return false; }
+  virtual bool approval_decisions(uint64_t pair,
+                                  std::vector<ApprovalDecision> *out) {
+    return false;
+  }
+  virtual bool approval_pending(uint64_t pair, uint8_t permissions,
+                                const ApprovalDecision *pending) {
+    return false;
+  }
+  virtual bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
+                                DeviceInfo *source, DeviceInfo *destination,
+                                Identity *identity) { return false; }
   virtual bool reference(uint32_t channel, uint8_t field, uint32_t *out) {
     *out = 0;
     return true;
@@ -102,6 +149,9 @@ class Repository {
 
 bool valid_permissions(uint8_t p);
 uint8_t normalize(uint8_t p);
+// Effective CONTROL covers READ; only still-missing canonical rights can
+// enter a later approval workflow. This helper never creates authorization.
+uint8_t missing_permissions(uint8_t requested, uint8_t effective);
 bool canonicalize(const std::vector<Grant> &grants, Acl *acl);
 bool equal_acl(const Acl &a, const Acl &b);
 bool same_state(const Association &a, const Association &b);
@@ -136,6 +186,9 @@ class PeerService {
   bool recompute(Repository *repo, Association *a, uint32_t current_root);
   bool mutate(uint64_t id,
               const std::function<bool(Repository *, Association *)> &fn);
+  bool reconcile_approval_pair(
+      ApprovalPair pair, uint8_t requested, bool allow_approval,
+      TSD_SuplaEnsureResourceAccessResult *result);
 
  public:
   PeerService(Factory factory, Changed changed);
@@ -165,13 +218,18 @@ class PeerService {
   bool delete_resource(uint8_t type, uint32_t resource);
   bool delete_resource(uint64_t association, uint8_t type, uint32_t resource);
   bool remove_device(int device);
+  // On failure, a nonempty failed list identifies isolated pair failures.
+  // An empty list means enumeration failed: no pair is safe to publish.
+  bool reconcile_approvals(uint32_t resource, int device = 0,
+                           std::vector<ApprovalPair> *failed = nullptr);
   bool distrust(uint64_t id);
   bool cleanup_ack(const Association &sent, bool source);
   bool observe_root(uint64_t id);
   // Persist only after Source OK; no speculative/mass root writes.
   bool provisioned(const Association &sent, uint32_t root);
   TSD_SuplaEnsureResourceAccessResult ensure_access(
-      int destination, const TDS_SuplaEnsureResourceAccess &request);
+      int destination, const TDS_SuplaEnsureResourceAccess &request,
+      const std::function<bool()> &reconcile = nullptr);
   TSD_SuplaEnsureResourceShareResult ensure_share(
       int source, const TDS_SuplaEnsureResourceShare &request);
 };
