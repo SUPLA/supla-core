@@ -2890,6 +2890,77 @@ TEST_F(SupLanHvacWireIntegrationTest,
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
+       EnsureConfigOriginFailureDoesNotStarveLaterRevocation) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  PeerDao repo(99126);
+  PeerService grants([] { return std::make_unique<PeerDao>(99126); }, nullptr);
+  const auto main_origin = channel_config_origin(hvac, 1);
+  const auto aux_origin = channel_config_origin(hvac, 2);
+  query("UPDATE supla_dev_channel SET user_config='{"
+        "\"auxThermometerChannelId\":" + std::to_string(resource) +
+        "}' WHERE id=" + std::to_string(hvac));
+  ASSERT_TRUE(grants.reconcile_reference(hvac, 2, [&](uint32_t *id) {
+    return repo.reference(hvac, 2, id);
+  }));
+  const auto independent = add_channel(source, 240,
+      SUPLA_CHANNELTYPE_THERMOMETER, SUPLA_CHANNELFNC_THERMOMETER);
+  query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+        std::to_string(independent));
+  ASSERT_TRUE(repo.accept_identity(source, {123, {resource, independent}}));
+  ASSERT_TRUE(grants.upsert(source, destination,
+                            {1, independent, 99, 9001, 1}));
+  ASSERT_TRUE(grants.upsert(source, other_source, {1, resource, 99, 9002, 1}));
+  Association before, unrelated;
+  ASSERT_TRUE(repo.find(source, destination, &before));
+  ASSERT_TRUE(repo.find(source, other_source, &unrelated));
+  // Current config wants Main and no longer wants Aux. Fail only the first
+  // origin's actual SQL write; later Aux removal must still commit.
+  query("UPDATE supla_dev_channel SET user_config='{"
+        "\"mainThermometerChannelId\":" + std::to_string(resource) +
+        "}' WHERE id=" + std::to_string(hvac));
+  query("CREATE TRIGGER suplan_fail_ensure_origin BEFORE INSERT ON "
+        "supla_suplan_grant FOR EACH ROW BEGIN IF NEW.origin_type=" +
+        std::to_string(CHANNEL_CONFIG_ORIGIN) + " AND NEW.origin_id=" +
+        std::to_string(main_origin) +
+        " THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected origin "
+        "write failure'; END IF; END");
+  for (int attempt = 0; attempt < 2; ++attempt) {
+    expect_access(resource, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR,
+                  SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
+    ASSERT_FALSE(HasFatalFailure());
+    std::vector<uint64_t> ids;
+    ASSERT_TRUE(repo.for_origin(CHANNEL_CONFIG_ORIGIN, aux_origin, &ids));
+    EXPECT_TRUE(ids.empty());
+    ASSERT_TRUE(repo.for_origin(CHANNEL_CONFIG_ORIGIN, main_origin, &ids));
+    EXPECT_TRUE(ids.empty());
+    Association after;
+    ASSERT_TRUE(repo.find(source, destination, &after));
+    ASSERT_EQ(1u, after.acl.size());
+    EXPECT_EQ(independent, after.acl.front().ResourceId);
+    EXPECT_EQ(before.revision + 1, after.revision);  // Revoke stale READ once.
+    EXPECT_EQ(before.generation, after.generation);
+    ASSERT_TRUE(repo.find(source, other_source, &after));
+    EXPECT_TRUE(same_state(unrelated, after));
+  }
+  query("DROP TRIGGER suplan_fail_ensure_origin");
+  for (int attempt = 0; attempt < 2; ++attempt) {
+    expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                  SUPLA_SUPLAN_ACCESS_STATUS_GRANTED);
+    ASSERT_FALSE(HasFatalFailure());
+  }
+  std::vector<uint64_t> ids;
+  ASSERT_TRUE(repo.for_origin(CHANNEL_CONFIG_ORIGIN, main_origin, &ids));
+  ASSERT_EQ(1u, ids.size());
+  Association after;
+  ASSERT_TRUE(repo.find(source, destination, &after));
+  EXPECT_EQ(2u, after.acl.size());
+  // Repair once; retry is a no-op.
+  EXPECT_EQ(before.revision + 2, after.revision);
+  EXPECT_EQ(before.generation, after.generation);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
        FunctionChangeRevokesAllConsumersDespiteEarlierAuxCapacityFailure) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
@@ -3814,4 +3885,35 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   EXPECT_EQ(0u, gone.id);
   ASSERT_TRUE(independent_factory()->load(independent.id, &survivor));
   EXPECT_TRUE(same_state(independent, survivor));
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M5CoveredPendingRemainsExplicitIndependentApproval) {
+  manual_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  const auto pending = decisions().front();
+  const Grant config_read{1, resource, CHANNEL_CONFIG_ORIGIN, 12345, 1};
+  ASSERT_TRUE(service.upsert(source, destination, config_read));
+  const auto covered = state();
+  ASSERT_TRUE(service.reconcile_approvals(resource));
+  for (int i = 0; i < 3; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+              manual_ensure(1).AccessStatus);
+  ASSERT_EQ(1u, decisions().size());
+  EXPECT_EQ(ApprovalStatus::Pending, decisions().front().status);
+  EXPECT_EQ(pending.revision, decisions().front().revision);
+  ASSERT_EQ(1, decide(pending, "ACCEPTED"));  // Explicit displayed consent.
+  ASSERT_TRUE(supla_suplan_server_peers::reconcile_manual(2, resource));
+  EXPECT_TRUE(same_state(covered, state()));  // Same effective READ.
+  ASSERT_TRUE(service.delete_origin(CHANNEL_CONFIG_ORIGIN, 12345));
+  EXPECT_TRUE(same_state(covered, state()));  // Manual READ survives config.
+  ASSERT_EQ(1u, decisions().size());
+  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+  std::vector<Grant> grants;
+  ASSERT_TRUE(factory()->grants(state().id, &grants));
+  ASSERT_EQ(1u, grants.size());
+  EXPECT_EQ(USER_APPROVAL_ORIGIN, grants.front().origin_type);
+  EXPECT_EQ(pending.id, grants.front().origin_id);
+  EXPECT_EQ(1, grants.front().permissions);
 }

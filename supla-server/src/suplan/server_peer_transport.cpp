@@ -194,15 +194,18 @@ bool supla_suplan_server_peers::reconcile_access_dependencies(
       [user](uint64_t id) {
         if (user) user->get_suplan_peers()->peers()->reconcile(id);
       });
+  bool reconciled = true;
   for (const auto &origin : origins) {
+    // Each origin commits independently. A failed expansion must not starve
+    // later stale-origin revocation; ENSURE still fails closed overall.
     if (!service.reconcile_access_reference(
             origin.first, origin.second, resource_channel_id,
             destination_device_id, [&](uint32_t *reference) {
               return repo.reference(origin.first, origin.second, reference);
             }))
-      return false;
+      reconciled = false;
   }
-  return true;
+  return reconciled;
 }
 
 bool supla_suplan_server_peers::reconcile_hvac(
