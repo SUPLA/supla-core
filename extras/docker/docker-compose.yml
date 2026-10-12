@@ -8,6 +8,7 @@ services:
     command:
       - "--character-set-server=utf8mb4"
       - "--collation-server=utf8mb4_unicode_ci"
+      - "--max-allowed-packet=256M"
     volumes:
       - ./data/mysql:/var/lib/mysql
     networks:
@@ -60,34 +61,6 @@ services:
       supla-core-devel-net:
     stdin_open: true    
     tty: true          
-    command: ["/bin/bash"]
-
-  supla-core-debian11:
-    image: devel/supla-core-debian11:latest
-    container_name: supla-core-devel-supla-core-debian11
-    depends_on:
-      - mariadb
-      - timescaledb
-    volumes:
-      - ${HOME}/CProjects:/CProjects
-    networks:
-      supla-core-devel-net:
-    stdin_open: true   
-    tty: true
-    command: ["/bin/bash"]
-
-  supla-core-debian12:
-    image: devel/supla-core-debian12:latest
-    container_name: supla-core-devel-supla-core-debian12
-    depends_on:
-      - mariadb
-      - timescaledb
-    volumes:
-      - ${HOME}/CProjects:/CProjects
-    networks:
-      supla-core-devel-net:
-    stdin_open: true
-    tty: true
     command: ["/bin/bash"]
 
 networks:
