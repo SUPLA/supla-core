@@ -32,5 +32,7 @@ class supla_suplan_server_peers : public supla_suplan::PeerTransport {
   bool send(int device, TSDS_SuplaSetSuplanDestinationAssociation *q) override;
   void rebootstrap(int source) override;
   void diagnostic(uint64_t association, int device, uint8_t result) override;
+  void transient_diagnostic(uint64_t association, int device,
+                            bool timeout) override;
 };
 #endif  // SUPLA_SUPLAN_SERVER_PEER_TRANSPORT_H_

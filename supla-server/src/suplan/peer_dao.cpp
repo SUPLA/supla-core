@@ -366,32 +366,42 @@ bool PeerDao::device(int id, DeviceInfo *out) {
   return true;
 }
 bool PeerDao::owns_acl(int source, int destination, const Acl &acl) {
+  return Repository::owns_acl(source, destination, acl);
+}
+bool PeerDao::check_acl_ownership(int source, int destination, const Acl &acl,
+                                  bool *owned) {
+  *owned = false;
   std::vector<std::vector<uint64_t>> rows;
-  if (source == destination ||
-      !select("SELECT COUNT(*) FROM supla_iodevice WHERE user_id=" +
+  if (source == destination) return true;
+  if (!select("SELECT COUNT(*) FROM supla_iodevice WHERE user_id=" +
                   to_string(user) + " AND id IN (" + to_string(source) + "," +
                   to_string(destination) + ")",
-              &rows, 1) ||
-      rows.size() != 1 || rows[0][0] != 2)
+              &rows, 1) || rows.size() != 1)
     return false;
+  if (rows[0][0] != 2) return true;
   std::string channels;
   size_t count = 0;
   for (const auto &entry : acl) {
     if (entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE) {
-      if (entry.ResourceId != static_cast<uint32_t>(source)) return false;
+      if (entry.ResourceId != static_cast<uint32_t>(source)) return true;
     } else if (entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL) {
       if (count++) channels += ",";
       channels += to_string(entry.ResourceId);
     } else {
-      return false;
+      return true;
     }
   }
-  if (!count) return true;
-  return select("SELECT COUNT(*) FROM supla_dev_channel WHERE user_id=" +
+  if (!count) {
+    *owned = true;
+    return true;
+  }
+  if (!select("SELECT COUNT(*) FROM supla_dev_channel WHERE user_id=" +
                     to_string(user) + " AND iodevice_id=" + to_string(source) +
                     " AND id IN (" + channels + ")",
-                &rows, 1) &&
-         rows.size() == 1 && rows[0][0] == count;
+                &rows, 1) || rows.size() != 1)
+    return false;
+  *owned = rows[0][0] == count;
+  return true;
 }
 static void ids(const std::vector<std::vector<uint64_t>> &rows,
                 std::vector<uint64_t> *out) {

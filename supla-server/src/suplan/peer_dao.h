@@ -59,6 +59,8 @@ class PeerDao : public Repository {
   bool supports_batch() const override { return true; }
   bool device_exists(int device) override;
   bool owns_acl(int source, int destination, const Acl &acl) override;
+  bool check_acl_ownership(int source, int destination, const Acl &acl,
+                           bool *owned) override;
   bool for_device(int device, bool include_dormant,
                   std::vector<uint64_t> *out) override;
   bool for_origin(uint16_t type, uint64_t origin,

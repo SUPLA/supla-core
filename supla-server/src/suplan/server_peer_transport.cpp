@@ -72,6 +72,13 @@ void supla_suplan_server_peers::diagnostic(uint64_t id, int device,
             "SupLAN provisioning: association=%llu device=%d result=%u",
             static_cast<unsigned long long>(id), device, result);
 }
+void supla_suplan_server_peers::transient_diagnostic(uint64_t id, int device,
+                                                   bool timeout) {
+  supla_log(LOG_WARNING,
+            "SupLAN provisioning: association=%llu device=%d transport=%s",
+            static_cast<unsigned long long>(id), device,
+            timeout ? "timeout" : "send-failed");
+}
 
 bool supla_suplan_server_peers::reconcile_manual(int user_id,
                                                  uint32_t source_channel) {

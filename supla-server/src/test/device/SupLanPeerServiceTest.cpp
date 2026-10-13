@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstring>
 #include <map>
 #include <memory>
@@ -21,6 +22,11 @@ struct Store {
   std::vector<Grant> grants;
   Identity identity{123, {10, 11}};
   int writes = 0;
+  bool fail_save = false;
+  bool fail_load = false;
+  uint32_t fail_owner_resource = 0;
+  bool fail_load_after_commit = false;
+  std::map<uint64_t, Association> additional;
   ChannelInfo channel_info{1, SUPLA_CHANNELTYPE_THERMOMETER,
                            SUPLA_CHANNELFNC_THERMOMETER,
                            SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 0};
@@ -60,7 +66,10 @@ class MemoryRepo : public Repository {
   }
   bool load(uint64_t id, Association *a) override {
     std::lock_guard<std::recursive_mutex> lock(store->mutex);
+    if (store->fail_load) return false;
     *a = store->a.id == id ? store->a : Association{};
+    auto it = store->additional.find(id);
+    if (it != store->additional.end()) *a = it->second;
     return true;
   }
   bool find(int source, int destination, Association *a) override {
@@ -68,6 +77,9 @@ class MemoryRepo : public Repository {
     *a = store->a.source == source && store->a.destination == destination
              ? store->a
              : Association{};
+    for (const auto &item : store->additional)
+      if (item.second.source == source &&
+          item.second.destination == destination) *a = item.second;
     return true;
   }
   bool grants(uint64_t, std::vector<Grant> *out) override {
@@ -110,6 +122,7 @@ class MemoryRepo : public Repository {
     return true;
   }
   bool save(const Association &a) override {
+    if (store->fail_save) return false;
     store->a = a;
     ++store->writes;
     return true;
@@ -120,6 +133,7 @@ class MemoryRepo : public Repository {
   }
   bool commit() override {
     transaction = false;
+    if (store->fail_load_after_commit) store->fail_load = true;
     store->mutex.unlock();
     return true;
   }
@@ -141,6 +155,7 @@ class MemoryRepo : public Repository {
     return true;
   }
   bool owner(uint8_t type, uint32_t resource, int *device) override {
+    if (resource == store->fail_owner_resource) return false;
     if ((type == 1 && (resource == 10 || resource == 11)) ||
         (type == 2 && resource == 1)) {
       *device = 1;
@@ -162,7 +177,23 @@ class MemoryRepo : public Repository {
     *out = store->device_info;
     return true;
   }
-  bool device_exists(int d) override { return d == 1 || d == 2; }
+  bool device_exists(int d) override { return d > 0 && d <= 5000; }
+  bool check_acl_ownership(int source, int destination, const Acl &acl,
+                           bool *owned) override {
+    *owned = false;
+    if (store->fail_owner_resource == static_cast<uint32_t>(source) ||
+        store->fail_owner_resource == static_cast<uint32_t>(destination))
+      return false;
+    if (!device_exists(source) || !device_exists(destination)) return true;
+    for (const auto &entry : acl) {
+      int current_owner = 0;
+      if (!owner(entry.ResourceType, entry.ResourceId, &current_owner))
+        return false;
+      if (current_owner != source) return true;
+    }
+    *owned = true;
+    return true;
+  }
   bool for_device(int d, bool dormant, std::vector<uint64_t> *out) override {
     out->clear();
     if (store->a.id && (store->a.source == d || store->a.destination == d) &&
@@ -203,12 +234,14 @@ class Transport : public PeerTransport {
   std::vector<int> destination_key_sizes;
   std::vector<int> errors;
   bool key_seen = false;
-  bool ready(int d) override { return online[d]; }
+  bool source_send_ok = true;
+  bool destination_send_ok = true;
+  bool ready(int d) override { return d > 2 || online[d]; }
   bool owner_ready(int, uint32_t) override { return owner_gate; }
   bool send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
     order.push_back(d);
     sources.push_back(*q);
-    return true;
+    return source_send_ok;
   }
   bool send(int d, TSDS_SuplaSetSuplanDestinationAssociation *q) override {
     order.push_back(d);
@@ -218,7 +251,7 @@ class Transport : public PeerTransport {
       key_seen = true;
       for (auto b : q->PeerKey) EXPECT_EQ(0xA5, b);
     }
-    return true;
+    return destination_send_ok;
   }
   void rebootstrap(int) override { ++refreshes; }
   void diagnostic(uint64_t, int, uint8_t result) override {
@@ -232,7 +265,12 @@ class SupLanPeerTest : public testing::Test {
   PeerService::Factory factory = [this] {
     return std::make_unique<MemoryRepo>(&store);
   };
-  PeerProvisioner peers{factory, &transport};
+  std::chrono::steady_clock::time_point now{};
+  PeerProvisioner peers{factory, &transport, [this] { return now; }};
+  void advance(int seconds) {
+    now += std::chrono::seconds(seconds);
+    peers.iterate();
+  }
   Grant grant{1, 10, 1, 100, 1};
   void add() { ASSERT_TRUE(peers.grants()->upsert(1, 2, grant)); }
   void source_ok(int index = -1, uint8_t result = 0) {
@@ -262,6 +300,480 @@ class SupLanPeerTest : public testing::Test {
   }
   void remove() { ASSERT_TRUE(peers.grants()->delete_origin(1, 100)); }
 };
+TEST_F(SupLanPeerTest, ConnectedSendFailureRetriesBothSidesWithoutKeyCache) {
+  transport.source_send_ok = false;
+  add();
+  EXPECT_EQ(0u, store.a.root);
+  advance(4);
+  EXPECT_EQ(1u, transport.sources.size());
+  transport.source_send_ok = true;
+  advance(3);
+  ASSERT_EQ(2u, transport.sources.size());
+  transport.destination_send_ok = false;
+  source_ok();
+  ASSERT_EQ(1u, transport.destinations.size());
+  transport.destination_send_ok = true;
+  advance(7);
+  // Destination retry must rederive the key from current Source.
+  ASSERT_EQ(3u, transport.sources.size());
+  EXPECT_NE(0, transport.sources.back().Flags);
+  source_ok();
+  ASSERT_EQ(2u, transport.destinations.size());
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+  EXPECT_EQ(1u, store.a.revision);
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, ConnectedMissingResultsExpireWithoutIncomingReply) {
+  add();
+  advance(14);
+  EXPECT_EQ(1u, transport.sources.size());
+  advance(2);
+  EXPECT_EQ(1u, transport.sources.size());
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  source_ok();
+  ASSERT_EQ(1u, transport.destinations.size());
+  advance(23);
+  advance(7);
+  ASSERT_EQ(3u, transport.sources.size());
+  source_ok();
+  ASSERT_EQ(2u, transport.destinations.size());
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, TransientDeviceAndServerPersistenceRecoverConnected) {
+  add();
+  source_ok(-1, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  store.fail_save = true;
+  source_ok();
+  EXPECT_EQ(0u, store.a.root);
+  EXPECT_TRUE(transport.destinations.empty());
+  store.fail_save = false;
+  advance(20);
+  ASSERT_EQ(3u, transport.sources.size());
+  source_ok();
+  destination_result(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
+  advance(7);
+  source_ok();
+  ASSERT_EQ(2u, transport.destinations.size());
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, EmptyCleanupRetriesDroppedResultWithOtherSideOffline) {
+  installed();
+  transport.online[2] = false;
+  remove();
+  ASSERT_EQ(0, transport.sources.back().AclEntryCount);
+  advance(16);
+  advance(7);
+  ASSERT_EQ(3u, transport.sources.size());
+  EXPECT_EQ(0, transport.sources.back().AclEntryCount);
+  source_ok();
+  EXPECT_TRUE(store.a.source_acked);
+  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  transport.online[2] = true;
+  peers.reconnect(2);
+  ASSERT_EQ(0, transport.destinations.back().Result);
+  advance(16);
+  advance(7);
+  EXPECT_EQ(3u, transport.destinations.size());
+  destination_result();
+  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, RevisionConflictSurvivesTimerAndReconnectUntilChange) {
+  add();
+  source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
+  for (int i = 0; i < 10; ++i) {
+    advance(60);
+    peers.reconnect(1);
+    peers.reconnect(2);
+  }
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_EQ(1u, store.a.generation);
+  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_EQ(2u, static_cast<uint32_t>(transport.sources.back().AclRevision));
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, TimedRetryUsesAuthoritativeStateAfterMissedEvent) {
+  add();
+  // Emulate a committed desired change whose notification was lost.
+  ++store.a.revision;
+  store.a.acl = {{1, 11, SUPLA_SUPLAN_PERMISSION_READ}};
+  advance(16);
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_EQ(2u, static_cast<uint32_t>(transport.sources.back().AclRevision));
+  EXPECT_EQ(11u, static_cast<uint32_t>(
+                     transport.sources.back().Acl[0].ResourceId));
+  source_ok(0);
+  EXPECT_TRUE(transport.destinations.empty());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, FailedAuthoritativeReadRecoversWithoutStaleSend) {
+  installed();
+  store.fail_load = true;
+  peers.reconcile(1, true);
+  advance(16);
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_EQ(1u, transport.destinations.size());
+  store.fail_load = false;
+  advance(16);
+  ASSERT_EQ(2u, transport.sources.size());
+  ASSERT_EQ(2u, transport.destinations.size());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, CleanupAckCommitFailuresRecoverIndependently) {
+  installed();
+  remove();
+  store.fail_save = true;
+  source_ok();
+  destination_result();
+  EXPECT_FALSE(store.a.source_acked);
+  EXPECT_FALSE(store.a.destination_acked);
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
+  store.fail_save = false;
+  advance(7);
+  ASSERT_EQ(3u, transport.sources.size());
+  ASSERT_EQ(3u, transport.destinations.size());
+  destination_result();
+  EXPECT_TRUE(store.a.destination_acked);
+  EXPECT_FALSE(store.a.source_acked);
+  source_ok();
+  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, PermanentResultsAndRepeatedPersistenceDoNotTimerLoop) {
+  for (auto code : {SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED,
+                    SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED}) {
+    peers.reconnect(1);
+    if (!store.a.id) add();
+    source_ok(-1, code);
+    auto sends = transport.order.size();
+    for (int i = 0; i < 10; ++i) advance(600);
+    EXPECT_EQ(sends, transport.order.size());
+    EXPECT_EQ(1u, store.a.generation);
+  }
+  peers.reconnect(1);
+  for (int i = 0; i < 3; ++i) {
+    source_ok(-1, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
+    advance(100);
+  }
+  auto sends = transport.order.size();
+  for (int i = 0; i < 10; ++i) advance(600);
+  EXPECT_EQ(sends, transport.order.size());
+  EXPECT_EQ(0u, store.a.root);
+  EXPECT_TRUE(transport.destinations.empty());
+}
+TEST_F(SupLanPeerTest, DestinationConflictKeepsIndependentSourceConvergence) {
+  installed();
+  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  destination_result(SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
+  auto sends = transport.destinations.size();
+  advance(16);
+  advance(7);
+  source_ok();
+  peers.reconnect(2);
+  advance(600);
+  EXPECT_EQ(sends, transport.destinations.size());
+  EXPECT_EQ(1u, store.a.generation);
+  grant.permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  EXPECT_EQ(sends + 1, transport.destinations.size());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, LateNoKeyAckCannotBlockTimedKeyRecovery) {
+  transport.online[2] = false;
+  add();
+  advance(16);
+  transport.online[2] = true;
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_NE(0, transport.sources.back().Flags);
+  source_ok(0);  // Late ACK of the expired no-key request, same revision.
+  EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_TRUE(transport.errors.empty());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest,
+       SaturatedTransientFlowsDoNotStarveLegitimateAssociation) {
+  transport.source_send_ok = transport.destination_send_ok = false;
+  for (uint64_t id = 1; id < 4096; ++id) {
+    Association a;
+    a.id = id;
+    a.source = 1;
+    a.destination = id + 2;
+    a.lifecycle = Lifecycle::Active;
+    a.root = store.identity.root;
+    a.provisioned_generation = a.generation;
+    a.acl = {{1, 10, 1}};
+    store.additional[id] = a;
+    peers.reconcile(id);
+  }
+  store.a = store.additional.at(1);
+  store.a.id = 4096;
+  store.a.destination = 2;
+  peers.reconcile(4096);
+  EXPECT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
+  advance(7);
+  transport.source_send_ok = transport.destination_send_ok = true;
+  // Sixteen due associations per pass, round-robin cursor across the cap.
+  for (int i = 0; i < 260; ++i) {
+    auto before = transport.order.size();
+    advance(1);
+    EXPECT_LE(transport.order.size() - before, 32u);
+    if (transport.sources.back().PeerContext.DestinationNodeId == 2) {
+      source_ok();
+      destination_result();
+      EXPECT_LT(PeerProvisionerTestAccess::count(peers), 4096u);
+      return;
+    }
+  }
+  FAIL() << "A saturated retry set starved the independent association";
+}
+TEST_F(SupLanPeerTest, MalformedResultTableNeverCommitsOrForwardsCredential) {
+  add();
+  const auto request = transport.sources.back();
+  for (int field = 0; field < 9; ++field) {
+    TDS_SuplaSetSuplanSourceAssociationResult r = {};
+    r.PeerContext = request.PeerContext;
+    r.AclRevision = request.AclRevision;
+    r.PeerKeySize = SUPLA_SUPLAN_PEER_KEY_SIZE;
+    memset(r.PeerKey, 0xA5, sizeof(r.PeerKey));
+    switch (field) {
+      case 0: ++r.PeerContext.AuthorityType; break;
+      case 1: ++r.PeerContext.AuthorityId; break;
+      case 2: ++r.PeerContext.SourceNodeIdNamespace; break;
+      case 3: ++r.PeerContext.DestinationNodeIdNamespace; break;
+      case 4: ++r.PeerContext.RootEpoch; break;
+      case 5: ++r.PeerContext.PeerGeneration; break;
+      case 6: ++r.AclRevision; break;
+      case 7: ++r.PeerContext.DestinationNodeId; break;
+      case 8: ++r.PeerContext.SourceNodeId; break;
+    }
+    peers.on_source(field == 0 ? 2 : 1, &r);
+    for (auto b : r.PeerKey) EXPECT_EQ(0, b);
+    EXPECT_EQ(0u, store.a.root);
+    EXPECT_TRUE(transport.destinations.empty());
+  }
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, TransportRetryBackoffCoalescesAndCapsRate) {
+  transport.source_send_ok = false;
+  add();
+  for (int seconds : {7, 17, 62, 302}) advance(seconds);
+  EXPECT_EQ(5u, transport.sources.size());
+  for (int i = 0; i < 1000; ++i) {
+    peers.iterate();
+    peers.reconcile(1);
+  }
+  EXPECT_EQ(5u, transport.sources.size());
+  advance(299);
+  EXPECT_EQ(5u, transport.sources.size());
+  transport.source_send_ok = true;
+  advance(2);
+  ASSERT_EQ(6u, transport.sources.size());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+  EXPECT_EQ(1u, store.a.revision);
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, SourceConflictOnKeylessReplayCannotBeReopened) {
+  installed();
+  peers.reconnect(1);
+  ASSERT_EQ(0, transport.sources.back().Flags);
+  source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
+  destination_result();
+  auto sends = transport.sources.size();
+  peers.reconnect(1);
+  peers.reconnect(2);
+  advance(600);
+  EXPECT_EQ(sends, transport.sources.size());
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, TimedRetryReadsNewRootAndNeverForwardsOldKey) {
+  add();
+  store.identity.root = 456;
+  advance(16);
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_EQ(456u, static_cast<uint32_t>(
+                     transport.sources.back().PeerContext.RootEpoch));
+  source_ok(0);
+  EXPECT_TRUE(transport.destinations.empty());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(456u, store.a.root);
+  EXPECT_EQ(1u, store.a.generation);
+  EXPECT_EQ(1u, store.a.revision);
+}
+TEST_F(SupLanPeerTest, ConcurrentTimerMutationAndStaleResultsConverge) {
+  std::atomic<int> seconds{0};
+  PeerProvisioner concurrent(factory, &transport, [&] {
+    return std::chrono::steady_clock::time_point() +
+           std::chrono::seconds(seconds.load());
+  });
+  ASSERT_TRUE(concurrent.grants()->upsert(1, 2, grant));
+  const auto first = transport.sources.back();
+  auto reply = [&](const TSDS_SuplaSetSuplanSourceAssociation &q) {
+    TDS_SuplaSetSuplanSourceAssociationResult r = {};
+    r.PeerContext = q.PeerContext;
+    r.AclRevision = q.AclRevision;
+    if (q.Flags) {
+      r.PeerKeySize = SUPLA_SUPLAN_PEER_KEY_SIZE;
+      memset(r.PeerKey, 0xA5, sizeof(r.PeerKey));
+    }
+    concurrent.on_source(1, &r);
+    for (auto b : r.PeerKey) EXPECT_EQ(0, b);
+  };
+  std::thread timer([&] {
+    for (int i = 0; i < 200; ++i) {
+      ++seconds;
+      concurrent.iterate();
+    }
+  });
+  std::thread mutation([&] {
+    for (int i = 0; i < 200; ++i) {
+      auto g = grant;
+      g.permissions = i % 2 ? SUPLA_SUPLAN_PERMISSION_CONTROL
+                            : SUPLA_SUPLAN_PERMISSION_READ;
+      EXPECT_TRUE(concurrent.grants()->upsert(1, 2, g));
+    }
+  });
+  std::thread stale([&] {
+    for (int i = 0; i < 200; ++i) reply(first);
+  });
+  timer.join();
+  mutation.join();
+  stale.join();
+  concurrent.reconnect(1);
+  reply(transport.sources.back());
+  ASSERT_FALSE(transport.destinations.empty());
+  auto destination = transport.destinations.back();
+  concurrent.on_destination(2, &destination);
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(concurrent));
+  EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_CONTROL, store.a.acl[0].Permissions);
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, KeyRequiredCannotReplayConflictedSourceSnapshot) {
+  installed();
+  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
+  destination_result(SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED);
+  EXPECT_EQ(2u, transport.sources.size());
+  peers.reconnect(2);
+  destination_result(SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED);
+  advance(600);
+  EXPECT_EQ(2u, transport.sources.size());
+  EXPECT_EQ(0, transport.destination_key_sizes.back());
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, ProvisionedBookkeepingCannotRepairRevisionConflict) {
+  add();
+  source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
+  ASSERT_TRUE(peers.grants()->provisioned(store.a, store.identity.root));
+  advance(600);
+  peers.reconnect(1);
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_EQ(1u, store.a.revision);
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, PostCommitReadFailureRederivesInsteadOfLosingFlow) {
+  add();
+  store.fail_load_after_commit = true;
+  source_ok();
+  EXPECT_EQ(store.identity.root, store.a.root);
+  EXPECT_TRUE(transport.destinations.empty());
+  store.fail_load = store.fail_load_after_commit = false;
+  advance(7);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_NE(0, transport.sources.back().Flags);
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+  EXPECT_EQ(1u, store.a.revision);
+  EXPECT_EQ(1u, store.a.generation);
+}
+TEST_F(SupLanPeerTest, OwnershipReadFailureCannotLoseControlRevocationRetry) {
+  installed();
+  for (uint32_t failed_resource : {1u, 2u, 10u}) {
+    SCOPED_TRACE(failed_resource);
+    auto extra = grant;
+    extra.origin_id = 200;
+    extra.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+    ASSERT_TRUE(peers.grants()->upsert(1, 2, extra));
+    source_ok();
+    destination_result();
+    transport.source_send_ok = false;
+    ASSERT_TRUE(peers.grants()->delete_origin(extra.origin_type,
+                                             extra.origin_id));
+    destination_result();
+    const auto attempts = transport.sources.size();
+    const auto revision = store.a.revision;
+    transport.source_send_ok = true;
+    store.fail_owner_resource = failed_resource;
+    advance(7);
+    EXPECT_EQ(attempts, transport.sources.size());
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, transport.errors.back());
+    store.fail_owner_resource = 0;
+    advance(14);
+    EXPECT_EQ(attempts, transport.sources.size());
+    advance(3);
+    ASSERT_EQ(attempts + 1, transport.sources.size());
+    EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_READ,
+              transport.sources.back().Acl[0].Permissions);
+    source_ok();
+    EXPECT_EQ(revision, store.a.revision);
+    EXPECT_EQ(1u, store.a.generation);
+    EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+  }
+}
+TEST_F(SupLanPeerTest, OwnershipReadFailureBeforeFlowCreationDefersSafely) {
+  installed();
+  auto attempts = transport.order.size();
+  store.fail_owner_resource = 10;
+  peers.reconcile(1, true);
+  advance(16);
+  EXPECT_EQ(attempts, transport.order.size());
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
+  store.fail_owner_resource = 0;
+  advance(16);
+  EXPECT_GT(transport.order.size(), attempts);
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, InvalidTopologyDoesNotBecomeTransientRetry) {
+  installed();
+  store.identity.channels.clear();
+  auto attempts = transport.order.size();
+  peers.reconcile(1, true);
+  for (int i = 0; i < 10; ++i) advance(600);
+  EXPECT_EQ(attempts, transport.order.size());
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_FOUND, transport.errors.back());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
 TEST_F(SupLanPeerTest, OneGrantSourceKeyThenDestination) {
   add();
   EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
@@ -806,9 +1318,8 @@ TEST_F(SupLanPeerTest, CapacityAndPersistenceDoNotSpamUnchangedEnsure) {
   peers.reconcile(1);
   EXPECT_EQ(sends, transport.order.size());
 }
-TEST_F(SupLanPeerTest, CurrentStaleConflictDiagnosedAndStopped) {
+TEST_F(SupLanPeerTest, CurrentStaleDiagnosedAndStopped) {
   for (auto code : {SUPLA_SUPLAN_RESULT_STALE_REVISION,
-                    SUPLA_SUPLAN_RESULT_REVISION_CONFLICT,
                     SUPLA_SUPLAN_RESULT_STALE_GENERATION}) {
     peers.reconnect(1);
     if (!store.a.id) add();

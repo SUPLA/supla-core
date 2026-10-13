@@ -260,6 +260,7 @@ class SrpcTest : public ::testing::Test {
   unsigned _supla_int_t cr_call_id;
   unsigned char cr_proto_version;
   TsrpcReceivedData cr_rd;
+  int packet_log_calls = 0;
 
   void set_random(void *ptr, unsigned int size);
   vector<int> get_call_ids(int version);
@@ -341,6 +342,13 @@ void *SrpcTest::srpcInit(void) {
   params.data_write = &srpc_data_write;
   params.on_version_error = &srpc_event_OnVersionError;
   params.on_remote_call_received = &srpc_on_remote_call_received;
+#if defined(__SUPLA_SERVER) && defined(SRPC_WITH_PACKET_LOG_HOOKS)
+  params.on_packet_sent = [](void *, unsigned int, void *, unsigned int,
+                             void *user) {
+    ++static_cast<SrpcTest *>(user)->packet_log_calls;
+  };
+  params.on_packet_received = params.on_packet_sent;
+#endif
 
   return srpc_init(&params);
 }
@@ -4590,6 +4598,50 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_set_subdevice_details, TDS_SubdeviceDetails,
 #endif /*SUPLA_PROTO_VERSION >= 25*/
 
 // SupLAN public v1: exercise the real SRPC encoder, transport and decoder.
+#if defined(__SUPLA_SERVER) && defined(SRPC_WITH_PACKET_LOG_HOOKS)
+TEST_F(SrpcTest, SupLanSourceCredentialNeverReachesPacketLogHooks) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TDS_SuplaSetSuplanSourceAssociationResult q = {};
+  q.PeerKeySize = SUPLA_SUPLAN_PEER_KEY_SIZE;
+  memset(q.PeerKey, 0xA5, sizeof(q.PeerKey));
+  ASSERT_GT(srpc_ds_async_set_suplan_source_association_result(srpc, &q), 0);
+  SendAndReceive(SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT,
+                 sizeof(q) + offsetof(TSuplaDataPacket, data) + SUPLA_TAG_SIZE);
+  EXPECT_EQ(0, packet_log_calls);
+  ASSERT_NE(nullptr, cr_rd.data.ds_set_suplan_source_association_result);
+  auto reply = cr_rd.data.ds_set_suplan_source_association_result;
+  EXPECT_EQ(0, memcmp(q.PeerKey, reply->PeerKey, sizeof(q.PeerKey)));
+  srpc_rd_free(&cr_rd);
+}
+TEST_F(SrpcTest, SupLanDestinationCredentialNeverReachesPacketLogHooks) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  TSDS_SuplaSetSuplanDestinationAssociation q = {};
+  q.PeerKeySize = SUPLA_SUPLAN_PEER_KEY_SIZE;
+  memset(q.PeerKey, 0xA5, sizeof(q.PeerKey));
+  ASSERT_GT(srpc_sd_async_set_suplan_destination_association(srpc, &q), 0);
+  const auto payload_size =
+      offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources);
+  SendAndReceive(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION,
+                 payload_size + offsetof(TSuplaDataPacket, data) +
+                     SUPLA_TAG_SIZE);
+  EXPECT_EQ(0, packet_log_calls);
+  ASSERT_NE(nullptr, cr_rd.data.sd_set_suplan_destination_association);
+  EXPECT_EQ(0, memcmp(q.PeerKey,
+                     cr_rd.data.sd_set_suplan_destination_association->PeerKey,
+                     sizeof(q.PeerKey)));
+  srpc_rd_free(&cr_rd);
+}
+TEST_F(SrpcTest, NonsecretPacketLogHooksRemainEnabled) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_GT(srpc_dcs_async_getversion(srpc), 0);
+  SendAndReceive(SUPLA_DCS_CALL_GETVERSION,
+                 offsetof(TSuplaDataPacket, data) + SUPLA_TAG_SIZE);
+  EXPECT_EQ(2, packet_log_calls);
+}
+#endif
 void SrpcTest::ReceiveSuplanMalformed(unsigned int call_id, void *data,
                                       int size) {
   srpc = srpcInit();

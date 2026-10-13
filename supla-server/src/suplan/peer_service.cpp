@@ -13,13 +13,25 @@
 namespace supla_suplan {
 
 bool Repository::owns_acl(int source, int destination, const Acl &acl) {
-  if (!device_exists(source) || !device_exists(destination)) return false;
+  bool owned = false;
+  return check_acl_ownership(source, destination, acl, &owned) && owned;
+}
+bool Repository::check_acl_ownership(int source, int destination,
+                                      const Acl &acl, bool *owned) {
+  *owned = false;
+  for (int endpoint : {source, destination}) {
+    int current_owner = 0;
+    if (!owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, endpoint, &current_owner))
+      return false;
+    if (current_owner != endpoint) return true;
+  }
   for (const auto &entry : acl) {
     int current_owner = 0;
-    if (!owner(entry.ResourceType, entry.ResourceId, &current_owner) ||
-        current_owner != source)
+    if (!owner(entry.ResourceType, entry.ResourceId, &current_owner))
       return false;
+    if (current_owner != source) return true;
   }
+  *owned = true;
   return true;
 }
 
@@ -938,7 +950,8 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     }
     if (!identity.root ||
         std::find(identity.channels.begin(), identity.channels.end(),
-                  q.Resource.ResourceId) == identity.channels.end()) {
+                  static_cast<uint32_t>(q.Resource.ResourceId)) ==
+            identity.channels.end()) {
       result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
       return result;
     }

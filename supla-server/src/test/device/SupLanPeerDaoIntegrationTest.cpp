@@ -231,6 +231,36 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   ASSERT_TRUE(dao->grants(a.id, &grants));
   EXPECT_EQ(9u, grants.size());
 }
+TEST_F(SupLanPeerDaoIntegrationTest, OwnershipVerdictSeparatesQueryFailure) {
+  auto dao = factory();
+  Acl acl{{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, resource,
+           SUPLA_SUPLAN_PERMISSION_READ}};
+  bool owned = false;
+  ASSERT_TRUE(dao->check_acl_ownership(source, destination, acl, &owned));
+  ASSERT_TRUE(owned);
+  PeerDao other_account(1);
+  owned = true;
+  EXPECT_TRUE(other_account.check_acl_ownership(source, destination, acl,
+                                               &owned));
+  EXPECT_FALSE(owned);
+  // Fault only the disposable Core test DB, restore before any assertion
+  // can abort the test and before the next fixture starts.
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  int renamed =
+      db.query("RENAME TABLE supla_dev_channel TO m6_owner_lookup", true);
+  ASSERT_EQ(0, renamed);
+  owned = true;
+  bool queried = dao->check_acl_ownership(source, destination, acl, &owned);
+  int restored =
+      db.query("RENAME TABLE m6_owner_lookup TO supla_dev_channel", true);
+  ASSERT_EQ(0, restored);
+  EXPECT_FALSE(queried);
+  EXPECT_FALSE(owned);
+  EXPECT_TRUE(dao->check_acl_ownership(source, destination, acl, &owned));
+  EXPECT_TRUE(owned);
+}
+
 TEST_F(SupLanPeerDaoIntegrationTest,
        StaleOwnershipCleanupIsScopedToTheOldAssociation) {
   Grant g{1, resource, 1, 100, 1};
@@ -2738,6 +2768,75 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_TRUE(repo.for_origin(CHANNEL_CONFIG_ORIGIN,
                               main_thermometer_origin(hvac), &ids));
   EXPECT_TRUE(ids.empty());
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       ConnectedLostAssociationRepliesRetryThroughConnectionLoop) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  PeerDao repo(99126);
+  ASSERT_TRUE(repo.accept_identity(source, {123, {resource}}));
+  // Previously accepted Source context, reconstructed from authoritative DB.
+  // Source is now offline. The real Destination socket stays connected.
+  PeerService previous([] { return std::make_unique<PeerDao>(99126); },
+                       nullptr);
+  ASSERT_TRUE(previous.upsert(source, destination,
+                             {1, resource, 99, 6001, 1}));
+  Association a;
+  ASSERT_TRUE(repo.find(source, destination, &a));
+  ASSERT_TRUE(previous.provisioned(a, 123));
+  auto user = supla_user::find(99126, false);
+  ASSERT_NE(nullptr, user);
+  auto peers = user->get_suplan_peers()->peers();
+  peers->reconcile(a.id);
+  auto receive_association = [&] {
+    TSuplaDataPacket packet = {};
+    TSDS_SuplaSetSuplanDestinationAssociation q = {};
+    bool received = receive_packet(&packet, 25000);
+    EXPECT_TRUE(received);
+    if (received) {
+      EXPECT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION,
+                packet.call_id);
+      EXPECT_LE(packet.data_size, sizeof(q));
+      if (packet.data_size <= sizeof(q))
+        memcpy(&q, packet.data, packet.data_size);
+    }
+    return q;
+  };
+  auto first = receive_association();
+  ASSERT_FALSE(HasFailure());
+  ASSERT_EQ(1, first.ResourceCount);
+  ASSERT_EQ(resource, first.Resources[0].ResourceId);
+  ASSERT_EQ(0, first.PeerKeySize);
+  // No response is injected. Production iterate/wait_time_usec must expire
+  // the pending request and deliver an identical complete replacement.
+  auto retry = receive_association();
+  ASSERT_FALSE(HasFailure());
+  EXPECT_EQ(0, memcmp(&first, &retry, sizeof(first)));
+  TDS_SuplaSetSuplanDestinationAssociationResult ok = {
+      retry.PeerContext, retry.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+  send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+              &ok, sizeof(ok));
+  // A normal ENSURE reply orders after that ACK on the same connection.
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_GRANTED);
+  ASSERT_FALSE(HasFailure());
+  ASSERT_TRUE(peers->grants()->delete_origin(99, 6001));
+  first = receive_association();
+  ASSERT_FALSE(HasFailure());
+  EXPECT_EQ(0, first.ResourceCount);
+  retry = receive_association();
+  ASSERT_FALSE(HasFailure());
+  EXPECT_EQ(0, memcmp(&first, &retry, sizeof(first)));
+  ok = {retry.PeerContext, retry.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+  send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+              &ok, sizeof(ok));
+  expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+                SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
+  ASSERT_TRUE(repo.load(a.id, &a));
+  EXPECT_EQ(Lifecycle::Draining, a.lifecycle);
+  EXPECT_TRUE(a.destination_acked);
+  EXPECT_FALSE(a.source_acked);  // Offline revocation is not falsely ACKed.
 }
 
 TEST_F(SupLanHvacWireIntegrationTest, AccessRevokesDeletedResourceBeforeReply) {

@@ -138,6 +138,9 @@ class Repository {
   virtual bool supports_batch() const { return false; }
   virtual bool device_exists(int device) = 0;
   virtual bool owns_acl(int source, int destination, const Acl &acl);
+  // Return query success separately from the authoritative ownership verdict.
+  virtual bool check_acl_ownership(int source, int destination, const Acl &acl,
+                                   bool *owned);
   virtual bool for_device(int device, bool include_dormant,
                           std::vector<uint64_t> *out) = 0;
   virtual bool for_origin(uint16_t type, uint64_t origin,

@@ -223,6 +223,9 @@ void supla_device::iterate(void) {
   if (channels) {
     channels->iterate();
   }
+  if (get_user() && is_suplan_peer_ready()) {
+    get_user()->get_suplan_peers()->peers()->iterate();
+  }
 }
 
 unsigned _supla_int64_t supla_device::wait_time_usec(void) {
@@ -237,6 +240,10 @@ unsigned _supla_int64_t supla_device::wait_time_usec(void) {
       result = config_batch_time_left;
     }
   }
+
+  // Drive pending provisioning deadlines even on an otherwise quiet SRPC
+  // connection. The per-user provisioner coalesces triggers from all devices.
+  if (is_suplan_peer_ready() && result > 1000000) result = 1000000;
 
   return result;
 }
