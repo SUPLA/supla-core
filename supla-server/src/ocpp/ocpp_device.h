@@ -58,6 +58,9 @@ struct supla_ocpp_meter_report {
   std::optional<long long> energy;
   std::array<std::optional<long long>, 3> energy_phases;
   std::array<std::optional<long long>, 3> power;
+  std::array<std::optional<long long>, 3> reactive_power;
+  std::array<std::optional<long long>, 3> power_factor;
+  std::optional<long long> frequency;
   std::array<std::optional<long long>, 3> voltage;
   std::array<std::optional<long long>, 3> current;
 };

@@ -88,7 +88,7 @@ bool valid_optional_integer(const json &message, const char *name,
 }
 
 bool valid_phase_array(const json &message, const char *name,
-                       long long maximum) {
+                       long long minimum, long long maximum) {
   auto item = message.find(name);
   if (item == message.end()) {
     return true;
@@ -105,7 +105,7 @@ bool valid_phase_array(const json &message, const char *name,
     }
     try {
       long long integer = value.get<long long>();
-      if (integer < 0 || integer > maximum) {
+      if (integer < minimum || integer > maximum) {
         return false;
       }
     } catch (...) {
@@ -459,6 +459,8 @@ void supla_ocpp_gateway::on_meter(const std::string &user_suid, int device_id,
     report.snapshot = message.value("snapshot", false);
     if (message.contains("energy"))
       report.energy = message.at("energy").get<long long>();
+    if (message.contains("frequency"))
+      report.frequency = message.at("frequency").get<long long>();
     // Phase arrays contain only actual OCPP phase readings. Never invent
     // a phase split from an aggregate power or energy value.
     auto read_phases = [&](const char *name, auto &target) {
@@ -473,6 +475,8 @@ void supla_ocpp_gateway::on_meter(const std::string &user_suid, int device_id,
     read_phases("voltage", report.voltage);
     read_phases("current", report.current);
     read_phases("power_phases", report.power);
+    read_phases("reactive_power_phases", report.reactive_power);
+    read_phases("power_factor_phases", report.power_factor);
     read_phases("energy_phases", report.energy_phases);
     {
       std::lock_guard<std::mutex> lock(mutex);
@@ -638,12 +642,16 @@ bool supla_ocpp_connection::process_message(const json &message) {
         !json_int(message, "connector", 0, INT_MAX, &connector) ||
         !valid_optional_integer(message, "time", 0,
                                 std::numeric_limits<long long>::max()) ||
-        !valid_phase_array(message, "voltage", 655350) ||
-        !valid_phase_array(message, "current", 655350) ||
-        !valid_phase_array(message, "power_phases", INT_MAX / 100) ||
-        !valid_phase_array(message, "energy_phases",
+        !valid_phase_array(message, "voltage", 0, 655350) ||
+        !valid_phase_array(message, "current", 0, 655350) ||
+        !valid_phase_array(message, "power_phases", 0, INT_MAX / 100) ||
+        !valid_phase_array(message, "reactive_power_phases", 0,
+                           INT_MAX / 100) ||
+        !valid_phase_array(message, "power_factor_phases", -1000, 1000) ||
+        !valid_phase_array(message, "energy_phases", 0,
                            std::numeric_limits<long long>::max() / 100) ||
         !valid_optional_integer(message, "power", 0, INT_MAX / 100) ||
+        !valid_optional_integer(message, "frequency", 0, 65535) ||
         (message.contains("snapshot") &&
          !message.at("snapshot").is_boolean()) ||
         !valid_optional_integer(message, "energy", 0,
@@ -654,6 +662,9 @@ bool supla_ocpp_connection::process_message(const json &message) {
         message.find("current") == message.end() &&
         message.find("power") == message.end() &&
         message.find("power_phases") == message.end() &&
+        message.find("reactive_power_phases") == message.end() &&
+        message.find("power_factor_phases") == message.end() &&
+        message.find("frequency") == message.end() &&
         message.find("energy") == message.end() &&
         message.find("energy_phases") == message.end()) {
       return false;

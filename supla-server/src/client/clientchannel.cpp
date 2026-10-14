@@ -31,6 +31,7 @@
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/power_switch_config.h"
 #include "log.h"
+#include "ocpp/ocpp_device.h"
 #include "proto.h"
 #include "safearray.h"
 #include "srpc/srpc.h"
@@ -568,6 +569,20 @@ bool supla_client_channel::get_cs_extended_value(
   return false;
 }
 
+bool supla_client_channel::get_ocpp_extended_value(
+    supla_user *user, int device_id, int channel_id,
+    TSC_SuplaChannelExtendedValue *cev, unsigned char protocol_version) {
+  if (!user) return false;
+  auto ocpp = user->get_devices()->get_ocpp_device(device_id, channel_id);
+  if (!ocpp) return false;
+
+  std::unique_ptr<supla_abstract_channel_extended_value> extended_value(
+      ocpp->get_channel(channel_id).get_extended_value());
+  if (!extended_value) return false;
+  cev->Id = channel_id;
+  return extended_value->get_raw_value(&cev->value, protocol_version);
+}
+
 bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                      supla_client *client) {
   if (cev == nullptr) {
@@ -586,6 +601,11 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     if (device != nullptr) {
       cev_exists = get_cs_extended_value(device, ChannelId, cev,
                                          client->get_protocol_version());
+    } else if (is_virtual) {
+      // OCPP channels are virtual and have no supla_device instance.
+      cev_exists = get_ocpp_extended_value(
+          client->get_user(), DeviceId, ChannelId, cev,
+          client->get_protocol_version());
     }
 
     device = nullptr;
@@ -607,20 +627,26 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     if (ChannelId) {
       device = client->get_user()->get_devices()->get(0, ChannelId);
 
+      TSC_SuplaChannelExtendedValue second_cev = {};
+      bool related_exists = false;
       if (device != nullptr) {
-        TSC_SuplaChannelExtendedValue second_cev = {};
-        if (get_cs_extended_value(device, ChannelId, &second_cev,
-                                  client->get_protocol_version())) {
-          if (client->get_protocol_version() >= 17) {
-            srpc_evtool_value_add(&cev->value, &second_cev.value);
-          } else {
-            // For backward compatibility, overwrite cev->value
-            memcpy(&cev->value, &second_cev.value,
-                   sizeof(TSuplaChannelExtendedValue));
-          }
-
-          cev_exists = true;
+        related_exists = get_cs_extended_value(device, ChannelId, &second_cev,
+                                               client->get_protocol_version());
+      } else if (is_virtual) {
+        related_exists = get_ocpp_extended_value(
+            client->get_user(), 0, ChannelId, &second_cev,
+            client->get_protocol_version());
+      }
+      if (related_exists) {
+        if (client->get_protocol_version() >= 17) {
+          srpc_evtool_value_add(&cev->value, &second_cev.value);
+        } else {
+          // For backward compatibility, overwrite cev->value
+          memcpy(&cev->value, &second_cev.value,
+                 sizeof(TSuplaChannelExtendedValue));
         }
+
+        cev_exists = true;
       }
     }
 

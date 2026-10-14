@@ -102,6 +102,31 @@ TEST(OcppDeviceTest, KeepsRawAdjustedAndHistoryCountersDistinct) {
   EXPECT_EQ(nullptr, device->get_channel(141).get_extended_value(true));
 }
 
+TEST(OcppDeviceTest, StoresFrequencyReactivePowerAndPowerFactor) {
+  auto device = std::make_shared<supla_ocpp_device>(nullptr, make_config());
+  supla_ocpp_meter_report report;
+  report.energy = 0;
+  report.frequency = 5002;
+  report.reactive_power[1] = 1250;
+  report.power_factor[1] = 965;
+  device->update_meter(report, 90);
+
+  std::unique_ptr<supla_abstract_channel_extended_value> value(
+      device->get_channel(141).get_extended_value());
+  auto meter = dynamic_cast<supla_channel_em_extended_value *>(value.get());
+  ASSERT_NE(nullptr, meter);
+  TElectricityMeter_ExtendedValue_V3 raw = {};
+  ASSERT_TRUE(meter->get_raw_value(&raw));
+  EXPECT_TRUE(raw.measured_values & EM_VAR_FREQ);
+  EXPECT_TRUE(raw.measured_values & EM_VAR_POWER_REACTIVE);
+  EXPECT_TRUE(raw.measured_values & EM_VAR_POWER_FACTOR);
+  EXPECT_EQ(5002, raw.m[0].freq);
+  EXPECT_EQ(965, raw.m[0].power_factor[1]);
+  EXPECT_DOUBLE_EQ(1250, meter->get_power_reactive(2));
+  EXPECT_EQ(0, raw.m[0].power_reactive[0]);
+  EXPECT_EQ(0, raw.m[0].power_factor[0]);
+}
+
 TEST(OcppDeviceTest,
      AggregateEnergyUsesOnlyFirstSlotWithoutLosingPhaseReadings) {
   auto config = make_config(

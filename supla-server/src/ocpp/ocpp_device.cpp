@@ -569,6 +569,19 @@ void supla_ocpp_device::update_meter(const supla_ocpp_meter_report &report,
           samples[phase].set_power_active(phase + 1, *report.power[phase]);
           basic.set_phase_on(phase + 1, true);
         }
+        if (report.reactive_power[phase]) {
+          double power = *report.reactive_power[phase];
+          merged->set_power_reactive(phase + 1, power);
+          basic.set_phase_on(phase + 1, true);
+        }
+        if (report.power_factor[phase]) {
+          double factor = *report.power_factor[phase] * 0.001;
+          merged->set_power_factor(phase + 1, factor);
+          basic.set_phase_on(phase + 1, true);
+        }
+      }
+      if (report.frequency) {
+        merged->set_frequency(*report.frequency * 0.01);
       }
       if (has_phase_energy) {
         self->aggregate_energy_counter = false;

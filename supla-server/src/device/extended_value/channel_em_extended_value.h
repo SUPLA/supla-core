@@ -77,7 +77,10 @@ class supla_channel_em_extended_value
 
   bool set_voltage(int phase, double value);
   bool set_current(int phase, double value);
+  bool set_frequency(double value);
   bool set_power_active(int phase, double value);
+  bool set_power_reactive(int phase, double value);
+  bool set_power_factor(int phase, double value);
   bool set_fae(int phase, double value);
 
   virtual bool get_raw_value(TSuplaChannelExtendedValue *value);

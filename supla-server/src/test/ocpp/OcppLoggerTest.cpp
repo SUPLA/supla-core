@@ -757,6 +757,11 @@ TEST_F(OcppLoggerIntegrationTest,
   EXPECT_DOUBLE_EQ(1000, meter->get_power_active(1));
   EXPECT_DOUBLE_EQ(2500, meter->get_power_active(2));
   EXPECT_DOUBLE_EQ(3000, meter->get_power_active(3));
+  EXPECT_DOUBLE_EQ(1250, meter->get_power_reactive(2));
+  TElectricityMeter_ExtendedValue_V3 raw = {};
+  ASSERT_TRUE(meter->get_raw_value(&raw));
+  EXPECT_EQ(5002, raw.m[0].freq);
+  EXPECT_EQ(965, raw.m[0].power_factor[1]);
   device->access_data_analyzer([](supla_electricity_analyzer *a) {
     ASSERT_NE(nullptr, a->get_voltage_phase1());
     EXPECT_EQ(1U, a->get_voltage_phase1()->get_sample_count());
@@ -803,6 +808,10 @@ TEST_F(OcppLoggerIntegrationTest, RejectsInvalidSnapshotAndPhaseArraysOnWire) {
         nlohmann::json{{"power_phases", {-1}}},
         nlohmann::json{{"power_phases", {21474837}}},
         nlohmann::json{{"power_phases", {1, 2, 3, 4}}},
+        nlohmann::json{{"frequency", 65536}},
+        nlohmann::json{{"reactive_power_phases", {-1}}},
+        nlohmann::json{{"power_factor_phases", {1001}}},
+        nlohmann::json{{"power_factor_phases", {-1001}}},
         nlohmann::json{{"energy_phases", 1000}},
         nlohmann::json{{"energy_phases", {-1}}},
         nlohmann::json{{"energy_phases", {92233720368547759LL}}},
