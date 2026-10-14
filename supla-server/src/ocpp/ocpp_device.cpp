@@ -238,7 +238,8 @@ void supla_ocpp_device::renew_validity_locked(
 
 void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
                                 const supla_ocpp_channel &before_switch,
-                                bool renew_validity, bool force) {
+                                bool renew_validity, bool force,
+                                bool new_connection) {
   // Coalesce meter/validity writes for five seconds, including retries after
   // SQL failures. The next report or heartbeat flushes the latest state.
   // Switch and availability changes remain immediate; IPC/UI/analyzers are
@@ -266,16 +267,18 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
       (!before_meter.extended_value || meter_value.extended_value->is_differ(
                                            before_meter.extended_value.get()));
   validity_save_pending |= renew_validity;
+  connection_save_pending |= new_connection;
   bool availability_changed =
       before_meter.get_availability_status().is_online() !=
           meter_value.get_availability_status().is_online() ||
       before_switch.get_availability_status().is_online() !=
           switch_value.get_availability_status().is_online();
   if (!meter_save_pending && !switch_save_pending && !extended_save_pending &&
-      !validity_save_pending)
+      !validity_save_pending && !connection_save_pending)
     return;
   auto now = std::chrono::steady_clock::now();
-  if (!force && !switch_changed && !availability_changed &&
+  if (!force && !new_connection && !switch_changed &&
+      !availability_changed &&
       now < next_db_attempt)
     return;
   supla_mariadb_access_provider dba;
@@ -289,12 +292,14 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
     if (extended_save_pending &&
         !dao.save_extended_value(get_user_id(), meter_value))
       success = false;
-    if (validity_save_pending) {
+    if (validity_save_pending || connection_save_pending) {
       // Connection/retry latency must not extend the charger's deadline.
       unsigned int seconds =
           std::max(meter_value.get_value_validity_time_sec(),
                    switch_value.get_value_validity_time_sec());
-      if (!dao.renew_validity(get_user_id(), id, seconds)) success = false;
+      if (!dao.renew_validity(get_user_id(), id, seconds,
+                              connection_save_pending))
+        success = false;
     }
   }
   // Measure from completion: even a slow failed connection attempt must not
@@ -304,6 +309,7 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
   if (success) {
     meter_save_pending = switch_save_pending = extended_save_pending =
         validity_save_pending = false;
+    connection_save_pending = false;
     // Very short heartbeat/replay validity must be refreshed before the
     // stored deadline, not after the normal five-second coalescing window.
     unsigned int seconds = std::max(meter_value.get_value_validity_time_sec(),
@@ -433,8 +439,9 @@ void supla_ocpp_device::deactivate(void) {
   if (analyzer) analyzer->reset();
 }
 
-void supla_ocpp_device::renew_validity(supla_ocpp_value_validity validity) {
-  serializer.post([self = shared_from_this(), validity]() {
+void supla_ocpp_device::renew_validity(supla_ocpp_value_validity validity,
+                                       bool new_connection) {
+  serializer.post([self = shared_from_this(), validity, new_connection]() {
     supla_ocpp_channel before[2], after[2];
     {
       std::lock_guard<std::mutex> lock(self->mutex);
@@ -445,7 +452,7 @@ void supla_ocpp_device::renew_validity(supla_ocpp_value_validity validity) {
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
     }
-    self->persist(before[0], before[1], true);
+    self->persist(before[0], before[1], true, false, new_connection);
     for (int i = 0; i < 2; i++)
       self->notify_channel_change(before[i], after[i]);
   });

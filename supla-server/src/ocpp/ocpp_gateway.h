@@ -37,6 +37,8 @@ class supla_ocpp_gateway {
 
   std::shared_ptr<supla_ocpp_device> find_device(const std::string &user_suid,
                                                  int device_id);
+  void on_activity(const std::string &user_suid, int device_id,
+                   supla_ocpp_value_validity validity, bool new_connection);
   // The caller must hold mutex.
   void remove_pending_for_device_locked(int device_id);
   std::shared_ptr<supla_ocpp_connection> get_connection(void);

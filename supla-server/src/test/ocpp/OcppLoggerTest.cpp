@@ -28,6 +28,7 @@
 #include "datalogger/voltage_aberration_logger.h"
 #include "datalogger/voltage_logger.h"
 #include "db/mariadb_access_provider.h"
+#include "device/channel_property_getter.h"
 #include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_onoff_value.h"
@@ -293,6 +294,43 @@ class OcppLoggerIntegrationTest : public IntegrationTest, public Test {
     std::this_thread::sleep_for(std::chrono::milliseconds(5100));
   }
 };
+
+TEST_F(OcppLoggerIntegrationTest, ChannelReadersSeeConfirmedOcppState) {
+  gateway.on_state(suid, 73, 1, false, 90);
+  ASSERT_TRUE(user->get_devices()->is_online(73));
+
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value_type = 0;
+  supla_channel_availability_status client_status(true);
+  unsigned _supla_int_t validity = 0;
+  ASSERT_TRUE(user->get_channel_value(73, 140, value, sub_value,
+                                      &sub_value_type, nullptr, nullptr,
+                                      &client_status, &validity, true));
+  EXPECT_TRUE(client_status.is_online());
+  EXPECT_GT(validity, 0U);
+
+  supla_channel_property_getter getter;
+  EXPECT_TRUE(getter.get_channel_availability_status(2, 73, 140).is_online());
+  std::unique_ptr<supla_abstract_channel_value> ipc_value(
+      getter.get_value(2, 73, 140));
+  EXPECT_NE(nullptr, ipc_value);
+}
+
+TEST_F(OcppLoggerIntegrationTest, LastConnectedChangesOnlyOnNewConnection) {
+  ASSERT_EQ(0, dba.query("UPDATE supla_iodevice SET "
+                         "last_connected='2000-01-01 00:00:00' WHERE id=73",
+                         true));
+  gateway.on_alive(suid, 73, 90);
+  expect_query("SELECT YEAR(last_connected) year FROM supla_iodevice "
+               "WHERE id=73",
+               "year\n2000\n");
+
+  gateway.on_connected(suid, 73, 90);
+  expect_query("SELECT COUNT(*) n FROM supla_iodevice WHERE id=73 "
+               "AND last_connected >= UTC_TIMESTAMP() - INTERVAL 1 MINUTE",
+               "n\n1\n");
+}
 
 TEST_F(OcppLoggerIntegrationTest,
        SwitchValueBasedTriggersWaitForConfirmedState) {

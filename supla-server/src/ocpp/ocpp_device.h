@@ -122,6 +122,7 @@ class supla_ocpp_device
   bool switch_save_pending = false;
   bool extended_save_pending = false;
   bool validity_save_pending = false;
+  bool connection_save_pending = false;
   std::chrono::steady_clock::time_point next_db_attempt;
   bool aggregate_energy_counter = false;
   unsigned char energy_phase_mask = 0;
@@ -148,7 +149,7 @@ class supla_ocpp_device
   void set_power_switch_channel_value(bool on);
   void persist(const supla_ocpp_channel &before_meter,
                const supla_ocpp_channel &before_switch, bool renew_validity,
-               bool force = false);
+               bool force = false, bool new_connection = false);
   void notify_channel_change(const supla_ocpp_channel &before,
                              const supla_ocpp_channel &after);
   void raise_value_change_events(const supla_ocpp_channel &before,
@@ -173,7 +174,8 @@ class supla_ocpp_device
       std::function<void(supla_electricity_analyzer *)> callback);
   void reload(const supla_ocpp_device_config &config);
   void deactivate(void);
-  void renew_validity(supla_ocpp_value_validity validity);
+  void renew_validity(supla_ocpp_value_validity validity,
+                      bool new_connection = false);
   void update_state(bool on, supla_ocpp_value_validity validity);
   void update_meter(const supla_ocpp_meter_report &report,
                     supla_ocpp_value_validity validity);

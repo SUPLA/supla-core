@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "device/device.h"
+#include "ocpp/ocpp_device.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -40,6 +41,7 @@ supla_abstract_channel_value *supla_channel_property_getter::_get_value(
     supla_channel_fragment *fragment,
     supla_channel_availability_status *status) {
   supla_abstract_channel_value *result = nullptr;
+  if (status) status->set_offline(true);
 
   supla_user *user = supla_user::get_user(user_id);
   if (!user) {
@@ -65,8 +67,15 @@ supla_abstract_channel_value *supla_channel_property_getter::_get_value(
         result = vc.get_value()->copy();
       }
 
-    } else if (status) {
-      status->set_offline(true);
+    } else {
+      auto ocpp = user->get_devices()->get_ocpp_device(device_id, channel_id);
+      if (ocpp) {
+        auto channel = ocpp->get_channel(channel_id);
+        if (channel.get_channel_id()) {
+          if (status) *status = channel.get_availability_status();
+          if (channel.get_value()) result = channel.get_value()->copy();
+        }
+      }
     }
 
   } else {
@@ -103,6 +112,9 @@ supla_channel_property_getter::get_channel_availability_status(int user_id,
         user->get_devices()->get_virtual_channel(channel_id);
     if (vc.get_channel_id()) {
       result = vc.get_availability_status();
+    } else {
+      auto ocpp = user->get_devices()->get_ocpp_device(device_id, channel_id);
+      if (ocpp) result = ocpp->get_channel(channel_id).get_availability_status();
     }
   }
 
@@ -110,8 +122,8 @@ supla_channel_property_getter::get_channel_availability_status(int user_id,
 }
 
 supla_abstract_channel_extended_value *
-supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
-                                                   int channel_id) {
+supla_channel_property_getter::_get_extended_value(
+    int user_id, int device_id, int channel_id) {
   supla_user *user = supla_user::get_user(user_id);
 
   if (!user) {
@@ -131,6 +143,9 @@ supla_channel_property_getter::_get_extended_value(int user_id, int device_id,
                   ->get_extended_value<supla_abstract_channel_extended_value>(
                       false);
         });
+  } else {
+    auto ocpp = user->get_devices()->get_ocpp_device(device_id, channel_id);
+    if (ocpp) result = ocpp->get_channel(channel_id).get_extended_value(false);
   }
 
   return result;

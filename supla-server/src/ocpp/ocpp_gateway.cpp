@@ -389,7 +389,15 @@ void supla_ocpp_gateway::on_result(unsigned long long id, bool ok,
 void supla_ocpp_gateway::on_connected(const std::string &user_suid,
                                       int device_id,
                                       supla_ocpp_value_validity validity) {
-  workers.post(device_id, [this, user_suid, device_id, validity]() {
+  on_activity(user_suid, device_id, validity, true);
+}
+
+void supla_ocpp_gateway::on_activity(const std::string &user_suid,
+                                     int device_id,
+                                     supla_ocpp_value_validity validity,
+                                     bool new_connection) {
+  workers.post(device_id, [this, user_suid, device_id, validity,
+                           new_connection]() {
     auto device = find_device(user_suid, device_id);
     if (!device) {
       supla_log(LOG_WARNING, "Unknown or incomplete OCPP device %i", device_id);
@@ -399,7 +407,7 @@ void supla_ocpp_gateway::on_connected(const std::string &user_suid,
       std::lock_guard<std::mutex> lock(mutex);
       connected_devices[device_id] = device;
     }
-    device->renew_validity(validity);
+    device->renew_validity(validity, new_connection);
   });
 }
 
@@ -419,7 +427,7 @@ void supla_ocpp_gateway::on_disconnected(const std::string &user_suid,
 
 void supla_ocpp_gateway::on_alive(const std::string &user_suid, int device_id,
                                   supla_ocpp_value_validity validity) {
-  on_connected(user_suid, device_id, validity);
+  on_activity(user_suid, device_id, validity, false);
 }
 
 void supla_ocpp_gateway::on_state(const std::string &user_suid, int device_id,

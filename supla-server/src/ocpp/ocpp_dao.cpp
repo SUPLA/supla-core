@@ -194,8 +194,9 @@ bool supla_ocpp_dao::save_extended_value(int user_id,
 }
 
 bool supla_ocpp_dao::renew_validity(int user_id, int device_id,
-                                    unsigned int seconds) {
-  MYSQL_BIND params[3] = {};
+                                    unsigned int seconds,
+                                    bool new_connection) {
+  MYSQL_BIND params[4] = {};
   params[0].buffer_type = MYSQL_TYPE_LONG;
   params[0].buffer = &device_id;
   params[1].buffer_type = MYSQL_TYPE_LONG;
@@ -203,10 +204,13 @@ bool supla_ocpp_dao::renew_validity(int user_id, int device_id,
   params[2].buffer_type = MYSQL_TYPE_LONG;
   params[2].buffer = &seconds;
   params[2].is_unsigned = true;
+  signed char connected = new_connection ? 1 : 0;
+  params[3].buffer_type = MYSQL_TYPE_TINY;
+  params[3].buffer = &connected;
   MYSQL_STMT *stmt = nullptr;
   bool result = dba->stmt_execute(reinterpret_cast<void **>(&stmt),
-                                  "CALL supla_touch_ocpp_channel_values(?,?,?)",
-                                  params, 3, true);
+                                  "CALL supla_touch_ocpp_channel_values(?,?,?,?)",
+                                  params, 4, true);
   if (stmt) mysql_stmt_close(stmt);
   return result;
 }
