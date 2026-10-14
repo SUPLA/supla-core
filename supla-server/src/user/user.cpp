@@ -130,6 +130,7 @@ supla_user::~supla_user() {
   delete state_webhook_credentials;
 
   delete suplan_peers;
+  suplan_peers = nullptr;
   delete devices;
   delete clients;
 }
@@ -538,6 +539,7 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
               "SupLAN channel delete cleanup failed: user=%d channel=%d",
               user_id, channel_id);
   if (user) {
+    user->get_suplan_peers()->stream_dirty(channel_id);
     user->get_devices()->on_channel_deleted(device_id, channel_id);
     user->get_clients()->on_channel_deleted(channel_id);
 
@@ -653,6 +655,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
                                           int device_id, int channel_id,
                                           bool extended,
                                           bool significant_change) {
+  if (!extended && suplan_peers) suplan_peers->stream_dirty(channel_id);
   list<channel_address> ca_list;
   ca_list.push_back(channel_address(device_id, channel_id));
 

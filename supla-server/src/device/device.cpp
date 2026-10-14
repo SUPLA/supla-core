@@ -60,6 +60,7 @@ supla_device::supla_device(supla_connection *connection)
 
 supla_device::~supla_device() {
   if (get_user()) {  // 1st line!
+    if (stream_connection) stream_connection->close();
     supla_channel_availability_status offline(true);
 
     auto statuses = channels->get_all_statuses();
@@ -93,7 +94,11 @@ shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
 }
 
 void supla_device::reset_suplan_identity_bootstrap(void) {
+  auto stream = get_stream(false);
+  if (stream) stream->close();
   lock();
+  stream_connection.reset();
+  stream_sync_done = false;
   identity_bootstrap.reset();
   registration_sync_pending = false;
   suplan_peer_ready = false;
@@ -225,6 +230,8 @@ void supla_device::iterate(void) {
   }
   if (get_user() && is_suplan_peer_ready()) {
     get_user()->get_suplan_peers()->peers()->iterate();
+    auto stream = get_stream(false);
+    if (stream) stream->iterate();
   }
 }
 
@@ -377,6 +384,9 @@ void supla_device::send_sync_done_to_device(void) {
       supla_log(LOG_INFO,
                 "SupLAN registration sync done: device=%d, rootEpoch=%u",
                 get_id(), get_suplan_root_epoch());
+      lock();
+      stream_sync_done = true;
+      unlock();
     }
   }
 }
@@ -545,6 +555,24 @@ bool supla_device::set_cfg_mode_password(const char *password,
 bool supla_device::is_suplan_peer_ready(void) {
   lock();
   bool result = suplan_peer_ready && identity_bootstrap.is_ready();
+  unlock();
+  return result;
+}
+
+std::shared_ptr<supla_suplan::StreamConnection> supla_device::get_stream(
+    bool create) {
+  lock();
+  if (!stream_connection && create && get_user())
+    stream_connection = get_user()->get_suplan_peers()->new_stream(this);
+  auto result = stream_connection;
+  unlock();
+  return result;
+}
+
+bool supla_device::is_server_stream_ready() {
+  lock();
+  bool result = stream_sync_done && suplan_peer_ready &&
+                identity_bootstrap.is_ready();
   unlock();
   return result;
 }

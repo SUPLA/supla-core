@@ -1,7 +1,7 @@
 # SupLAN production Server provisioning sources.
-CPP_SRCS += ../src/suplan/peer_service.cpp ../src/suplan/peer_dao.cpp ../src/suplan/peer_provisioner.cpp ../src/suplan/server_peer_transport.cpp
-CPP_DEPS += ./src/suplan/peer_service.d ./src/suplan/peer_dao.d ./src/suplan/peer_provisioner.d ./src/suplan/server_peer_transport.d
-OBJS += ./src/suplan/peer_service.o ./src/suplan/peer_dao.o ./src/suplan/peer_provisioner.o ./src/suplan/server_peer_transport.o
+CPP_SRCS += ../src/suplan/server_stream.cpp ../src/suplan/peer_service.cpp ../src/suplan/peer_dao.cpp ../src/suplan/peer_provisioner.cpp ../src/suplan/server_peer_transport.cpp
+CPP_DEPS += ./src/suplan/server_stream.d ./src/suplan/peer_service.d ./src/suplan/peer_dao.d ./src/suplan/peer_provisioner.d ./src/suplan/server_peer_transport.d
+OBJS += ./src/suplan/server_stream.o ./src/suplan/peer_service.o ./src/suplan/peer_dao.o ./src/suplan/peer_provisioner.o ./src/suplan/server_peer_transport.o
 
 # Each subdirectory must supply rules for building sources it contributes
 src/suplan/%.o: ../src/suplan/%.cpp src/suplan/subdir.mk

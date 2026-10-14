@@ -19,6 +19,8 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <cstdint>
+
 #include <atomic>
 
 #include <functional>
@@ -62,6 +64,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   supla_channel_state *state;
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
+  // STREAM distinguishes an explicitly valid cache from ordinary TTL=0.
+  bool stream_has_expiry = false;
   supla_abstract_channel_extended_value *extended_value;
   supla_json_config *json_config;
   supla_abstract_channel_extended_value *logger_purpose_extended_value;
@@ -148,6 +152,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   unsigned int get_value_duration(void);
   unsigned _supla_int_t get_value_validity_time_sec(void);
   void get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void get_stream_value(TDS_SuplaDeviceChannel_E *out,
+                        bool *has_expiry, int64_t *remaining_usec);
   bool set_value(const char value[SUPLA_CHANNELVALUE_SIZE],
                  const unsigned _supla_int_t *validity_time_sec,
                  supla_channel_availability_status *status);

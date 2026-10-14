@@ -18,6 +18,8 @@
 #include "srpc/srpc.h"
 #include "suplan/peer_dao.h"
 #include "user.h"
+#include "svrcfg.h"
+#include "user/user_dao.h"
 supla_suplan_server_peers::supla_suplan_server_peers(supla_user *user)
     : user(user),
       provisioner(
@@ -444,4 +446,117 @@ bool supla_suplan_server_peers::device_deleted(int user_id, int device_id) {
     if (db.query(sql.c_str(), true)) return false;
   }
   return true;
+}
+
+std::shared_ptr<supla_suplan::StreamConnection>
+supla_suplan_server_peers::new_stream(supla_device *destination) {
+  using namespace supla_suplan;  // NOLINT
+  int device = destination->get_id();
+  int account = user->getUserID();
+  auto stream = std::make_shared<StreamConnection>(
+      std::max(0, scfg_int(CFG_SERVER_STREAM_MAX_CHANNELS)),
+      [this, account, device](uint32_t channel, bool approval, bool request) {
+        return provisioner.grants()->ensure_stream(device, channel, approval,
+            [account, device, channel] {
+              return reconcile_access_dependencies(account, channel, device);
+            }, request);
+      },
+      [this, account](uint32_t channel, StreamConnection::Snapshot *snapshot) {
+        PeerDao dao(account);
+        if (!dao.stream_metadata(channel, &snapshot->state.Channel))
+          return false;
+        snapshot->state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
+        auto physical = user->get_devices()->get(0, channel);
+        bool has_expiry = false;
+        int64_t remaining = 0;
+        if (physical) {
+          physical->get_channels()->access_channel(channel,
+              [&](supla_device_channel *source) {
+                source->get_stream_value(&snapshot->state.Channel, &has_expiry,
+                                         &remaining);
+              });
+        } else {
+          supla_mariadb_access_provider db;
+          supla_user_dao virtuals(&db);
+          // Read one current persisted value: virtual or disconnected
+          // physical cache. The legacy incremental cache is second-granular.
+          auto channels = virtuals.get_virtual_channels(user, 0, channel);
+          if (!channels.empty()) {
+            has_expiry = true;
+            channels.front().get_stream_value(&snapshot->state.Channel,
+                                               &remaining);
+          } else {
+            auto source = user->get_devices()->get_ocpp_channel(channel);
+            if (source.get_channel_id()) {
+              source.get_value(snapshot->state.Channel.value);
+              snapshot->state.Channel.Offline =
+                  source.get_availability_status().get_proto_offline();
+              auto ttl = source.get_value_validity_time_sec();
+              has_expiry = ttl > 0;
+              remaining = static_cast<int64_t>(ttl) * 1000000;
+              snapshot->state.Channel.ValueValidityTimeSec = ttl;
+            }
+          }
+        }
+        if (has_expiry) {
+          // SQL DATETIME can exceed both the wire TTL and steady_clock range.
+          remaining = std::max<int64_t>(0, std::min<int64_t>(
+              remaining, static_cast<int64_t>(UINT32_MAX) * 1000000));
+          snapshot->expires = std::chrono::steady_clock::now() +
+                              std::chrono::microseconds(remaining);
+        }
+        return true;
+      },
+      [destination](const TSD_SuplaRemoteChannelState &snapshot) {
+        auto adapter = destination->get_connection()->get_srpc_adapter();
+        adapter->lock();
+        auto copy = snapshot;
+        bool ok = srpc_sd_async_remote_channel_state(adapter->get_srpc(),
+                                                     &copy) > 0;
+        adapter->unlock();
+        if (!ok) destination->get_connection()->terminate();
+        return ok;
+      },
+      [destination] {
+        return destination->get_connection() &&
+               destination->get_protocol_version() >= 29 &&
+               (destination->get_flags() &
+                SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+               destination->is_server_stream_ready();
+      });
+  std::lock_guard<std::mutex> lock(stream_mutex);
+  streams.erase(std::remove_if(streams.begin(), streams.end(),
+      [](const std::weak_ptr<StreamConnection> &s) { return s.expired(); }),
+      streams.end());
+  streams.push_back(stream);
+  return stream;
+}
+void supla_suplan_server_peers::stream_dirty(uint32_t channel) {
+  std::vector<std::shared_ptr<supla_suplan::StreamConnection>> current;
+  {
+    std::lock_guard<std::mutex> lock(stream_mutex);
+    for (auto it = streams.begin(); it != streams.end();) {
+      auto stream = it->lock();
+      if (stream) {
+        current.push_back(stream);
+        ++it;
+      } else {
+        it = streams.erase(it);
+      }
+    }
+  }
+  for (const auto &stream : current) stream->dirty(channel);
+}
+
+supla_suplan_server_peers::~supla_suplan_server_peers() {
+  // Runtime shutdown ends connection demands before callbacks lose their
+  // account/service owner. Do not hold the registry lock while closing.
+  std::vector<std::shared_ptr<supla_suplan::StreamConnection>> current;
+  {
+    std::lock_guard<std::mutex> lock(stream_mutex);
+    for (auto &weak : streams) if (auto stream = weak.lock())
+      current.push_back(stream);
+    streams.clear();
+  }
+  for (const auto &stream : current) stream->close();
 }

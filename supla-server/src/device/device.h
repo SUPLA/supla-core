@@ -26,6 +26,7 @@
 #include <vector>
 #include <cstdint>
 
+#include "suplan/server_stream.h"
 #include "device/calcfg_queue.h"
 #include "device/devicechannels.h"
 #include "suplan/identity_bootstrap.h"
@@ -37,6 +38,8 @@ class supla_device : public supla_abstract_connection_object {
  private:
   supla_suplan_identity_bootstrap identity_bootstrap;
   bool registration_sync_pending = false;
+  std::shared_ptr<supla_suplan::StreamConnection> stream_connection;
+  bool stream_sync_done = false;
   bool suplan_peer_ready = false;
   std::vector<uint32_t> suplan_registration_channels;
   int flags;
@@ -85,6 +88,8 @@ class supla_device : public supla_abstract_connection_object {
 
   supla_device_channels *get_channels(void);
   int get_flags(void);
+  std::shared_ptr<supla_suplan::StreamConnection> get_stream(bool create);
+  bool is_server_stream_ready();
   short get_manufacturer_id(void);
 
   bool enter_cfg_mode(unsigned _supla_int64_t *queued_at = nullptr,

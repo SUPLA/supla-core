@@ -109,6 +109,7 @@ extern "C" {
 #define CFG_OCPP_SOCKET_PATH 63
 #define CFG_OCPP_MAX_MESSAGE_BYTES 64
 #define CFG_OCPP_SOCKET_GROUP 65
+#define CFG_SERVER_STREAM_MAX_CHANNELS 66
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;

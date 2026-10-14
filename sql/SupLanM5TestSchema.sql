@@ -1,6 +1,6 @@
--- Test-only snapshot of Cloud Version20261011120000.php (working tree).
--- Source SHA256: 5f5d1361ef5214825da3969adfa391a3932add3cae5b7818ea5b56bbbe592203
--- Cloud owns the production migration. Core never executes this at runtime.
+-- Test-only SQL extracted from Cloud Version20261011120000.php.
+-- Source SHA256: 0d4a89ce4fb87c2439560224d31f0f749ccf280b8cd364bd58d0ceeaf55191fb
+-- Cloud owns production migration; Core only runs this in disposable test DB.
 CREATE TABLE IF NOT EXISTS supla_resource_access_pair (
             id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL,
             destination_device_id INT NOT NULL, source_channel_id INT NOT NULL, source_device_id INT NOT NULL,
@@ -21,10 +21,23 @@ CREATE TABLE IF NOT EXISTS supla_resource_access_decision (
                 (status IN ('PENDING','REJECTED') AND open_pair_id IS NOT NULL AND open_pair_id=pair_id)
                 OR (status IN ('ACCEPTED','REMOVED') AND open_pair_id IS NULL))
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE supla_resource_access_decision
+            ADD COLUMN IF NOT EXISTS requested_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)',
+            ADD COLUMN IF NOT EXISTS last_decision_at DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)';
+DROP TRIGGER IF EXISTS resource_access_decision_creation;
+DELIMITER $$
+CREATE TRIGGER resource_access_decision_creation BEFORE INSERT ON supla_resource_access_decision
+            FOR EACH ROW BEGIN
+                SET NEW.requested_at=UTC_TIMESTAMP();
+                SET NEW.last_decision_at=IF(NEW.status IN ('ACCEPTED','REJECTED','REMOVED'),NEW.requested_at,NULL);
+            END$$
+DELIMITER ;
 DROP TRIGGER IF EXISTS resource_access_decision_revision;
 DELIMITER $$
 CREATE TRIGGER resource_access_decision_revision BEFORE UPDATE ON supla_resource_access_decision
             FOR EACH ROW BEGIN
+                SET NEW.requested_at=OLD.requested_at;
+                SET NEW.last_decision_at=IF(OLD.status<>NEW.status,UTC_TIMESTAMP(),OLD.last_decision_at);
                 IF NEW.pair_id<>OLD.pair_id OR NEW.id<>OLD.id THEN
                     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Access decision identity is immutable';
                 END IF;

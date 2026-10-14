@@ -6,6 +6,7 @@
 #include <atomic>
 #include <cstring>
 #include <map>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -13,6 +14,7 @@
 #include <vector>
 
 #include "suplan/peer_provisioner.h"
+#include "suplan/server_stream.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
 using namespace supla_suplan;  // NOLINT
 namespace {
@@ -1377,10 +1379,12 @@ TEST_F(SupLanPeerTest, EnsureValidationAndNoAuthorizationOrApprovalCreation) {
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT,
             peers.grants()->ensure_access(2, q).Result);
   q.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
+  q.Permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
   r = peers.grants()->ensure_access(2, q);
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, r.Result);
   EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SERVER_STREAM, r.DeliveryMode);
   q.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER;
+  q.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
   q.Flags = 1;
   r = peers.grants()->ensure_access(2, q);
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, r.Result);
@@ -1576,6 +1580,7 @@ TEST_F(SupLanPeerTest, M5InvalidEnsureCannotReconcileOrTouchAuthorization) {
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, request(2, q).Result);
   q = valid;
   q.DeliveryMode = SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
+  q.Permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
   const auto stream = request(2, q);
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, stream.Result);
   EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SERVER_STREAM, stream.DeliveryMode);
@@ -1686,4 +1691,437 @@ TEST_F(SupLanPeerTest, M5MissingExtensionFailsClosedWithoutCloudSchema) {
   q.Permissions = 1;
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
             peers.grants()->ensure_access(2, q).AccessStatus);
+}
+
+namespace {
+class SupLanStreamConnectionTest : public testing::Test {
+ protected:
+  StreamConnection::Time now{};
+  bool connected = true, database = true, allowed = true, pending = false;
+  bool send_ok = true;
+  unsigned checks = 0, approval_requests = 0, reads = 0;
+  std::vector<TSD_SuplaRemoteChannelState> messages;
+  std::vector<unsigned> order;
+  StreamConnection::Snapshot current;
+  std::function<void()> during_read;
+  StreamConnection connection{
+      2,
+      [this](uint32_t, bool create, bool) {
+        ++checks;
+        if (create && !allowed) {
+          ++approval_requests;
+          pending = true;
+        }
+        return TSD_SuplaEnsureResourceAccessResult{
+            static_cast<unsigned char>(
+                database ? SUPLA_SUPLAN_RESULT_OK
+                         : SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR),
+            static_cast<unsigned char>(
+                allowed   ? SUPLA_SUPLAN_ACCESS_STATUS_GRANTED
+                : pending ? SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL
+                          : SUPLA_SUPLAN_ACCESS_STATUS_REJECTED),
+            SUPLA_RESOURCE_DELIVERY_SERVER_STREAM};
+      },
+      [this](uint32_t, StreamConnection::Snapshot *snapshot) {
+        ++reads;
+        *snapshot = current;
+        if (during_read) {
+          auto callback = during_read;
+          during_read = nullptr;
+          callback();
+        }
+        return true;
+      },
+      [this](const TSD_SuplaRemoteChannelState &snapshot) {
+        order.push_back(1380);
+        messages.push_back(snapshot);
+        return send_ok;
+      },
+      [this] { return connected; },
+      [this] { return now; }};
+  TSD_SuplaEnsureResourceAccessResult ensure(uint32_t id = 10,
+                                             bool approval = false,
+                                             unsigned char permissions = 1) {
+    TDS_SuplaEnsureResourceAccess q{
+        {1, id}, permissions, 2, static_cast<unsigned char>(approval)};
+    TSD_SuplaEnsureResourceAccessResult result{};
+    connection.ensure(q, [&](const TSD_SuplaEnsureResourceAccessResult &r) {
+      order.push_back(1350);
+      result = r;
+      return true;
+    });
+    return result;
+  }
+  void advance(unsigned seconds) {
+    now += std::chrono::seconds(seconds);
+    connection.iterate();
+  }
+  void SetUp() override {
+    current.state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
+    current.state.Channel.Default = SUPLA_CHANNELFNC_THERMOMETER;
+    current.state.Channel.value[0] = 42;
+  }
+};
+TEST_F(SupLanStreamConnectionTest,
+       InitialSnapshotOrderedAndDuplicateIdempotent) {
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, ensure().AccessStatus);
+  ASSERT_EQ(2u, order.size());
+  EXPECT_EQ(1350u, order[0]);
+  EXPECT_EQ(1380u, order[1]);
+  EXPECT_EQ(10, messages[0].ChannelId);
+  EXPECT_EQ(255, messages[0].Channel.Number);
+  EXPECT_EQ(42, messages[0].Channel.value[0]);
+  ensure();
+  ensure();
+  EXPECT_EQ(1u, connection.size());
+  EXPECT_EQ(1u, messages.size());
+}
+TEST_F(SupLanStreamConnectionTest,
+       PendingActivationAndLostHintWithoutNewEnsure) {
+  allowed = false;
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            ensure(10, true).AccessStatus);
+  EXPECT_TRUE(messages.empty());
+  EXPECT_EQ(0u, reads);
+  allowed = true;
+  advance(29);
+  EXPECT_TRUE(messages.empty());
+  advance(1);
+  ASSERT_EQ(1u, messages.size());
+  EXPECT_EQ(1u, approval_requests);
+}
+TEST_F(SupLanStreamConnectionTest,
+       GrantedToPendingInvalidatesOnceAndKeepsLiveDemand) {
+  ensure();
+  ASSERT_EQ(1u, messages.size());
+  current.state.Channel.value[0] = 99;
+  allowed = false;
+  const auto previous_reads = reads;
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            ensure(10, true).AccessStatus);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  EXPECT_EQ(42, messages.back().Channel.value[0]);
+  EXPECT_EQ(previous_reads, reads);
+
+  // Neither repeated requests nor dirty work may postpone invalidation or
+  // deliver newly protected data while approval is pending.
+  for (unsigned i = 0; i < 10; ++i) {
+    advance(29);
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+              ensure(10, true).AccessStatus);
+    connection.dirty(10);
+    connection.iterate();
+  }
+  advance(30);
+  EXPECT_EQ(2u, messages.size());
+  EXPECT_EQ(previous_reads, reads);
+  EXPECT_EQ(1u, connection.size());
+
+  allowed = true;
+  connection.dirty(10);  // Cloud approval hint, without another ENSURE.
+  connection.iterate();
+  ASSERT_EQ(3u, messages.size());
+  EXPECT_EQ(0, messages.back().Channel.Offline);
+  EXPECT_EQ(99, messages.back().Channel.value[0]);
+}
+TEST_F(SupLanStreamConnectionTest,
+       GrantedToPendingRecoversApprovalWithoutHintOrNewEnsure) {
+  ensure();
+  allowed = false;
+  ensure(10, true);
+  advance(30);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1u, connection.size());
+  allowed = true;
+  advance(30);
+  ASSERT_EQ(3u, messages.size());
+  EXPECT_EQ(0, messages.back().Channel.Offline);
+}
+TEST_F(SupLanStreamConnectionTest,
+       GrantedToPendingTerminalSendFailureEndsConnectionDemand) {
+  ensure();
+  allowed = false;
+  send_ok = false;
+  ensure(10, true);
+  EXPECT_EQ(0u, connection.size());
+  allowed = true;
+  send_ok = true;
+  connection.dirty(10);
+  advance(60);
+  EXPECT_EQ(2u, messages.size());
+}
+TEST_F(SupLanStreamConnectionTest, InitDirtyCannotLoseConcurrentLatestState) {
+  during_read = [&] {
+    current.state.Channel.value[0] = 88;
+    connection.dirty(10);
+  };
+  ensure();
+  ASSERT_EQ(1u, messages.size());
+  EXPECT_EQ(42, messages[0].Channel.value[0]);
+  advance(1);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(88, messages[1].Channel.value[0]);
+}
+TEST_F(SupLanStreamConnectionTest, RevocationDuringInitialReadLeaksNoSnapshot) {
+  during_read = [&] {
+    allowed = false;
+    pending = false;
+  };
+  ensure();
+  EXPECT_TRUE(messages.empty());
+  EXPECT_EQ(0u, connection.size());
+}
+TEST_F(SupLanStreamConnectionTest, TerminalFencesDirtyAndCannotResurrect) {
+  ensure();
+  current.state.Channel.value[0] = 99;
+  allowed = false;
+  connection.dirty(10);
+  advance(1);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  EXPECT_EQ(42, messages.back().Channel.value[0]);
+  allowed = true;
+  connection.dirty(10);
+  advance(60);
+  EXPECT_EQ(2u, messages.size());
+  EXPECT_EQ(0u, connection.size());
+}
+TEST_F(SupLanStreamConnectionTest, ExpiryRenewalNoExtraSnapshotAndRecovery) {
+  current.expires = now + std::chrono::seconds(5);
+  current.state.Channel.ValueValidityTimeSec = 5;
+  ensure();
+  advance(4);
+  current.expires = now + std::chrono::seconds(5);
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(1u, messages.size());
+  advance(1);
+  EXPECT_EQ(1u, messages.size());
+  advance(4);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  current.expires = now + std::chrono::seconds(5);
+  connection.dirty(10);
+  connection.iterate();
+  ASSERT_EQ(3u, messages.size());
+  EXPECT_EQ(0, messages.back().Channel.Offline);
+}
+TEST_F(SupLanStreamConnectionTest, MetadataChangeAndUnrelatedChannelIsolation) {
+  ensure();
+  current.state.Channel.Flags = 456;
+  connection.dirty(11);
+  advance(1);
+  EXPECT_EQ(1u, messages.size());
+  connection.dirty(10);
+  connection.iterate();
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(456, static_cast<int64_t>(messages.back().Channel.Flags));
+}
+TEST_F(SupLanStreamConnectionTest,
+       CapacityPrecedesDurableApprovalAndNoEviction) {
+  ensure(10);
+  ensure(11);
+  unsigned before = checks;
+  allowed = false;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED, ensure(12, true).Result);
+  EXPECT_EQ(before, checks);
+  EXPECT_EQ(0u, approval_requests);
+  EXPECT_EQ(2u, connection.size());
+  EXPECT_EQ(2u, messages.size());
+}
+TEST_F(SupLanStreamConnectionTest,
+       InvalidShapeAndIneligibleConnectionAllocateNothing) {
+  for (unsigned char mask : {0, 2, 3, 4, 5, 7, 128})
+    EXPECT_NE(SUPLA_SUPLAN_RESULT_OK, ensure(10, true, mask).Result);
+  connected = false;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, ensure(10, true).Result);
+  EXPECT_EQ(0u, checks);
+  EXPECT_EQ(0u, connection.size());
+}
+TEST_F(SupLanStreamConnectionTest, DatabaseOutageFailsClosedThenRecovers) {
+  ensure();
+  database = false;
+  current.state.Channel.value[0] = 99;
+  connection.dirty(10);
+  advance(1);
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  auto failed_checks = checks;
+  for (int second = 0; second < 4; ++second) {
+    for (int update = 0; update < 1000; ++update) connection.dirty(10);
+    advance(1);
+    EXPECT_EQ(failed_checks, checks);  // Dirty floods cannot bypass DB backoff.
+  }
+  database = true;
+  advance(1);
+  ASSERT_EQ(3u, messages.size());
+  EXPECT_EQ(99, messages.back().Channel.value[0]);
+}
+TEST_F(SupLanStreamConnectionTest, CloseDropsOnlyEphemeralDemand) {
+  ensure();
+  connection.close();
+  connection.dirty(10);
+  advance(60);
+  EXPECT_EQ(1u, messages.size());
+  EXPECT_EQ(0u, connection.size());
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, ensure().Result);
+}
+TEST_F(SupLanStreamConnectionTest,
+       DuplicateEnsureDbFailureRetainsSafeRecovery) {
+  ensure();
+  database = false;
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, ensure().Result);
+  EXPECT_EQ(1u, connection.size());
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  database = true;
+  advance(5);
+  ASSERT_EQ(3u, messages.size());
+  EXPECT_EQ(0, messages.back().Channel.Offline);
+}
+}  // namespace
+
+TEST_F(SupLanStreamConnectionTest, SendFailureDropsConnectionInterests) {
+  send_ok = false;
+  ensure();
+  EXPECT_EQ(0u, connection.size());
+  send_ok = true;
+  advance(60);
+  EXPECT_EQ(1u, messages.size());
+}
+
+TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
+  std::atomic<bool> allowed{true};
+  std::atomic<int> value{0};
+  std::vector<TSD_SuplaRemoteChannelState> messages;
+  StreamConnection stream(
+      256,
+      [&](uint32_t, bool, bool) {
+        return TSD_SuplaEnsureResourceAccessResult{
+            0,
+            static_cast<unsigned char>(
+                allowed ? SUPLA_SUPLAN_ACCESS_STATUS_GRANTED
+                        : SUPLA_SUPLAN_ACCESS_STATUS_REJECTED),
+            2};
+      },
+      [&](uint32_t, StreamConnection::Snapshot *s) {
+        s->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
+        s->state.Channel.value[0] = value.load();
+        return true;
+      },
+      [&](const TSD_SuplaRemoteChannelState &s) {
+        messages.push_back(s);
+        return true;
+      },
+      [] { return true; });
+  stream.ensure(
+      {{1, 10}, 1, 2, 0},
+      [](const TSD_SuplaEnsureResourceAccessResult &) { return true; });
+  std::thread producer([&] {
+    for (int i = 0; i < 10000; ++i) {
+      value = i;
+      stream.dirty(10);
+    }
+  });
+  std::thread reader([&] {
+    for (int i = 0; i < 10000; ++i) stream.iterate();
+  });
+  producer.join();
+  reader.join();
+  allowed = false;
+  stream.dirty(10);
+  stream.iterate();
+  ASSERT_FALSE(messages.empty());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  const auto terminal_count = messages.size();
+  for (int i = 0; i < 100; ++i) {
+    stream.dirty(10);
+    stream.iterate();
+  }
+  EXPECT_EQ(terminal_count, messages.size());
+  EXPECT_EQ(0u, stream.size());
+}
+TEST(SupLanStreamLoadTest, FanoutCoalescesFloodWithinConfiguredBounds) {
+  std::vector<std::unique_ptr<StreamConnection>> destinations;
+  unsigned reads = 0, authorizations = 0, messages = 0;
+  int value = 0;
+  auto began = std::chrono::steady_clock::now();
+  for (unsigned n = 0; n < 64; ++n) {
+    destinations.emplace_back(new StreamConnection(
+        256,
+        [&](uint32_t, bool, bool) {
+          ++authorizations;
+          return TSD_SuplaEnsureResourceAccessResult{
+              0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
+        },
+        [&](uint32_t, StreamConnection::Snapshot *s) {
+          ++reads;
+          s->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
+          s->state.Channel.value[0] = value;
+          return true;
+        },
+        [&](const TSD_SuplaRemoteChannelState &) {
+          ++messages;
+          return true;
+        },
+        [] { return true; }));
+    for (uint32_t id = 1; id <= 64; ++id)
+      destinations.back()->ensure(
+          {{1, id}, 1, 2, 0},
+          [](const TSD_SuplaEnsureResourceAccessResult &) { return true; });
+  }
+  EXPECT_EQ(4096u, messages);
+  const auto baseline = authorizations;
+  value = 1;
+  for (unsigned i = 0; i < 10000; ++i)
+    for (auto &stream : destinations) stream->dirty(10);
+  for (auto &stream : destinations) stream->iterate();
+  EXPECT_EQ(4096u + 64, messages);
+  EXPECT_EQ(messages, reads);
+  EXPECT_EQ(baseline + 64, authorizations);
+  for (auto &stream : destinations) EXPECT_EQ(64u, stream->size());
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::steady_clock::now() - began)
+                     .count();
+  std::cout << "STREAM load: 64 connections/4096 interests, 640000 dirty "
+               "marks -> 64 updates; elapsed_ms="
+            << elapsed << std::endl;
+}
+
+TEST(SupLanStreamLoadTest, ExpiryDrainsAcrossBoundedBatchesWithoutNewTraffic) {
+  StreamConnection::Time now{};
+  unsigned online = 0, offline = 0;
+  StreamConnection stream(
+      64,
+      [](uint32_t, bool, bool) {
+        return TSD_SuplaEnsureResourceAccessResult{
+            0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
+      },
+      [&](uint32_t, StreamConnection::Snapshot *snapshot) {
+        snapshot->expires = StreamConnection::Time() + std::chrono::seconds(5);
+        return true;
+      },
+      [&](const TSD_SuplaRemoteChannelState &snapshot) {
+        if (snapshot.Channel.Offline)
+          ++offline;
+        else
+          ++online;
+        return true;
+      },
+      [] { return true; }, [&] { return now; });
+  for (uint32_t id = 1; id <= 33; ++id)
+    stream.ensure(
+        {{1, id}, 1, 2, 0},
+        [](const TSD_SuplaEnsureResourceAccessResult &) { return true; });
+  ASSERT_EQ(33u, online);
+  now += std::chrono::seconds(5);
+  stream.iterate();
+  EXPECT_EQ(16u, offline);
+  stream.iterate();
+  EXPECT_EQ(32u, offline);
+  stream.iterate();
+  EXPECT_EQ(33u, offline);
+  stream.iterate();
+  EXPECT_EQ(33u, offline);
 }

@@ -91,6 +91,7 @@ supla_device_channel::supla_device_channel(
   this->state = state;
 
   if (validity_time_sec > 0) {
+    stream_has_expiry = true;
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += validity_time_sec;
   }
@@ -272,7 +273,8 @@ int supla_device_channel::get_user_id(void) {
 
 void supla_device_channel::set_func(int func) {
   lock();
-  if (this->func != func) {
+  bool changed = this->func != func;
+  if (changed) {
     this->func = func;
 
     if (data_analyzer) {
@@ -281,6 +283,8 @@ void supla_device_channel::set_func(int func) {
     }
   }
   unlock();
+  if (changed && get_user())
+    get_user()->get_suplan_peers()->stream_dirty(get_id());
 }
 
 int supla_device_channel::get_type(void) { return type; }
@@ -324,6 +328,7 @@ void supla_device_channel::add_init_flags(unsigned _supla_int64_t flags) {
       delete db;
       db = nullptr;
     }
+    if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
   }
 }
 
@@ -366,6 +371,7 @@ bool supla_device_channel::set_availability_status(
   unlock();
 
   if (result) {
+    if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
     if (raise_change_event) {
       on_value_changed(nullptr, nullptr, true, false);
     }
@@ -380,6 +386,26 @@ bool supla_device_channel::set_availability_status(
 void supla_device_channel::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
   lock();
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  unlock();
+}
+
+void supla_device_channel::get_stream_value(TDS_SuplaDeviceChannel_E *out,
+                                             bool *has_expiry,
+                                             int64_t *remaining_usec) {
+  lock();
+  memcpy(out->value, value, sizeof(out->value));
+  out->Offline = availability_status.get_proto_offline();
+  *has_expiry = stream_has_expiry;
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  *remaining_usec = (value_valid_to.tv_sec - now.tv_sec) * 1000000LL +
+                    value_valid_to.tv_usec - now.tv_usec;
+  if (*has_expiry) {
+    if (*remaining_usec <= 0) out->Offline = 1;
+    else if (out->Offline == 1) out->Offline = 0;
+    out->ValueValidityTimeSec = *remaining_usec > 0
+                                   ? (*remaining_usec + 999999) / 1000000 : 0;
+  }
   unlock();
 }
 
@@ -616,8 +642,11 @@ bool supla_device_channel::set_value(
   new_value->get_raw_value(this->value);
 
   if (validity_time_sec) {
+    stream_has_expiry = *validity_time_sec > 0;
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += (*validity_time_sec);
+  } else {
+    stream_has_expiry = false;
   }
 
   bool significant_change = false;
@@ -633,6 +662,8 @@ bool supla_device_channel::set_value(
   }
 
   unlock();
+
+  if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
 
   if (differ || validity_time_sec) {
     char current_value[SUPLA_CHANNELVALUE_SIZE] = {};

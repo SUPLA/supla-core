@@ -37,6 +37,8 @@ supla_on_channel_config_changed_command::
 void supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
+  auto stream_user = supla_user::find(user_id, false);
+  if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
   // Notifications carry no authorization. Even a cold/offline user must have
   // the current committed business projection reconciled before delivery.
   supla_mariadb_access_provider dba;
@@ -128,7 +130,11 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   shared_ptr<supla_device> device = user->get_devices()->get(device_id);
 
   if (device) {
-    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) || force_device_reconnect) {
+    // A pure RELATIONS hint (manual consent) changes authorization, not the
+    // Source's configuration. In particular a legacy thermometer must stay
+    // connected while its new STREAM interest is activated.
+    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+        (force_device_reconnect && scope != CONFIG_CHANGE_SCOPE_RELATIONS)) {
       device->reconnect();
     } else if (json_config &&
                ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||

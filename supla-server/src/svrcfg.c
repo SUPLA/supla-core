@@ -36,6 +36,8 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   char *s_http = "HTTP";
   char *s_autodiscover = "AUTODISCOVER";
+  scfg_add_int_param(CFG_SERVER_STREAM_MAX_CHANNELS, "SUPLAN",
+                     "server_stream_max_channels", 256);
   // Start with the highest index
   // This ensures that realloc will only be called once
   char *s_ocpp = "OCPP";

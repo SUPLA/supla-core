@@ -31,6 +31,7 @@ struct ChannelInfo {
   uint32_t device_flags = 0;
   unsigned char number = 0;
   uint32_t action_capabilities = 0;
+  bool is_virtual = false;
 };
 enum class Lifecycle : uint8_t { Active = 1, Draining = 2, Dormant = 3 };
 struct Grant {
@@ -63,6 +64,7 @@ struct Identity {
 struct DeviceInfo {
   uint32_t flags = 0;
   unsigned char protocol = 0;
+  bool is_virtual = false;
 };
 enum class ApprovalStatus : uint8_t {
   Pending = 1, Accepted = 2, Rejected = 3, Removed = 4
@@ -78,6 +80,7 @@ struct ApprovalDecision {
   uint8_t permissions = 0;
   uint32_t revision = 0;
   ApprovalStatus status = ApprovalStatus::Removed;
+  uint8_t delivery_mode = SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER;
 };
 
 // Each instance owns one existing MariaDB access provider/transaction. Errors
@@ -127,6 +130,19 @@ class Repository {
   virtual bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
                                 DeviceInfo *source, DeviceInfo *destination,
                                 Identity *identity) { return false; }
+  virtual bool stream_schema(bool *available) {
+    *available = false;
+    return true;
+  }
+  virtual bool stream_permissions(int destination, uint32_t resource,
+                                  uint8_t *permissions) { return false; }
+  virtual bool approval_stream_pending(uint64_t pair,
+                                      const ApprovalDecision *pending) {
+    return false;
+  }
+  virtual bool approval_stream_mode(const ApprovalDecision &decision) {
+    return false;
+  }
   virtual bool reference(uint32_t channel, uint8_t field, uint32_t *out) {
     *out = 0;
     return true;
@@ -150,6 +166,7 @@ class Repository {
   virtual bool find(int source, int destination, Association *a) = 0;
 };
 
+bool stream_read_supported(const ChannelInfo &channel);
 bool valid_permissions(uint8_t p);
 uint8_t normalize(uint8_t p);
 // Effective CONTROL covers READ; only still-missing canonical rights can
@@ -191,7 +208,8 @@ class PeerService {
               const std::function<bool(Repository *, Association *)> &fn);
   bool reconcile_approval_pair(
       ApprovalPair pair, uint8_t requested, bool allow_approval,
-      TSD_SuplaEnsureResourceAccessResult *result);
+      TSD_SuplaEnsureResourceAccessResult *result,
+      bool project_stream = false);
 
  public:
   PeerService(Factory factory, Changed changed);
@@ -224,7 +242,8 @@ class PeerService {
   // On failure, a nonempty failed list identifies isolated pair failures.
   // An empty list means enumeration failed: no pair is safe to publish.
   bool reconcile_approvals(uint32_t resource, int device = 0,
-                           std::vector<ApprovalPair> *failed = nullptr);
+                           std::vector<ApprovalPair> *failed = nullptr,
+                           bool project_stream = false);
   bool distrust(uint64_t id);
   bool cleanup_ack(const Association &sent, bool source);
   bool observe_root(uint64_t id);
@@ -233,6 +252,10 @@ class PeerService {
   TSD_SuplaEnsureResourceAccessResult ensure_access(
       int destination, const TDS_SuplaEnsureResourceAccess &request,
       const std::function<bool()> &reconcile = nullptr);
+  TSD_SuplaEnsureResourceAccessResult ensure_stream(
+      int destination, uint32_t resource, bool allow_approval,
+      const std::function<bool()> &reconcile = nullptr,
+      bool record_request = false);
   TSD_SuplaEnsureResourceShareResult ensure_share(
       int source, const TDS_SuplaEnsureResourceShare &request);
 };

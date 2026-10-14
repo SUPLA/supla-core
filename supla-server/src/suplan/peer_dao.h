@@ -55,6 +55,13 @@ class PeerDao : public Repository {
   bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
                         DeviceInfo *source, DeviceInfo *destination,
                         Identity *identity) override;
+  bool stream_schema(bool *available) override;
+  bool stream_permissions(int destination, uint32_t resource,
+                          uint8_t *permissions) override;
+  bool approval_stream_pending(uint64_t pair,
+                              const ApprovalDecision *pending) override;
+  bool approval_stream_mode(const ApprovalDecision &decision) override;
+  bool stream_metadata(uint32_t channel, TDS_SuplaDeviceChannel_E *out);
   bool has_master_dependents(uint32_t channel, bool *out) override;
   bool supports_batch() const override { return true; }
   bool device_exists(int device) override;

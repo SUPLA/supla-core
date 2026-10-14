@@ -4,7 +4,7 @@
 #ifndef DBCOMMON_H_
 #define DBCOMMON_H_
 
-#define DB_VERSION "20261011120000"
+#define DB_VERSION "20261013215600"
 
 #include <atomic>
 

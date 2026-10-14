@@ -44,7 +44,7 @@ uint8_t missing_permissions(uint8_t requested, uint8_t effective) {
 }
 static bool active_binary_source(const ChannelInfo &info);
 static bool manual_permissions_supported(const ChannelInfo &c, uint8_t p) {
-  if (!c.device || !c.type || !c.function || !valid_permissions(p))
+  if (!c.type || !c.function || !valid_permissions(p))
     return false;
   if (c.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
       c.function == SUPLA_CHANNELFNC_ACTIONTRIGGER)
@@ -124,6 +124,68 @@ static bool manual_permissions_supported(const ChannelInfo &c, uint8_t p) {
   }
   return false;
 }
+bool stream_read_supported(const ChannelInfo &channel) {
+  if (!channel.type || !channel.function ||
+      channel.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
+      channel.function == SUPLA_CHANNELFNC_ACTIONTRIGGER) return false;
+  auto c = channel;
+  // Local compatibility families remain readable over SRPC only. This does
+  // not restore deprecated HVAC reference or SUPLAN_PEER eligibility.
+  switch (c.type) {
+    case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
+      return c.function == SUPLA_CHANNELFNC_THERMOMETER;
+    case SUPLA_CHANNELTYPE_RELAYHFD4:
+      return c.function == SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK ||
+             c.function == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE ||
+             c.function == SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR ||
+             c.function == SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
+    case SUPLA_CHANNELTYPE_RELAYG5LA1A:
+      if (c.function != SUPLA_CHANNELFNC_POWERSWITCH &&
+          c.function != SUPLA_CHANNELFNC_LIGHTSWITCH &&
+          c.function != SUPLA_CHANNELFNC_STAIRCASETIMER)
+        return stream_read_supported(ChannelInfo{c.device,
+            SUPLA_CHANNELTYPE_RELAYHFD4, c.function});
+      return true;
+    case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
+      c.type = SUPLA_CHANNELTYPE_RELAY;
+      break;
+    case SUPLA_CHANNELTYPE_SENSORNC: c.type = SUPLA_CHANNELTYPE_BINARYSENSOR;
+      break;
+    case SUPLA_CHANNELTYPE_DHT11:
+    case SUPLA_CHANNELTYPE_DHT21:
+    case SUPLA_CHANNELTYPE_DHT22:
+    case SUPLA_CHANNELTYPE_AM2301:
+    case SUPLA_CHANNELTYPE_AM2302:
+      return c.function == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
+    case SUPLA_CHANNELTYPE_DISTANCESENSOR:
+      return c.function == SUPLA_CHANNELFNC_DEPTHSENSOR ||
+             c.function == SUPLA_CHANNELFNC_DISTANCESENSOR;
+    case SUPLA_CHANNELTYPE_WINDSENSOR:
+      return c.function == SUPLA_CHANNELFNC_WINDSENSOR;
+    case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+      return c.function == SUPLA_CHANNELFNC_PRESSURESENSOR;
+    case SUPLA_CHANNELTYPE_RAINSENSOR:
+      return c.function == SUPLA_CHANNELFNC_RAINSENSOR;
+    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
+      return c.function == SUPLA_CHANNELFNC_WEIGHTSENSOR;
+    case SUPLA_CHANNELTYPE_WEATHER_STATION:
+      return c.function == SUPLA_CHANNELFNC_WEATHER_STATION;
+    case SUPLA_CHANNELTYPE_THERMOSTAT:
+      return c.function ==
+             400;  // Historical thermostat function, no v29 macro.
+    case SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return c.function == SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
+    case SUPLA_CHANNELTYPE_DIGIGLASS:
+      return c.function == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL ||
+             c.function == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL;
+    case SUPLA_CHANNELTYPE_HVAC:
+      if (c.function == SUPLA_CHANNELFNC_HVAC_DRYER ||
+          c.function == SUPLA_CHANNELFNC_HVAC_FAN) return true;
+      break;
+  }
+  return manual_permissions_supported(c, SUPLA_SUPLAN_PERMISSION_READ);
+}
+
 bool canonicalize(const std::vector<Grant> &grants, Acl *acl) {
   std::map<std::pair<uint8_t, uint32_t>, uint8_t> entries;
   for (const auto &g : grants) {
@@ -712,7 +774,8 @@ bool PeerService::provisioned(const Association &sent, uint32_t root) {
 }
 
 bool PeerService::reconcile_approvals(uint32_t resource, int device,
-                                      std::vector<ApprovalPair> *failed) {
+                                      std::vector<ApprovalPair> *failed,
+                                      bool project_stream) {
   if (failed) failed->clear();
   auto repo = factory();
   bool available = false;
@@ -722,7 +785,7 @@ bool PeerService::reconcile_approvals(uint32_t resource, int device,
   if (!repo->approval_pairs(resource, device, &pairs)) return false;
   bool success = true;
   for (const auto &pair : pairs) {
-    if (!reconcile_approval_pair(pair, 0, false, nullptr)) {
+    if (!reconcile_approval_pair(pair, 0, false, nullptr, project_stream)) {
       success = false;
       if (failed) failed->push_back(pair);
     }
@@ -731,7 +794,7 @@ bool PeerService::reconcile_approvals(uint32_t resource, int device,
 }
 bool PeerService::reconcile_approval_pair(
     ApprovalPair pair, uint8_t requested, bool allow_approval,
-    TSD_SuplaEnsureResourceAccessResult *result) {
+    TSD_SuplaEnsureResourceAccessResult *result, bool project_stream) {
   // If a just-accepted pair has no M2 association, create its empty stable
   // identity outside the pair transaction. Never wait for a gate while holding
   // an association row lock. Two bounded attempts cover first creation.
@@ -747,7 +810,7 @@ bool PeerService::reconcile_approval_pair(
     if (!repo->approval_context(pair, &channel, &source, &destination,
                                 &identity) ||
         !repo->approval_decisions(pair.id, &decisions)) return false;
-    bool valid = channel.device == pair.source &&
+    bool valid = !channel.is_virtual && channel.device == pair.source &&
                  pair.source != pair.destination && identity.root &&
                  source.protocol >= 29 && destination.protocol >= 29 &&
                  (source.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
@@ -765,7 +828,9 @@ bool PeerService::reconcile_approval_pair(
     }
     bool needs_association = false;
     for (const auto &d : decisions)
-      needs_association |= d.status == ApprovalStatus::Accepted && valid &&
+      needs_association |= (project_stream || d.delivery_mode !=
+                           SUPLA_RESOURCE_DELIVERY_SERVER_STREAM) &&
+                           d.status == ApprovalStatus::Accepted && valid &&
                            manual_permissions_supported(channel, d.permissions);
     if (needs_association && !existing.id) {
       repo->rollback();
@@ -794,6 +859,8 @@ bool PeerService::reconcile_approval_pair(
       for (const auto &g : grants)
         if (g.origin_type == USER_APPROVAL_ORIGIN && g.origin_id == d.id)
           old = &g;
+      accepted = accepted && (project_stream || old ||
+          d.delivery_mode != SUPLA_RESOURCE_DELIVERY_SERVER_STREAM);
       if (accepted) {
         const Grant desired{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, pair.resource,
                             USER_APPROVAL_ORIGIN, d.id,
@@ -866,8 +933,16 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
       q.Resource.ResourceId > INT32_MAX || !valid_permissions(q.Permissions))
     return result;
   result.DeliveryMode = q.DeliveryMode;
-  if (q.DeliveryMode == SUPLA_RESOURCE_DELIVERY_SERVER_STREAM ||
-      (q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+  if (q.DeliveryMode == SUPLA_RESOURCE_DELIVERY_SERVER_STREAM) {
+    if (q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL ||
+        q.Permissions != SUPLA_SUPLAN_PERMISSION_READ) {
+      result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
+      return result;
+    }
+    return ensure_stream(destination, q.Resource.ResourceId, q.Flags != 0,
+                         reconcile, true);
+  }
+  if ((q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
        q.Resource.ResourceType != SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE) ||
       (q.Flags && q.Resource.ResourceType !=
                       SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL)) {
@@ -895,7 +970,8 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     // origins. The authenticated requester and wire shape are checked first.
     if ((reconcile && !reconcile()) ||
         (q.Resource.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
-         !reconcile_approvals(q.Resource.ResourceId, destination))) {
+         !reconcile_approvals(q.Resource.ResourceId, destination, nullptr,
+                              true))) {
       result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
       return result;
     }
@@ -918,6 +994,10 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     ChannelInfo info;
     if (!repo->channel(q.Resource.ResourceId, &info)) {
       result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    if (info.is_virtual) {
+      result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
       return result;
     }
     if (info.device != source) {
@@ -964,9 +1044,10 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
   }
   bool approval_available = false;
   if (!repo->approval_schema(&approval_available) ||
-      (approval_available && q.Resource.ResourceType ==
-                                 SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
-       !reconcile_approvals(q.Resource.ResourceId, destination))) {
+      (approval_available &&
+       q.Resource.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL &&
+       !reconcile_approvals(q.Resource.ResourceId, destination, nullptr,
+                            true))) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;
   }
@@ -1003,7 +1084,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     if (q.Flags && approval_available) {
       if (!reconcile_approval_pair({0, source, destination,
                                     q.Resource.ResourceId},
-                                  q.Permissions, true, &result)) {
+                                  q.Permissions, true, &result, true)) {
         result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
         result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_INVALID;
       }
@@ -1013,6 +1094,152 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     // Fail closed; never pretend an in-memory request is PENDING_APPROVAL.
     // Existing partial grants remain untouched.
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+  }
+  return result;
+}
+
+TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
+    int destination, uint32_t resource, bool allow_approval,
+    const std::function<bool()> &reconcile, bool record_request) {
+  TSD_SuplaEnsureResourceAccessResult result = {
+      SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, SUPLA_SUPLAN_ACCESS_STATUS_INVALID,
+      SUPLA_RESOURCE_DELIVERY_SERVER_STREAM};
+  auto repo = factory();
+  int owner = 0;
+  DeviceInfo device;
+  Identity identity;
+  ChannelInfo channel;
+  if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, destination, &owner) ||
+      !repo->device(destination, &device) ||
+      !repo->identity(destination, &identity) ||
+      !repo->channel(resource, &channel)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (owner != destination || !identity.root || identity.root == UINT32_MAX)
+    return result;
+  if (device.is_virtual || device.protocol < 29 ||
+      !(device.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)) {
+    result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
+    return result;
+  }
+  if (!channel.device || !channel.type) {
+    result.Result = SUPLA_SUPLAN_RESULT_NOT_FOUND;
+    return result;
+  }
+  if (channel.device == destination) return result;
+  if (!stream_read_supported(channel)) {
+    result.Result = SUPLA_SUPLAN_RESULT_UNSUPPORTED;
+    return result;
+  }
+  if (reconcile && !reconcile()) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  uint8_t allowed = 0;
+  if (!repo->stream_permissions(destination, resource, &allowed)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  const bool covered =
+      !missing_permissions(SUPLA_SUPLAN_PERMISSION_READ, allowed);
+  if (covered && !record_request) {
+    result.Result = SUPLA_SUPLAN_RESULT_OK;
+    result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+    return result;
+  }
+  bool available = false;
+  if (!repo->stream_schema(&available)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (!available) {
+    if (covered) {
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+    }
+    return result;
+  }
+  ApprovalPair pair{0, channel.device, destination, resource};
+  std::vector<ApprovalPair> pairs;
+  if (!repo->approval_pairs(resource, destination, &pairs)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (pairs.empty() && (covered || !allow_approval)) {
+    if (covered) {
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+    }
+    return result;
+  }
+  if (!repo->approval_lock(&pair, allow_approval)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  std::vector<ApprovalDecision> decisions;
+  ChannelInfo current;
+  DeviceInfo from, to;
+  Identity accepted;
+  if (!repo->approval_context(pair, &current, &from, &to, &accepted) ||
+      !repo->approval_decisions(pair.id, &decisions) ||
+      !repo->identity(destination, &identity)) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    return result;
+  }
+  if (pair.source != current.device || current.device != channel.device ||
+      !stream_read_supported(current) || !identity.root ||
+      identity.root == UINT32_MAX || to.is_virtual || to.protocol < 29 ||
+      !(to.flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)) {
+    result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
+    return result;
+  }
+  if (covered) {
+    // Recheck after the shared pair fence; a concurrent removal cannot be
+    // answered from the earlier permission snapshot.
+    if (!repo->stream_permissions(destination, resource, &allowed)) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    if (!missing_permissions(SUPLA_SUPLAN_PERMISSION_READ, allowed)) {
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+    }
+  }
+  const ApprovalDecision *open = nullptr;
+  for (const auto &d : decisions) {
+    if (record_request && d.delivery_mode != 2 &&
+        ((d.status == ApprovalStatus::Accepted && (d.permissions & 3)) ||
+         ((d.status == ApprovalStatus::Pending ||
+           d.status == ApprovalStatus::Rejected) && d.permissions == 1)) &&
+        !repo->approval_stream_mode(d)) {
+      result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+      return result;
+    }
+    if (d.status == ApprovalStatus::Pending ||
+        d.status == ApprovalStatus::Rejected) open = &d;
+    if (d.status == ApprovalStatus::Accepted &&
+        !missing_permissions(SUPLA_SUPLAN_PERMISSION_READ, d.permissions)) {
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+    }
+  }
+  if (result.AccessStatus != SUPLA_SUPLAN_ACCESS_STATUS_GRANTED) {
+    if (open && open->status == ApprovalStatus::Rejected) {
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_REJECTED;
+    } else if (open || allow_approval) {
+      if (!open && !repo->approval_stream_pending(pair.id, nullptr)) {
+        result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+        return result;
+      }
+      result.Result = SUPLA_SUPLAN_RESULT_OK;
+      result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
+    }
+  }
+  if (!repo->commit()) {
+    result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
+    result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_INVALID;
   }
   return result;
 }

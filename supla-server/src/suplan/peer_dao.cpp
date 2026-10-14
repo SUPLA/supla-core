@@ -330,12 +330,12 @@ bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
   if (!select("SELECT c.iodevice_id,c.type,c.func,d.flags,c.channel_number,"
               "CASE WHEN JSON_VALID(c.properties) THEN COALESCE(JSON_LENGTH("
               "JSON_EXTRACT(c.properties,'$.actionTriggerCapabilities')),0) "
-              "ELSE 0 END "
+              "ELSE 0 END,c.is_virtual OR d.is_virtual "
               "FROM supla_dev_channel c JOIN supla_iodevice d "
               "ON d.id=c.iodevice_id AND d.user_id=c.user_id "
               "WHERE c.user_id=" +
                   to_string(user) + " AND c.id=" + to_string(id),
-              &rows, 6))
+              &rows, 7))
     return false;
   if (!rows.empty()) {
     const auto &r = rows.front();
@@ -345,6 +345,7 @@ bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
     out->device_flags = r[3];
     out->number = r[4];
     out->action_capabilities = r[5];
+    out->is_virtual = r[6];
   }
   return true;
 }
@@ -356,12 +357,15 @@ bool PeerDao::device_exists(int device) {
 bool PeerDao::device(int id, DeviceInfo *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
-  if (!select("SELECT flags,protocol_version FROM supla_iodevice WHERE " +
-                  scope() + " AND id=" + to_string(id), &rows, 2))
+  if (!select("SELECT flags,protocol_version,is_virtual FROM supla_iodevice "
+              "WHERE " +
+                  scope() + " AND id=" + to_string(id),
+              &rows, 3))
     return false;
   if (!rows.empty()) {
     out->flags = rows.front()[0];
     out->protocol = rows.front()[1];
+    out->is_virtual = rows.front()[2];
   }
   return true;
 }
@@ -581,17 +585,20 @@ bool PeerDao::approval_lock(ApprovalPair *pair, bool create) {
 bool PeerDao::approval_decisions(uint64_t pair,
                                  std::vector<ApprovalDecision> *out) {
   std::vector<std::vector<uint64_t>> rows;
+  bool stream_available = false;
+  if (!stream_schema(&stream_available)) return false;
   if (!transaction || !select(
       "SELECT id,permissions,revision,CASE status WHEN 'PENDING' THEN 1 "
-      "WHEN 'ACCEPTED' THEN 2 WHEN 'REJECTED' THEN 3 ELSE 4 END "
+      "WHEN 'ACCEPTED' THEN 2 WHEN 'REJECTED' THEN 3 ELSE 4 END," +
+      std::string(stream_available ? "requested_delivery_mode " : "1 ") +
       "FROM supla_resource_access_decision WHERE pair_id=" + to_string(pair) +
-      " ORDER BY id FOR UPDATE", &rows, 4)) return false;
+      " ORDER BY id FOR UPDATE", &rows, 5)) return false;
   out->clear();
   for (const auto &r : rows) {
     if (!valid_permissions(r[1]) || !r[2]) return false;
-    out->push_back({r[0], static_cast<uint8_t>(r[1]),
-                    static_cast<uint32_t>(r[2]),
-                    static_cast<ApprovalStatus>(r[3])});
+    out->push_back(
+        {r[0], static_cast<uint8_t>(r[1]), static_cast<uint32_t>(r[2]),
+         static_cast<ApprovalStatus>(r[3]), static_cast<uint8_t>(r[4])});
   }
   return true;
 }
@@ -600,7 +607,11 @@ bool PeerDao::approval_pending(uint64_t pair, uint8_t permissions,
   if (!transaction || !valid_permissions(permissions)) return false;
   if (pending) {
     if (pending->permissions == permissions) return true;
-    return execute("UPDATE supla_resource_access_decision SET permissions=" +
+    bool stream_available = false;
+    if (!stream_schema(&stream_available)) return false;
+    return execute("UPDATE supla_resource_access_decision SET " +
+                   std::string(stream_available ?
+                       "requested_delivery_mode=1," : "") + "permissions=" +
                    to_string(permissions) + " WHERE id=" +
                    to_string(pending->id) + " AND pair_id=" + to_string(pair) +
                    " AND status='PENDING' AND revision=" +
@@ -631,6 +642,86 @@ bool PeerDao::approval_context(const ApprovalPair &pair, ChannelInfo *info,
   return channel(pair.resource, info) && device(pair.source, source) &&
          device(pair.destination, destination) &&
          identity(pair.source, accepted);
+}
+
+bool PeerDao::stream_schema(bool *available) {
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT COUNT(*) FROM information_schema.columns WHERE "
+              "table_schema=DATABASE() AND table_name="
+              "'supla_resource_access_decision' AND column_name="
+              "'requested_delivery_mode'", &rows, 1) || rows.size() != 1)
+    return false;
+  *available = rows[0][0] == 1;
+  return true;
+}
+bool PeerDao::stream_permissions(int destination, uint32_t resource,
+                                  uint8_t *permissions) {
+  *permissions = 0;
+  std::vector<std::vector<uint64_t>> rows;
+  // Read actual origins, never the materialized ACL/provisioned status.
+  if (!select("SELECT COALESCE(BIT_OR(g.permissions),0) "
+              "FROM supla_suplan_grant g JOIN supla_suplan_peer_association a "
+              "ON a.id=g.association_id JOIN supla_dev_channel c "
+              "ON c.iodevice_id=a.source_device_id AND c.user_id=a.user_id "
+              "WHERE a.user_id=" + to_string(user) +
+              " AND a.destination_device_id=" + to_string(destination) +
+              " AND c.id=" + to_string(resource) +
+              " AND a.source_removed=0 AND a.destination_removed=0 "
+              "AND g.origin_type<>" + to_string(USER_APPROVAL_ORIGIN) +
+              " AND ((g.resource_type=1 AND g.resource_id=c.id) OR "
+              "(g.resource_type=2 AND g.resource_id=c.iodevice_id))",
+              &rows, 1) || rows.size() != 1) return false;
+  *permissions = rows[0][0];
+  bool available = false;
+  if (!approval_schema(&available)) return false;
+  if (!available) return true;
+  if (!select("SELECT COALESCE(BIT_OR(d.permissions),0) "
+              "FROM supla_resource_access_decision d "
+              "JOIN supla_resource_access_pair p ON p.id=d.pair_id "
+              "JOIN supla_dev_channel c ON c.id=p.source_channel_id "
+              "AND c.user_id=p.user_id AND c.iodevice_id=p.source_device_id "
+              "WHERE p.user_id=" + to_string(user) +
+              " AND p.destination_device_id=" + to_string(destination) +
+              " AND p.source_channel_id=" + to_string(resource) +
+              " AND d.status='ACCEPTED'", &rows, 1) || rows.size() != 1)
+    return false;
+  *permissions |= rows[0][0];
+  return true;
+}
+bool PeerDao::approval_stream_pending(uint64_t pair,
+                                       const ApprovalDecision *pending) {
+  if (pending) return true;  // Existing pair workflow is transport-neutral.
+  return transaction &&
+         execute(
+             "INSERT INTO supla_resource_access_decision "
+             "(pair_id,open_pair_id,status,permissions,revision,requested_"
+             "delivery_mode)"
+             " VALUES (" +
+             to_string(pair) + "," + to_string(pair) + ",'PENDING',1,1,2)");
+}
+bool PeerDao::approval_stream_mode(const ApprovalDecision &decision) {
+  return transaction && execute(
+      "UPDATE supla_resource_access_decision SET requested_delivery_mode=2 "
+      "WHERE id=" + to_string(decision.id) + " AND revision=" +
+      to_string(decision.revision) + " AND requested_delivery_mode<>2");
+}
+bool PeerDao::stream_metadata(uint32_t channel,
+                              TDS_SuplaDeviceChannel_E *out) {
+  *out = {};
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT type,func,COALESCE(flist,0),COALESCE(flags,0),"
+              "COALESCE(alt_icon,0),sub_device_id FROM supla_dev_channel "
+              "WHERE user_id=" + to_string(user) + " AND id=" +
+              to_string(channel), &rows, 6)) return false;
+  if (rows.empty()) return false;
+  out->Number = 0xFF;
+  out->Type = rows[0][0];
+  out->Default = rows[0][1];
+  out->FuncList = rows[0][2];
+  out->Flags = rows[0][3];
+  out->DefaultIcon = rows[0][4];
+  out->SubDeviceId = rows[0][5];
+  return true;
 }
 
 }  // namespace supla_suplan

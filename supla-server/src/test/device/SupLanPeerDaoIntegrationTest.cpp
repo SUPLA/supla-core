@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstring>
 #include <future>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -43,6 +44,7 @@
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
 #include "test/integration/IntegrationTest.h"
 #include "user.h"
+#include "user/user_dao.h"
 using namespace supla_suplan;  // NOLINT
 // Inject only at the transport-adapter boundary. Serialization, queueing,
 // framing, registration and the connection thread remain production code.
@@ -113,6 +115,23 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
               std::to_string(SUPLA_CHANNELTYPE_RELAY) + ",func=" +
               std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
               " WHERE id=" + std::to_string(resource)).c_str(), &out);
+  }
+  void stream_schema() {
+    manual_schema();
+    runSqlScript("SupLanM7TestSchema.sql");
+    supla_mariadb_access_provider db;
+    ASSERT_TRUE(db.connect());
+    void *stmt = nullptr;
+    int channel = 0;
+    ASSERT_TRUE(db.stmt_get_int(&stmt, &channel, nullptr, nullptr, nullptr,
+        ("SELECT MIN(id) FROM supla_dev_channel WHERE iodevice_id=" +
+         std::to_string(destination)).c_str(), nullptr, 0, true));
+    ASSERT_TRUE(factory()->accept_identity(destination,
+                                           {456, {uint32_t(channel)}}));
+  }
+  TSD_SuplaEnsureResourceAccessResult stream_ensure(bool approval = false) {
+    return service.ensure_stream(destination, resource, approval, nullptr,
+                                 true);
   }
   std::vector<ApprovalDecision> decisions() {
     auto repo = factory();
@@ -1998,14 +2017,14 @@ TEST_F(SupLanHvacIntegrationTest,
 }
 
 TEST_F(SupLanHvacIntegrationTest,
-       SharedDatabaseVersionCheckRequiresM5Migration) {
-  EXPECT_STREQ("20261011120000", DB_VERSION);
+       SharedDatabaseVersionCheckRequiresM7Migration) {
+  EXPECT_STREQ("20261013215600", DB_VERSION);
   query("DELETE FROM migration_versions");
   query("INSERT INTO migration_versions(version) "
-        "VALUES('Version20261011120000')");
+        "VALUES('Version20261013215600')");
   database db;
   EXPECT_TRUE(db.check_db_version(DB_VERSION, 0));
-  query("UPDATE migration_versions SET version='Version20261008160000'");
+  query("UPDATE migration_versions SET version='Version20261011120000'");
   EXPECT_FALSE(db.check_db_version(DB_VERSION, 0));
 }
 
@@ -2105,6 +2124,51 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     client = -1;
   }
 
+  // Reuse the existing wire fixture for a second real D2S connection.
+  class OtherConnection {
+    SupLanHvacWireIntegrationTest *fixture;
+    void *listener, *worker, *wire;
+    int client;
+    supla_connection *connection;
+    PublicationPauseAdapter *adapter;
+    bool other_selected = true;
+    bool closed = false;
+
+   public:
+    explicit OtherConnection(SupLanHvacWireIntegrationTest *fixture)
+        : fixture(fixture),
+          listener(fixture->listener),
+          worker(fixture->worker),
+          wire(fixture->wire),
+          client(fixture->client),
+          connection(fixture->connection),
+          adapter(fixture->publication_adapter) {
+      fixture->listener = fixture->worker = fixture->wire = nullptr;
+      fixture->client = -1;
+      fixture->connection = nullptr;
+      fixture->publication_adapter = nullptr;
+      fixture->start_connection();
+    }
+    void select(bool other) {
+      if (other == other_selected) return;
+      std::swap(listener, fixture->listener);
+      std::swap(worker, fixture->worker);
+      std::swap(wire, fixture->wire);
+      std::swap(client, fixture->client);
+      std::swap(connection, fixture->connection);
+      std::swap(adapter, fixture->publication_adapter);
+      other_selected = other;
+    }
+    void close() {
+      if (closed) return;
+      select(true);
+      fixture->close_connection();
+      select(false);
+      closed = true;
+    }
+    ~OtherConnection() { close(); }
+  };
+
   void TearDown() override {
     close_connection();
     // The real IPC handler also schedules delayed voice-assistant work. Its
@@ -2188,13 +2252,14 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
   }
 
   void register_existing_family(int type, int advertised_function,
-                                int selected_function, bool weekly = false) {
+                                int selected_function, bool weekly = false,
+                                bool suplan = true) {
     TDS_SuplaRegisterDevice_G registration = {};
     snprintf(registration.Email, sizeof(registration.Email), "%s",
              "hvac-wire@test.invalid");
     memset(registration.GUID, 0xab, sizeof(registration.GUID));
     registration.AuthKey[0] = 1;
-    registration.Flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED |
+    registration.Flags = (suplan ? SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED : 0) |
                          SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
     registration.channel_count = 1;
     auto &channel = registration.channels[0];
@@ -2232,10 +2297,11 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
   }
 
   void expect_access(uint32_t channel, uint8_t result, uint8_t status,
-                     uint8_t flags = 0, uint8_t permissions = 1) {
+                     uint8_t flags = 0, uint8_t permissions = 1,
+                     uint8_t delivery = SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER) {
     TDS_SuplaEnsureResourceAccess request = {
         {SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel},
-        permissions, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, flags};
+        permissions, delivery, flags};
     send_packet(SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS, &request,
                 sizeof(request));
     TSuplaDataPacket packet = {};
@@ -4015,4 +4081,477 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   EXPECT_EQ(USER_APPROVAL_ORIGIN, grants.front().origin_type);
   EXPECT_EQ(pending.id, grants.front().origin_id);
   EXPECT_EQ(1, grants.front().permissions);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M7LegacyStreamApprovalIsDurableWithoutPeer) {
+  stream_schema();
+  std::string out;
+  sqlQuery(("UPDATE supla_iodevice SET flags=0,protocol_version=28 WHERE id=" +
+            std::to_string(source))
+               .c_str(),
+           &out);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, stream_ensure().Result);
+  EXPECT_TRUE(decisions().empty());
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            stream_ensure(true).AccessStatus);
+  auto pending = decisions();
+  ASSERT_EQ(1u, pending.size());
+  EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SERVER_STREAM, pending[0].delivery_mode);
+  for (int i = 0; i < 5; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+              stream_ensure(true).AccessStatus);
+  EXPECT_EQ(pending[0].revision, decisions()[0].revision);
+  ASSERT_EQ(1, decide(pending[0], "REJECTED"));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_REJECTED,
+            stream_ensure(true).AccessStatus);
+  auto rejected = decisions()[0];
+  ASSERT_EQ(1, decide(rejected, "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+  EXPECT_EQ(0u, state().id);
+  ASSERT_EQ(1, decide(decisions()[0], "REMOVED"));
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, stream_ensure().Result);
+  EXPECT_EQ(0u, state().id);
+}
+TEST_F(SupLanPeerDaoIntegrationTest, M7VirtualKeepsRealOwnerNoIdentityOrPeer) {
+  stream_schema();
+  std::string out;
+  sqlQuery(
+      ("UPDATE supla_dev_channel SET is_virtual=1,type=" +
+       std::to_string(SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) +
+       ",func=" + std::to_string(SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT) +
+       " WHERE id=" + std::to_string(resource))
+          .c_str(),
+      &out);
+  sqlQuery(("UPDATE supla_iodevice SET is_virtual=1,flags=0,protocol_version=0 "
+            "WHERE id=" +
+            std::to_string(source))
+               .c_str(),
+           &out);
+  sqlQuery(("DELETE FROM supla_suplan_device_state WHERE device_id=" +
+            std::to_string(source))
+               .c_str(),
+           &out);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            stream_ensure(true).AccessStatus);
+  ASSERT_EQ(1, decide(decisions()[0], "ACCEPTED"));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  EXPECT_EQ(0u, state().id);
+  EXPECT_NE(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, manual_ensure(1).AccessStatus);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M7ReusedDecisionProvenanceIsRevisionedAndIdempotent) {
+  stream_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(1).AccessStatus);
+  auto pending = decisions().front();
+  EXPECT_EQ(1, pending.delivery_mode);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            stream_ensure(true).AccessStatus);
+  auto stream_pending = decisions().front();
+  EXPECT_EQ(2, stream_pending.delivery_mode);
+  EXPECT_EQ(pending.revision + 1, stream_pending.revision);
+  EXPECT_EQ(0, decide(pending, "ACCEPTED"));  // Stale displayed snapshot.
+  ASSERT_EQ(1, decide(stream_pending, "ACCEPTED"));
+  auto accepted = decisions().front();
+  for (int i = 0; i < 5; ++i)
+    EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+  ASSERT_EQ(1u, decisions().size());
+  EXPECT_EQ(accepted.revision, decisions().front().revision);
+  EXPECT_EQ(accepted.id, decisions().front().id);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest, M7CurrentAuthorityPublicationCost) {
+  stream_schema();
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            stream_ensure(true).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  auto began = std::chrono::steady_clock::now();
+  for (int i = 0; i < 256; ++i) {
+    auto access = service.ensure_stream(destination, resource, false, [&] {
+      return supla_suplan_server_peers::reconcile_access_dependencies(
+          2, resource, destination);
+    });
+    ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, access.AccessStatus);
+  }
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                     std::chrono::steady_clock::now() - began)
+                     .count();
+  std::cout << "STREAM SQL: 256 authoritative publication checks incl. "
+               "config audit; elapsed_ms="
+            << elapsed << std::endl;
+  EXPECT_EQ(0u, state().id);
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M7AcceptedControlCoversStreamReadWithoutNewConsentOrAcl) {
+  stream_schema();
+  std::string out;
+  sqlQuery(("UPDATE supla_dev_channel SET type=" +
+            std::to_string(SUPLA_CHANNELTYPE_RELAY) +
+            ",func=" + std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
+            " WHERE id=" + std::to_string(resource))
+               .c_str(),
+           &out);
+  ASSERT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
+            manual_ensure(2).AccessStatus);
+  ASSERT_EQ(1, decide(decisions().front(), "ACCEPTED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  const auto before = state();
+  const auto accepted = decisions().front();
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+  ASSERT_EQ(1u, decisions().size());
+  const auto reused = decisions().front();
+  EXPECT_EQ(accepted.id, reused.id);
+  EXPECT_EQ(2, reused.permissions);
+  EXPECT_EQ(2, reused.delivery_mode);
+  EXPECT_EQ(accepted.revision + 1, reused.revision);
+  EXPECT_TRUE(same_state(before, state()));
+  EXPECT_EQ(0, decide(accepted, "REMOVED"));
+  ASSERT_TRUE(service.reconcile_approvals(resource, destination));
+  EXPECT_TRUE(same_state(before, state()));
+}
+
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M7DisconnectedPhysicalCacheIsCanonicalWithoutDoubleCalibration) {
+  stream_schema();
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  ASSERT_EQ(
+      0, db.query(("UPDATE supla_dev_channel SET is_virtual=0,"
+                   "user_config='{\"temperatureAdjustment\":200}' WHERE id=" +
+                   std::to_string(resource))
+                      .c_str(),
+                  true));
+  ASSERT_EQ(
+      0,
+      db.query(("INSERT INTO supla_dev_channel_value "
+                "(user_id,channel_id,value,valid_to,update_time) VALUES (2," +
+                std::to_string(resource) +
+                ",UNHEX('0000000000003C40'),"
+                "UTC_TIMESTAMP()+INTERVAL 5 SECOND,UTC_TIMESTAMP()) "
+                "ON DUPLICATE KEY UPDATE "
+                "value=VALUES(value),valid_to=VALUES(valid_to),"
+                "update_time=VALUES(update_time)")
+                   .c_str(),
+               true));
+  supla_user_dao dao(&db);
+  auto user = supla_user::find(2, true);
+  auto current = dao.get_virtual_channels(user, 0, resource);
+  ASSERT_EQ(1u, current.size());
+  EXPECT_EQ(source, current.front().get_device_id());
+  EXPECT_EQ(resource, current.front().get_channel_id());
+  TDS_SuplaDeviceChannel_E snapshot{};
+  int64_t remaining = 0;
+  ASSERT_TRUE(current.front().get_stream_value(&snapshot, &remaining));
+  double temperature = 0;
+  memcpy(&temperature, snapshot.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(28, temperature);  // Already canonical; must not become 30.
+  EXPECT_EQ(0, snapshot.Offline);
+  EXPECT_GT(remaining, 0);
+  EXPECT_LE(remaining, 5000000);
+  for (auto &channel : dao.get_virtual_channels(user, 0))
+    EXPECT_NE(resource, channel.get_channel_id());  // Legacy read unchanged.
+  ChannelInfo info;
+  ASSERT_TRUE(factory()->channel(resource, &info));
+  EXPECT_FALSE(info.is_virtual);  // No Source-model or persistent mutation.
+}
+TEST_F(SupLanPeerDaoIntegrationTest,
+       M7StreamDestinationGateAndExactPermissions) {
+  stream_schema();
+  TDS_SuplaEnsureResourceAccess request{{1, resource}, 1, 2, 1};
+  for (unsigned char bits : {0, 2, 3, 4, 5, 7, 128}) {
+    request.Permissions = bits;
+    EXPECT_NE(SUPLA_SUPLAN_RESULT_OK,
+              service.ensure_access(destination, request).Result);
+  }
+  EXPECT_TRUE(decisions().empty());
+  request.Permissions = 1;
+  std::string out;
+  for (const auto &setting : {"flags=0", "protocol_version=28"}) {
+    sqlQuery(("UPDATE supla_iodevice SET " + std::string(setting) +
+              " WHERE id=" + std::to_string(destination))
+                 .c_str(),
+             &out);
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED,
+              service.ensure_access(destination, request).Result);
+  }
+  EXPECT_TRUE(decisions().empty());
+  PeerService foreign{[] { return std::make_unique<PeerDao>(1); }, nullptr};
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+            foreign.ensure_access(destination, request).Result);
+}
+TEST_F(SupLanPeerDaoIntegrationTest, M7OriginUnionNeverTrustsStaleAcl) {
+  stream_schema();
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 99, 8001, 1}));
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 99, 8002, 1}));
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
+            stream_ensure(true).AccessStatus);
+  EXPECT_TRUE(decisions().empty());
+  auto revision = state().revision;
+  ASSERT_TRUE(service.delete_origin(99, 8001));
+  EXPECT_EQ(revision, state().revision);
+  EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, stream_ensure().AccessStatus);
+  ASSERT_TRUE(service.delete_origin(99, 8002));
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, stream_ensure().Result);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       M7VirtualApprovalSnapshotExpiryAndTerminal) {
+  runSqlScript("SupLanM5TestSchema.sql");
+  runSqlScript("SupLanM7TestSchema.sql");
+  query(
+      "UPDATE supla_iodevice SET flags=0,protocol_version=0,is_virtual=1 "
+      "WHERE id=" +
+      std::to_string(source));
+  query("UPDATE supla_dev_channel SET is_virtual=1 WHERE id=" +
+        std::to_string(resource));
+  query("DELETE FROM supla_suplan_device_state WHERE device_id=" +
+        std::to_string(source));
+  query(
+      "INSERT INTO supla_dev_channel_value "
+      "(user_id,channel_id,value,valid_to,update_time) "
+      "VALUES (99126," +
+      std::to_string(resource) +
+      ",UNHEX('0000000000003440'),UTC_TIMESTAMP()+INTERVAL 4 SECOND,"
+      "UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE value=VALUES(value),"
+      "valid_to=VALUES(valid_to),update_time=VALUES(update_time)");
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  query(
+      "UPDATE supla_dev_channel_value SET valid_to=UTC_TIMESTAMP()+INTERVAL 5 "
+      "SECOND "
+      "WHERE channel_id=" +
+      std::to_string(resource));
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL, 1, 1, 2);
+  TSuplaDataPacket packet{};
+  EXPECT_FALSE(receive_packet(&packet, 100));
+  query(
+      "UPDATE supla_resource_access_decision SET status='ACCEPTED',"
+      "open_pair_id=NULL WHERE status='PENDING'");
+  auto user = supla_user::find(99126, false);
+  ASSERT_NE(nullptr, user);
+  testing::IpcSocketAdapterMock socket(-1);
+  EXPECT_CALL(socket, send_data(std::string("OK:99126\n"))).Times(3);
+  supla_on_channel_config_changed_command ipc(&socket);
+  // Same committed Cloud RELATIONS hint as M5, no second Device ENSURE.
+  auto notify = [&] {
+    std::string input = "USER-ON-CHANNEL-CONFIG-CHANGED:99126," +
+                        std::to_string(source) + "," +
+                        std::to_string(resource) + "," +
+                        std::to_string(SUPLA_CHANNELTYPE_THERMOMETER) + "," +
+                        std::to_string(SUPLA_CHANNELFNC_THERMOMETER) + "," +
+                        std::to_string(CONFIG_CHANGE_SCOPE_RELATIONS) + "\n";
+    std::vector<char> buffer(input.begin(), input.end());
+    buffer.push_back(0);
+    EXPECT_TRUE(
+        ipc.process_command(buffer.data(), buffer.size(), input.size()));
+  };
+  notify();
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  ASSERT_EQ(sizeof(TSD_SuplaRemoteChannelState), packet.data_size);
+  TSD_SuplaRemoteChannelState snapshot{};
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(resource, snapshot.ChannelId);
+  EXPECT_EQ(255, snapshot.Channel.Number);
+  EXPECT_EQ(SUPLA_CHANNELTYPE_THERMOMETER, int(snapshot.Channel.Type));
+  EXPECT_EQ(SUPLA_CHANNELFNC_THERMOMETER, int(snapshot.Channel.Default));
+  EXPECT_EQ(0, snapshot.Channel.Offline);
+  double temperature = 0;
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(20, temperature);
+  // The legacy virtual updater's second-resolution cursor must not hide a
+  // STREAM change. Leave update_time unchanged and read the current row.
+  query("UPDATE supla_dev_channel_value SET value=UNHEX('0000000000003540'),"
+        "valid_to=UTC_TIMESTAMP()+INTERVAL 3 SECOND WHERE channel_id=" +
+        std::to_string(resource));
+  notify();
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(21, temperature);
+  ASSERT_TRUE(receive_packet(&packet, 7000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(1, snapshot.Channel.Offline);
+  close_connection();
+  start_connection();
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 0, 1, 2);
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(1, snapshot.Channel.Offline);  // No old connection cache revival.
+  query(
+      "UPDATE supla_resource_access_decision SET status='REMOVED',"
+      "open_pair_id=NULL WHERE status='ACCEPTED'");
+  notify();
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(1, snapshot.Channel.Offline);
+  Association association;
+  ASSERT_TRUE(PeerDao(99126).find(source, destination, &association));
+  EXPECT_EQ(0u, association.id);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, M7UnflaggedV29CannotRequestStream) {
+  runSqlScript("SupLanM5TestSchema.sql");
+  runSqlScript("SupLanM7TestSchema.sql");
+  register_existing_family(SUPLA_CHANNELTYPE_HVAC,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT, false, false);
+  ASSERT_FALSE(HasFatalFailure());
+  expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+                SUPLA_SUPLAN_ACCESS_STATUS_INVALID, 1, 1, 2);
+  EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_resource_access_decision"));
+  TSuplaDataPacket packet{};
+  EXPECT_FALSE(receive_packet(&packet, 100));
+  auto user = supla_user::find(99126, false);
+  ASSERT_NE(nullptr, user);
+  auto device = user->get_devices()->get(destination);
+  ASSERT_NE(nullptr, device);
+  EXPECT_EQ(nullptr, device->get_stream(false));
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       M7PhysicalLegacySourcePublishesValueAndDisconnectWithoutPeer) {
+  runSqlScript("SupLanM5TestSchema.sql");
+  runSqlScript("SupLanM7TestSchema.sql");
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  query(
+      "UPDATE supla_iodevice SET guid=UNHEX(REPEAT('cd',16)),auth_key=NULL,"
+      "enabled=1,flags=0 WHERE id=" +
+      std::to_string(source));
+  OtherConnection source_connection(this);
+  ASSERT_FALSE(HasFatalFailure());
+  TDS_SuplaRegisterDevice_G registration{};
+  snprintf(registration.Email, sizeof(registration.Email), "%s",
+           "hvac-wire@test.invalid");
+  memset(registration.GUID, 0xcd, sizeof(registration.GUID));
+  registration.AuthKey[0] = 1;
+  registration.Flags = SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
+  registration.channel_count = 1;
+  auto &channel = registration.channels[0];
+  channel.Number = scalar(
+      "SELECT channel_number FROM supla_dev_channel "
+      "WHERE id=" +
+      std::to_string(resource));
+  channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
+  channel.Default = SUPLA_CHANNELFNC_THERMOMETER;
+  double temperature = 20;
+  memcpy(channel.value, &temperature, sizeof(temperature));
+  send_packet(SUPLA_DS_CALL_REGISTER_DEVICE_G, &registration,
+              sizeof(TDS_SuplaRegisterDeviceHeader) + sizeof(channel));
+  bool registered = false, synced = false;
+  TSuplaDataPacket packet{};
+  for (int i = 0; i < 10 && !synced; ++i) {
+    ASSERT_TRUE(receive_packet(&packet));
+    if (packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT ||
+        packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B) {
+      TSD_SuplaRegisterDeviceResult reply{};
+      memcpy(&reply, packet.data, sizeof(reply));
+      ASSERT_EQ(SUPLA_RESULTCODE_TRUE, reply.result_code);
+      registered = true;
+    } else if (packet.call_id == SUPLA_SD_CALL_DEVICE_SYNC_DONE) {
+      synced = true;
+    } else if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG) {
+      TSDS_SetChannelConfig config{};
+      memcpy(&config, packet.data, packet.data_size);
+      acknowledge(config);
+    } else {
+      EXPECT_NE(SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES, packet.call_id);
+    }
+  }
+  ASSERT_TRUE(registered && synced);
+  auto live_source = supla_user::find(99126, false)->get_devices()->get(source);
+  ASSERT_NE(nullptr, live_source);
+  ASSERT_TRUE(live_source->get_channels()->channel_exists(resource));
+  live_source.reset();  // The connection lifecycle waits for borrowed owners.
+  source_connection.select(false);
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL, 1, 1, 2);
+  query(
+      "UPDATE supla_resource_access_decision SET status='ACCEPTED',"
+      "open_pair_id=NULL WHERE status='PENDING'");
+  testing::IpcSocketAdapterMock socket(-1);
+  EXPECT_CALL(socket, send_data(std::string("OK:99126\n"))).Times(1);
+  supla_on_channel_config_changed_command ipc(&socket);
+  std::string input = "USER-ON-CHANNEL-CONFIG-CHANGED:99126," +
+                      std::to_string(source) + "," + std::to_string(resource) +
+                      "," + std::to_string(SUPLA_CHANNELTYPE_THERMOMETER) +
+                      "," + std::to_string(SUPLA_CHANNELFNC_THERMOMETER) + "," +
+                      std::to_string(CONFIG_CHANGE_SCOPE_RELATIONS) + "\n";
+  std::vector<char> buffer(input.begin(), input.end());
+  buffer.push_back(0);
+  ASSERT_TRUE(ipc.process_command(buffer.data(), buffer.size(), input.size()));
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  TSD_SuplaRemoteChannelState snapshot{};
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(resource, snapshot.ChannelId);
+  EXPECT_EQ(0, snapshot.Channel.Offline);
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(20, temperature);
+  source_connection.select(true);
+  TDS_SuplaDeviceChannelValue_B update{};
+  update.ChannelNumber = channel.Number;
+  temperature = 25;
+  memcpy(update.value, &temperature, sizeof(temperature));
+  send_packet(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B, &update,
+              sizeof(update));
+  source_connection.select(false);
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(25, temperature);
+  source_connection.select(true);
+  TDS_SuplaDeviceChannelValue_C cached{};
+  cached.ChannelNumber = channel.Number;
+  cached.Offline = 0;
+  cached.ValidityTimeSec = 5;
+  temperature = 26;
+  memcpy(cached.value, &temperature, sizeof(temperature));
+  send_packet(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C, &cached,
+              sizeof(cached));
+  source_connection.select(false);
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(0, snapshot.Channel.Offline);
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(26, temperature);
+  source_connection.close();
+  EXPECT_FALSE(
+      receive_packet(&packet, 100));  // Valid cache survives Source loss.
+  ASSERT_TRUE(receive_packet(&packet, 7000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(1, snapshot.Channel.Offline);
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(26, temperature);
+  Association association;
+  ASSERT_TRUE(PeerDao(99126).find(source, destination, &association));
+  EXPECT_EQ(0u, association.id);
+  query("DELETE FROM supla_dev_channel WHERE id=" + std::to_string(resource));
+  supla_user::on_channel_deleted(99126, source, resource, supla_caller());
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  EXPECT_EQ(1, snapshot.Channel.Offline);
+  auto current_destination =
+      supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, current_destination);
+  EXPECT_EQ(0u, current_destination->get_stream(false)->size());
 }

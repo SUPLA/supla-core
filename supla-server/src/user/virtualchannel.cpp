@@ -18,7 +18,10 @@
 
 #include "virtualchannel.h"
 
+#include <algorithm>
+
 #include "device/value/channel_value_factory.h"
+#include "device/value/channel_value.h"
 #include "user/user.h"
 #include "vbt/value_based_triggers.h"
 
@@ -182,4 +185,29 @@ supla_virtual_channel &supla_virtual_channel::operator=(
   value = copied_value;
 
   return *this;
+}
+
+bool supla_virtual_channel::get_stream_value(TDS_SuplaDeviceChannel_E *out,
+                                             int64_t *remaining_usec) {
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  *remaining_usec = (value_valid_to.tv_sec - now.tv_sec) * 1000000LL +
+                    value_valid_to.tv_usec - now.tv_usec;
+  out->Offline = *remaining_usec > 0 ? 0 : 1;
+  out->ValueValidityTimeSec = *remaining_usec > 0
+      ? std::min<int64_t>(UINT32_MAX, (*remaining_usec + 999999) / 1000000) : 0;
+  return get_value(out->value);
+}
+
+void supla_virtual_channel::set_stream_deadline(uint64_t unix_usec) {
+  value_valid_to.tv_sec = unix_usec / 1000000;
+  value_valid_to.tv_usec = unix_usec % 1000000;
+}
+
+void supla_virtual_channel::set_stream_raw_value(
+    const char raw[SUPLA_CHANNELVALUE_SIZE]) {
+  // Disconnected physical values are already canonical in the DB. Applying
+  // virtual-source calibration a second time would change the snapshot.
+  delete value;
+  value = new supla_channel_value(raw);
 }
