@@ -32,8 +32,10 @@
 #include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/value/channel_onoff_value.h"
+#include "doubles/ipc/IpcSocketAdapterMock.h"
 #include "google/google_home_sync_search_condition.h"
 #include "integration/IntegrationTest.h"
+#include "ipc/get_relay_value_command.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "ocpp/ocpp_dao.h"
 #include "ocpp/ocpp_device.h"
@@ -312,9 +314,61 @@ TEST_F(OcppLoggerIntegrationTest, ChannelReadersSeeConfirmedOcppState) {
 
   supla_channel_property_getter getter;
   EXPECT_TRUE(getter.get_channel_availability_status(2, 73, 140).is_online());
+  EXPECT_TRUE(getter.get_channel_availability_status(2, 0, 140).is_online());
   std::unique_ptr<supla_abstract_channel_value> ipc_value(
       getter.get_value(2, 73, 140));
   EXPECT_NE(nullptr, ipc_value);
+
+  IpcSocketAdapterMock socket(-1);
+  supla_get_relay_value_command command(&socket);
+  char off_request[] = "GET-RELAY-VALUE:2,73,140\n";
+  EXPECT_CALL(socket, send_data(std::string("VALUE:0,0\n"))).Times(1);
+  EXPECT_TRUE(command.process_command(off_request, sizeof(off_request),
+                                      sizeof(off_request) - 1));
+
+  gateway.on_state(suid, 73, 1, true, 90);
+  char on_request[] = "GET-RELAY-VALUE:2,73,140\n";
+  EXPECT_CALL(socket, send_data(std::string("VALUE:1,0\n"))).Times(1);
+  EXPECT_TRUE(command.process_command(on_request, sizeof(on_request),
+                                      sizeof(on_request) - 1));
+
+  char wrong_device_request[] = "GET-RELAY-VALUE:2,74,140\n";
+  EXPECT_CALL(socket, send_data(std::string("UNKNOWN:140\n"))).Times(1);
+  EXPECT_TRUE(command.process_command(wrong_device_request,
+                                      sizeof(wrong_device_request),
+                                      sizeof(wrong_device_request) - 1));
+}
+
+TEST_F(OcppLoggerIntegrationTest, ConnectedMeterWithoutEnergyIsNotAvailable) {
+  ASSERT_TRUE(user->get_devices()->is_online(73));
+  auto meter = user->get_devices()->get_ocpp_channel(141);
+  EXPECT_TRUE(meter.get_availability_status().is_online_but_not_available());
+  EXPECT_EQ(nullptr, meter.get_value());
+
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value_type = 0;
+  supla_channel_availability_status client_status(true);
+  ASSERT_TRUE(user->get_channel_value(73, 141, value, sub_value,
+                                      &sub_value_type, nullptr, nullptr,
+                                      &client_status, nullptr, true));
+  EXPECT_TRUE(client_status.is_online_but_not_available());
+
+  supla_channel_property_getter getter;
+  EXPECT_TRUE(getter.get_channel_availability_status(2, 73, 141)
+                  .is_online_but_not_available());
+
+  gateway.on_meter(suid, 73, 1, {{"voltage", {230000}}}, 90);
+  meter = user->get_devices()->get_ocpp_channel(141);
+  EXPECT_TRUE(meter.get_availability_status().is_online_but_not_available());
+  EXPECT_EQ(nullptr, meter.get_value());
+
+  gateway.on_meter(suid, 73, 1, {{"energy", 12000}}, 90);
+  meter = user->get_devices()->get_ocpp_channel(141);
+  EXPECT_TRUE(meter.get_availability_status().is_online());
+  gateway.on_disconnected(suid, 73);
+  meter = user->get_devices()->get_ocpp_channel(141);
+  EXPECT_TRUE(meter.get_availability_status().is_offline());
 }
 
 TEST_F(OcppLoggerIntegrationTest, LastConnectedChangesOnlyOnNewConnection) {

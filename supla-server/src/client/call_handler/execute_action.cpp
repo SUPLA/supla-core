@@ -24,6 +24,7 @@
 #include "client/client.h"
 #include "client/clientchannelgroups.h"
 #include "client/clientchannels.h"
+#include "device/channel_property_getter.h"
 
 using std::shared_ptr;
 
@@ -59,13 +60,10 @@ void supla_ch_execute_action::handle_call(
         return false;
       },
       [&client](int channel_id) -> bool {
-        shared_ptr<supla_device> device =
-            supla_user::get_device(client->get_user_id(), 0, channel_id);
-        if (device != nullptr) {
-          return device->get_channels()
-              ->get_channel_availability_status(channel_id)
-              .is_online();
-        }
-        return false;
+        supla_channel_property_getter getter;
+        return getter
+            .get_channel_availability_status(client->get_user_id(), 0,
+                                             channel_id)
+            .is_online();
       });
 }

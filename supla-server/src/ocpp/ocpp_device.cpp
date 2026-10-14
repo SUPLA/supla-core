@@ -65,8 +65,15 @@ supla_ocpp_channel::get_raw_extended_value(void) const {
 supla_channel_availability_status supla_ocpp_channel::get_availability_status(
     void) const {
   supla_channel_availability_status result(true);
-  if (value && validity.is_valid()) {
-    result.set_offline(false);
+  if (validity.is_valid()) {
+    if (value) {
+      result.set_offline(false);
+    } else {
+      // The charger is connected, but it has not provided a reading yet.
+      // Do not present this as a disconnected meter or invent a zero value.
+      result.set_proto_online(
+          SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE);
+    }
   }
   return result;
 }
@@ -130,8 +137,8 @@ int supla_ocpp_device::get_switch_channel_id(void) const {
 bool supla_ocpp_device::is_online(void) const {
   std::lock_guard<std::mutex> lock(mutex);
   return active && connected &&
-         (meter.channel.get_availability_status().is_online() ||
-          power_switch.channel.get_availability_status().is_online());
+         (meter.channel.get_availability_status().is_connected() ||
+          power_switch.channel.get_availability_status().is_connected());
 }
 
 bool supla_ocpp_device::can_set_charging(int channel_id) const {
@@ -269,10 +276,10 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
   validity_save_pending |= renew_validity;
   connection_save_pending |= new_connection;
   bool availability_changed =
-      before_meter.get_availability_status().is_online() !=
-          meter_value.get_availability_status().is_online() ||
-      before_switch.get_availability_status().is_online() !=
-          switch_value.get_availability_status().is_online();
+      before_meter.get_availability_status() !=
+          meter_value.get_availability_status() ||
+      before_switch.get_availability_status() !=
+          switch_value.get_availability_status();
   if (!meter_save_pending && !switch_save_pending && !extended_save_pending &&
       !validity_save_pending && !connection_save_pending)
     return;
@@ -339,8 +346,8 @@ void supla_ocpp_device::notify_channel_change(const supla_ocpp_channel &before,
   bool changed = bool(before.value) != bool(after.value) ||
                  (before.value && after.value &&
                   before.value->is_differ(after.value.get(), &significant));
-  bool availability_changed = before.get_availability_status().is_online() !=
-                              after.get_availability_status().is_online();
+  bool availability_changed =
+      before.get_availability_status() != after.get_availability_status();
   auto caller = supla_caller(ctChannel, after.channel_id);
   if (changed || availability_changed) {
     user->on_channel_value_changed(caller, id, after.channel_id, false,
