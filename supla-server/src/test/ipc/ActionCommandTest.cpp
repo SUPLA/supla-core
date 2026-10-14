@@ -384,25 +384,58 @@ TEST_F(ActionCommandTest, HvacSetParameters) {
                         "OK:30\n");
 }
 
-TEST_F(ActionCommandTest, HvacSwitchToManualMode) {
-  StrictMock<ActionCommandMock> c(socketAdapter,
-                                  ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+TEST_F(ActionCommandTest, SetAtParameters) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_manual_mode(10, 20, 30))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_set_at_parameters(10, 20, 30, NotNull()))
+      .WillOnce([](int, int, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_NOT_SET);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-HVAC-SWITCH-TO-MANUAL-MODE:10,20,30\n",
+  commandProcessingTest("ACTION-SET-AT-PARAMETERS:10,20,30,0\n", "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, SetRelayParameters) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_relay_parameters(10, 20, 30, NotNull()))
+      .WillOnce([](int, int, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_RELAY_MODE_AUTOMATIC);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-SET-RELAY-PARAMETERS:10,20,30,5\n",
                         "OK:30\n");
 }
 
-TEST_F(ActionCommandTest, HvacSwitchToProgramMode) {
-  StrictMock<ActionCommandMock> c(socketAdapter,
-                                  ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+TEST_F(ActionCommandTest, SetRelayParametersWithoutMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_program_mode(10, 20, 30))
+  EXPECT_CALL(c, action_set_relay_parameters).Times(0);
+  commandProcessingTest("ACTION-SET-RELAY-PARAMETERS:10,20,30\n",
+                        "UNKNOWN:30\n");
+}
+
+TEST_F(ActionCommandTest, SwitchToManualMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SWITCH_TO_MANUAL_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_switch_to_manual_mode(10, 20, 30))
       .WillOnce(Return(true));
 
-  commandProcessingTest("ACTION-HVAC-SWITCH-TO-PROGRAM-MODE:10,20,30\n",
+  commandProcessingTest("ACTION-SWITCH-TO-MANUAL-MODE:10,20,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, SwitchToProgramMode) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SWITCH_TO_PROGRAM_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_switch_to_program_mode(10, 20, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-SWITCH-TO-PROGRAM-MODE:10,20,30\n",
                         "OK:30\n");
 }
 

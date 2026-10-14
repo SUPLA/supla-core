@@ -1,22 +1,10 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ProtoTest.h"
+
+#include <cstddef>
+#include <cstdio>
 
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
@@ -205,6 +193,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
   EXPECT_EQ((unsigned int)4, sizeof(TRelayChannel_Value));
   EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  EXPECT_LE(sizeof(TActionTriggerProperties),
+            (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
   EXPECT_EQ((unsigned int)520, sizeof(TSD_ChannelConfig));
@@ -239,6 +229,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
   EXPECT_LE(sizeof(TDeviceConfig_HomeScreenContent),
             (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
+  EXPECT_EQ((unsigned int)8, sizeof(TDeviceConfig_InputActivation));
+  EXPECT_LE(sizeof(TDeviceConfig_InputActivation),
+            (unsigned int)SUPLA_DEVICE_CONFIG_MAXSIZE);
 
   EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
@@ -272,10 +265,16 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   EXPECT_EQ((unsigned int)16, sizeof(TAction_ShadingSystem_Parameters));
   EXPECT_EQ((unsigned int)16, sizeof(TAction_RGBW_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_AT_Parameters));
+  EXPECT_EQ((unsigned int)16, sizeof(TAction_Relay_Parameters));
 
   EXPECT_LE(sizeof(TAction_ShadingSystem_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
   EXPECT_LE(sizeof(TAction_RGBW_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+  EXPECT_LE(sizeof(TAction_AT_Parameters),
+            (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
+  EXPECT_LE(sizeof(TAction_Relay_Parameters),
             (unsigned int)SUPLA_ACTION_PARAM_MAXSIZE);
 
   EXPECT_EQ(sizeof(TSC_GetChannelValueResult), 1055);
@@ -296,6 +295,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_EQ(sizeof(TChannelConfig_WeeklySchedule), 356);
   EXPECT_LE(sizeof(TChannelConfig_WeeklySchedule),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  EXPECT_EQ(sizeof(TChannelConfig_ExtendedWeeklySchedule),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+  EXPECT_EQ(offsetof(TChannelConfig_ExtendedWeeklySchedule, Payload),
+            static_cast<size_t>(SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE));
+  EXPECT_EQ(SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE, 496);
 
   EXPECT_EQ((unsigned int)544, sizeof(TSC_DeviceConfigUpdateOrResult));
   EXPECT_EQ((unsigned int)20, sizeof(TCS_GetDeviceConfigRequest));
@@ -354,6 +359,48 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_LE(sizeof(TValve_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+}
+
+TEST_F(ProtoTest, actionModeNames) {
+  struct ModeCase {
+    int action_id;
+    const char *name;
+    unsigned char expected_mode;
+  };
+  const ModeCase cases[] = {
+      {ACTION_SET_AT_PARAMETERS, "NOT_SET", SUPLA_BUTTON_MODE_NOT_SET},
+      {ACTION_SET_AT_PARAMETERS, "LOCKED", SUPLA_BUTTON_MODE_LOCKED},
+      {ACTION_SET_RELAY_PARAMETERS, "NOT_SET", SUPLA_RELAY_MODE_NOT_SET},
+      {ACTION_SET_RELAY_PARAMETERS, "START_ON", SUPLA_RELAY_MODE_START_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "START_OFF", SUPLA_RELAY_MODE_START_OFF},
+      {ACTION_SET_RELAY_PARAMETERS, "FORCED_ON", SUPLA_RELAY_MODE_FORCED_ON},
+      {ACTION_SET_RELAY_PARAMETERS, "FORCED_OFF", SUPLA_RELAY_MODE_FORCED_OFF},
+      {ACTION_SET_RELAY_PARAMETERS, "AUTOMATIC", SUPLA_RELAY_MODE_AUTOMATIC},
+  };
+
+  for (const ModeCase &test_case : cases) {
+    unsigned char mode = 255;
+    EXPECT_TRUE(supla_action_mode_from_text(test_case.action_id,
+                                            test_case.name, &mode));
+    EXPECT_EQ(mode, test_case.expected_mode);
+  }
+
+  unsigned char mode = 255;
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS,
+                                           "AUTOMATIC", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS,
+                                           "LOCKED", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS,
+                                           "automatic", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RELAY_PARAMETERS, "5",
+                                           &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_RGBW_PARAMETERS,
+                                           "NOT_SET", &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS, nullptr,
+                                           &mode));
+  EXPECT_FALSE(supla_action_mode_from_text(ACTION_SET_AT_PARAMETERS, "LOCKED",
+                                           nullptr));
+  EXPECT_EQ(mode, 255);
 }
 
 TEST_F(ProtoTest, captionsThatShouldBeOfTheSameSize) {
@@ -739,6 +786,52 @@ TEST_F(ProtoTest, set_null_terminated_string) {
 
   EXPECT_EQ(strncmp(src, dst, sizeof(dst)), 0);
   EXPECT_EQ(dest_size, strnlen(src, sizeof(src)) + 1);
+}
+
+TEST_F(ProtoTest, relayWeeklyScheduleFunctions) {
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_LIGHTSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_POWERSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_STAIRCASETIMER));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATE));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR));
+  EXPECT_TRUE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK));
+
+  EXPECT_FALSE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_FALSE(supla_weekly_schedule_is_relay_function(
+      SUPLA_CHANNELFNC_PUMPSWITCH));
+}
+
+TEST_F(ProtoTest, weeklyScheduleProgramModeTypes) {
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_HVAC_THERMOSTAT),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_LIGHTSWITCH),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_ACTIONTRIGGER),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON);
+  EXPECT_EQ(supla_weekly_schedule_get_program_mode_type(
+                SUPLA_CHANNELFNC_PUMPSWITCH),
+            SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED);
+
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_LIGHTSWITCH));
+  EXPECT_TRUE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_FALSE(supla_weekly_schedule_is_function_supported(
+      SUPLA_CHANNELFNC_PUMPSWITCH));
 }
 
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/

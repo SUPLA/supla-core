@@ -234,6 +234,15 @@ bool supla_state_webhook_request::make_request(
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
       result = client.binary_sensor_report();
       break;
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+      result = client.binary_sensor_report("SMOKE_SENSOR");
+      break;
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+      result = client.binary_sensor_report("CARBON_MONOXIDE_SENSOR");
+      break;
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
+      result = client.binary_sensor_report("GAS_SENSOR");
+      break;
     case SUPLA_CHANNELFNC_MOTION_SENSOR:
       result = client.motion_sensor_report();
       break;

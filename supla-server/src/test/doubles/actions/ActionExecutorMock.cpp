@@ -83,8 +83,8 @@ void ActionExecutorMock::clear(void) {
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
   this->hvac_set_parameters_counter = 0;
-  this->hvac_switch_to_program_mode_counter = 0;
-  this->hvac_switch_to_manual_mode_counter = 0;
+  this->switch_to_program_mode_counter = 0;
+  this->switch_to_manual_mode_counter = 0;
   this->hvac_set_temperature_counter = 0;
   this->hvac_set_temperatures_counter = 0;
   this->rgbw_on_off = -1;
@@ -289,14 +289,20 @@ void ActionExecutorMock::hvac_set_parameters(
   hvac_set_parameters_counter++;
 }
 
-void ActionExecutorMock::hvac_switch_to_program_mode(void) {
+void ActionExecutorMock::set_at_parameters(
+    supla_action_mode_parameters *params) {}
+
+void ActionExecutorMock::set_relay_parameters(
+    supla_action_mode_parameters *params) {}
+
+void ActionExecutorMock::switch_to_program_mode(void) {
   addTime();
-  hvac_switch_to_program_mode_counter++;
+  switch_to_program_mode_counter++;
 }
 
-void ActionExecutorMock::hvac_switch_to_manual_mode(void) {
+void ActionExecutorMock::switch_to_manual_mode(void) {
   addTime();
-  hvac_switch_to_manual_mode_counter++;
+  switch_to_manual_mode_counter++;
 }
 
 void ActionExecutorMock::hvac_set_temperature(
@@ -402,12 +408,12 @@ int ActionExecutorMock::getHvacSetParametersCounter(void) {
   return hvac_set_parameters_counter;
 }
 
-int ActionExecutorMock::getHvacSwitchToProgramModeCounter(void) {
-  return hvac_switch_to_program_mode_counter;
+int ActionExecutorMock::getSwitchToProgramModeCounter(void) {
+  return switch_to_program_mode_counter;
 }
 
-int ActionExecutorMock::getHvacSwitchToManualModeCounter(void) {
-  return hvac_switch_to_manual_mode_counter;
+int ActionExecutorMock::getSwitchToManualModeCounter(void) {
+  return switch_to_manual_mode_counter;
 }
 
 int ActionExecutorMock::getHvacSetTemperatureCounter(void) {
@@ -545,11 +551,11 @@ int ActionExecutorMock::counterSetCount(void) {
     result++;
   }
 
-  if (hvac_switch_to_program_mode_counter > 0) {
+  if (switch_to_program_mode_counter > 0) {
     result++;
   }
 
-  if (hvac_switch_to_manual_mode_counter > 0) {
+  if (switch_to_manual_mode_counter > 0) {
     result++;
   }
 

@@ -22,6 +22,7 @@
 
 #include "actions/action_executor.h"
 #include "actions/action_hvac_parameters.h"
+#include "actions/action_mode_parameters.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "log.h"
@@ -93,6 +94,26 @@ void supla_ch_abstract_execute_action::execute_action(
       if (action->ParamSize == sizeof(TAction_HVAC_Parameters)) {
         params = new supla_action_hvac_parameters(
             (TAction_HVAC_Parameters*)action->Param);
+      } else {
+        send_result(action, srpc_adapter,
+                    SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
+      }
+      break;
+    case ACTION_SET_AT_PARAMETERS:
+      if (action->ParamSize == sizeof(TAction_AT_Parameters)) {
+        params = new supla_action_mode_parameters(
+            ((TAction_AT_Parameters *)action->Param)->Mode);
+      } else {
+        send_result(action, srpc_adapter,
+                    SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
+        return;
+      }
+      break;
+    case ACTION_SET_RELAY_PARAMETERS:
+      if (action->ParamSize == sizeof(TAction_Relay_Parameters)) {
+        params = new supla_action_mode_parameters(
+            ((TAction_Relay_Parameters *)action->Param)->Mode);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);

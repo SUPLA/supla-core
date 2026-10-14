@@ -6,9 +6,9 @@
 set -e
 
 # Defaults
-SDK="18.5"
-OPENSSL="3.6.0"
-THREADS=4
+SDK="26.5"
+OPENSSL="3.6.3"
+THREADS=8
 
 temp_clean() {
   rm -rf libcrypto-iphoneos.a libcrypto-iphonesimulator.a \

@@ -1294,6 +1294,45 @@ TEST_F(StateWebhookRequestTest, sendBinarySensorReport_Disconnected) {
            (supla_abstract_channel_value *)nullptr, expectedPayload);
 }
 
+TEST_F(StateWebhookRequestTest, sendSmokeSensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"SMOKE_SENSOR\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":true,"
+      "\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_SMOKE_SENSOR, true,
+           new supla_channel_binary_sensor_value(SUPLA_CHANNELFNC_SMOKE_SENSOR,
+                                                 true),
+           expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendCarbonMonoxideSensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"CARBON_MONOXIDE_SENSOR\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":true,"
+      "\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR, true,
+           new supla_channel_binary_sensor_value(
+               SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR, true),
+           expectedPayload);
+}
+
+TEST_F(StateWebhookRequestTest, sendGasSensorReport_Connected) {
+  const char expectedPayload[] =
+      "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","
+      "\"channelId\":123,\"channelFunction\":\"GAS_SENSOR\","
+      "\"timestamp\":1600097258,\"state\":{\"hi\":true,"
+      "\"connected\":true}}";
+
+  makeTest(SUPLA_CHANNELFNC_GAS_SENSOR, true,
+           new supla_channel_binary_sensor_value(SUPLA_CHANNELFNC_GAS_SENSOR,
+                                                 true),
+           expectedPayload);
+}
+
 TEST_F(StateWebhookRequestTest, sendBMotionSensorReport_Connected) {
   const char expectedPayload[] =
       "{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-e8be5c71ae5b\","

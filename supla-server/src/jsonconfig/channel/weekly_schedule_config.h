@@ -29,16 +29,18 @@ class weekly_schedule_config : public supla_json_config {
   static const char mode[];
   static const char setpoint_temperature_heat[];
   static const char setpoint_temperature_cool[];
+  static const char relay_mode_duration_s[];
+  static const char relay_opposite_mode_duration_s[];
   static const char program_settings[];
   static const char quarters[];
 
   cJSON *get_ws_root(bool force);
-  std::string mode_to_string(unsigned char mode);
-  unsigned char string_to_mode(const std::string &mode);
+  std::string mode_to_string(unsigned char mode, _supla_int_t func);
+  unsigned char string_to_mode(const std::string &mode, _supla_int_t func);
   void add_program(unsigned char index, TChannelConfig_WeeklySchedule *config,
-                   cJSON *program_root);
+                   cJSON *program_root, _supla_int_t func);
   bool get_program(unsigned char index, TChannelConfig_WeeklySchedule *config,
-                   cJSON *program_root);
+                   cJSON *program_root, _supla_int_t func);
   void add_quarter(TChannelConfig_WeeklySchedule *config, cJSON *quarters_root,
                    unsigned char quarter);
 
@@ -49,8 +51,8 @@ class weekly_schedule_config : public supla_json_config {
   explicit weekly_schedule_config(supla_json_config *root);
   weekly_schedule_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_WeeklySchedule *config);
-  bool get_config(TChannelConfig_WeeklySchedule *config);
+  void set_config(TChannelConfig_WeeklySchedule *config, _supla_int_t func);
+  bool get_config(TChannelConfig_WeeklySchedule *config, _supla_int_t func);
 };
 
 #endif /* WEEKLY_SCHEDULE_CONFIG_H_ */

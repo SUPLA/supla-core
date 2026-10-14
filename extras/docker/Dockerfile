@@ -1,8 +1,8 @@
-FROM debian:13.2
+FROM debian:13
 
 RUN apt-get update 
 RUN apt-get upgrade -y
-RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev libpqxx-dev libpq-dev postgresql-client iputils-ping nlohmann-json3-dev python3-pip
+RUN apt-get -y install git vim wget procps build-essential libssl-dev libmariadb-dev-compat mariadb-client net-tools valgrind cppcheck cmake clang-format rsyslog libgtest-dev libgmock-dev screen libcurl4-openssl-dev libpqxx-dev libpq-dev postgresql-client iputils-ping nlohmann-json3-dev python3-pip libcjson-dev
 RUN mkdir -p /etc/supla-server
 RUN python3 -m pip install cpplint==2.0.2 --break-system-packages && \
     cd /usr/src/ && \

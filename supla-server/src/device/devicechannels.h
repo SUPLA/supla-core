@@ -19,6 +19,7 @@
 #ifndef DEVICECHANNELS_H_
 #define DEVICECHANNELS_H_
 
+#include <functional>
 #include <list>
 #include <map>
 #include <vector>
@@ -26,9 +27,11 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_mode_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "channel_availability_status.h"
 #include "device/abstract_device_dao.h"
+#include "device/channel_config_sync_coordinator.h"
 #include "device/channel_fragment.h"
 #include "device/devicechannel.h"
 #include "device/extended_value/channel_extended_value_envelope.h"
@@ -39,6 +42,7 @@ class supla_device_channels {
  private:
   std::vector<supla_device_channel *> channels;
   supla_device *device;
+  supla_channel_config_sync_coordinator channel_config_sync_coordinator;
 
   void *get_srpc(void);
 
@@ -81,13 +85,20 @@ class supla_device_channels {
       std::function<bool(supla_device_channel *, supla_channel_hvac_value *)>
           on_value);
 
+  bool action_weekly_schedule_switch_to_mode(
+      const supla_caller &caller, int channel_id, int group_id,
+      unsigned char eol, unsigned char relay_mode, unsigned char button_mode,
+      bool *function_match);
+
   bool hp_action(
       int channel_id, bool *function_match,
       std::function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
           on_calcfg);
 
   bool calcfg_cmd(int channel_id, unsigned _supla_int64_t flag,
-                  bool superuser_authorized, _supla_int_t cmd);
+                  bool superuser_authorized, _supla_int_t cmd,
+                  unsigned _supla_int64_t *queued_at = nullptr,
+                  bool *waiting_for_result = nullptr);
 
  public:
   explicit supla_device_channels(supla_abstract_device_dao *dao,
@@ -180,6 +191,8 @@ class supla_device_channels {
   bool set_dgf_transparency(const supla_caller &caller, int channel_id,
                             unsigned short activeBits, unsigned short mask);
   bool get_relay_value(int channel_id, TRelayChannel_Value *relay_value);
+  bool get_action_trigger_value(int channel_id,
+                                TActionTriggerProperties *at_value);
   bool action_toggle(const supla_caller &caller, int channel_id, int group_id,
                      unsigned char eol);
   bool action_shut(const supla_caller &caller, int channel_id, int group_id,
@@ -212,12 +225,16 @@ class supla_device_channels {
   bool action_hvac_set_parameters(const supla_caller &caller, int channel_id,
                                   int group_id, unsigned char eol,
                                   const supla_action_hvac_parameters *params);
-  bool action_hvac_switch_to_manual_mode(const supla_caller &caller,
-                                         int channel_id, int group_id,
-                                         unsigned char eol);
-  bool action_hvac_switch_to_program_mode(const supla_caller &caller,
-                                          int channel_id, int group_id,
-                                          unsigned char eol);
+  bool action_set_at_parameters(const supla_caller &caller, int channel_id,
+                                int group_id, unsigned char eol,
+                                const supla_action_mode_parameters *params);
+  bool action_set_relay_parameters(const supla_caller &caller, int channel_id,
+                                   int group_id, unsigned char eol,
+                                   const supla_action_mode_parameters *params);
+  bool action_switch_to_manual_mode(const supla_caller &caller, int channel_id,
+                                    int group_id, unsigned char eol);
+  bool action_switch_to_program_mode(const supla_caller &caller, int channel_id,
+                                     int group_id, unsigned char eol);
   bool action_hvac_set_temperature(
       const supla_caller &caller, int channel_id, int group_id,
       unsigned char eol,
@@ -226,13 +243,25 @@ class supla_device_channels {
       const supla_caller &caller, int channel_id, int group_id,
       unsigned char eol,
       const supla_action_hvac_setpoint_temperatures *temperatures);
-  bool reset_counters(int channel_id);
-  bool take_ocr_photo(int channel_id);
-  bool mute_alarm_sound(int channel_id);
-  bool restart_subdevice(int channel_id);
-  bool identify_subdevice(int channel_id);
+  bool reset_counters(int channel_id,
+                      unsigned _supla_int64_t *queued_at = nullptr,
+                      bool *waiting_for_result = nullptr);
+  bool take_ocr_photo(int channel_id,
+                      unsigned _supla_int64_t *queued_at = nullptr,
+                      bool *waiting_for_result = nullptr);
+  bool mute_alarm_sound(int channel_id,
+                        unsigned _supla_int64_t *queued_at = nullptr,
+                        bool *waiting_for_result = nullptr);
+  bool restart_subdevice(int channel_id,
+                         unsigned _supla_int64_t *queued_at = nullptr,
+                         bool *waiting_for_result = nullptr);
+  bool identify_subdevice(int channel_id,
+                          unsigned _supla_int64_t *queued_at = nullptr,
+                          bool *waiting_for_result = nullptr);
   bool recalibrate(int channel_id, const supla_caller &caller,
-                   bool superuser_authorized);
+                   bool superuser_authorized,
+                   unsigned _supla_int64_t *queued_at = nullptr,
+                   bool *waiting_for_result = nullptr);
   void timer_arm(const supla_caller &caller, int channel_id, int group_id,
                  unsigned char eol, unsigned char On, unsigned int duration_ms);
   supla_json_config *get_json_config(int channel_id);
@@ -246,7 +275,10 @@ class supla_device_channels {
                          supla_abstract_channel_value *)>
           filter);
 
-  void send_configs_to_device(void);
+  void send_configs_to_device(std::function<void(supla_device *)> on_finished);
+  void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
+  void iterate(void);
+  unsigned _supla_int64_t channel_config_batch_time_left_usec(void);
 
   void get_channel_extended_values(
       std::vector<supla_abstract_channel_extended_value_envelope *> *result,

@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef supla_proto_H_
 #define supla_proto_H_
@@ -46,7 +31,7 @@ struct _supla_timeval {
 
 #elif defined(ESP8266) || defined(ESP32) || defined(ESP_PLATFORM)
 // *** Espressif NONOS SDK for ESP8266 OR ARDUINO WITH ESP8266 or ESP32 ***
-// *** ESP-IDF, ESP8266 RTOS SDK ***
+// *** ESP-IDF ***
 #ifndef ESP_PLATFORM
 #ifndef ARDUINO
 #include <mem.h>
@@ -119,7 +104,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 28
+#define SUPLA_PROTO_VERSION 29
 #define SUPLA_PROTO_VERSION_MIN 1
 
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO) || defined(SUPLA_DEVICE)
@@ -301,6 +286,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_GET_DEVICE_CONFIG 1240                  // ver. >= 21
 #define SUPLA_SC_CALL_DEVICE_CONFIG_UPDATE_OR_RESULT 1250     // ver. >= 21
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
+#define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
 
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
@@ -511,6 +497,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_FLOOD_SENSOR 1000                 // ver. >= 27
 #define SUPLA_CHANNELFNC_MOTION_SENSOR 1010                // ver. >= 27
 #define SUPLA_CHANNELFNC_BINARY_SENSOR 1020                // ver. >= 27
+#define SUPLA_CHANNELFNC_SMOKE_SENSOR 1030                 // ver. >= 29
+#define SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR 1040       // ver. >= 29
+#define SUPLA_CHANNELFNC_GAS_SENSOR 1050                   // ver. >= 29
 
 // Channel's FuncList bit values:
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
@@ -600,6 +589,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HPD 19
 #define SUPLA_MFR_LUKFUD 20
 #define SUPLA_MFR_WALA 21
+#define SUPLA_MFR_PROVENT 22
+#define SUPLA_MFR_SMARTBOB 23
 
 // BIT map definition for TDS_SuplaRegisterDevice_*::Flags (32 bit)
 #define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010          // ver. >= 17
@@ -618,6 +609,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x8000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
+#define SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED 0x20000           // ver. >= 29
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -644,6 +636,15 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_CONFIG_FIELD_MODBUS (1ULL << 9)  // v. >= 27
 // type: TDeviceConfig_FirmwareUpdate
 #define SUPLA_DEVICE_CONFIG_FIELD_FIRMWARE_UPDATE (1ULL << 10)  // v. >= 28
+// type: TDeviceConfig_ThermalProtection
+#define SUPLA_DEVICE_CONFIG_FIELD_THERMAL_PROTECTION (1ULL << 11)  // v. >= 29
+// type: TDeviceConfig_InputActivation
+#define SUPLA_DEVICE_CONFIG_FIELD_INPUT_ACTIVATION \
+  (1ULL << 12)  // v. >= 29
+
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND        (1U << 0)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_VCC        (1U << 1)
+#define SUPLA_DEVCFG_INPUT_ACTIVATION_GND_OR_VCC (1U << 2)
 
 // BIT map definition for TDS_SuplaDeviceChannel_C::Flags (32 bit)
 // BIT map definition for TDS_SuplaDeviceChannel_D::Flags (64 bit)
@@ -683,12 +684,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_HAS_PARENT 0x20000000                  // ver. >= 21
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE 0x40000000    // ver. >= 25
 #define SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE 0x80000000     // ver. >= 25
-#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 28
-#define SUPLA_CHANNEL_FLAG_RELAY_MODE_ONCE_SUPPORTED 0x200000000  // ver. >= 28
+#define SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED 0x100000000      // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED 0x200000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED \
-  0x400000000  // ver. >= 28
+  0x400000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED \
-  0x800000000  // ver. >= 28
+  0x800000000  // ver. >= 29
+#define SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED \
+  0x1000000000  // ver. >= 29; weekly schedule no-op program
 #pragma pack(push, 1)
 
 typedef struct {
@@ -1639,10 +1642,12 @@ typedef struct {
 #define ACTION_DISABLE 210
 #define ACTION_SEND 220
 #define ACTION_HVAC_SET_PARAMETERS 230
-#define ACTION_HVAC_SWITCH_TO_PROGRAM_MODE 231
-#define ACTION_HVAC_SWITCH_TO_MANUAL_MODE 232
+#define ACTION_SWITCH_TO_PROGRAM_MODE 231
+#define ACTION_SWITCH_TO_MANUAL_MODE 232
 #define ACTION_HVAC_SET_TEMPERATURES 233
 #define ACTION_HVAC_SET_TEMPERATURE 234
+#define ACTION_SET_AT_PARAMETERS 236
+#define ACTION_SET_RELAY_PARAMETERS 237
 #define ACTION_READ 1000
 #define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
@@ -1682,6 +1687,16 @@ typedef struct {
       SetpointTemperatureCool;    // * 0.01 - Celcius degree used for coolingx
   unsigned _supla_int16_t Flags;  // SUPLA_HVAC_VALUE_FLAG_
 } TAction_HVAC_Parameters;
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_BUTTON_MODE_
+  char Reserved[15];
+} TAction_AT_Parameters;
+
+typedef struct {
+  unsigned char Mode;  // SUPLA_RELAY_MODE_
+  char Reserved[15];
+} TAction_Relay_Parameters;
 
 typedef struct {
   _supla_int_t ActionId;
@@ -2425,8 +2440,9 @@ typedef struct {
 
 // Relay modes and commands
 #define SUPLA_RELAY_MODE_NOT_SET 0
-#define SUPLA_RELAY_MODE_ON_ONCE 1
-#define SUPLA_RELAY_MODE_OFF_ONCE 2
+// Initial state on entering a program block (not a continuously forced state).
+#define SUPLA_RELAY_MODE_START_ON 1
+#define SUPLA_RELAY_MODE_START_OFF 2
 #define SUPLA_RELAY_MODE_FORCED_ON 3
 #define SUPLA_RELAY_MODE_FORCED_OFF 4
 #define SUPLA_RELAY_MODE_AUTOMATIC 5
@@ -2440,7 +2456,7 @@ typedef struct {
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned _supla_int16_t flags;  // SUPLA_RELAY_FLAG_*
-  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 28,
+  unsigned char RelayMode;        // see SUPLA_RELAY_MODE_, v. >= 29,
                                   // only if channel Flags:
                                   // SUPLA_CHANNEL_FLAG_RELAY_MODE_* are set.
 } TRelayChannel_Value;            // v. >= 15
@@ -2668,6 +2684,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH 0x0040
 #define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
+// Use exclusively with SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
 #define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
@@ -2683,12 +2700,22 @@ typedef struct {
 // SWITCHCYCLECOUNT and defualtIconField are mutually exclusive. Use only one
 // of them.
 #define SUPLA_CHANNELSTATE_FIELD_SWITCHCYCLECOUNT 0x8000
+// Device battery level is used to inform server that channel's battery level
+// should be applied to whole device
 #define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL 0x10000
+// Use exclusively with SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH
+#define SUPLA_CHANNELSTATE_FIELD_BATTERY_STATE 0x20000
+// Device battery state is used to inform server that channel's battery state
+// should be applied to whole device
+#define SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERY_STATE 0x40000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
 #define SUPLA_LASTCONNECTIONRESETCAUSE_WIFI_CONNECTION_LOST 2
 #define SUPLA_LASTCONNECTIONRESETCAUSE_SERVER_CONNECTION_LOST 3
+
+#define SUPLA_BATTERY_STATE_OK 0
+#define SUPLA_BATTERY_STATE_LOW 1
 
 typedef struct {
   _supla_int_t ReceiverID;  // Not used in extended values
@@ -2712,7 +2739,10 @@ typedef struct {
   unsigned char BridgeNodeSignalStrength;  // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
-  unsigned char BatteryHealth;
+  union {
+    unsigned char BatteryHealth;  // 0 - 100%
+    unsigned char BatteryState;   // SUPLA_BATTERY_STATE_*
+  };
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
   unsigned _supla_int16_t LightSourceLifespan;  // 0 - 65535 hours
   union {
@@ -2864,6 +2894,7 @@ typedef struct {
 #define SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE 3
 #define SUPLA_CONFIG_TYPE_OCR 4
 #define SUPLA_CONFIG_TYPE_EXTENDED 5
+#define SUPLA_CONFIG_TYPE_EXTENDED_WEEKLY_SCHEDULE 6
 
 /********************************************
  * DEVICE CONFIG STRUCTURES
@@ -3069,6 +3100,29 @@ typedef struct {
   unsigned char Reserved[20];
 } TDeviceConfig_FirmwareUpdate;
 
+typedef struct {
+  _supla_int16_t Threshold;     // 0.1°C
+  _supla_int16_t MinThreshold;  // 0.1°C, readonly
+  _supla_int16_t MaxThreshold;  // 0.1°C, readonly
+
+  unsigned char Enabled;         // 0 - disabled, 1 - enabled
+  unsigned char DisableAllowed;  // readonly
+
+  unsigned char Reserved[8];
+} TDeviceConfig_ThermalProtection;  // v. >= 29
+
+// type: TDeviceConfig_InputActivation
+typedef struct {
+  // Bitmask of SUPLA_DEVCFG_INPUT_ACTIVATION_* values supported by the device.
+  // Read-only for clients.
+  unsigned char AvailableModes;
+
+  // One selected SUPLA_DEVCFG_INPUT_ACTIVATION_* value.
+  unsigned char Mode;
+
+  unsigned char Reserved[6];
+} TDeviceConfig_InputActivation;
+
 /********************************************
  * CHANNEL CONFIG STRUCTURES
  ********************************************/
@@ -3195,6 +3249,11 @@ typedef struct {
 } TChannelConfig_ActionTrigger;  // v. >= 16
 
 // Weekly schedule definition for HVAC, Relay, AT channels
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED 0
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC 1
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY 2
+#define SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON 3
+
 typedef struct {
   unsigned char Mode;  // for HVAC: SUPLA_HVAC_MODE_
                        // for AT: SUPLA_BUTTON_MODE_
@@ -3202,10 +3261,16 @@ typedef struct {
   union {
     _supla_int16_t SetpointTemperatureHeat;  // * 0.01 - used for heating
     _supla_int16_t Value1;
+    // Relay: duration of the state selected by START_ON/START_OFF, in seconds.
+    // Zero in both duration fields preserves the untimed program behavior.
+    unsigned _supla_int16_t RelayModeDurationS;
   };
   union {
     _supla_int16_t SetpointTemperatureCool;  // * 0.01 - used for cooling
     _supla_int16_t Value2;
+    // Relay: opposite-state duration, in seconds. Nonzero enables repetition
+    // and requires RelayModeDurationS > 0. Other modes require both times zero.
+    unsigned _supla_int16_t RelayOppositeModeDurationS;
   };
 } TWeeklyScheduleProgram;
 
@@ -3226,6 +3291,33 @@ typedef struct {
   // Days of week are numbered: 0 - Sunday, 1 - Monday, etc.
   unsigned char Quarters[SUPLA_WEEKLY_SCHEDULE_VALUES_SIZE / 2];  // 336 B
 } TChannelConfig_WeeklySchedule;                                  // v. >= 21
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_UNSPECIFIED 0
+// The channel supports switching between manual and weekly schedule modes,
+// but weekly schedule configuration is not available through SUPLA.
+// PayloadVersion and PayloadSize have to be 0 for this model.
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_MODE_ONLY 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_PROVENT 2
+
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION 1
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE 16
+#define SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE \
+  (SUPLA_CHANNEL_CONFIG_MAXSIZE - SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE)
+
+// ConfigSize has to equal HeaderSize + PayloadSize. HeaderSize has to be at
+// least SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE and cannot exceed
+// ConfigSize.
+typedef struct {
+  unsigned char Version;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_ENVELOPE_VERSION
+  unsigned char HeaderSize;
+  unsigned _supla_int16_t Model;  // SUPLA_EXTENDED_WEEKLY_SCHEDULE_MODEL_
+  unsigned _supla_int16_t PayloadVersion;
+  unsigned _supla_int16_t PayloadSize;
+  unsigned char Reserved[8];  // Set to 0 when sending; ignore when receiving.
+  // For HeaderSize greater than SUPLA_EXTENDED_WEEKLY_SCHEDULE_HEADER_SIZE,
+  // payload starts at ((unsigned char *)config) + HeaderSize.
+  unsigned char Payload[SUPLA_EXTENDED_WEEKLY_SCHEDULE_PAYLOAD_MAXSIZE];
+} TChannelConfig_ExtendedWeeklySchedule;  // v. >= 29
 
 // Config used for thermometers, humidity sensors, and thermometers with
 // humidity channels.
@@ -3276,8 +3368,9 @@ typedef struct {
       Timeout;                // 0 - not used, > 0 - time in 0.1 s, max 36000
   unsigned char Sensitivity;  // 0 - not used, 1..101 - sensitivity 0..100 %
                               // value 1 (0 %) means "OFF"
-  unsigned char AlarmMuted;   // 0 - not used, 1 - alarm is muted, 2 - alarm is
-                              // not muted
+  unsigned char LocalAlarmIndication;  // 0 - not used,
+                                       // 1 - local alarm indication disabled,
+                                       // 2 - local alarm indication enabled
   unsigned char Reserved[29 - sizeof(unsigned char) -
                          sizeof(unsigned _supla_int16_t) -
                          sizeof(unsigned char)];
@@ -3981,6 +4074,15 @@ void PROTO_ICACHE_FLASH sproto_set_null_terminated_string(
 void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     const char *src, char *dest, unsigned _supla_int16_t *dest_size,
     unsigned int max_size);
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_relay_function(
+    _supla_int_t func);
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
+    _supla_int_t func);
+unsigned char PROTO_ICACHE_FLASH
+supla_weekly_schedule_get_program_mode_type(_supla_int_t func);
+char PROTO_ICACHE_FLASH supla_action_mode_from_text(
+    _supla_int_t action_id, const char *name, unsigned char *mode);
 
 #ifdef __cplusplus
 }
