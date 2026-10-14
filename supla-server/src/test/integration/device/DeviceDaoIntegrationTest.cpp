@@ -28,6 +28,7 @@
 #include "device/extended_value/channel_state_extended_value.h"
 #include "device/value/channel_em_value.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "ocpp/ocpp_dao.h"
 #include "ocpp/ocpp_device.h"
 #include "ocpp/ocpp_gateway.h"
 #include "user/user.h"
@@ -300,7 +301,7 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateChanneValue) {
 }
 
 TEST_F(DeviceDaoIntegrationTest,
-       touchVirtualValuesPreservesDataAndScopesOwner) {
+       touchOcppValuesPreservesDataAndScopesOwner) {
   ASSERT_TRUE(dba->connect());
   ASSERT_EQ(
       0,
@@ -309,15 +310,21 @@ TEST_F(DeviceDaoIntegrationTest,
       2, 0,
       "SELECT iodevice_id FROM supla_dev_channel WHERE id=? AND user_id=2");
   ASSERT_GT(device_id, 0);
+  string insert_station =
+      "INSERT INTO supla_ocpp_charging_station (id, user_id, iodevice_id) "
+      "VALUES (1, 2, " +
+      std::to_string(device_id) + ")";
+  ASSERT_EQ(0, dba->query(insert_station.c_str(), true));
+  supla_ocpp_dao ocpp_dao(dba);
   ASSERT_EQ(0,
             dba->query("DELETE FROM supla_dev_channel_value WHERE channel_id=2",
                        true));
-  EXPECT_TRUE(dao->touch_channel_values(device_id, 2, 90));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 90));
   string result;
   sqlQuery("SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id=2",
            &result);
   EXPECT_EQ("n\n0\n", result);
-  EXPECT_TRUE(dao->touch_channel_values(device_id, 2, 0));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
   result.clear();
   sqlQuery("SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id=2",
            &result);
@@ -325,7 +332,7 @@ TEST_F(DeviceDaoIntegrationTest,
 
   const char value[SUPLA_CHANNELVALUE_SIZE] = {1, 2, 3, 4, 5, 6, 7, 8};
   dao->update_channel_value(2, 2, value, 90);
-  EXPECT_TRUE(dao->touch_channel_values(device_id, 1, 0));
+  EXPECT_TRUE(ocpp_dao.renew_validity(1, device_id, 0));
   result.clear();
   sqlQuery(
       "SELECT HEX(value) v FROM supla_dev_channel_value "
@@ -333,7 +340,7 @@ TEST_F(DeviceDaoIntegrationTest,
       &result);
   EXPECT_EQ("v\n0102030405060708\n", result);
 
-  EXPECT_TRUE(dao->touch_channel_values(device_id, 2, 0));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
   result.clear();
   sqlQuery(
       "SELECT HEX(value) v FROM supla_dev_channel_value "
@@ -341,7 +348,17 @@ TEST_F(DeviceDaoIntegrationTest,
       &result);
   EXPECT_EQ("v\n0102030405060708\n", result);
 
-  EXPECT_TRUE(dao->touch_channel_values(device_id, 2, 90));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 90));
+  result.clear();
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value "
+      "WHERE channel_id=2 AND user_id=2 AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("v\n0102030405060708\n", result);
+
+  ASSERT_EQ(0, dba->query("DELETE FROM supla_ocpp_charging_station WHERE id=1",
+                          true));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
   result.clear();
   sqlQuery(
       "SELECT HEX(value) v FROM supla_dev_channel_value "
