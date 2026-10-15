@@ -74,7 +74,17 @@ class SupLanTestDevice : public supla_device {
               SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
     set_registered(true);
   }
+  void registration(bool registered) { set_registered(registered); }
+  void legacy() { set_flags(0); }
 };
+
+TEST(SupLanStreamWaitTest, OrdinaryConnectionTimeoutIsUnchanged) {
+  SupLanTestDevice device;
+  device.legacy();
+  EXPECT_EQ(120000000u, device.wait_time_usec());
+  device.registration(false);
+  EXPECT_EQ(1000000u, device.wait_time_usec());
+}
 
 // Exercise the production registration-sync entry point and result dispatcher;
 // only the existing configuration sender is replaced to avoid a real socket/DB.
@@ -736,6 +746,14 @@ class SupLanRegistrationReplayTest : public Test {
     EXPECT_EQ(SUPLA_SD_CALL_DEVICE_SYNC_DONE, packets[0].call_id);
   }
 };
+
+TEST_F(SupLanRegistrationReplayTest, LegacyConfigStillHasTwoSecondDeadline) {
+  device->set_flags(SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED);
+  channels->send_configs_to_device([](supla_device *) {});
+  auto remaining = device->wait_time_usec();
+  EXPECT_GT(remaining, 1000000u);
+  EXPECT_LE(remaining, 2000000u);
+}
 
 TEST_F(SupLanRegistrationReplayTest, identityOkThenConfigThenSyncDone) {
   start_identity();

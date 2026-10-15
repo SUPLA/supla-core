@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstring>
+#include <future>
 #include <map>
 #include <iostream>
 #include <memory>
@@ -15,6 +16,7 @@
 
 #include "suplan/peer_provisioner.h"
 #include "suplan/server_stream.h"
+#include "eh.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
 using namespace supla_suplan;  // NOLINT
 namespace {
@@ -1704,6 +1706,8 @@ class SupLanStreamConnectionTest : public testing::Test {
   std::vector<unsigned> order;
   StreamConnection::Snapshot current;
   std::function<void()> during_read;
+  unsigned notifications = 0;
+  std::function<void()> on_notify;
   StreamConnection connection{
       2,
       [this](uint32_t, bool create, bool) {
@@ -1738,7 +1742,11 @@ class SupLanStreamConnectionTest : public testing::Test {
         return send_ok;
       },
       [this] { return connected; },
-      [this] { return now; }};
+      [this] { return now; },
+      [this] {
+        ++notifications;
+        if (on_notify) on_notify();
+      }};
   TSD_SuplaEnsureResourceAccessResult ensure(uint32_t id = 10,
                                              bool approval = false,
                                              unsigned char permissions = 1) {
@@ -1774,6 +1782,125 @@ TEST_F(SupLanStreamConnectionTest,
   ensure();
   ensure();
   EXPECT_EQ(1u, connection.size());
+  EXPECT_EQ(1u, messages.size());
+}
+TEST_F(SupLanStreamConnectionTest, DirtySignalsOnlySubscribedAndOutsideLock) {
+  connection.dirty(10);
+  EXPECT_EQ(0u, notifications);
+  ensure();
+  on_notify = [&] { connection.dirty(999); };  // Reenters dirty_mutex.
+  auto before = checks;
+  connection.dirty(999);
+  connection.dirty(10);
+  connection.dirty(10);
+  EXPECT_EQ(1u, notifications);
+  EXPECT_EQ(before, checks);  // No authorization/read/send on Source thread.
+  EXPECT_EQ(1u, messages.size());
+  current.state.Channel.value[0] = 43;
+  connection.iterate();
+  EXPECT_EQ(2u, messages.size());
+  connection.dirty(10);
+  EXPECT_EQ(2u, notifications);
+  connection.close();
+  connection.dirty(10);
+  EXPECT_EQ(2u, notifications);
+  EXPECT_EQ(0u, connection.time_left_usec());
+}
+TEST_F(SupLanStreamConnectionTest, QuietCheckRetryAndTtlExposeNearestDeadline) {
+  EXPECT_EQ(0u, connection.time_left_usec());
+  ensure();
+  EXPECT_EQ(30000000u, connection.time_left_usec());
+  now += std::chrono::seconds(7);
+  EXPECT_EQ(23000000u, connection.time_left_usec());
+  current.expires = now + std::chrono::seconds(3);
+  connection.dirty(10);
+  EXPECT_EQ(1u, connection.time_left_usec());
+  connection.iterate();
+  EXPECT_EQ(3000000u, connection.time_left_usec());
+  now += std::chrono::seconds(3);
+  EXPECT_EQ(1u, connection.time_left_usec());
+  connection.iterate();
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  EXPECT_EQ(30000000u, connection.time_left_usec());
+  database = false;
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(5000000u, connection.time_left_usec());
+  // Dirty while backing off may wake once, but cannot cause a busy loop.
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(5000000u, connection.time_left_usec());
+  auto before = checks;
+  connection.iterate();
+  EXPECT_EQ(before, checks);
+  database = true;
+  now += std::chrono::seconds(5);
+  connection.iterate();
+  EXPECT_EQ(30000000u, connection.time_left_usec());
+  allowed = false;
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(0u, connection.time_left_usec());
+}
+TEST_F(SupLanStreamConnectionTest, EarliestInterestDeadline) {
+  current.expires = now + std::chrono::seconds(8);
+  ensure(10);
+  current.expires = now + std::chrono::seconds(2);
+  ensure(11);
+  EXPECT_EQ(2000000u, connection.time_left_usec());
+  connection.close();
+  EXPECT_EQ(0u, connection.time_left_usec());
+}
+TEST_F(SupLanStreamConnectionTest, PendingHasThirtySecondDeadline) {
+  allowed = false;
+  ensure(10, true);
+  EXPECT_TRUE(messages.empty());
+  EXPECT_EQ(30000000u, connection.time_left_usec());
+  now += std::chrono::seconds(30);
+  connection.iterate();
+  EXPECT_EQ(30000000u, connection.time_left_usec());
+}
+TEST_F(SupLanStreamConnectionTest, DirtyLatchesBeforeAndDuringEventWait) {
+  std::unique_ptr<TEventHandler, decltype(&eh_free)> event(eh_init(), eh_free);
+  ASSERT_NE(nullptr, event);
+  on_notify = [&] { eh_raise_event(event.get()); };
+  ensure();
+  for (bool before_wait : {true, false}) {
+    std::promise<void> entering;
+    int result = 0;
+    ++current.state.Channel.value[0];
+    if (before_wait) connection.dirty(10);
+    std::thread waiter([&] {
+      entering.set_value();
+      result = eh_wait(event.get(), 2000000);
+    });
+    entering.get_future().wait();
+    if (!before_wait) connection.dirty(10);
+    waiter.join();
+    EXPECT_GT(result, 0);
+    connection.iterate();
+  }
+  EXPECT_EQ(3u, messages.size());
+  connection.close();
+}
+TEST_F(SupLanStreamConnectionTest,
+       ConcurrentDirtyCloseCannotPublishOrDeadlock) {
+  ensure();
+  std::atomic<bool> start{false};
+  // Only dirty/close run concurrently; the injected clock is not mutated.
+  on_notify = [&] { connection.dirty(999); };
+  std::thread source([&] {
+    while (!start.load()) std::this_thread::yield();
+    for (unsigned i = 0; i < 1000; ++i) connection.dirty(10);
+  });
+  start = true;
+  connection.close();
+  source.join();
+  auto before = notifications;
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(before, notifications);
+  EXPECT_EQ(0u, connection.size());
   EXPECT_EQ(1u, messages.size());
 }
 TEST_F(SupLanStreamConnectionTest,

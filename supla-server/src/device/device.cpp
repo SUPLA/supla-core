@@ -248,8 +248,17 @@ unsigned _supla_int64_t supla_device::wait_time_usec(void) {
     }
   }
 
+  if (auto stream = get_stream(false)) {
+    auto stream_time_left = stream->time_left_usec();
+    if (stream_time_left && stream_time_left < result)
+      result = stream_time_left;
+  }
+
   // Drive pending provisioning deadlines even on an otherwise quiet SRPC
   // connection. The per-user provisioner coalesces triggers from all devices.
+#ifdef __TEST
+  if (!test_skip_suplan_tick)
+#endif
   if (is_suplan_peer_ready() && result > 1000000) result = 1000000;
 
   return result;

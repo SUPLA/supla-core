@@ -523,7 +523,8 @@ supla_suplan_server_peers::new_stream(supla_device *destination) {
                (destination->get_flags() &
                 SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
                destination->is_server_stream_ready();
-      });
+      }, std::chrono::steady_clock::now,
+      destination->get_connection()->event_notifier());
   std::lock_guard<std::mutex> lock(stream_mutex);
   streams.erase(std::remove_if(streams.begin(), streams.end(),
       [](const std::weak_ptr<StreamConnection> &s) { return s.expired(); }),

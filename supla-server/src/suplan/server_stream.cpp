@@ -8,14 +8,15 @@
 namespace supla_suplan {
 StreamConnection::StreamConnection(size_t limit, Authorize authorize, Read read,
                                    Send send, std::function<bool()> ready,
-                                   Clock clock)
+                                   Clock clock, std::function<void()> notify)
     // NOLINTNEXTLINE(whitespace/indent_namespace)
     : capacity(std::min(limit, size_t(4096))),
       authorize(authorize),
       read(read),
       send(send),
       ready(ready),
-      clock(clock) {}  // NOLINT(whitespace/indent_namespace)
+      clock(clock),
+      notify(notify) {}  // NOLINT(whitespace/indent_namespace)
 uint64_t StreamConnection::serial(uint32_t id) {
   std::lock_guard<std::mutex> lock(dirty_mutex);
   auto it = serials.find(id);
@@ -24,12 +25,24 @@ uint64_t StreamConnection::serial(uint32_t id) {
 void StreamConnection::dirty(uint32_t id) {
   // Mutation hooks never acquire the publication lock, do SQL or send SRPC.
   // A Channel lock -> publication lock inversion is therefore impossible.
-  std::lock_guard<std::mutex> lock(dirty_mutex);
-  auto it = serials.find(id);
-  if (it != serials.end()) {
-    ++it->second;
-    wake = true;
+  bool signal = false;
+  {
+    std::lock_guard<std::mutex> lock(dirty_mutex);
+    auto it = serials.find(id);
+    if (it != serials.end()) {
+      ++it->second;
+      signal = !wake.exchange(true);
+    }
   }
+  if (signal && notify) notify();
+}
+uint64_t StreamConnection::time_left_usec() const {
+  auto deadline = due.load();
+  if (deadline == Time::max()) return 0;
+  auto now = clock();
+  if (wake.load() || deadline <= now) return 1;
+  return std::max<int64_t>(1, std::chrono::duration_cast<
+      std::chrono::microseconds>(deadline - now).count());
 }
 void StreamConnection::erase(uint32_t id) {
   interests.erase(id);
@@ -90,18 +103,23 @@ bool StreamConnection::publish(uint32_t id, Interest *interest) {
   return true;
 }
 void StreamConnection::schedule() {
-  due = Time::max();
+  auto next = Time::max();
+  auto now = clock();
   for (const auto &item : interests) {
-    due = std::min(due, item.second.check);
+    auto deadline = item.second.check;
     auto expiry = item.second.last.expires;
     if (item.second.active && expiry != Time() &&
         item.second.last.state.Channel.Offline !=
             SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE)
-      due = std::min(due, expiry);
-    if (item.second.retry_after <= clock() &&
-        serial(item.first) != item.second.serial)
-      wake = true;
+      deadline = std::min(deadline, expiry);
+    deadline = std::max(deadline, item.second.retry_after);
+    if (serial(item.first) != item.second.serial) {
+      deadline = std::min(deadline, std::max(now, item.second.retry_after));
+      if (item.second.retry_after <= now) wake = true;
+    }
+    next = std::min(next, deadline);
   }
+  due = next;
 }
 void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
                               Reply reply) {
@@ -159,6 +177,8 @@ void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
     if (found != interests.end()) {
       terminal(id, &found->second);
       erase(id);
+      if (closed) shutdown();
+      else schedule();
     }
     return;
   }
@@ -201,7 +221,7 @@ void StreamConnection::iterate() {
     shutdown();
     return;
   }
-  if (!wake.exchange(false) && clock() < due) return;
+  if (!wake.exchange(false) && clock() < due.load()) return;
   // Fair, bounded work on this connection, without global Channel scans.
   unsigned work = 0;
   auto it = interests.upper_bound(cursor);
@@ -285,6 +305,8 @@ void StreamConnection::shutdown() {
   interests.clear();
   std::lock_guard<std::mutex> dirty_lock(dirty_mutex);
   serials.clear();
+  wake = false;
+  due = Time::max();
 }
 void StreamConnection::close() {
   std::lock_guard<std::mutex> lock(mutex);

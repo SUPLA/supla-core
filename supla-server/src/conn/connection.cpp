@@ -230,8 +230,8 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   this->remote_call_received = false;
   this->security_event_logged = false;
 
-  eh = eh_init();
-  eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
+  eh = std::shared_ptr<TEventHandler>(eh_init(), eh_free);
+  eh_add_fd(eh.get(), ssocket_supla_socket_getsfd(supla_socket));
 
   TsrpcParams srpc_params;
   srpc_params_init(&srpc_params);
@@ -240,7 +240,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   srpc_params.data_write = &socket_write;
   srpc_params.on_remote_call_received = &on_remote_call_received;
   srpc_params.on_version_error = &on_version_error;
-  srpc_params.eh = eh;
+  srpc_params.eh = eh.get();
   _srpc = srpc_init(&srpc_params);
   srpc_adapter = new supla_srpc_adapter(_srpc);
 
@@ -250,7 +250,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
 supla_connection::~supla_connection() {
   srpc_free(_srpc);
   delete srpc_adapter;
-  eh_free(eh);
+  eh.reset();
   ssocket_supla_socket_free(supla_socket);
 
   safe_array_remove(supla_connection::reg_pending_arr, this);
@@ -428,7 +428,7 @@ void supla_connection::execute(void *sthread) {
   int wait_usec = WAIT_USEC_MIN;
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, wait_usec);
+    eh_wait(eh.get(), wait_usec);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       if (object == nullptr || !object->is_registered()) {
@@ -565,7 +565,7 @@ void supla_connection::execute(void *sthread) {
 
 void supla_connection::terminate(void) {
   sthread_terminate(sthread, false);
-  eh_raise_event(eh);
+  eh_raise_event(eh.get());
 }
 
 unsigned int supla_connection::get_client_ipv4(void) { return client_ipv4; }
@@ -590,4 +590,10 @@ unsigned char supla_connection::get_protocol_version(void) {
   return srpc_get_proto_version(_srpc);
 }
 
-void supla_connection::raise_event(void) { eh_raise_event(eh); }
+void supla_connection::raise_event(void) { eh_raise_event(eh.get()); }
+
+std::function<void()> supla_connection::event_notifier() const {
+  return [event = std::weak_ptr<TEventHandler>(eh)] {
+    if (auto current = event.lock()) eh_raise_event(current.get());
+  };
+}

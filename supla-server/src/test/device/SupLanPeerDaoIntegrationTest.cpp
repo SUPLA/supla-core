@@ -65,6 +65,12 @@ class PublicationPauseAdapter : public supla_srpc_adapter {
 };
 class supla_connection_test_access {
  public:
+  static void skip_suplan_tick(supla_device *device) {
+    device->test_skip_suplan_tick = true;
+  }
+  static std::weak_ptr<TEventHandler> event(supla_connection *connection) {
+    return connection->eh;
+  }
   static PublicationPauseAdapter *install(supla_connection *connection) {
     auto adapter = new PublicationPauseAdapter(connection->_srpc);
     delete connection->srpc_adapter;
@@ -2554,6 +2560,29 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
   }
 };
 
+TEST_F(SupLanHvacWireIntegrationTest,
+       M6StreamWakeHandleRacesConnectionDestruction) {
+  auto signal = connection->event_notifier();
+  auto original = supla_connection_test_access::event(connection);
+  std::promise<void> started;
+  std::thread source([&] {
+    started.set_value();
+    for (unsigned i = 0; i < 2000; ++i) signal();
+  });
+  started.get_future().wait();
+  close_connection();
+  source.join();
+  EXPECT_TRUE(original.expired());
+  start_connection();
+  auto replacement = supla_connection_test_access::event(connection);
+  EXPECT_FALSE(replacement.expired());
+  EXPECT_TRUE(original.owner_before(replacement) ||
+              replacement.owner_before(original));
+  for (unsigned i = 0; i < 10; ++i) signal();
+  // Retaining the old callback neither retains nor signals the new connection.
+  EXPECT_TRUE(original.expired());
+}
+
 TEST_F(SupLanHvacWireIntegrationTest, MissingWeeklyAfterIpcKeepsDeviceUsable) {
   TDS_SuplaRegisterDevice_G registration = {};
   snprintf(registration.Email, sizeof(registration.Email), "%s",
@@ -4429,6 +4458,13 @@ TEST_F(SupLanHvacWireIntegrationTest,
   runSqlScript("SupLanM7TestSchema.sql");
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
+  {
+    auto target =
+        supla_user::find(99126, false)->get_devices()->get(destination);
+    ASSERT_NE(nullptr, target);
+    supla_connection_test_access::skip_suplan_tick(target.get());
+    EXPECT_EQ(120000000u, target->wait_time_usec());
+  }
   query(
       "UPDATE supla_iodevice SET guid=UNHEX(REPEAT('cd',16)),auth_key=NULL,"
       "enabled=1,flags=0 WHERE id=" +
@@ -4503,6 +4539,13 @@ TEST_F(SupLanHvacWireIntegrationTest,
   EXPECT_EQ(0, snapshot.Channel.Offline);
   memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
   EXPECT_DOUBLE_EQ(20, temperature);
+  {
+    auto target =
+        supla_user::find(99126, false)->get_devices()->get(destination);
+    auto timeout = target->wait_time_usec();
+    EXPECT_GT(timeout, 1000000u);
+    EXPECT_LE(timeout, 30000000u);
+  }
   source_connection.select(true);
   TDS_SuplaDeviceChannelValue_B update{};
   update.ChannelNumber = channel.Number;
@@ -4516,6 +4559,33 @@ TEST_F(SupLanHvacWireIntegrationTest,
   memcpy(&snapshot, packet.data, sizeof(snapshot));
   memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
   EXPECT_DOUBLE_EQ(25, temperature);
+  std::shared_ptr<StreamConnection> previous_stream;
+  {
+    auto target =
+        supla_user::find(99126, false)->get_devices()->get(destination);
+    previous_stream = target->get_stream(false);
+  }
+  close_connection();
+  previous_stream->dirty(resource);
+  previous_stream->iterate();
+  EXPECT_EQ(0u, previous_stream->size());
+  start_connection();
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  {
+    auto target =
+        supla_user::find(99126, false)->get_devices()->get(destination);
+    supla_connection_test_access::skip_suplan_tick(target.get());
+  }
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 0, 1, 2);
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  memcpy(&snapshot, packet.data, sizeof(snapshot));
+  memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
+  EXPECT_DOUBLE_EQ(25, temperature);
+  previous_stream->dirty(resource);  // An old demand cannot wake/revive itself.
+  EXPECT_FALSE(receive_packet(&packet, 100));
   source_connection.select(true);
   TDS_SuplaDeviceChannelValue_C cached{};
   cached.ChannelNumber = channel.Number;

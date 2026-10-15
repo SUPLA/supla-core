@@ -27,12 +27,15 @@ class StreamConnection {
       std::function<bool(const TSD_SuplaEnsureResourceAccessResult &)>;
   StreamConnection(size_t capacity, Authorize authorize, Read read, Send send,
                    std::function<bool()> ready,
-                   Clock clock = std::chrono::steady_clock::now);
+                   Clock clock = std::chrono::steady_clock::now,
+                   std::function<void()> notify = {});
   void ensure(const TDS_SuplaEnsureResourceAccess &request, Reply reply);
   void dirty(uint32_t channel);
   void iterate();
   void close();
   size_t size();
+  // Zero means no deadline; overdue work requests one prompt loop turn.
+  uint64_t time_left_usec() const;
 
  private:
   struct Interest {
@@ -48,11 +51,12 @@ class StreamConnection {
   Send send;
   std::function<bool()> ready;
   Clock clock;
+  const std::function<void()> notify;
   std::mutex mutex, dirty_mutex;
   std::map<uint32_t, Interest> interests;
   std::map<uint32_t, uint64_t> serials;
   std::atomic<bool> wake{false};
-  Time due{};
+  std::atomic<Time> due{Time::max()};
   bool closed = false;
   uint32_t cursor = 0;
   uint64_t serial(uint32_t id);
