@@ -65,9 +65,6 @@ class PublicationPauseAdapter : public supla_srpc_adapter {
 };
 class supla_connection_test_access {
  public:
-  static void skip_suplan_tick(supla_device *device) {
-    device->test_skip_suplan_tick = true;
-  }
   static std::weak_ptr<TEventHandler> event(supla_connection *connection) {
     return connection->eh;
   }
@@ -494,15 +491,20 @@ class DeleteTransport : public PeerTransport {
  public:
   std::vector<TSDS_SuplaSetSuplanSourceAssociation> sources;
   std::vector<TSDS_SuplaSetSuplanDestinationAssociation> destinations;
+  uint64_t session(int d) override { return d; }
+  int recovery_device() override { return 0; }
+  void wake(int, uint64_t) override {}
+  bool reconnect_session(int, uint64_t) override { return false; }
   bool ready(int) override { return true; }
   bool owner_ready(int, uint32_t) override { return true; }
-  bool send(int, TSDS_SuplaSetSuplanSourceAssociation *q) override {
+  SendResult send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
     sources.push_back(*q);
-    return true;
+    return {SendCode::Queued, session(d)};
   }
-  bool send(int, TSDS_SuplaSetSuplanDestinationAssociation *q) override {
+  SendResult send(int d,
+                  TSDS_SuplaSetSuplanDestinationAssociation *q) override {
     destinations.push_back(*q);
-    return true;
+    return {SendCode::Queued, session(d)};
   }
   void rebootstrap(int) override { ADD_FAILURE(); }
   void diagnostic(uint64_t, int, uint8_t) override { ADD_FAILURE(); }
@@ -2259,7 +2261,9 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
 
   void register_existing_family(int type, int advertised_function,
                                 int selected_function, bool weekly = false,
-                                bool suplan = true) {
+                                bool suplan = true,
+                                std::function<void(const TSuplaDataPacket &)>
+                                    observe = {}) {
     TDS_SuplaRegisterDevice_G registration = {};
     snprintf(registration.Email, sizeof(registration.Email), "%s",
              "hvac-wire@test.invalid");
@@ -2280,6 +2284,7 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     TSuplaDataPacket packet = {};
     for (unsigned i = 0; i < 10 && !synced; ++i) {
       ASSERT_TRUE(receive_packet(&packet));
+      if (observe) observe(packet);
       if (packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT ||
           packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B) {
         TSD_SuplaRegisterDeviceResult reply = {};
@@ -2866,7 +2871,78 @@ TEST_F(SupLanHvacWireIntegrationTest,
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
-       ConnectedLostAssociationRepliesRetryThroughConnectionLoop) {
+       BoundedAssociationBatchUsesRealSrpcAndDelayedResults) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  PeerDao repo(99126);
+  PeerService previous([] { return std::make_unique<PeerDao>(99126); },
+                       nullptr);
+  uint32_t first_channel = 0;
+  for (unsigned i = 0; i < 16; ++i) {
+    // Historical registered, currently offline Sources in the isolated Core DB.
+    query(
+        "INSERT INTO supla_iodevice "
+        "(location_id,user_id,guid,enabled,reg_date,protocol_version,flags) "
+        "SELECT location_id,99126,UNHEX(MD5('m6-batch-" +
+        std::to_string(i) + "')),1,reg_date,29," +
+        std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
+        " FROM supla_iodevice WHERE id=" + std::to_string(source));
+    int owner =
+        scalar("SELECT MAX(id) FROM supla_iodevice WHERE user_id=99126");
+    auto channel = add_channel(owner, 1, SUPLA_CHANNELTYPE_THERMOMETER,
+                               SUPLA_CHANNELFNC_THERMOMETER);
+    query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+          std::to_string(channel));
+    if (!i) first_channel = channel;
+    ASSERT_TRUE(repo.accept_identity(owner, {123 + i, {channel}}));
+    ASSERT_TRUE(
+        previous.upsert(owner, destination, {1, channel, 99, 7000 + i, 1}));
+    Association a;
+    ASSERT_TRUE(repo.find(owner, destination, &a));
+    ASSERT_TRUE(previous.provisioned(a, 123 + i));
+  }
+  auto peers = supla_user::find(99126, false)->get_suplan_peers()->peers();
+  peers->reconnect(destination);
+  std::vector<TSDS_SuplaSetSuplanDestinationAssociation> queued;
+  auto receive_association = [&] {
+    TSuplaDataPacket packet{};
+    ASSERT_TRUE(receive_packet(&packet));
+    ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, packet.call_id);
+    ASSERT_LE(packet.data_size,
+              sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+    TSDS_SuplaSetSuplanDestinationAssociation q{};
+    memcpy(&q, packet.data, packet.data_size);
+    EXPECT_EQ(0, q.PeerKeySize);
+    queued.push_back(q);
+  };
+  for (unsigned i = 0; i < 8; ++i) receive_association();
+  ASSERT_FALSE(HasFatalFailure());
+  TSuplaDataPacket extra{};
+  EXPECT_FALSE(receive_packet(&extra, 100));  // At most 8 queued Results.
+  for (unsigned i = 0; i < 16; ++i) {
+    ASSERT_GT(queued.size(), i);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto q = queued[i];
+    TDS_SuplaSetSuplanDestinationAssociationResult ok = {
+        q.PeerContext, q.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+    send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT, &ok,
+                sizeof(ok));
+    if (i < 8) receive_association();
+  }
+  auto until = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (PeerProvisionerTestAccess::count(*peers) &&
+         std::chrono::steady_clock::now() < until)
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(*peers));
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  EXPECT_EQ(120000000u, target->wait_time_usec());
+  EXPECT_GT(first_channel, 0u);
+  EXPECT_FALSE(receive_packet(&extra, 100));
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       QuietConnectionWatchdogReconnectsAndReplaysDraining) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
   PeerDao repo(99126);
@@ -2875,8 +2951,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   // Source is now offline. The real Destination socket stays connected.
   PeerService previous([] { return std::make_unique<PeerDao>(99126); },
                        nullptr);
-  ASSERT_TRUE(previous.upsert(source, destination,
-                             {1, resource, 99, 6001, 1}));
+  ASSERT_TRUE(previous.upsert(source, destination, {1, resource, 99, 6001, 1}));
   Association a;
   ASSERT_TRUE(repo.find(source, destination, &a));
   ASSERT_TRUE(previous.provisioned(a, 123));
@@ -2884,7 +2959,22 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_NE(nullptr, user);
   auto peers = user->get_suplan_peers()->peers();
   peers->reconcile(a.id);
+  std::vector<TSDS_SuplaSetSuplanDestinationAssociation> registration_replays;
+  auto observe = [&](const TSuplaDataPacket &packet) {
+    if (packet.call_id != SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION)
+      return;
+    ASSERT_LE(packet.data_size,
+              sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+    TSDS_SuplaSetSuplanDestinationAssociation replay{};
+    memcpy(&replay, packet.data, packet.data_size);
+    registration_replays.push_back(replay);
+  };
   auto receive_association = [&] {
+    if (!registration_replays.empty()) {
+      auto replay = registration_replays.front();
+      registration_replays.erase(registration_replays.begin());
+      return replay;
+    }
     TSuplaDataPacket packet = {};
     TSDS_SuplaSetSuplanDestinationAssociation q = {};
     bool received = receive_packet(&packet, 25000);
@@ -2903,27 +2993,71 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_EQ(1, first.ResourceCount);
   ASSERT_EQ(resource, first.Resources[0].ResourceId);
   ASSERT_EQ(0, first.PeerKeySize);
-  // No response is injected. Production iterate/wait_time_usec must expire
-  // the pending request and deliver an identical complete replacement.
-  auto retry = receive_association();
+  auto wait_for_watchdog = [&] {
+    auto started = std::chrono::steady_clock::now();
+    TSuplaDataPacket packet{};
+    EXPECT_FALSE(
+        receive_packet(&packet, 19000));  // EOF, never an identical retry.
+    char byte;
+    EXPECT_EQ(0, recv(client, &byte, 1, MSG_PEEK | MSG_DONTWAIT));
+    auto elapsed = std::chrono::steady_clock::now() - started;
+    EXPECT_GE(elapsed, std::chrono::seconds(13));
+    EXPECT_LT(elapsed, std::chrono::seconds(19));
+  };
+  // No packet/ping drives the deadline; the own connection wait does.
+  wait_for_watchdog();
+  close_connection();
+  start_connection();
+  register_existing_family(SUPLA_CHANNELTYPE_HVAC,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT, false, true,
+                           observe);
+  auto replay = receive_association();
   ASSERT_FALSE(HasFailure());
-  EXPECT_EQ(0, memcmp(&first, &retry, sizeof(first)));
+  EXPECT_EQ(0, memcmp(&first, &replay, sizeof(first)));
   TDS_SuplaSetSuplanDestinationAssociationResult ok = {
-      retry.PeerContext, retry.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+      replay.PeerContext, replay.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+  // A matched result during a real DAO read outage must cancel the Device
+  // watchdog, retain unverified work and recover on its own 5-second deadline.
+  query("RENAME TABLE supla_suplan_peer_association TO m6_unavailable_peer");
   send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
               &ok, sizeof(ok));
-  // A normal ENSURE reply orders after that ACK on the same connection.
+  bool db_retry = false;
+  auto until = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (std::chrono::steady_clock::now() < until) {
+    auto left = peers->time_left_usec(destination);
+    if (left && left <= 5000000u) {
+      db_retry = true;
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  // Restore even when the assertion below fails; this is the isolated test DB.
+  query("RENAME TABLE m6_unavailable_peer TO supla_suplan_peer_association");
+  ASSERT_TRUE(db_retry);
+  EXPECT_EQ(1u, PeerProvisionerTestAccess::count(*peers));
+  replay = receive_association();  // No new ENSURE, ping or reconnect.
+  ASSERT_FALSE(HasFailure());
+  EXPECT_EQ(0, memcmp(&first, &replay, sizeof(first)));
+  send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+              &ok, sizeof(ok));
   expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
                 SUPLA_SUPLAN_ACCESS_STATUS_GRANTED);
-  ASSERT_FALSE(HasFailure());
   ASSERT_TRUE(peers->grants()->delete_origin(99, 6001));
   first = receive_association();
   ASSERT_FALSE(HasFailure());
   EXPECT_EQ(0, first.ResourceCount);
-  retry = receive_association();
+  wait_for_watchdog();
+  close_connection();
+  start_connection();
+  register_existing_family(SUPLA_CHANNELTYPE_HVAC,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                           SUPLA_CHANNELFNC_HVAC_THERMOSTAT, false, true,
+                           observe);
+  replay = receive_association();
   ASSERT_FALSE(HasFailure());
-  EXPECT_EQ(0, memcmp(&first, &retry, sizeof(first)));
-  ok = {retry.PeerContext, retry.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+  EXPECT_EQ(0, replay.ResourceCount);
+  ok = {replay.PeerContext, replay.AclRevision, SUPLA_SUPLAN_RESULT_OK};
   send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
               &ok, sizeof(ok));
   expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
@@ -2931,7 +3065,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_TRUE(repo.load(a.id, &a));
   EXPECT_EQ(Lifecycle::Draining, a.lifecycle);
   EXPECT_TRUE(a.destination_acked);
-  EXPECT_FALSE(a.source_acked);  // Offline revocation is not falsely ACKed.
+  EXPECT_FALSE(a.source_acked);
 }
 
 TEST_F(SupLanHvacWireIntegrationTest, AccessRevokesDeletedResourceBeforeReply) {
@@ -4462,7 +4596,6 @@ TEST_F(SupLanHvacWireIntegrationTest,
     auto target =
         supla_user::find(99126, false)->get_devices()->get(destination);
     ASSERT_NE(nullptr, target);
-    supla_connection_test_access::skip_suplan_tick(target.get());
     EXPECT_EQ(120000000u, target->wait_time_usec());
   }
   query(
@@ -4575,7 +4708,6 @@ TEST_F(SupLanHvacWireIntegrationTest,
   {
     auto target =
         supla_user::find(99126, false)->get_devices()->get(destination);
-    supla_connection_test_access::skip_suplan_tick(target.get());
   }
   expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
                 SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 0, 1, 2);

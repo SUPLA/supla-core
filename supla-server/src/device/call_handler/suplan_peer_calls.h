@@ -57,10 +57,12 @@ class supla_ch_suplan_peer_calls
     }
     auto p = d->get_user()->get_suplan_peers()->peers();
     if (id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT) {
-      p->on_source(d->get_id(), source_result);
+      p->on_source(d->get_id(), source_result,
+                   d->get_connection()->get_session_id());
     } else if (id == SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT) {
       p->on_destination(d->get_id(),
-                        rd->data.ds_set_suplan_destination_association_result);
+                        rd->data.ds_set_suplan_destination_association_result,
+                        d->get_connection()->get_session_id());
     } else if (id == SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS &&
                rd->data.ds_ensure_suplan_resource_access) {
       auto request = rd->data.ds_ensure_suplan_resource_access;

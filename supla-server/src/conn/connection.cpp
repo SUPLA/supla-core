@@ -27,6 +27,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <memory>
 
 #include "client/client.h"
@@ -596,4 +597,9 @@ std::function<void()> supla_connection::event_notifier() const {
   return [event = std::weak_ptr<TEventHandler>(eh)] {
     if (auto current = event.lock()) eh_raise_event(current.get());
   };
+}
+
+uint64_t supla_connection::next_session() {
+  static std::atomic<uint64_t> next{0};
+  return ++next;
 }

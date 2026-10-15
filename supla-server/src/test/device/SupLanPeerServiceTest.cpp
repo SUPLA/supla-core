@@ -27,6 +27,10 @@ struct Store {
   Identity identity{123, {10, 11}};
   int writes = 0;
   bool fail_save = false;
+  bool fail_commit = false;
+  bool fail_find = false;
+  bool fail_identity = false;
+  unsigned reads = 0;
   bool fail_load = false;
   uint32_t fail_owner_resource = 0;
   bool fail_load_after_commit = false;
@@ -70,6 +74,7 @@ class MemoryRepo : public Repository {
   }
   bool load(uint64_t id, Association *a) override {
     std::lock_guard<std::recursive_mutex> lock(store->mutex);
+    ++store->reads;
     if (store->fail_load) return false;
     *a = store->a.id == id ? store->a : Association{};
     auto it = store->additional.find(id);
@@ -78,6 +83,7 @@ class MemoryRepo : public Repository {
   }
   bool find(int source, int destination, Association *a) override {
     std::lock_guard<std::recursive_mutex> lock(store->mutex);
+    if (store->fail_find) return false;
     *a = store->a.source == source && store->a.destination == destination
              ? store->a
              : Association{};
@@ -127,7 +133,8 @@ class MemoryRepo : public Repository {
   }
   bool save(const Association &a) override {
     if (store->fail_save) return false;
-    store->a = a;
+    if (store->additional.count(a.id)) store->additional[a.id] = a;
+    if (store->a.id == a.id) store->a = a;
     ++store->writes;
     return true;
   }
@@ -136,6 +143,7 @@ class MemoryRepo : public Repository {
     return true;
   }
   bool commit() override {
+    if (store->fail_commit) return false;
     transaction = false;
     if (store->fail_load_after_commit) store->fail_load = true;
     store->mutex.unlock();
@@ -151,6 +159,7 @@ class MemoryRepo : public Repository {
     }
   }
   bool identity(int, Identity *out) override {
+    if (store->fail_identity) return false;
     *out = store->identity;
     return true;
   }
@@ -168,6 +177,15 @@ class MemoryRepo : public Repository {
     if ((type == 1 && resource == 20) || (type == 2 && resource == 2)) {
       *device = 2;
       return true;
+    }
+    if (type == SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE) {
+      for (const auto &entry : store->additional) {
+        if (resource == static_cast<uint32_t>(entry.second.source) ||
+            resource == static_cast<uint32_t>(entry.second.destination)) {
+          *device = resource;
+          return true;
+        }
+      }
     }
     *device = 0;
     return true;
@@ -202,7 +220,10 @@ class MemoryRepo : public Repository {
     out->clear();
     if (store->a.id && (store->a.source == d || store->a.destination == d) &&
         (dormant || store->a.lifecycle != Lifecycle::Dormant))
-      out->push_back(1);
+      out->push_back(store->a.id);
+    for (const auto &item : store->additional)
+      if (item.second.source == d || item.second.destination == d)
+        out->push_back(item.first);
     return true;
   }
   bool for_origin(uint16_t type, uint64_t origin,
@@ -238,16 +259,33 @@ class Transport : public PeerTransport {
   std::vector<int> destination_key_sizes;
   std::vector<int> errors;
   bool key_seen = false;
+  std::map<int, uint64_t> sessions;
+  std::vector<int> forced;
+  std::vector<int> wakes;
+  SendCode source_failure = SendCode::EnqueueFailed;
+  SendCode destination_failure = SendCode::EnqueueFailed;
+  uint64_t session(int d) override {
+    return sessions.count(d) ? sessions[d] : static_cast<uint64_t>(d);
+  }
+  int recovery_device() override { return online[1] ? 1 : online[2] ? 2 : 0; }
+  void wake(int d, uint64_t) override { wakes.push_back(d); }
+  bool reconnect_session(int d, uint64_t expected) override {
+    if (!reconnectable || !ready(d) || session(d) != expected) return false;
+    forced.push_back(d);
+    return true;
+  }
+  bool reconnectable = true;
   bool source_send_ok = true;
   bool destination_send_ok = true;
   bool ready(int d) override { return d > 2 || online[d]; }
   bool owner_ready(int, uint32_t) override { return owner_gate; }
-  bool send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
+  SendResult send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
     order.push_back(d);
     sources.push_back(*q);
-    return source_send_ok;
+    return {source_send_ok ? SendCode::Queued : source_failure, session(d)};
   }
-  bool send(int d, TSDS_SuplaSetSuplanDestinationAssociation *q) override {
+  SendResult send(int d,
+                  TSDS_SuplaSetSuplanDestinationAssociation *q) override {
     order.push_back(d);
     destinations.push_back({q->PeerContext, q->AclRevision, 0});
     destination_key_sizes.push_back(q->PeerKeySize);
@@ -255,7 +293,8 @@ class Transport : public PeerTransport {
       key_seen = true;
       for (auto b : q->PeerKey) EXPECT_EQ(0xA5, b);
     }
-    return destination_send_ok;
+    return {destination_send_ok ? SendCode::Queued : destination_failure,
+            session(d)};
   }
   void rebootstrap(int) override { ++refreshes; }
   void diagnostic(uint64_t, int, uint8_t result) override {
@@ -304,75 +343,295 @@ class SupLanPeerTest : public testing::Test {
   }
   void remove() { ASSERT_TRUE(peers.grants()->delete_origin(1, 100)); }
 };
-TEST_F(SupLanPeerTest, ConnectedSendFailureRetriesBothSidesWithoutKeyCache) {
+TEST_F(SupLanPeerTest, SendOutcomeClassifiesOfflineRootRaceAndEnqueue) {
+  for (auto code : {PeerTransport::SendCode::NotReady,
+                    PeerTransport::SendCode::ContextChanged,
+                    PeerTransport::SendCode::EnqueueFailed}) {
+    store.a = {};
+    store.grants.clear();
+    PeerProvisioner isolated(factory, &transport, [&] { return now; });
+    transport.source_send_ok = false;
+    transport.source_failure = code;
+    transport.forced.clear();
+    ASSERT_TRUE(isolated.grants()->upsert(1, 2, grant));
+    EXPECT_EQ(code == PeerTransport::SendCode::EnqueueFailed ? 1u : 0u,
+              transport.forced.size());
+    EXPECT_EQ(0u, isolated.time_left_usec(1));
+  }
+}
+TEST_F(SupLanPeerTest, MatchedResultDatabaseErrorsCancelDeviceWatchdog) {
+  for (int stage = 0; stage < 3; ++stage) {
+    store.a = {};
+    store.grants.clear();
+    PeerProvisioner isolated(factory, &transport, [&] { return now; });
+    ASSERT_TRUE(isolated.grants()->upsert(1, 2, grant));
+    auto request = transport.sources.back();
+    TDS_SuplaSetSuplanSourceAssociationResult reply{};
+    reply.PeerContext = request.PeerContext;
+    reply.AclRevision = request.AclRevision;
+    reply.PeerKeySize = request.Flags ? 32 : 0;
+    memset(reply.PeerKey, 0xA5, sizeof(reply.PeerKey));
+    store.fail_find = stage == 0;
+    store.fail_load = stage == 1;
+    store.fail_identity = stage == 2;
+    isolated.on_source(1, &reply);
+    for (auto byte : reply.PeerKey) EXPECT_EQ(0, byte);
+    EXPECT_EQ(5000000u, isolated.time_left_usec(1));
+    store.fail_load = true;
+    now += std::chrono::seconds(16);
+    isolated.iterate();
+    EXPECT_TRUE(transport.forced.empty());
+    EXPECT_EQ(5000000u, isolated.time_left_usec(1));
+    store.fail_find = store.fail_load = store.fail_identity = false;
+    now += std::chrono::seconds(5);
+    auto count = transport.sources.size();
+    isolated.iterate();
+    ASSERT_EQ(count + 1, transport.sources.size());
+    EXPECT_NE(0, transport.sources.back().Flags);
+    EXPECT_EQ(0u, store.a.root);
+  }
+}
+TEST_F(SupLanPeerTest, SourceCommitFailureDoesNotAcknowledgeOrForwardKey) {
+  add();
+  store.fail_commit = true;
+  source_ok();
+  EXPECT_EQ(0u, store.a.root);
+  EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_TRUE(transport.forced.empty());
+  EXPECT_EQ(5000000u, peers.time_left_usec(1));
+  store.fail_commit = false;
+  advance(5);
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest,
+       DestinationResultDatabaseFailureRecoversWithoutReconnect) {
+  add();
+  source_ok();
+  store.fail_find = true;
+  destination_result();
+  EXPECT_EQ(5000000u, peers.time_left_usec(1));
+  EXPECT_EQ(0u, peers.time_left_usec(2));
+  EXPECT_TRUE(transport.forced.empty());
+  store.fail_find = false;
+  advance(5);
+  ASSERT_EQ(2u, transport.sources.size());
+  EXPECT_NE(0, transport.sources.back().Flags);
+  source_ok();
+  destination_result();
+  EXPECT_TRUE(transport.forced.empty());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, OldSessionTimeoutAndReplyCannotAffectReplacement) {
+  add();
+  auto request = transport.sources.back();
+  transport.sessions[1] = 100;
+  advance(16);
+  EXPECT_TRUE(transport.forced.empty());
+  peers.reconnect(1);
+  TDS_SuplaSetSuplanSourceAssociationResult reply{};
+  reply.PeerContext = request.PeerContext;
+  reply.AclRevision = request.AclRevision;
+  reply.PeerKeySize = 32;
+  memset(reply.PeerKey, 0xA5, sizeof(reply.PeerKey));
+  peers.on_source(1, &reply, 1);
+  EXPECT_EQ(0u, store.a.root);
+  EXPECT_TRUE(transport.destinations.empty());
+  source_ok();
+  destination_result();
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+TEST_F(SupLanPeerTest, OtherAcknowledgementsCannotHideSilentFlowOrResetBudget) {
+  add();  // Keep association 1 silent.
+  for (uint64_t id = 2; id <= 170; ++id) {
+    Association a = store.a;
+    a.id = id;
+    a.destination = id + 2;
+    a.root = store.identity.root;
+    a.provisioned_generation = a.generation;
+    store.additional[id] = a;
+    peers.reconcile(id);
+    now += std::chrono::milliseconds(100);
+    auto request = transport.sources.back();
+    TDS_SuplaSetSuplanSourceAssociationResult reply{};
+    reply.PeerContext = request.PeerContext;
+    reply.AclRevision = request.AclRevision;
+    peers.on_source(1, &reply);
+    auto destination = transport.destinations.back();
+    peers.on_destination(a.destination, &destination);
+    peers.iterate();
+  }
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  store.additional.clear();  // Other incidents already completed independently.
+  transport.sessions[1] = 100;
+  peers.reconnect(1);
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+}
+TEST_F(SupLanPeerTest, CoalescedIncidentSurvivesUnrelatedCompletion) {
+  add();
+  auto other = store.a;
+  other.id = 2;
+  other.destination = 3;
+  other.root = store.identity.root;
+  other.provisioned_generation = other.generation;
+  store.additional[2] = other;
+  peers.reconcile(2);
+  auto reply = transport.destinations.back();
+  peers.on_destination(3, &reply);
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  transport.sessions[1] = 100;
+  auto before = transport.sources.size();
+  peers.reconnect(1);
+  source_ok(before);  // Association 1 completes; association 2 is still silent.
+  destination_result();
+  reply = transport.destinations.back();
+  for (auto candidate : transport.destinations)
+    if (candidate.PeerContext.DestinationNodeId == 3) reply = candidate;
+  peers.on_destination(3, &reply);
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  ++store.additional[2]
+        .revision;  // Meaningful desired change resets its budget.
+  peers.reconcile(2);
+  reply = transport.destinations.back();
+  peers.on_destination(3, &reply);
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1, 1}), transport.forced);
+}
+TEST_F(SupLanPeerTest, IneligibleReconnectDoesNotSpendIncidentBudget) {
+  // Ready but intentionally non-reconnectable (e.g. sleep mode).
+  transport.reconnectable = false;
+  add();
+  advance(16);
+  EXPECT_TRUE(transport.forced.empty());
+  transport.reconnectable = true;
+  transport.sessions[1] = 100;
+  peers.reconnect(1);  // A natural registration may become eligible.
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+}
+TEST_F(SupLanPeerTest, IdleDevicesHaveNoDeadlineWakeOrDatabaseWork) {
+  for (int count : {1, 10, 100}) {
+    const auto reads = store.reads;
+    const auto wakes = transport.wakes.size();
+    for (int second = 0; second < 120; ++second) {
+      now += std::chrono::seconds(1);
+      for (int d = 1; d <= count; ++d) {
+        EXPECT_EQ(0u, peers.time_left_usec(d));
+        peers.iterate(d);  // Even incidental loop entry must do no SQL.
+      }
+    }
+    EXPECT_EQ(reads, store.reads);
+    EXPECT_EQ(wakes, transport.wakes.size());
+  }
+}
+TEST_F(SupLanPeerTest, OptimisticDevicePersistenceErrorDoesNotReplay) {
+  add();
+  source_ok(-1, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
+  advance(7);
+  advance(600);
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_EQ(0u, store.a.root);
+}
+TEST_F(SupLanPeerTest, OptimisticLostResultNeverResendsInSameSession) {
+  add();
+  advance(16);
+  advance(600);
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_EQ(0u, store.a.root);
+}
+TEST_F(SupLanPeerTest, EnqueueFailureReconnectsOnceAndRederivesKey) {
   transport.source_send_ok = false;
   add();
-  EXPECT_EQ(0u, store.a.root);
-  advance(4);
+  ASSERT_EQ(std::vector<int>({1}), transport.forced);
+  advance(600);
   EXPECT_EQ(1u, transport.sources.size());
   transport.source_send_ok = true;
-  advance(3);
+  transport.sessions[1] = 100;
+  peers.reconnect(1);
   ASSERT_EQ(2u, transport.sources.size());
   transport.destination_send_ok = false;
   source_ok();
-  ASSERT_EQ(1u, transport.destinations.size());
+  ASSERT_EQ(std::vector<int>({1, 2}), transport.forced);
   transport.destination_send_ok = true;
-  advance(7);
-  // Destination retry must rederive the key from current Source.
-  ASSERT_EQ(3u, transport.sources.size());
+  transport.sessions[2] = 200;
+  peers.reconnect(2);
+  destination_result(SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED);
+  source_ok();
+  ASSERT_EQ(4u, transport.sources.size());
   EXPECT_NE(0, transport.sources.back().Flags);
   source_ok();
-  ASSERT_EQ(2u, transport.destinations.size());
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(1u, store.a.revision);
   EXPECT_EQ(1u, store.a.generation);
 }
-TEST_F(SupLanPeerTest, ConnectedMissingResultsExpireWithoutIncomingReply) {
+
+TEST_F(SupLanPeerTest, LostResultsReconnectOnlyPendingEndpointOnce) {
   add();
+  EXPECT_EQ(15000000u, peers.time_left_usec(1));
+  EXPECT_EQ(0u, peers.time_left_usec(2));
   advance(14);
-  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_TRUE(transport.forced.empty());
   advance(2);
-  EXPECT_EQ(1u, transport.sources.size());
-  advance(7);
-  ASSERT_EQ(2u, transport.sources.size());
+  ASSERT_EQ(std::vector<int>({1}), transport.forced);
+  EXPECT_EQ(0u, peers.time_left_usec(1));
+  transport.sessions[1] = 100;
+  peers.reconnect(1);
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  EXPECT_EQ(2u, transport.sources.size());
+  // A natural reconnect is still eligible to replay and complete.
+  transport.sessions[1] = 101;
+  peers.reconnect(1);
   source_ok();
-  ASSERT_EQ(1u, transport.destinations.size());
-  advance(23);
-  advance(7);
-  ASSERT_EQ(3u, transport.sources.size());
+  EXPECT_EQ(15000000u, peers.time_left_usec(2));
+  advance(16);
+  EXPECT_EQ(std::vector<int>({1, 2}), transport.forced);
+  transport.sessions[2] = 200;
+  peers.reconnect(2);
   source_ok();
-  ASSERT_EQ(2u, transport.destinations.size());
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, TransientDeviceAndServerPersistenceRecoverConnected) {
+
+TEST_F(SupLanPeerTest, CoreDbRecoversWhileDevicePersistenceBlocks) {
   add();
-  source_ok(-1, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
-  advance(7);
-  ASSERT_EQ(2u, transport.sources.size());
   store.fail_save = true;
   source_ok();
   EXPECT_EQ(0u, store.a.root);
   EXPECT_TRUE(transport.destinations.empty());
+  EXPECT_TRUE(transport.forced.empty());
+  EXPECT_EQ(5000000u, peers.time_left_usec(1));
   store.fail_save = false;
-  advance(20);
-  ASSERT_EQ(3u, transport.sources.size());
+  advance(5);
+  ASSERT_EQ(2u, transport.sources.size());
   source_ok();
   destination_result(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
-  advance(7);
+  advance(600);
+  EXPECT_EQ(1u, transport.destinations.size());
+  EXPECT_TRUE(transport.forced.empty());
+  peers.reconnect(2);
   source_ok();
-  ASSERT_EQ(2u, transport.destinations.size());
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, EmptyCleanupRetriesDroppedResultWithOtherSideOffline) {
+
+TEST_F(SupLanPeerTest,
+       EmptyCleanupReconnectsDroppedResultWithOtherSideOffline) {
   installed();
   transport.online[2] = false;
   remove();
   ASSERT_EQ(0, transport.sources.back().AclEntryCount);
   advance(16);
-  advance(7);
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  EXPECT_FALSE(store.a.source_acked);
+  transport.sessions[1] = 100;
+  peers.reconnect(1);
   ASSERT_EQ(3u, transport.sources.size());
   EXPECT_EQ(0, transport.sources.back().AclEntryCount);
   source_ok();
@@ -380,14 +639,16 @@ TEST_F(SupLanPeerTest, EmptyCleanupRetriesDroppedResultWithOtherSideOffline) {
   EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
   transport.online[2] = true;
   peers.reconnect(2);
-  ASSERT_EQ(0, transport.destinations.back().Result);
   advance(16);
-  advance(7);
-  EXPECT_EQ(3u, transport.destinations.size());
+  EXPECT_EQ(std::vector<int>({1, 2}), transport.forced);
+  EXPECT_FALSE(store.a.destination_acked);
+  transport.sessions[2] = 200;
+  peers.reconnect(2);
   destination_result();
   EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
+
 TEST_F(SupLanPeerTest, RevisionConflictSurvivesTimerAndReconnectUntilChange) {
   add();
   source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
@@ -407,7 +668,7 @@ TEST_F(SupLanPeerTest, RevisionConflictSurvivesTimerAndReconnectUntilChange) {
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, TimedRetryUsesAuthoritativeStateAfterMissedEvent) {
+TEST_F(SupLanPeerTest, WatchdogReloadsDesiredStateAfterMissedEvent) {
   add();
   // Emulate a committed desired change whose notification was lost.
   ++store.a.revision;
@@ -487,9 +748,8 @@ TEST_F(SupLanPeerTest, DestinationConflictKeepsIndependentSourceConvergence) {
   ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
   destination_result(SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
   auto sends = transport.destinations.size();
-  advance(16);
-  advance(7);
   source_ok();
+  advance(16);
   peers.reconnect(2);
   advance(600);
   EXPECT_EQ(sends, transport.destinations.size());
@@ -501,25 +761,25 @@ TEST_F(SupLanPeerTest, DestinationConflictKeepsIndependentSourceConvergence) {
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, LateNoKeyAckCannotBlockTimedKeyRecovery) {
+TEST_F(SupLanPeerTest, LateNoKeyAckCannotBlockKeyRecoveryAfterReconnect) {
   transport.online[2] = false;
   add();
   advance(16);
   transport.online[2] = true;
-  advance(7);
+  transport.sessions[1] = 100;
+  peers.reconnect(1);
   ASSERT_EQ(2u, transport.sources.size());
   EXPECT_NE(0, transport.sources.back().Flags);
-  source_ok(0);  // Late ACK of the expired no-key request, same revision.
+  source_ok(0);
   EXPECT_TRUE(transport.destinations.empty());
   EXPECT_TRUE(transport.errors.empty());
   source_ok();
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest,
-       SaturatedTransientFlowsDoNotStarveLegitimateAssociation) {
-  transport.source_send_ok = transport.destination_send_ok = false;
-  for (uint64_t id = 1; id < 4096; ++id) {
+
+TEST_F(SupLanPeerTest, BoundedWindowDrains170AssociationsWithoutFalseTimeout) {
+  for (uint64_t id = 1; id <= 170; ++id) {
     Association a;
     a.id = id;
     a.source = 1;
@@ -531,27 +791,22 @@ TEST_F(SupLanPeerTest,
     store.additional[id] = a;
     peers.reconcile(id);
   }
-  store.a = store.additional.at(1);
-  store.a.id = 4096;
-  store.a.destination = 2;
-  peers.reconcile(4096);
-  EXPECT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
-  advance(7);
-  transport.source_send_ok = transport.destination_send_ok = true;
-  // Sixteen due associations per pass, round-robin cursor across the cap.
-  for (int i = 0; i < 260; ++i) {
-    auto before = transport.order.size();
-    advance(1);
-    EXPECT_LE(transport.order.size() - before, 32u);
-    if (transport.sources.back().PeerContext.DestinationNodeId == 2) {
-      source_ok();
-      destination_result();
-      EXPECT_LT(PeerProvisionerTestAccess::count(peers), 4096u);
-      return;
-    }
+  ASSERT_EQ(8u, transport.sources.size());
+  // Separate Destinations process their keyless replacements concurrently.
+  for (auto reply : transport.destinations)
+    peers.on_destination(reply.PeerContext.DestinationNodeId, &reply);
+  for (size_t index = 0; index < 170; ++index) {
+    ASSERT_GT(transport.sources.size(), index);
+    now += std::chrono::milliseconds(100);
+    source_ok(index);
+    peers.iterate();
+    EXPECT_LE(transport.sources.size() - index - 1, 8u);
+    EXPECT_TRUE(transport.forced.empty());
   }
-  FAIL() << "A saturated retry set starved the independent association";
+  EXPECT_EQ(std::chrono::seconds(17), now.time_since_epoch());
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
+
 TEST_F(SupLanPeerTest, MalformedResultTableNeverCommitsOrForwardsCredential) {
   add();
   const auto request = transport.sources.back();
@@ -581,27 +836,30 @@ TEST_F(SupLanPeerTest, MalformedResultTableNeverCommitsOrForwardsCredential) {
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, TransportRetryBackoffCoalescesAndCapsRate) {
+TEST_F(SupLanPeerTest, ForcedReconnectBudgetSurvivesFlowResetAndRegistration) {
   transport.source_send_ok = false;
   add();
-  for (int seconds : {7, 17, 62, 302}) advance(seconds);
-  EXPECT_EQ(5u, transport.sources.size());
-  for (int i = 0; i < 1000; ++i) {
-    peers.iterate();
+  for (int i = 0; i < 100; ++i) {
+    advance(600);
     peers.reconcile(1);
   }
-  EXPECT_EQ(5u, transport.sources.size());
-  advance(299);
-  EXPECT_EQ(5u, transport.sources.size());
+  EXPECT_EQ(1u, transport.sources.size());
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
+  for (int i = 0; i < 3; ++i) {
+    transport.sessions[1] = 100 + i;
+    peers.reconnect(1);
+    advance(600);
+  }
+  EXPECT_EQ(4u, transport.sources.size());
+  EXPECT_EQ(std::vector<int>({1}), transport.forced);
   transport.source_send_ok = true;
-  advance(2);
-  ASSERT_EQ(6u, transport.sources.size());
+  transport.sessions[1] = 200;
+  peers.reconnect(1);
   source_ok();
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
-  EXPECT_EQ(1u, store.a.revision);
-  EXPECT_EQ(1u, store.a.generation);
 }
+
 TEST_F(SupLanPeerTest, SourceConflictOnKeylessReplayCannotBeReopened) {
   installed();
   peers.reconnect(1);
@@ -615,7 +873,7 @@ TEST_F(SupLanPeerTest, SourceConflictOnKeylessReplayCannotBeReopened) {
   EXPECT_EQ(sends, transport.sources.size());
   EXPECT_EQ(1u, store.a.generation);
 }
-TEST_F(SupLanPeerTest, TimedRetryReadsNewRootAndNeverForwardsOldKey) {
+TEST_F(SupLanPeerTest, WatchdogReadsNewRootAndNeverForwardsOldKey) {
   add();
   store.identity.root = 456;
   advance(16);
@@ -722,28 +980,24 @@ TEST_F(SupLanPeerTest, PostCommitReadFailureRederivesInsteadOfLosingFlow) {
 TEST_F(SupLanPeerTest, OwnershipReadFailureCannotLoseControlRevocationRetry) {
   installed();
   for (uint32_t failed_resource : {1u, 2u, 10u}) {
-    SCOPED_TRACE(failed_resource);
     auto extra = grant;
     extra.origin_id = 200;
     extra.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
     ASSERT_TRUE(peers.grants()->upsert(1, 2, extra));
     source_ok();
     destination_result();
-    transport.source_send_ok = false;
-    ASSERT_TRUE(peers.grants()->delete_origin(extra.origin_type,
-                                             extra.origin_id));
+    ASSERT_TRUE(peers.grants()->delete_origin(1, 200));
     destination_result();
-    const auto attempts = transport.sources.size();
     const auto revision = store.a.revision;
-    transport.source_send_ok = true;
+    const auto attempts = transport.sources.size();
     store.fail_owner_resource = failed_resource;
-    advance(7);
+    source_ok();
     EXPECT_EQ(attempts, transport.sources.size());
-    EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, transport.errors.back());
+    EXPECT_TRUE(transport.forced.empty());
+    advance(5);
+    EXPECT_EQ(attempts, transport.sources.size());
     store.fail_owner_resource = 0;
-    advance(14);
-    EXPECT_EQ(attempts, transport.sources.size());
-    advance(3);
+    advance(5);
     ASSERT_EQ(attempts + 1, transport.sources.size());
     EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_READ,
               transport.sources.back().Acl[0].Permissions);
@@ -753,6 +1007,7 @@ TEST_F(SupLanPeerTest, OwnershipReadFailureCannotLoseControlRevocationRetry) {
     EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   }
 }
+
 TEST_F(SupLanPeerTest, OwnershipReadFailureBeforeFlowCreationDefersSafely) {
   installed();
   auto attempts = transport.order.size();
@@ -930,27 +1185,32 @@ TEST_F(SupLanPeerTest, ConcurrentLiveWorkStillHonorsSafetyCapAndReusesSlot) {
     store.a = {};
     store.a.id = id;
     store.a.source = 1;
-    store.a.destination = 2;
+    store.a.destination = id + 2;
     store.a.lifecycle = Lifecycle::Active;
     store.a.acl = {{1, 10, 1}};
+    store.additional[id] = store.a;
     if (id == 1) first = store.a;
     peers.reconcile(id);  // Leave each Source response pending.
   }
   ASSERT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
-  ASSERT_EQ(4096u, transport.sources.size());
+  ASSERT_EQ(8u, transport.sources.size());
   ASSERT_EQ(1u, transport.errors.size());
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED, transport.errors.back());
   auto next = store.a;
   store.a = first;
   source_ok(0);
-  destination_result();
+  auto reply = transport.destinations.back();
+  peers.on_destination(reply.PeerContext.DestinationNodeId, &reply);
   ASSERT_EQ(4095u, PeerProvisionerTestAccess::count(peers));
   store.a = next;
   peers.reconcile(next.id);
-  ASSERT_EQ(4097u, transport.sources.size());
+  ASSERT_EQ(8u, transport.sources.size());
+  peers.iterate();  // A queued older relation gets the freed transport slot.
+  ASSERT_EQ(9u, transport.sources.size());
   EXPECT_EQ(4096u, PeerProvisionerTestAccess::count(peers));
   source_ok();
-  destination_result();
+  reply = transport.destinations.back();
+  peers.on_destination(reply.PeerContext.DestinationNodeId, &reply);
   EXPECT_EQ(4095u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, OfflineUnsentWorkDoesNotNeedResidentFlow) {

@@ -35,15 +35,7 @@ class supla_user;
 class supla_device_call_handler_collection;
 class supla_register_device;
 class supla_device : public supla_abstract_connection_object {
-#ifdef __TEST
-  friend class supla_connection_test_access;
-#endif
-
  private:
-#ifdef __TEST
-  // Isolate the legacy provisioning tick in real connection-loop tests only.
-  std::atomic<bool> test_skip_suplan_tick{false};
-#endif
   supla_suplan_identity_bootstrap identity_bootstrap;
   bool registration_sync_pending = false;
   std::shared_ptr<supla_suplan::StreamConnection> stream_connection;

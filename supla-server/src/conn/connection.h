@@ -22,8 +22,9 @@
 #include <stddef.h>
 #include <sys/time.h>
 
-#include <memory>
+#include <cstdint>
 #include <functional>
+#include <memory>
 
 #include "eh.h"
 #include "srpc/abstract_srpc_adapter.h"
@@ -44,6 +45,8 @@ class supla_connection {
   supla_abstract_srpc_adapter *srpc_adapter;
   void *sthread;
   std::shared_ptr<TEventHandler> eh;
+  static uint64_t next_session();
+  const uint64_t session_id = next_session();
   struct timeval init_time;
   unsigned char activity_timeout;
   int unhandled_call_counter;
@@ -96,6 +99,7 @@ class supla_connection {
   void terminate(void);
   void raise_event(void);
   std::function<void()> event_notifier() const;
+  uint64_t get_session_id() const { return session_id; }
   void on_object_registration_done(void);
   virtual ~supla_connection();
 

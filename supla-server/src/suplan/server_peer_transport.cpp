@@ -36,29 +36,59 @@ bool supla_suplan_server_peers::owner_ready(int id, uint32_t root) {
   return !d ||
          (d->is_suplan_peer_ready() && d->get_suplan_root_epoch() == root);
 }
-bool supla_suplan_server_peers::send(int id,
-                                     TSDS_SuplaSetSuplanSourceAssociation *q) {
+int supla_suplan_server_peers::recovery_device() {
+  int result = 0;
+  user->get_devices()->for_each(
+      [&](std::shared_ptr<supla_device> d, bool *more) {
+        if (d->is_suplan_peer_ready()) {
+          result = d->get_id();
+          *more = false;
+        }
+      });
+  return result;
+}
+uint64_t supla_suplan_server_peers::session(int id) {
   auto d = user->get_devices()->get(id);
-  if (!d || !d->get_connection() || !d->is_suplan_peer_ready() ||
-      d->get_suplan_root_epoch() != q->PeerContext.RootEpoch)
-    return false;
+  return d && d->get_connection() ? d->get_connection()->get_session_id() : 0;
+}
+void supla_suplan_server_peers::wake(int id, uint64_t expected) {
+  auto d = user->get_devices()->get(id);
+  if (d && d->get_connection() &&
+      d->get_connection()->get_session_id() == expected)
+    d->get_connection()->raise_event();
+}
+bool supla_suplan_server_peers::reconnect_session(int id, uint64_t expected) {
+  auto d = user->get_devices()->get(id);
+  return d && d->get_connection() && d->is_suplan_peer_ready() &&
+         d->get_connection()->get_session_id() == expected && d->reconnect();
+}
+supla_suplan::PeerTransport::SendResult supla_suplan_server_peers::send(
+    int id, TSDS_SuplaSetSuplanSourceAssociation *q) {
+  auto d = user->get_devices()->get(id);
+  if (!d || !d->get_connection() || !d->is_suplan_peer_ready())
+    return {SendCode::NotReady, 0};
+  auto current = d->get_connection()->get_session_id();
+  if (d->get_suplan_root_epoch() != q->PeerContext.RootEpoch)
+    return {SendCode::ContextChanged, current};
   auto srpc = d->get_connection()->get_srpc_adapter();
   srpc->lock();
   bool ok =
       srpc_sd_async_set_suplan_source_association(srpc->get_srpc(), q) > 0;
   srpc->unlock();
-  return ok;
+  return {ok ? SendCode::Queued : SendCode::EnqueueFailed, current};
 }
-bool supla_suplan_server_peers::send(
+supla_suplan::PeerTransport::SendResult supla_suplan_server_peers::send(
     int id, TSDS_SuplaSetSuplanDestinationAssociation *q) {
   auto d = user->get_devices()->get(id);
-  if (!d || !d->get_connection() || !d->is_suplan_peer_ready()) return false;
+  if (!d || !d->get_connection() || !d->is_suplan_peer_ready())
+    return {SendCode::NotReady, 0};
+  auto current = d->get_connection()->get_session_id();
   auto srpc = d->get_connection()->get_srpc_adapter();
   srpc->lock();
   bool ok =
       srpc_sd_async_set_suplan_destination_association(srpc->get_srpc(), q) > 0;
   srpc->unlock();
-  return ok;
+  return {ok ? SendCode::Queued : SendCode::EnqueueFailed, current};
 }
 void supla_suplan_server_peers::rebootstrap(int source) {
   auto d = user->get_devices()->get(source);

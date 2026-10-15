@@ -107,10 +107,11 @@ void supla_device::reset_suplan_identity_bootstrap(void) {
 }
 
 void supla_device::connection_will_close(void) {
-  if (get_user()) {
-    get_user()->get_suplan_peers()->peers()->disconnected(get_id());
-  }
   reset_suplan_identity_bootstrap();
+  if (get_user()) {
+    get_user()->get_suplan_peers()->peers()->disconnected(
+        get_id(), get_connection() ? get_connection()->get_session_id() : 0);
+  }
   supla_abstract_connection_object::connection_will_close();
 }
 
@@ -229,7 +230,7 @@ void supla_device::iterate(void) {
     channels->iterate();
   }
   if (get_user() && is_suplan_peer_ready()) {
-    get_user()->get_suplan_peers()->peers()->iterate();
+    get_user()->get_suplan_peers()->peers()->iterate(get_id());
     auto stream = get_stream(false);
     if (stream) stream->iterate();
   }
@@ -254,12 +255,11 @@ unsigned _supla_int64_t supla_device::wait_time_usec(void) {
       result = stream_time_left;
   }
 
-  // Drive pending provisioning deadlines even on an otherwise quiet SRPC
-  // connection. The per-user provisioner coalesces triggers from all devices.
-#ifdef __TEST
-  if (!test_skip_suplan_tick)
-#endif
-  if (is_suplan_peer_ready() && result > 1000000) result = 1000000;
+  if (get_user() && is_suplan_peer_ready()) {
+    auto peers = get_user()->get_suplan_peers()->peers();
+    auto due = peers->time_left_usec(get_id());
+    if (due && due < result) result = due;
+  }
 
   return result;
 }
