@@ -290,9 +290,11 @@ bool supla_suplan_server_peers::reconcile_hvac(
       }
     }
   }
+  supla_mariadb_access_provider db;
+  supla_device_dao dao(&db);
+  // Autocommit reads on one connection, not a snapshot transaction.
+  if (!db.connect()) return false;
   auto reload = [&]() {
-    supla_mariadb_access_provider db;
-    supla_device_dao dao(&db);
     config.reset(dao.get_channel_config(channel_id, nullptr, nullptr,
                                         &function));
     if (!config) {
@@ -312,77 +314,72 @@ bool supla_suplan_server_peers::reconcile_hvac(
   // Audit persisted origins before any desired ACL expansion. Each read is
   // protected by its origin gate; no new Grant is created by this sweep.
   // Continue after a DB fault so other stale origins still get a cleanup try.
+  auto revoke = [&](uint8_t field) {
+    return service.revoke_stale_reference(
+        channel_id, field, [&](uint32_t *reference) {
+          return repo.reference(channel_id, field, reference);
+        });
+  };
   bool revoked = true;
   for (auto field : existing_fields) {
     if (!((field >= 1 && field <= 6) || (field >= 32 && field < 42) ||
           (field >= 64 && field < 84))) continue;
-    if (!service.revoke_stale_reference(channel_id, field,
-                                       [&](uint32_t *reference) {
-                                         return repo.reference(channel_id,
-                                                               field,
-                                                               reference);
-                                       })) revoked = false;
+    if (!revoke(field)) revoked = false;
   }
   if (!revoked) return false;
-  // A full payload must correspond to one coherent authoritative root. A
-  // writer may change another field while its predecessor's origin is being
-  // reconciled. Retry the bounded field pass, never deliver that mixed root.
+  auto root = [&]() {
+    char *user = config ? config->get_user_config() : nullptr;
+    char *properties = config ? config->get_properties() : nullptr;
+    auto result = std::make_pair(std::string(user ? user : ""),
+                                 std::string(properties ? properties : ""));
+    free(user);
+    free(properties);
+    return result;
+  };
   for (unsigned attempt = 0; attempt < 3; ++attempt) {
-    std::string expected_user, expected_properties;
-    bool captured = false, changed = false, ok = true;
-    int expected_function = 0;
+    if (!reload()) return false;
+    auto expected = root();
+    int expected_function = function;
+    uint32_t references[84] = {};
+    hvac_config hvac(config.get());
+    TChannelConfig_Container container = {};
+    TChannelConfig_Valve valve = {};
+    container_config(config.get()).get_config(&container);
+    valve_config(config.get()).get_config(&valve);
     for (auto field : fields) {
-      ok =
-          service.reconcile_reference(channel_id, field, [&](uint32_t *source) {
-            if (!reload()) {
-              return false;
-            }
-            char *user_json = config ? config->get_user_config() : nullptr;
-            char *properties_json = config ? config->get_properties() : nullptr;
-            std::string user_root = user_json ? user_json : "";
-            std::string properties_root =
-                properties_json ? properties_json : "";
-            free(user_json);
-            free(properties_json);
-            if (!captured) {
-              expected_user = user_root;
-              expected_properties = properties_root;
-              expected_function = function;
-              captured = true;
-            } else if (expected_user != user_root ||
-                       expected_properties != properties_root ||
-                       expected_function != function) {
-              changed = true;
-              return false;
-            }
-            *source = 0;
-            if (field <= 6) {
-              *source = hvac_config(config.get()).reference(field - 1);
-            } else if (field < 42) {
-              TChannelConfig_Container raw = {};
-              container_config(config.get()).get_config(&raw);
-              *source = raw.SensorInfo[field - 32].ChannelId;
-            } else {
-              TChannelConfig_Valve raw = {};
-              valve_config(config.get()).get_config(&raw);
-              *source = raw.SensorInfo[field - 64].ChannelId;
-            }
+      references[field] =
+          field <= 6 ? hvac.reference(field - 1)
+          : field < 42 ? container.SensorInfo[field - 32].ChannelId
+                       : valve.SensorInfo[field - 64].ChannelId;
+    }
+    bool ok = true;
+    for (auto field : fields) {
+      if (!service.reconcile_reference(
+              channel_id, field, [&](uint32_t *source) {
+            *source = references[field];
             return true;
-          });
-      if (!ok) {
+          })) {
+        ok = false;
         break;
       }
     }
-    if (ok) {
+    bool loaded = reload();
+    if (loaded && expected == root() && expected_function == function) {
+      if (!ok) return false;
       if (selected_function) *selected_function = function;
-      if (current) {
-        *current = std::move(config);
-      }
+      if (current) *current = std::move(config);
       return true;
     }
-    if (!changed) {
-      return false;  // real DB/authorization fault, no retry storm
+    // Earlier origins may already have committed. Before retry/failed return,
+    // revoke stale projections under their own gates using current DB refs.
+    // Never expand ACL from an unverified root or revoke independent origins.
+    bool cleaned = true;
+    for (auto field : fields) {
+      if ((references[field] || std::find(existing_fields.begin(),
+              existing_fields.end(), field) != existing_fields.end()) &&
+          !revoke(field)) cleaned = false;
     }
+    if (!loaded || !cleaned) return false;
   }
   return false;  // bounded churn: terminate/reconnect/replay at the sender
 }

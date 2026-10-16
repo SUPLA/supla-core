@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include <arpa/inet.h>
+#include <dlfcn.h>
 #include <gtest/gtest.h>
 #include <poll.h>
 #include <unistd.h>
@@ -8,6 +9,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <future>
 #include <iostream>
@@ -45,6 +47,94 @@
 #include "test/integration/IntegrationTest.h"
 #include "user.h"
 #include "user/user_dao.h"
+// Test-only driver boundary probe: always execute real MariaDB operations.
+// No SQL text/payload logging, production hook, schema change or provider mock.
+namespace {
+struct Sql004Probe;
+thread_local Sql004Probe *sql004 = nullptr;
+struct Sql004Probe {
+  unsigned connections = 0, prepares = 0, executions = 0;
+  unsigned selects = 0, dml = 0, config_reads = 0;
+  MYSQL_STMT *last = nullptr, *config_statement = nullptr;
+  std::string statement;
+  std::function<bool(unsigned)> after_config;
+  std::chrono::steady_clock::time_point started =
+      std::chrono::steady_clock::now();
+  Sql004Probe() { sql004 = this; }
+  ~Sql004Probe() { sql004 = nullptr; }
+  void count(const std::string &sql) {
+    ++executions;
+    if (sql.compare(0, 6, "SELECT") == 0) ++selects;
+    if (sql.compare(0, 6, "INSERT") == 0 || sql.compare(0, 6, "UPDATE") == 0 ||
+        sql.compare(0, 6, "DELETE") == 0) ++dml;
+  }
+  void finish(const char *label) {
+    sql004 = nullptr;
+    std::cout << "SQL004 " << label << " config_reads=" << config_reads
+              << " selects=" << selects << " dml=" << dml
+              << " prepares=" << prepares << " executions=" << executions
+              << " connect_attempts=" << connections << " us="
+              << std::chrono::duration_cast<std::chrono::microseconds>(
+                     std::chrono::steady_clock::now() - started).count()
+              << std::endl;
+  }
+};
+template <typename T> T sql004_native(const char *name) {
+  auto function = reinterpret_cast<T>(dlsym(RTLD_NEXT, name));
+  if (!function) std::abort();
+  return function;
+}
+}  // namespace
+extern "C" MYSQL *STDCALL mysql_real_connect(
+    MYSQL *mysql, const char *host, const char *user, const char *password,
+    const char *database, unsigned int port, const char *socket,
+    unsigned long flags) {
+  static auto native = sql004_native<decltype(&mysql_real_connect)>(
+      "mysql_real_connect");
+  if (sql004) ++sql004->connections;
+  return native(mysql, host, user, password, database, port, socket, flags);
+}
+extern "C" int STDCALL mysql_query(MYSQL *mysql, const char *query) {
+  static auto native = sql004_native<decltype(&mysql_query)>("mysql_query");
+  if (sql004) sql004->count(query);
+  return native(mysql, query);
+}
+extern "C" int STDCALL mysql_stmt_prepare(MYSQL_STMT *stmt, const char *query,
+                                           unsigned long length) {
+  static auto native = sql004_native<decltype(&mysql_stmt_prepare)>(
+      "mysql_stmt_prepare");
+  if (sql004) {
+    ++sql004->prepares;
+    sql004->last = stmt;
+    sql004->statement.assign(query, length);
+    if (sql004->statement.find("SELECT user_config, properties, MD5(") == 0)
+      sql004->config_statement = stmt;
+  }
+  return native(stmt, query, length);
+}
+extern "C" int STDCALL mysql_stmt_execute(MYSQL_STMT *stmt) {
+  static auto native = sql004_native<decltype(&mysql_stmt_execute)>(
+      "mysql_stmt_execute");
+  if (sql004) {
+    sql004->count(stmt == sql004->last ? sql004->statement : "");
+    if (stmt == sql004->config_statement) ++sql004->config_reads;
+  }
+  return native(stmt);
+}
+extern "C" int STDCALL mysql_stmt_fetch(MYSQL_STMT *stmt) {
+  static auto native = sql004_native<decltype(&mysql_stmt_fetch)>(
+      "mysql_stmt_fetch");
+  int result = native(stmt);
+  if (!result && sql004 && stmt == sql004->config_statement) {
+    auto probe = sql004;
+    probe->config_statement = nullptr;
+    sql004 = nullptr;  // A simulated external writer is outside measured work.
+    bool fail = probe->after_config && probe->after_config(probe->config_reads);
+    sql004 = probe;
+    if (fail) return 1;
+  }
+  return result;
+}
 using namespace supla_suplan;  // NOLINT
 // Inject only at the transport-adapter boundary. Serialization, queueing,
 // framing, registration and the connection thread remain production code.
@@ -4756,3 +4846,160 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_NE(nullptr, current_destination);
   EXPECT_EQ(0u, current_destination->get_stream(false)->size());
 }
+
+namespace {
+TEST_F(SupLanHvacIntegrationTest, Sql004ReadsAndRealDatabaseMetrics) {
+  auto binary = add_channel(source, 235, SUPLA_CHANNELTYPE_BINARYSENSOR,
+                             SUPLA_CHANNELFNC_FLOOD_SENSOR);
+  auto master = add_channel(source, 236, SUPLA_CHANNELTYPE_HVAC,
+                             SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  auto pump = add_channel(source, 237, SUPLA_CHANNELTYPE_RELAY,
+                           SUPLA_CHANNELFNC_PUMPSWITCH);
+  auto hocs = add_channel(source, 238, SUPLA_CHANNELTYPE_RELAY,
+                           SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH);
+  ASSERT_TRUE(factory()->accept_identity(source,
+                                         {123, {resource, binary, master,
+                                                pump, hocs}}));
+  ASSERT_TRUE(factory()->accept_identity(destination, {789, {hvac, local}}));
+  auto measure = [&](const char *name) {
+    std::unique_ptr<supla_json_config> current;
+    int function = -1;
+    Sql004Probe probe;
+    bool ok = supla_suplan_server_peers::reconcile_hvac(99124, hvac,
+                                                        &current, &function);
+    probe.finish(name);
+    ASSERT_TRUE(ok);
+    ASSERT_NE(nullptr, current);
+    EXPECT_GT(probe.config_reads, 0u);
+    EXPECT_LE(probe.config_reads, 2u);
+  };
+  query("UPDATE supla_dev_channel SET type=" +
+        std::to_string(SUPLA_CHANNELTYPE_RELAY) + ",func=" +
+        std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
+        ",user_config='{}' WHERE id=" + std::to_string(hvac));
+  query("UPDATE supla_iodevice SET flags=0 WHERE id=" +
+        std::to_string(destination));
+  measure("ordinary-legacy");
+  query("UPDATE supla_dev_channel SET type=" +
+        std::to_string(SUPLA_CHANNELTYPE_HVAC) + ",func=" +
+        std::to_string(SUPLA_CHANNELFNC_HVAC_THERMOSTAT) +
+        " WHERE id=" + std::to_string(hvac));
+  measure("hvac-empty-legacy");
+  query("UPDATE supla_iodevice SET flags=" +
+        std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) + " WHERE id=" +
+        std::to_string(destination));
+  measure("hvac-empty");
+  config(resource);
+  measure("hvac-one");
+  measure("hvac-one-repeat");
+  query("UPDATE supla_dev_channel SET user_config='{"
+        "\"mainThermometerChannelId\":" + std::to_string(resource) +
+        ",\"auxThermometerChannelId\":" + std::to_string(resource) +
+        ",\"binarySensorChannelId\":" + std::to_string(binary) +
+        ",\"masterThermostatChannelId\":" + std::to_string(master) +
+        ",\"pumpSwitchChannelId\":" + std::to_string(pump) +
+        ",\"heatOrColdSourceSwitchChannelId\":" + std::to_string(hocs) +
+        "}' WHERE id=" + std::to_string(hvac));
+  measure("hvac-six");
+  EXPECT_EQ(6, scalar("SELECT COUNT(*) FROM supla_suplan_grant "
+                     "WHERE origin_type=1"));
+  auto before = state();
+  query("UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
+        "'heatOrColdSourceSwitchChannelId'," + std::to_string(hocs) +
+        ",'pumpSwitchChannelId'," + std::to_string(pump) +
+        ",'masterThermostatChannelId'," + std::to_string(master) +
+        ",'binarySensorChannelId'," + std::to_string(binary) +
+        ",'auxThermometerChannelId'," + std::to_string(resource) +
+        ",'mainThermometerChannelId'," + std::to_string(resource) +
+        ") WHERE id=" + std::to_string(hvac));
+  measure("hvac-six-repeat");
+  EXPECT_TRUE(same_state(before, state()));
+  config(0);
+  measure("removed-six");
+  EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_suplan_grant"));
+  for (bool container : {true, false}) {
+    query("UPDATE supla_dev_channel SET type=" +
+          std::to_string(container ? SUPLA_CHANNELTYPE_CONTAINER
+                                   : SUPLA_CHANNELTYPE_VALVE_OPENCLOSE) +
+          ",func=" + std::to_string(container ? SUPLA_CHANNELFNC_CONTAINER
+                        : SUPLA_CHANNELFNC_VALVE_OPENCLOSE) +
+          " WHERE id=" + std::to_string(hvac));
+    for (unsigned count : {1u, container ? 10u : 20u}) {
+      std::unique_ptr<supla_json_config> json(
+          container ? static_cast<supla_json_config *>(new container_config())
+                    : static_cast<supla_json_config *>(new valve_config()));
+      if (container) {
+        TChannelConfig_Container raw{};
+        for (unsigned i = 0; i < count; ++i)
+          raw.SensorInfo[i].ChannelId = binary;
+        container_config(json.get()).set_config(&raw);
+      } else {
+        TChannelConfig_Valve raw{};
+        for (unsigned i = 0; i < count; ++i)
+          raw.SensorInfo[i].ChannelId = binary;
+        valve_config(json.get()).set_config(&raw);
+      }
+      supla_mariadb_access_provider db;
+      supla_device_dao dao(&db);
+      ASSERT_TRUE(dao.set_channel_config(99124, hvac, json.get()));
+      measure((std::string(container ? "container-" : "valve-") +
+               std::to_string(count)).c_str());
+    }
+  }
+  query("DELETE FROM supla_dev_channel WHERE id=" + std::to_string(binary));
+  measure("deleted-source");
+  EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_suplan_grant"));
+  query("UPDATE supla_dev_channel SET func=0 WHERE id=" + std::to_string(hvac));
+  measure("function-none");
+  query("UPDATE supla_dev_channel SET type=" +
+        std::to_string(SUPLA_CHANNELTYPE_RELAY) + " WHERE id=" +
+        std::to_string(hvac));
+  measure("type-relay");
+}
+TEST_F(SupLanHvacIntegrationTest, Sql004ConcurrentRootAndChurnCleanup) {
+  config(resource);
+  Grant independent{1, resource, 99, 444, SUPLA_SUPLAN_PERMISSION_READ};
+  ASSERT_TRUE(service.upsert(source, destination, independent));
+  for (bool churn : {false, true}) {
+    config(resource);
+    Sql004Probe probe;
+    probe.after_config = [&](unsigned read) {
+      if (churn || read == 1) {
+        config(churn && read % 2 == 0 ? local : other_resource);
+        // Mutate other root members too; references alone are not the fence.
+        query("UPDATE supla_dev_channel SET properties='{\"epoch\":" +
+              std::to_string(read) + "}' WHERE id=" + std::to_string(hvac));
+      }
+      return false;
+    };
+    std::unique_ptr<supla_json_config> current;
+    bool ok = supla_suplan_server_peers::reconcile_hvac(99124, hvac, &current);
+    probe.finish(churn ? "persistent-churn" : "one-concurrent-change");
+    EXPECT_EQ(!churn, ok);
+    if (churn) {
+      EXPECT_EQ(6u, probe.config_reads);  // Three snapshot/check attempts.
+      EXPECT_EQ(nullptr, current);
+      EXPECT_TRUE(origin_grants().empty());  // Latest is local.
+    } else {
+      ASSERT_NE(nullptr, current);
+      EXPECT_EQ(other_resource, hvac_config(current.get()).reference(0));
+    }
+    EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_suplan_grant "
+                        "WHERE origin_type=99"));
+  }
+}
+TEST_F(SupLanHvacIntegrationTest, Sql004FinalReadFailureCannotLeaveNewGrant) {
+  config(resource);
+  Sql004Probe probe;
+  probe.after_config = [&](unsigned read) {
+    if (read == 1) config(local);
+    return read >= 2;
+  };
+  std::unique_ptr<supla_json_config> current;
+  EXPECT_FALSE(
+      supla_suplan_server_peers::reconcile_hvac(99124, hvac, &current));
+  probe.finish("final-read-failure");
+  EXPECT_EQ(nullptr, current);
+  EXPECT_TRUE(origin_grants().empty());
+}
+}  // namespace
