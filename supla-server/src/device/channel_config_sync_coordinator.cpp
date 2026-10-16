@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "device/devicechannel.h"
+#include "device/device.h"
 #include "lck.h"
 
 using std::vector;
@@ -125,7 +126,11 @@ supla_channel_config_sync_coordinator::get_next_step(void) {
       continue;
     }
 
-    if (!channel->prepare_config_for_device(&step.configs)) {
+    if (!channel->prepare_config_for_device(&step.configs,
+                                            &step.preparation_failed)) {
+      if (step.preparation_failed && device &&
+          (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED))
+        return step;
       continue;
     }
 
@@ -147,9 +152,29 @@ supla_channel_config_sync_coordinator::get_next_step(void) {
 
 void supla_channel_config_sync_coordinator::execute_step(
     sync_step step) {
-  while (step.channel || step.on_finished) {
+  while (step.channel || step.on_finished || step.preparation_failed) {
+    if (step.preparation_failed) {
+      lck_lock(lck);
+      on_finished = nullptr;
+      finish();
+      lck_unlock(lck);
+      device->reset_suplan_identity_bootstrap();
+      device->terminate();
+      return;
+    }
     if (step.channel) {
-      step.channel->send_configs_to_device(&step.configs);
+      bool sent = step.channel->send_configs_to_device(&step.configs);
+      if (!sent && device && device->get_suplan_root_epoch()) {
+        // An accepted identity requires authoritative configuration replay.
+        // Do not turn a failed enqueue into a successful sync on timeout.
+        lck_lock(lck);
+        on_finished = nullptr;
+        finish();
+        lck_unlock(lck);
+        device->reset_suplan_identity_bootstrap();
+        device->terminate();
+        return;
+      }
     }
 
     if (step.on_finished) {

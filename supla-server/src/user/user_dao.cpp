@@ -18,7 +18,9 @@
 
 #include "user_dao.h"
 
+#include <cstring>
 #include <vector>
+#include <string>
 
 #include "log.h"
 #include "user/user.h"
@@ -32,6 +34,12 @@ supla_user_dao::~supla_user_dao() {}
 
 std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
     supla_user *user, long long int since_the_value_update_timestamp) {
+  return get_virtual_channels(user, since_the_value_update_timestamp, 0);
+}
+
+std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
+    supla_user *user, long long int since_the_value_update_timestamp,
+    int stream_channel) {
   std::vector<supla_virtual_channel> result;
 
   if (!user) {
@@ -67,7 +75,16 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
   pbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
   pbind[1].buffer = (char *)&since_the_value_update_timestamp;
 
-  if (dba->stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  std::string scoped_sql = sql;
+  if (stream_channel > 0) {
+    scoped_sql.replace(scoped_sql.find("c.is_virtual = 1"),
+                       strlen("c.is_virtual = 1"), "1=1");
+    scoped_sql.insert(scoped_sql.find(" FROM"),
+        ", COALESCE(UNIX_TIMESTAMP(CONVERT_TZ(v.valid_to, 'UTC', "
+        "@@session.time_zone))*1000000,0) AS stream_deadline, c.is_virtual");
+    scoped_sql += " AND c.id=" + std::to_string(stream_channel);
+  }
+  if (dba->stmt_execute((void **)&stmt, scoped_sql.c_str(), pbind, 2, true)) {
     int device_id = 0;
     int channel_id = 0;
     int type = 0;
@@ -92,7 +109,7 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
     unsigned _supla_int_t validity_time_sec = 0;
     my_bool validity_time_is_null = true;
 
-    MYSQL_BIND rbind[12] = {};
+    MYSQL_BIND rbind[14] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&device_id;
@@ -140,6 +157,15 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
     rbind[11].buffer_length = sizeof(unsigned _supla_int_t);
     rbind[11].is_null = &validity_time_is_null;
 
+    uint64_t stream_deadline = 0;
+    int is_virtual = 0;
+    if (stream_channel > 0) {
+      rbind[12].buffer_type = MYSQL_TYPE_LONGLONG;
+      rbind[12].buffer = &stream_deadline;
+      rbind[12].is_unsigned = true;
+      rbind[13].buffer_type = MYSQL_TYPE_LONG;
+      rbind[13].buffer = &is_virtual;
+    }
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -170,6 +196,10 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
           result.push_back(supla_virtual_channel(
               user, device_id, channel_id, value, validity_time_sec, type, func,
               param1, param2, param3, param4, user_config, properties));
+          if (stream_channel > 0) {
+            result.back().set_stream_deadline(stream_deadline);
+            if (!is_virtual) result.back().set_stream_raw_value(value);
+          }
         }
       }
     }

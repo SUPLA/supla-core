@@ -24,6 +24,7 @@
 #include "device/device_dao.h"
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "suplan/server_peer_transport.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -36,6 +37,33 @@ supla_on_channel_config_changed_command::
 void supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
+  auto stream_user = supla_user::find(user_id, false);
+  if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
+  // Notifications carry no authorization. Even a cold/offline user must have
+  // the current committed business projection reconciled before delivery.
+  supla_mariadb_access_provider dba;
+  supla_device_dao dao(&dba);
+  std::unique_ptr<supla_json_config> authoritative;
+  bool reconciled = true;
+  if ((scope &
+       (CONFIG_CHANGE_SCOPE_RELATIONS | CONFIG_CHANGE_SCOPE_FUNCTION)) &&
+      !supla_suplan_server_peers::reconcile_manual(user_id, channel_id))
+    reconciled = false;
+  if (type == SUPLA_CHANNELTYPE_HVAC || type == SUPLA_CHANNELTYPE_CONTAINER ||
+      (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+       type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) ||
+      (scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
+    if (!supla_suplan_server_peers::reconcile_hvac(user_id, channel_id,
+                                                   &authoritative))
+      reconciled = false;
+  }
+  if (((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+       (type == SUPLA_CHANNELTYPE_HVAC &&
+        (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT))) &&
+      !supla_suplan_server_peers::reconcile_dependencies(user_id, channel_id)) {
+    reconciled = false;
+  }
+  if (!reconciled) return;
   supla_user *user = supla_user::find(user_id, false);
   if (!user) {
     return;
@@ -61,6 +89,8 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
     case SUPLA_CHANNELTYPE_CONTAINER:
+    case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELTYPE_VALVE_PERCENTAGE:
       break;
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
     case SUPLA_CHANNELTYPE_SENSORNO:
@@ -89,20 +119,22 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
       }
   }
 
-  supla_mariadb_access_provider dba;
-  supla_device_dao dao(&dba);
-
   if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
     dao.erase_channel_properties(user_id, channel_id);
   }
 
   supla_json_config *json_config =
-      dao.get_channel_config(channel_id, nullptr, nullptr);
+      authoritative ? authoritative.release()
+                    : dao.get_channel_config(channel_id, nullptr, nullptr);
 
   shared_ptr<supla_device> device = user->get_devices()->get(device_id);
 
   if (device) {
-    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) || force_device_reconnect) {
+    // A pure RELATIONS hint (manual consent) changes authorization, not the
+    // Source's configuration. In particular a legacy thermometer must stay
+    // connected while its new STREAM interest is activated.
+    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+        (force_device_reconnect && scope != CONFIG_CHANGE_SCOPE_RELATIONS)) {
       device->reconnect();
     } else if (json_config &&
                ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||
@@ -111,23 +143,27 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
                 (scope & CONFIG_CHANGE_SCOPE_OCR))) {
       device->get_channels()->access_channel(
           channel_id, [&](supla_device_channel *channel) -> void {
-            channel->set_json_config(new supla_json_config(json_config, true));
+            auto publish = [&](unsigned char type) {
+              channel->request_config_publication(type);
+            };
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
+              publish(SUPLA_CONFIG_TYPE_DEFAULT);
+              if (channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+                publish(SUPLA_CONFIG_TYPE_EXTENDED);
+              }
             }
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+              publish(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
             }
 
             if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
-              channel->send_config_to_device(
-                  SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+              publish(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
             }
 
             if (scope & CONFIG_CHANGE_SCOPE_OCR) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
+              publish(SUPLA_CONFIG_TYPE_OCR);
             }
           });
     }

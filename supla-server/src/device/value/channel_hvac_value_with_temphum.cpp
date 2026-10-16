@@ -104,29 +104,22 @@ void supla_channel_hvac_value_with_temphum::expand(
     if (json_config) {
       hvac_config json_hvac(json_config);
       TChannelConfig_HVAC native_config = {};
-      json_hvac.get_config(&native_config, fragment->get_channel_number());
+      json_hvac.get_config(&native_config);
       delete json_config;
 
       int main_thermometer_channel_id = 0;
 
-      if (native_config.AuxThermometerChannelNo !=
-              fragment->get_channel_number() &&
+      if (native_config.AuxThermometerChannelId &&
           native_config.TemperatureControlType ==
               SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_AUX_HEATER_COOLER_TEMPERATURE) {  // NOLINT
-        main_thermometer_channel_id = getter->get_channel_id(
-            getter->get_user_id(), fragment->get_device_id(),
-            native_config.AuxThermometerChannelNo);
-      } else if (native_config.MainThermometerChannelNo !=
-                 fragment->get_channel_number()) {
-        main_thermometer_channel_id = getter->get_channel_id(
-            getter->get_user_id(), fragment->get_device_id(),
-            native_config.MainThermometerChannelNo);
+        main_thermometer_channel_id = native_config.AuxThermometerChannelId;
+      } else {
+        main_thermometer_channel_id = native_config.MainThermometerChannelId;
       }
 
       if (main_thermometer_channel_id) {
-        supla_abstract_channel_value *th_value =
-            getter->get_value(getter->get_user_id(), fragment->get_device_id(),
-                              main_thermometer_channel_id);
+        supla_abstract_channel_value *th_value = getter->get_value(
+            getter->get_user_id(), 0, main_thermometer_channel_id);
         if (th_value) {
           supla_channel_temphum_value *temphum =
               dynamic_cast<supla_channel_temphum_value *>(th_value);

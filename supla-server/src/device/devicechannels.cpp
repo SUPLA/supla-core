@@ -806,7 +806,12 @@ bool supla_device_channels::get_channel_config(unsigned char channel_number,
   supla_device_channel *channel = find_channel_by_number(channel_number);
 
   if (channel) {
-    channel->get_config(config, type, flags);
+    if (!channel->get_config(config, type, flags) ||
+        !channel->is_config_identity_ready(type)) {
+      device->reset_suplan_identity_bootstrap();
+      device->terminate();
+      return false;
+    }
     return true;
   }
 
@@ -1630,7 +1635,7 @@ bool supla_device_channels::action_hvac_set_temperature(
             if (json_config) {
               hvac_config hvac(json_config);
               TChannelConfig_HVAC raw = {};
-              if (hvac.get_config(&raw, channel->get_channel_number())) {
+              if (hvac.get_config(&raw)) {
                 if (raw.Subfunction == SUPLA_HVAC_SUBFUNCTION_HEAT) {
                   value->set_setpoint_temperature_heat(
                       temperature->get_temperature());
@@ -1801,6 +1806,14 @@ void supla_device_channels::on_set_channel_config_result(
 
 void supla_device_channels::iterate(void) {
   channel_config_sync_coordinator.iterate();
+  // Registration replay and its results belong to this same connection thread.
+  // Keep pending pushes until replay completes so their ACKs cannot satisfy it.
+  if (!channel_config_sync_coordinator.is_finished()) return;
+  for (auto channel : channels) {
+    if (!channel->publish_pending_config()) {
+      return;
+    }
+  }
 }
 
 unsigned _supla_int64_t

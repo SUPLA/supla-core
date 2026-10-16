@@ -19,6 +19,8 @@
 #ifndef VIRTUAL_CHANNEL_H_
 #define VIRTUAL_CHANNEL_H_
 
+#include <cstdint>
+
 #include "device/channel_availability_status.h"
 #include "proto.h"
 
@@ -46,6 +48,10 @@ class supla_virtual_channel {
   static unsigned get_value_validity_time_sec(
       const struct timeval &value_valid_to);
   unsigned get_value_validity_time_sec(void);
+  void set_stream_deadline(uint64_t unix_usec);
+  void set_stream_raw_value(const char raw[SUPLA_CHANNELVALUE_SIZE]);
+  bool get_stream_value(TDS_SuplaDeviceChannel_E *out,
+                        int64_t *remaining_usec);
   int get_device_id(void);
   int get_channel_id(void);
   int get_func(void);

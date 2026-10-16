@@ -65,13 +65,14 @@ void supla_ch_set_channel_config::handle_call(
         }
       });
 
-  device->get_connection()
-      ->get_srpc_adapter()
-      ->sd_async_set_channel_config_result(&result);
+  if (srpc_adapter->sd_async_set_channel_config_result(&result) <= 0) {
+    device->reset_suplan_identity_bootstrap();
+    device->terminate();
+  }
 
   device->get_channels()->access_channel(
       channel_id, [&](supla_device_channel* channel) -> void {
-        channel->send_config_to_device(request->ConfigType);
+        channel->request_config_publication(request->ConfigType);
       });
 
   if (result.Result == SUPLA_CONFIG_RESULT_TRUE) {

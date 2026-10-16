@@ -23,15 +23,25 @@
 
 #include <list>
 #include <memory>
+#include <vector>
+#include <cstdint>
 
+#include "suplan/server_stream.h"
 #include "device/calcfg_queue.h"
 #include "device/devicechannels.h"
+#include "suplan/identity_bootstrap.h"
 
 class supla_user;
 class supla_device_call_handler_collection;
 class supla_register_device;
 class supla_device : public supla_abstract_connection_object {
  private:
+  supla_suplan_identity_bootstrap identity_bootstrap;
+  bool registration_sync_pending = false;
+  std::shared_ptr<supla_suplan::StreamConnection> stream_connection;
+  bool stream_sync_done = false;
+  bool suplan_peer_ready = false;
+  std::vector<uint32_t> suplan_registration_channels;
   int flags;
   short manufacturer_id;
   static supla_device_call_handler_collection call_handler_collection;
@@ -51,6 +61,7 @@ class supla_device : public supla_abstract_connection_object {
   void set_channels(supla_device_channels *channels);
 
   virtual bool can_reconnect(void);
+  virtual void send_registration_config(void);
 
  public:
   explicit supla_device(supla_connection *connection);
@@ -60,6 +71,16 @@ class supla_device : public supla_abstract_connection_object {
   virtual bool is_sleeping_object(void);
   virtual unsigned int get_time_to_wakeup_msec(void);
   virtual void iterate(void);
+  virtual void connection_will_close(void);
+  void reset_suplan_identity_bootstrap(void);
+  bool is_suplan_peer_ready(void);
+  void reconcile_suplan_peers(void);
+  void start_registration_sync(supla_abstract_srpc_adapter *srpc,
+                               TSD_SuplaDeviceIdentities *identities);
+  void on_suplan_device_identities_result(
+      const TDS_SuplaDeviceIdentitiesResult *result);
+  // Zero means not ready. M2 must check this before using SupLAN identities.
+  unsigned _supla_int_t get_suplan_root_epoch(void);
   virtual unsigned _supla_int64_t wait_time_usec(void);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void);
@@ -67,6 +88,8 @@ class supla_device : public supla_abstract_connection_object {
 
   supla_device_channels *get_channels(void);
   int get_flags(void);
+  std::shared_ptr<supla_suplan::StreamConnection> get_stream(bool create);
+  bool is_server_stream_ready();
   short get_manufacturer_id(void);
 
   bool enter_cfg_mode(unsigned _supla_int64_t *queued_at = nullptr,

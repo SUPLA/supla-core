@@ -32,14 +32,17 @@
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "device/value/channel_value_factory.h"
 #include "jsonconfig/channel/action_trigger_config.h"
+#include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/impulse_counter_config.h"
 #include "jsonconfig/channel/power_switch_config.h"
 #include "jsonconfig/channel/roller_shutter_config.h"
+#include "jsonconfig/channel/valve_config.h"
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
+#include "suplan/server_peer_transport.h"
 #include "user/user.h"
 #include "user/virtualchannel.h"
 #include "value/channel_openclosed_value.h"
@@ -88,6 +91,7 @@ supla_device_channel::supla_device_channel(
   this->state = state;
 
   if (validity_time_sec > 0) {
+    stream_has_expiry = true;
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += validity_time_sec;
   }
@@ -269,7 +273,8 @@ int supla_device_channel::get_user_id(void) {
 
 void supla_device_channel::set_func(int func) {
   lock();
-  if (this->func != func) {
+  bool changed = this->func != func;
+  if (changed) {
     this->func = func;
 
     if (data_analyzer) {
@@ -278,6 +283,8 @@ void supla_device_channel::set_func(int func) {
     }
   }
   unlock();
+  if (changed && get_user())
+    get_user()->get_suplan_peers()->stream_dirty(get_id());
 }
 
 int supla_device_channel::get_type(void) { return type; }
@@ -321,6 +328,7 @@ void supla_device_channel::add_init_flags(unsigned _supla_int64_t flags) {
       delete db;
       db = nullptr;
     }
+    if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
   }
 }
 
@@ -363,6 +371,7 @@ bool supla_device_channel::set_availability_status(
   unlock();
 
   if (result) {
+    if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
     if (raise_change_event) {
       on_value_changed(nullptr, nullptr, true, false);
     }
@@ -377,6 +386,26 @@ bool supla_device_channel::set_availability_status(
 void supla_device_channel::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
   lock();
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  unlock();
+}
+
+void supla_device_channel::get_stream_value(TDS_SuplaDeviceChannel_E *out,
+                                             bool *has_expiry,
+                                             int64_t *remaining_usec) {
+  lock();
+  memcpy(out->value, value, sizeof(out->value));
+  out->Offline = availability_status.get_proto_offline();
+  *has_expiry = stream_has_expiry;
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  *remaining_usec = (value_valid_to.tv_sec - now.tv_sec) * 1000000LL +
+                    value_valid_to.tv_usec - now.tv_usec;
+  if (*has_expiry) {
+    if (*remaining_usec <= 0) out->Offline = 1;
+    else if (out->Offline == 1) out->Offline = 0;
+    out->ValueValidityTimeSec = *remaining_usec > 0
+                                   ? (*remaining_usec + 999999) / 1000000 : 0;
+  }
   unlock();
 }
 
@@ -448,15 +477,51 @@ void supla_device_channel::get_char(char *value) {
   }
 }
 
-void supla_device_channel::get_config(TSD_ChannelConfig *config,
+ChannelReferenceEncoding supla_device_channel::device_reference_encoding() {
+  return device && (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)
+             ? ChannelReferenceEncoding::ChannelId
+             : ChannelReferenceEncoding::LocalChannelNumber;
+}
+
+bool supla_device_channel::reload_channel_config() {
+  std::unique_ptr<supla_json_config> authoritative;
+  int function = 0;
+  if (!supla_suplan_server_peers::reconcile_hvac(get_user_id(), get_id(),
+                                                 &authoritative, &function))
+    return false;
+  if (!authoritative) return false;
+  set_json_config(authoritative.release());
+  // Func is selected business state, including NONE; Device Default and the
+  // previously registered channel cache are not authoritative here.
+  set_func(function);
+  return true;
+}
+
+bool supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
+  // Every ChannelConfig type uses the authoritative root; IPC/Client producers
+  // no longer publish cached snapshots, including weekly schedules.
+  if (!reload_channel_config()) {
+    *config = {};
+    return false;
+  }
   supla_abstract_common_channel_properties::get_config(
-      config->Config, &config->ConfigSize, config_type, flags, false);
+      config->Config, &config->ConfigSize, config_type, flags,
+      device_reference_encoding());
 
+  if (get_type() == SUPLA_CHANNELTYPE_HVAC &&
+      config_type == SUPLA_CONFIG_TYPE_DEFAULT && !config->ConfigSize) {
+    std::unique_ptr<supla_json_config> current(get_json_config());
+    hvac_config hvac(current.get());
+    for (size_t field = 0; field < 6; ++field) {
+      if (hvac.reference(field)) return false;
+    }
+  }
   config->Func = get_func();
   config->ChannelNumber = get_channel_number();
   config->ConfigType = config_type;
+  return true;
 }
 
 void supla_device_channel::set_json_config(supla_json_config *json_config) {
@@ -577,8 +642,11 @@ bool supla_device_channel::set_value(
   new_value->get_raw_value(this->value);
 
   if (validity_time_sec) {
+    stream_has_expiry = *validity_time_sec > 0;
     gettimeofday(&value_valid_to, nullptr);
     value_valid_to.tv_sec += (*validity_time_sec);
+  } else {
+    stream_has_expiry = false;
   }
 
   bool significant_change = false;
@@ -594,6 +662,8 @@ bool supla_device_channel::set_value(
   }
 
   unlock();
+
+  if (get_user()) get_user()->get_suplan_peers()->stream_dirty(get_id());
 
   if (differ || validity_time_sec) {
     char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -970,17 +1040,61 @@ supla_json_config *supla_device_channel::get_json_config(void) {
   return result;
 }
 
+bool supla_device_channel::is_config_identity_ready(unsigned char config_type) {
+  if (config_type == SUPLA_CONFIG_TYPE_DEFAULT && device &&
+      (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+      !device->get_suplan_root_epoch()) {
+    std::unique_ptr<supla_json_config> current(get_json_config());
+    if (get_type() == SUPLA_CHANNELTYPE_HVAC) {
+      hvac_config parsed(current.get());
+      for (size_t field = 0; field < 6; ++field) {
+        if (parsed.reference(field)) {
+          return false;
+        }
+      }
+    } else if (get_type() == SUPLA_CHANNELTYPE_CONTAINER) {
+      TChannelConfig_Container parsed = {};
+      container_config(current.get()).get_config(&parsed);
+      for (const auto &entry : parsed.SensorInfo) {
+        if (entry.ChannelId) {
+          return false;
+        }
+      }
+    } else if (get_type() == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
+               get_type() == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) {
+      TChannelConfig_Valve parsed = {};
+      valve_config(current.get()).get_config(&parsed);
+      for (const auto &entry : parsed.SensorInfo) {
+        if (entry.ChannelId) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 bool supla_device_channel::prepare_config_for_device(
-    unsigned char config_type, TSDS_SetChannelConfig *config) {
+    unsigned char config_type, TSDS_SetChannelConfig *config, bool *failed) {
+  if (failed) *failed = false;
   if (!config) {
+    if (failed) *failed = true;
     return false;
   }
 
   if ((get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) &&
       get_protocol_version() >= 21) {
     *config = {};
-
-    get_config(config, config_type, 0);
+    if (!get_config(config, config_type, 0)) {
+      if (failed) *failed = true;
+      return false;
+    }
+    if (!is_config_identity_ready(config_type)) {
+      if (failed) {
+        *failed = true;
+      }
+      return false;
+    }
 
     if (config->ConfigSize > 0 || config_type == SUPLA_CONFIG_TYPE_DEFAULT) {
       return true;
@@ -991,7 +1105,8 @@ bool supla_device_channel::prepare_config_for_device(
 }
 
 bool supla_device_channel::prepare_config_for_device(
-    vector<TSDS_SetChannelConfig> *configs) {
+    vector<TSDS_SetChannelConfig> *configs, bool *failed) {
+  if (failed) *failed = false;
   if (!configs) {
     return false;
   }
@@ -1004,74 +1119,150 @@ bool supla_device_channel::prepare_config_for_device(
   }
 
   TSDS_SetChannelConfig config = {};
-
-  if (prepare_config_for_device(SUPLA_CONFIG_TYPE_DEFAULT, &config)) {
-    configs->push_back(config);
-  }
+  // Optional absence is legal; failed authoritative preparation aborts the
+  // entire replay batch, including any configurations prepared before it.
+  auto append = [&](unsigned char type) {
+    bool preparation_failed = false;
+    if (prepare_config_for_device(type, &config, &preparation_failed)) {
+      configs->push_back(config);
+    } else if (preparation_failed || type == SUPLA_CONFIG_TYPE_DEFAULT) {
+      configs->clear();
+      if (failed) *failed = true;
+      return false;
+    }
+    return true;
+  };
+  if (!append(SUPLA_CONFIG_TYPE_DEFAULT)) return false;
 
   if ((get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) &&
       supla_weekly_schedule_is_function_supported(get_func())) {
-    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, &config)) {
-      configs->push_back(config);
-    }
-
-    if (get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT) {
-      if (prepare_config_for_device(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE,
-                                   &config)) {
-        configs->push_back(config);
-      }
-    }
+    if (!append(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE)) return false;
+    if (get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT &&
+        !append(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE))
+      return false;
   }
 
   if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
       get_protocol_version() >= 25) {
-    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_OCR, &config)) {
-      configs->push_back(config);
-    }
+    if (!append(SUPLA_CONFIG_TYPE_OCR)) return false;
   } else if (get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
-    if (prepare_config_for_device(SUPLA_CONFIG_TYPE_EXTENDED, &config)) {
-      configs->push_back(config);
-    }
+    if (!append(SUPLA_CONFIG_TYPE_EXTENDED)) return false;
   }
 
   return true;
 }
 
-bool supla_device_channel::send_config_to_device(unsigned char config_type) {
-  TSDS_SetChannelConfig config = {};
+bool supla_device_channel::request_config_publication(
+    unsigned char config_type) {
+  static_assert(ATOMIC_INT_LOCK_FREE == 2,
+                "Channel config mailbox requires lock-free unsigned atomics");
+  switch (config_type) {
+    case SUPLA_CONFIG_TYPE_DEFAULT:
+    case SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE:
+    case SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE:
+    case SUPLA_CONFIG_TYPE_OCR:
+    case SUPLA_CONFIG_TYPE_EXTENDED:
+      break;
+    default:
+      return false;
+  }
+  pending_config_types.fetch_or(1u << config_type);
+  // Linux eventfd is nonblocking. Its saturation cannot lose the intent;
+  // the normal connection iteration also checks this fixed-capacity mailbox.
+  if (device && device->get_connection()) {
+    device->get_connection()->raise_event();
+  }
+  return true;
+}
 
-  if (!prepare_config_for_device(config_type, &config)) {
+bool supla_device_channel::publish_pending_config() {
+  unsigned int pending = pending_config_types.exchange(0);
+  if (!pending) return true;
+  constexpr unsigned char limit = SUPLA_CONFIG_TYPE_EXTENDED + 1;
+  unsigned char type = next_config_type;
+  // A fixed fair scan over the bounded supported ConfigType bitset.
+  for (unsigned char checked = 0; checked < limit; ++checked) {
+    if (pending & (1u << type)) break;
+    type = (type + 1) % limit;
+  }
+  next_config_type = (type + 1) % limit;
+  pending &= ~(1u << type);
+  if (pending) {
+    pending_config_types.fetch_or(pending);
+    // eventfd coalesces producer wakeups. The next intent needs its own wakeup
+    // even when this optional config is absent and enqueues no SRPC packet.
+    if (device && device->get_connection()) {
+      device->get_connection()->raise_event();
+    }
+  }
+  // Unsupported runtime updates are ordinary compatibility cases, not faults.
+  bool supported = type == SUPLA_CONFIG_TYPE_DEFAULT ||
+                   ((type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
+                     type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) &&
+                    (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) &&
+                    supla_weekly_schedule_is_function_supported(get_func()) &&
+                    (type != SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE ||
+                     get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) ||
+                   (type == SUPLA_CONFIG_TYPE_OCR &&
+                    get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+                    get_protocol_version() >= 25) ||
+                   (type == SUPLA_CONFIG_TYPE_EXTENDED &&
+                    get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER);
+  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
+      get_protocol_version() < 21 || !supported) {
+    return true;
+  }
+  bool failed = false;
+  if (!send_config_to_device(type, &failed) && failed) {
+    // Never spin/retry a failed read, desired commit or full SRPC queue.
+    // Reconnection replays authoritative configuration after the fault clears.
+    pending_config_types.store(0);
+    if (device) {
+      device->reset_suplan_identity_bootstrap();
+      device->terminate();
+    }
+    return false;
+  }
+  return true;
+}
+
+bool supla_device_channel::send_config_to_device(unsigned char config_type,
+                                                 bool *failed) {
+  TSDS_SetChannelConfig config = {};
+  if (!prepare_config_for_device(config_type, &config, failed)) return false;
+
+  bool sent = get_device()->get_connection()->get_srpc_adapter()
+                  ->sd_async_set_channel_config_request(&config) > 0;
+  if (!sent && failed) *failed = true;
+  return sent;
+}
+
+bool supla_device_channel::send_configs_to_device(
+    vector<TSDS_SetChannelConfig> *configs) {
+  if (!configs) {
     return false;
   }
 
-  get_device()
-      ->get_connection()
-      ->get_srpc_adapter()
-      ->sd_async_set_channel_config_request(&config);
-
-  return true;
-}
-
-void supla_device_channel::send_configs_to_device(
-    vector<TSDS_SetChannelConfig> *configs) {
-  if (!configs) {
-    return;
-  }
-
+  bool sent = true;
   for (auto it = configs->begin(); it != configs->end(); ++it) {
-    get_device()
+    if (get_device()
         ->get_connection()
         ->get_srpc_adapter()
-        ->sd_async_set_channel_config_request(&(*it));
+        ->sd_async_set_channel_config_request(&(*it)) <= 0) {
+      sent = false;
+    }
   }
 
   TSD_ChannelConfigFinished fin = {};
   fin.ChannelNumber = get_channel_number();
 
-  get_device()
+  if (get_device()
       ->get_connection()
       ->get_srpc_adapter()
-      ->sd_async_channel_config_finished(&fin);
+      ->sd_async_channel_config_finished(&fin) <= 0) {
+    sent = false;
+  }
+  return sent;
 }
 
 unsigned int supla_device_channel::send_config_to_device(void) {

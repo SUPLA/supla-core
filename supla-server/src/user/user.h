@@ -37,6 +37,7 @@
 #include "user/userdevices.h"
 #include "webhook/state_webhook_credentials.h"
 
+class supla_suplan_server_peers;
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
@@ -75,6 +76,7 @@ class supla_user {
   supla_google_home_credentials *google_home_credentials;
   supla_state_webhook_credentials *state_webhook_credentials;
   supla_value_based_triggers *value_based_triggers;
+  supla_suplan_server_peers *suplan_peers;
   int UserID;
   bool connections_allowed;
 
@@ -133,6 +135,7 @@ class supla_user {
   void on_channels_added(int DeviceID, const supla_caller &caller);
   void on_device_registered(int DeviceID, const supla_caller &caller);
 
+  supla_suplan_server_peers *get_suplan_peers(void);
   int getUserID(void);
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);

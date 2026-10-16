@@ -18,6 +18,7 @@
 
 #include "valve_config.h"
 
+#include <cstdint>
 #include <string>
 
 #include "log.h"
@@ -29,7 +30,7 @@ using std::string;
 #define FIELD_CLOSE_ON_FLOOD_TYPE 2
 
 const map<unsigned _supla_int16_t, string> valve_config::field_map = {
-    {FIELD_SENSORS, "sensorChannelNumbers"},
+    {FIELD_SENSORS, "floodSensorChannelIds"},
     {FIELD_CLOSE_ON_FLOOD_TYPE, "closeValveOnFloodType"}};
 
 valve_config::valve_config(supla_json_config *root) : supla_json_config(root) {}
@@ -71,25 +72,10 @@ void valve_config::set_config(TChannelConfig_Valve *config) {
 
   cJSON *sensors = cJSON_CreateArray();
 
-  for (size_t a = 0; a < sizeof(config->SensorInfo) / sizeof(TValve_SensorInfo);
-       a++) {
-    if (config->SensorInfo[a].IsSet) {
-      bool found = false;
-
-      for (size_t b = 0; b < a; b++) {
-        if (config->SensorInfo[b].IsSet &&
-            config->SensorInfo[b].ChannelNo ==
-                config->SensorInfo[a].ChannelNo) {
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        cJSON_AddItemToArray(
-            sensors, cJSON_CreateNumber(config->SensorInfo[a].ChannelNo));
-      }
-    }
+  for (const auto &entry : config->SensorInfo) {
+    cJSON_AddItemToArray(sensors, entry.ChannelId > 0
+                                      ? cJSON_CreateNumber(entry.ChannelId)
+                                      : cJSON_CreateNull());
   }
 
   set_item_value(user_root, field_map.at(FIELD_SENSORS).c_str(), cJSON_Object,
@@ -117,36 +103,17 @@ bool valve_config::get_config(TChannelConfig_Valve *config) {
     return result;
   }
 
-  unsigned char n = 0;
-
-  cJSON *sensors =
-      cJSON_GetObjectItem(user_root, field_map.at(FIELD_SENSORS).c_str());
-  if (sensors) {
+  cJSON *sensors = cJSON_GetObjectItem(user_root, "floodSensorChannelIds");
+  if (cJSON_IsArray(sensors)) {
     result = true;
-    for (int a = 0; a < cJSON_GetArraySize(sensors); a++) {
-      cJSON *item = cJSON_GetArrayItem(sensors, a);
-
-      if (item && cJSON_IsNumber(item)) {
-        unsigned char number = cJSON_GetNumberValue(item);
-        bool found = false;
-
-        for (size_t b = 0;
-             b < sizeof(config->SensorInfo) / sizeof(TValve_SensorInfo); b++) {
-          if (config->SensorInfo[b].IsSet &&
-              config->SensorInfo[b].ChannelNo == number) {
-            found = true;
-            break;
-          }
-        }
-
-        if (!found) {
-          config->SensorInfo[n].IsSet = 1;
-          config->SensorInfo[n].ChannelNo = cJSON_GetNumberValue(item);
-          n++;
-          if (n >= sizeof(config->SensorInfo) / sizeof(TValve_SensorInfo)) {
-            break;
-          }
-        }
+    for (int slot = 0; slot < 20; ++slot) {
+      cJSON *item = cJSON_GetArrayItem(sensors, slot);
+      if (!cJSON_IsNumber(item)) {
+        continue;
+      }
+      double id = cJSON_GetNumberValue(item);
+      if (id > 0 && id <= INT32_MAX && id == static_cast<int32_t>(id)) {
+        config->SensorInfo[slot].ChannelId = static_cast<int32_t>(id);
       }
     }
   }
@@ -165,6 +132,22 @@ bool valve_config::get_config(TChannelConfig_Valve *config) {
 
 void valve_config::merge(supla_json_config *_dst) {
   valve_config dst(_dst);
-  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
-                           true);
+  valve_config input;
+  input = *this;
+  if (device_local_reference) {
+    TChannelConfig_Valve incoming = {}, current = {};
+    input.get_config(&incoming);
+    dst.get_config(&current);
+    for (size_t slot = 0; slot < 20; ++slot) {
+      unsigned int old_id = current.SensorInfo[slot].ChannelId;
+      unsigned int new_id = incoming.SensorInfo[slot].ChannelId;
+      if ((old_id && !device_local_reference(old_id)) ||
+          !device_local_reference(new_id)) {
+        incoming.SensorInfo[slot].ChannelId = old_id;
+      }
+    }
+    input.set_config(&incoming);
+  }
+  supla_json_config::merge(input.get_user_root(), dst.get_user_root(),
+                           field_map, true);
 }

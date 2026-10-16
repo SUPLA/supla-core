@@ -39,6 +39,7 @@ class supla_abstract_register_device
   short manufacturer_id;
   short product_id;
   int device_id;
+  TSD_SuplaDeviceIdentities identities = {};
 
   bool location_enabled;
   bool new_device;
@@ -79,6 +80,7 @@ class supla_abstract_register_device
   bool is_channel_added(void);
   bool is_new_device(void);
   int get_device_id(void);
+  TSD_SuplaDeviceIdentities *get_device_identities(void);
   int get_device_flags(void);
   short get_manufacturer_id(void);
   int get_location_id(void);

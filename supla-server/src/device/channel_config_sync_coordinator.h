@@ -41,6 +41,7 @@ class supla_channel_config_sync_coordinator {
     supla_device_channel *channel;
     std::vector<TSDS_SetChannelConfig> configs;
     bool wait_for_result;
+    bool preparation_failed;
     std::function<void(supla_device *)> on_finished;
   };
 
@@ -78,6 +79,8 @@ class supla_channel_config_sync_coordinator {
   void on_set_channel_config_result(TSDS_SetChannelConfigResult *result);
   void iterate(void);
   unsigned _supla_int64_t time_left_usec(void);
+  // Connection-thread only: deferred pushes must not overlap replay ACKs.
+  bool is_finished() const { return state == sync_state_finished; }
 };
 
 #endif /* CHANNEL_CONFIG_SYNC_COORDINATOR_H_ */

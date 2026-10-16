@@ -17,6 +17,7 @@
  */
 #include <sys/time.h>
 #include <userdevices.h>
+#include "suplan/server_peer_transport.h"
 
 #include <map>
 #include <memory>
@@ -227,6 +228,10 @@ void supla_user_devices::update_virtual_channels(void) {
   std::vector<supla_virtual_channel> virtual_channels =
       dao.get_virtual_channels(user, virtual_channels_update_time.tv_sec);
 
+  std::vector<int> stream_changes;
+  for (auto &channel : virtual_channels)
+    stream_changes.push_back(channel.get_channel_id());
+
   std::vector<supla_virtual_channel> changed_virtual_channels_old;
   std::vector<supla_virtual_channel> changed_virtual_channels_new;
 
@@ -260,6 +265,9 @@ void supla_user_devices::update_virtual_channels(void) {
   gettimeofday(&virtual_channels_update_time, nullptr);
 
   unlock();
+
+  for (int channel : stream_changes)
+    user->get_suplan_peers()->stream_dirty(channel);
 
   // Raise events outside of the lock.
   for (auto it = changed_virtual_channels_new.begin();

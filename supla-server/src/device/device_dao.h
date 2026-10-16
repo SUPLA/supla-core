@@ -121,6 +121,12 @@ class supla_device_dao : public supla_abstract_device_dao {
                                                 std::string *user_config_md5sum,
                                                 std::string *properties_md5sum);
 
+  // Read selected Function together with its authoritative JSON snapshot.
+  supla_json_config *get_channel_config(int channel_id,
+                                        std::string *user_config_md5sum,
+                                        std::string *properties_md5sum,
+                                        int *selected_function);
+
   virtual std::vector<supla_channel_fragment> get_channel_fragments(
       int device_id);
 

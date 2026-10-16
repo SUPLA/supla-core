@@ -44,7 +44,10 @@ void supla_ch_get_channel_config::handle_call(
         rd->data.ds_get_channel_config_request->Flags, &config);
 
     if (result) {
-      srpc_adapter->sd_async_get_channel_config_result(&config);
+      if (srpc_adapter->sd_async_get_channel_config_result(&config) <= 0) {
+        device->reset_suplan_identity_bootstrap();
+        device->terminate();
+      }
     }
   }
 }
