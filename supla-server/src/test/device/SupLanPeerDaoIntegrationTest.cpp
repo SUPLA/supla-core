@@ -2871,7 +2871,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
-       BoundedAssociationBatchUsesRealSrpcAndDelayedResults) {
+       AssociationBatchUsesRealSrpcWithoutAdmissionWindow) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
   PeerDao repo(99126);
@@ -2915,10 +2915,10 @@ TEST_F(SupLanHvacWireIntegrationTest,
     EXPECT_EQ(0, q.PeerKeySize);
     queued.push_back(q);
   };
-  for (unsigned i = 0; i < 8; ++i) receive_association();
+  for (unsigned i = 0; i < 16; ++i) receive_association();
   ASSERT_FALSE(HasFatalFailure());
   TSuplaDataPacket extra{};
-  EXPECT_FALSE(receive_packet(&extra, 100));  // At most 8 queued Results.
+  EXPECT_FALSE(receive_packet(&extra, 100));  // One request per association.
   for (unsigned i = 0; i < 16; ++i) {
     ASSERT_GT(queued.size(), i);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -2927,7 +2927,6 @@ TEST_F(SupLanHvacWireIntegrationTest,
         q.PeerContext, q.AclRevision, SUPLA_SUPLAN_RESULT_OK};
     send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT, &ok,
                 sizeof(ok));
-    if (i < 8) receive_association();
   }
   auto until = std::chrono::steady_clock::now() + std::chrono::seconds(2);
   while (PeerProvisionerTestAccess::count(*peers) &&

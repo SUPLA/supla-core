@@ -40,14 +40,12 @@ class PeerProvisioner {
   friend class PeerProvisionerTestAccess;
   struct Side {
     bool sent = false;
-    bool waiting = false;
     bool pending = false;
     bool blocked = false;
     bool acknowledged = false;
     bool key_requested = false;
     bool committing = false;
     bool conflict = false;
-    bool reconnect_spent = false;
     uint64_t session = 0;
     std::chrono::steady_clock::time_point deadline;
   };
@@ -59,6 +57,7 @@ class PeerProvisioner {
     bool key_recovery_started = false;
     bool source_no_key_sent = false;
     std::chrono::steady_clock::time_point refresh_at;
+    int recovery_owner = 0;
   };
   PeerService::Factory factory;
   PeerTransport *transport;
@@ -69,11 +68,17 @@ class PeerProvisioner {
   std::map<std::pair<int, int>, uint64_t> pairs;
   using Time = std::chrono::steady_clock::time_point;
   // Only outstanding result/DB work is indexed, never healthy associations.
-  std::map<int, std::map<uint64_t, Time>> deadlines;
-  std::map<int, uint64_t> terminated_sessions;
-  static constexpr size_t window = 8;
-  std::map<int, std::set<uint64_t>> slots, waiting, exhausted;
-  bool reserve(Flow *flow, bool source);
+  struct Deadline {
+    Time due;
+    uint64_t session;  // Zero for DB-only work, never a Device watchdog.
+  };
+  std::map<int, std::map<uint64_t, Deadline>> deadlines;
+  struct Incident {
+    uint64_t session;
+    std::set<uint64_t> associations;
+  };
+  std::map<int, Incident> incidents;
+  void resolved(int device, uint64_t id);
   struct Recovery {
     int owner;
     Time due;
@@ -89,8 +94,7 @@ class PeerProvisioner {
   void db_failure(Flow *flow, bool source);
   void no_response(Flow *flow, bool source, bool timeout = true);
   void sent(Flow *flow, bool source, PeerTransport::SendResult result);
-  uint64_t correlate(int device, const TSuplaSuplanPeerContext &context,
-                     uint32_t revision, bool source, uint64_t session);
+  uint64_t correlate(const TSuplaSuplanPeerContext &context);
   enum class Current { Yes, Stale, DatabaseError };
   std::shared_ptr<Flow> flow(uint64_t id, bool create = true);
   void retire_completed(uint64_t id, const std::shared_ptr<Flow> &flow);
