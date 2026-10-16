@@ -20,6 +20,10 @@
 #include "suplan/server_stream.h"
 #include "eh.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
+namespace supla_suplan {
+// Existing internal gate; test-only declaration, no production hook/API.
+std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin);
+}
 using namespace supla_suplan;  // NOLINT
 namespace {
 struct Store {
@@ -267,6 +271,130 @@ class MemoryRepo : public Repository {
     return true;
   }
 };
+class OriginDiscoveryRepo : public MemoryRepo {
+  std::function<void()> discovered;
+ public:
+  explicit OriginDiscoveryRepo(Store *store, std::function<void()> fn = {})
+      : MemoryRepo(store), discovered(fn) {}
+  bool channel(uint32_t id, ChannelInfo *out) override {
+    if (!MemoryRepo::channel(id, out)) return false;
+    if (id == 20) {
+      out->type = SUPLA_CHANNELTYPE_HVAC;
+      out->function = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+    }
+    return true;
+  }
+  bool for_origin(uint16_t type, uint64_t origin,
+                  std::vector<uint64_t> *out) override {
+    if (!MemoryRepo::for_origin(type, origin, out)) return false;
+    if (discovered) discovered();
+    return true;
+  }
+};
+TEST(SupLanOriginTest,
+     DeleteDiscoveryFencesNewReferenceAndAllowsFreshAuthority) {
+  for (bool keep_authority : {false, true}) {
+    Store store;
+    PeerService::Factory factory = [&] {
+      return std::make_unique<OriginDiscoveryRepo>(&store);
+    };
+    const uint64_t origin = channel_config_origin(20, 1);
+    auto gate = origin_gate(CHANNEL_CONFIG_ORIGIN, origin);
+    PeerService writer(factory, nullptr);
+    std::atomic<uint32_t> current{10};
+    std::promise<void> discovered, captured, release, deleted, finished;
+    auto discovery = discovered.get_future();
+    auto snapshot = captured.get_future();
+    auto resume = release.get_future();
+    auto after_delete = deleted.get_future();
+    auto completion = finished.get_future();
+    std::promise<bool> inspected;
+    auto inspection = inspected.get_future();
+    bool gate_held = false;
+    auto work = std::async(std::launch::async, [&] {
+      discovery.wait();
+      bool unfenced;
+      {
+        // A different thread probes ownership; no same-thread recursive lock.
+        std::unique_lock<std::mutex> probe(*gate, std::try_to_lock);
+        unfenced = probe.owns_lock();
+      }
+      inspected.set_value(unfenced);
+      if (!unfenced) after_delete.wait();
+      bool ok = writer.reconcile_reference(20, 1, [&](uint32_t *value) {
+        *value = current.load();  // Read current authority, not desired R1.
+        if (unfenced) {
+          captured.set_value();
+          resume.wait();
+        }
+        return true;
+      });
+      finished.set_value();
+      return ok;
+    });
+    PeerService deleter([&] {
+      return std::make_unique<OriginDiscoveryRepo>(&store, [&] {
+        discovered.set_value();  // Discovery already returned an empty list.
+        bool unfenced = inspection.get();
+        gate_held = !unfenced;
+        EXPECT_FALSE(unfenced);
+        if (unfenced) snapshot.wait();
+        if (!keep_authority) current = 0;
+        if (unfenced) {
+          release.set_value();
+          completion.wait();  // Old delete would now miss the new Grant.
+        }
+      });
+    }, nullptr);
+    bool removed = deleter.delete_origin(CHANNEL_CONFIG_ORIGIN, origin);
+    deleted.set_value();
+    EXPECT_TRUE(work.get());
+    EXPECT_TRUE(removed);
+    std::cout << "ORIGIN008 keep_authority=" << keep_authority
+              << " gate_held=" << gate_held << " delete=" << removed
+              << " grants=" << store.grants.size()
+              << " acl=" << store.a.acl.size()
+              << " revision=" << store.a.revision
+              << " generation=" << store.a.generation << std::endl;
+    EXPECT_EQ(keep_authority ? 1u : 0u, store.grants.size());
+    EXPECT_EQ(keep_authority ? 1u : 0u, store.a.acl.size());
+  }
+}
+TEST(SupLanOriginTest, DeleteWaitsForReferenceCapturedBeforeAuthorityRemoval) {
+  Store store;
+  PeerService service([&] {
+    return std::make_unique<OriginDiscoveryRepo>(&store);
+  }, nullptr);
+  std::atomic<uint32_t> current{10};
+  std::promise<void> captured, resume, deleting;
+  auto snapshot = captured.get_future();
+  auto release = resume.get_future();
+  auto started = deleting.get_future();
+  auto first = std::async(std::launch::async, [&] {
+    return service.reconcile_reference(20, 1, [&](uint32_t *value) {
+      *value = current.load();
+      captured.set_value();
+      release.wait();
+      return true;
+    });
+  });
+  snapshot.wait();
+  current = 0;
+  auto second = std::async(std::launch::async, [&] {
+    deleting.set_value();
+    return service.delete_origin(CHANNEL_CONFIG_ORIGIN,
+                                  channel_config_origin(20, 1));
+  });
+  started.wait();
+  resume.set_value();
+  EXPECT_TRUE(first.get());
+  EXPECT_TRUE(second.get());
+  EXPECT_TRUE(store.grants.empty());
+  EXPECT_TRUE(store.a.acl.empty());
+  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(2u, store.a.revision);
+  EXPECT_EQ(1u, store.a.generation);
+}
 class Transport : public PeerTransport {
  public:
   bool online[3] = {false, true, true};

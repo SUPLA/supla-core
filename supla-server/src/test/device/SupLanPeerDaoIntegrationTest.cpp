@@ -47,6 +47,10 @@
 #include "test/integration/IntegrationTest.h"
 #include "user.h"
 #include "user/user_dao.h"
+namespace supla_suplan {
+// Existing internal gate; inspect from another thread, no production hooks.
+std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin);
+}
 // Test-only driver boundary probe: always execute real MariaDB operations.
 // No SQL text/payload logging, production hook, schema change or provider mock.
 namespace {
@@ -814,6 +818,122 @@ TEST_F(SupLanHvacIntegrationTest,
   }
 }
 
+TEST_F(SupLanHvacIntegrationTest,
+       OriginDeleteAndReplacementNotifyAfterUnlockedCommit) {
+  config(resource);
+  ASSERT_TRUE(reconcile());
+  auto before = state();
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 99, 444, 1}));
+  EXPECT_TRUE(same_state(before, state()));
+  const uint64_t origin = main_thermometer_origin(hvac);
+  uint32_t expected = other_resource;
+  bool callback = false;
+  std::vector<uint64_t> notices;
+  PeerService observed(factory, [&](uint64_t id) {
+    EXPECT_FALSE(callback);
+    if (callback) return;
+    callback = true;
+    notices.push_back(id);
+    auto repo = factory();  // Independent connection must see committed rows.
+    std::vector<uint64_t> ids;
+    ASSERT_TRUE(repo->for_origin(CHANNEL_CONFIG_ORIGIN, origin, &ids));
+    EXPECT_EQ(expected ? 1u : 0u, ids.size());
+    Association next;
+    ASSERT_TRUE(repo->find(other_source, destination, &next));
+    auto unlocked = std::async(std::launch::async, [&] {
+      auto origin_mutex = origin_gate(CHANNEL_CONFIG_ORIGIN, origin);
+      std::unique_lock<std::mutex> origin_lock(
+          *origin_mutex, std::try_to_lock);
+      auto old_gate = association_gate(before.id);
+      auto next_gate = association_gate(next.id);
+      std::unique_lock<std::mutex> old_lock(*old_gate, std::try_to_lock);
+      std::unique_lock<std::mutex> next_lock(*next_gate, std::try_to_lock);
+      return origin_lock.owns_lock() && old_lock.owns_lock() &&
+             next_lock.owns_lock();
+    }).get();
+    EXPECT_TRUE(unlocked);
+    if (unlocked) {
+      // Reentrant current-authority reconciliation must be an unlocked no-op.
+      EXPECT_TRUE(observed.reconcile_reference(hvac, 1, [&](uint32_t *value) {
+        return repo->reference(hvac, 1, value);
+      }));
+    }
+    callback = false;
+  });
+  config(other_resource);
+  ASSERT_TRUE(observed.reconcile_reference(hvac, 1, [&](uint32_t *value) {
+    return factory()->reference(hvac, 1, value);
+  }));
+  EXPECT_TRUE(same_state(before, state()));  // Independent READ covers R1.
+  Association next;
+  ASSERT_TRUE(factory()->find(other_source, destination, &next));
+  EXPECT_EQ((std::vector<uint64_t>{next.id}), notices);
+  auto active = next;
+  expected = 0;
+  config(0);  // Remove business authority, not just its materialized Grant.
+  ASSERT_TRUE(observed.delete_origin(CHANNEL_CONFIG_ORIGIN, origin));
+  ASSERT_TRUE(factory()->load(next.id, &next));
+  EXPECT_EQ(Lifecycle::Draining, next.lifecycle);
+  EXPECT_TRUE(next.acl.empty());
+  EXPECT_EQ(active.revision + 1, next.revision);
+  EXPECT_EQ(active.generation, next.generation);
+  EXPECT_FALSE(next.source_acked);
+  EXPECT_FALSE(next.destination_acked);
+  EXPECT_TRUE(same_state(before, state()));
+  EXPECT_EQ((std::vector<uint64_t>{next.id, next.id}), notices);
+  ASSERT_TRUE(observed.delete_origin(CHANNEL_CONFIG_ORIGIN, origin));
+  Association no_op;
+  ASSERT_TRUE(factory()->load(next.id, &no_op));
+  EXPECT_TRUE(same_state(next, no_op));
+  EXPECT_EQ(2u, notices.size());
+}
+TEST_F(SupLanHvacIntegrationTest, OriginDeleteBatchFailureRollsBackEveryPair) {
+  const uint64_t origin = main_thermometer_origin(hvac);
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 1, origin, 1}));
+  ASSERT_TRUE(service.upsert(source, destination, {1, resource, 99, 444, 1}));
+  // Historical duplicate origin on a second pair: delete must find both.
+  ASSERT_TRUE(service.upsert(other_source, destination,
+                             {1, other_resource, 1, origin, 1}));
+  auto before = state();
+  Association second;
+  ASSERT_TRUE(factory()->find(other_source, destination, &second));
+  ASSERT_GT(second.id, before.id);
+  class FailSecondBegin : public PeerDao {
+    uint64_t failed;
+   public:
+    explicit FailSecondBegin(uint64_t id) : PeerDao(99124), failed(id) {}
+    bool begin(uint64_t id, Association *a) override {
+      return id != failed && PeerDao::begin(id, a);
+    }
+  };
+  unsigned notices = 0;
+  PeerService failing(
+      [&] { return std::make_unique<FailSecondBegin>(second.id); },
+      [&](uint64_t) { ++notices; });
+  EXPECT_FALSE(failing.delete_origin(CHANNEL_CONFIG_ORIGIN, origin));
+  std::vector<uint64_t> ids;
+  ASSERT_TRUE(factory()->for_origin(CHANNEL_CONFIG_ORIGIN, origin, &ids));
+  EXPECT_EQ(2u, ids.size());  // Earlier pair's write must have rolled back too.
+  EXPECT_EQ(0u, notices);
+  EXPECT_TRUE(same_state(before, state()));
+  Association unchanged;
+  ASSERT_TRUE(factory()->load(second.id, &unchanged));
+  EXPECT_TRUE(same_state(second, unchanged));
+  PeerService retry(factory, [&](uint64_t id) {
+    EXPECT_EQ(second.id, id);  // Old pair retains identical independent READ.
+    ++notices;
+  });
+  ASSERT_TRUE(retry.delete_origin(CHANNEL_CONFIG_ORIGIN, origin));
+  ASSERT_TRUE(factory()->for_origin(CHANNEL_CONFIG_ORIGIN, origin, &ids));
+  EXPECT_TRUE(ids.empty());
+  EXPECT_TRUE(same_state(before, state()));
+  ASSERT_TRUE(factory()->load(second.id, &unchanged));
+  EXPECT_EQ(Lifecycle::Draining, unchanged.lifecycle);
+  EXPECT_TRUE(unchanged.acl.empty());
+  EXPECT_EQ(second.revision + 1, unchanged.revision);
+  EXPECT_EQ(second.generation, unchanged.generation);
+  EXPECT_EQ(1u, notices);
+}
 TEST_F(SupLanHvacIntegrationTest, InvalidRelationAlwaysRevokes) {
   for (int failure = 0; failure < 7; ++failure) {
     query("UPDATE supla_iodevice SET flags=flags|" +

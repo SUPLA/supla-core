@@ -366,7 +366,7 @@ bool PeerService::upsert(int source, int destination, const Grant &grant) {
            recompute(r, state, identity.root);
   });
 }
-static std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin) {
+std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin) {
   using Key = std::pair<uint16_t, uint64_t>;
   static std::mutex registry_mutex;
   static std::map<Key, std::weak_ptr<std::mutex>> registry;
@@ -662,19 +662,7 @@ bool PeerService::reconcile_reference(
 }
 
 bool PeerService::delete_origin(uint16_t type, uint64_t origin) {
-  auto repo = factory();
-  std::vector<uint64_t> ids;
-  if (!repo->for_origin(type, origin, &ids)) return false;
-  for (auto id : ids) {
-    if (!mutate(id, [&](Repository *r, Association *a) {
-          Identity identity;
-          return r->identity(a->source, &identity) &&
-                 r->erase_origin(id, type, origin) &&
-                 recompute(r, a, identity.root);
-        }))
-      return false;
-  }
-  return true;
+  return reconcile_origin(type, origin, 0, 0, nullptr);
 }
 bool PeerService::delete_resource(uint8_t type, uint32_t resource) {
   auto repo = factory();
