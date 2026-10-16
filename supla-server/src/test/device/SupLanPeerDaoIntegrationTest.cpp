@@ -54,7 +54,7 @@ struct Sql004Probe;
 thread_local Sql004Probe *sql004 = nullptr;
 struct Sql004Probe {
   unsigned connections = 0, prepares = 0, executions = 0;
-  unsigned selects = 0, dml = 0, config_reads = 0;
+  unsigned selects = 0, dml = 0, config_reads = 0, config_cas = 0;
   MYSQL_STMT *last = nullptr, *config_statement = nullptr;
   std::string statement;
   std::function<bool(unsigned)> after_config;
@@ -118,6 +118,9 @@ extern "C" int STDCALL mysql_stmt_execute(MYSQL_STMT *stmt) {
   if (sql004) {
     sql004->count(stmt == sql004->last ? sql004->statement : "");
     if (stmt == sql004->config_statement) ++sql004->config_reads;
+    if (stmt == sql004->last && sql004->statement ==
+        "CALL `supla_set_channel_json_config`(?,?,?,?,?,?)")
+      ++sql004->config_cas;
   }
   return native(stmt);
 }
@@ -5001,5 +5004,201 @@ TEST_F(SupLanHvacIntegrationTest, Sql004FinalReadFailureCannotLeaveNewGrant) {
   probe.finish("final-read-failure");
   EXPECT_EQ(nullptr, current);
   EXPECT_TRUE(origin_grants().empty());
+}
+
+TEST_F(SupLanHvacIntegrationTest,
+       Sql004DeviceMergeRetriesCurrentCloudAuthority) {
+  uint32_t injected = add_channel(source, 239, SUPLA_CHANNELTYPE_THERMOMETER,
+                                 SUPLA_CHANNELFNC_THERMOMETER);
+  ASSERT_TRUE(factory()->accept_identity(source, {123, {resource, injected}}));
+  ASSERT_TRUE(factory()->accept_identity(destination, {789, {hvac, local}}));
+  // An unrelated origin/resource must survive replacement and revoke.
+  ASSERT_TRUE(service.upsert(destination, source,
+      {1, local, 99, 444, SUPLA_SUPLAN_PERMISSION_READ}));
+  for (uint8_t field : {1, 5, 41, 83}) {
+    query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+          std::to_string(hvac));
+    ASSERT_TRUE(reconcile());  // Retire the previous family's config origin.
+    bool binding = field == 5, container = field == 41, valve = field == 83;
+    int type = container ? SUPLA_CHANNELTYPE_CONTAINER
+               : valve ? SUPLA_CHANNELTYPE_VALVE_OPENCLOSE
+                       : SUPLA_CHANNELTYPE_HVAC;
+    int function = container ? SUPLA_CHANNELFNC_CONTAINER
+                   : valve ? SUPLA_CHANNELFNC_VALVE_OPENCLOSE
+                           : SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+    int target_type = binding ? SUPLA_CHANNELTYPE_RELAY
+                      : field == 1 ? SUPLA_CHANNELTYPE_THERMOMETER
+                                   : SUPLA_CHANNELTYPE_BINARYSENSOR;
+    int target_function = binding ? SUPLA_CHANNELFNC_PUMPSWITCH
+                          : field == 1 ? SUPLA_CHANNELFNC_THERMOMETER
+                                       : SUPLA_CHANNELFNC_FLOOD_SENSOR;
+    query("UPDATE supla_dev_channel SET type=" + std::to_string(type) +
+          ",func=" + std::to_string(function) + " WHERE id=" +
+          std::to_string(hvac));
+    query("UPDATE supla_dev_channel SET type=" + std::to_string(target_type) +
+          ",func=" + std::to_string(target_function) + " WHERE id IN (" +
+          std::to_string(resource) + "," + std::to_string(other_resource) +
+          "," + std::to_string(injected) + ")");
+    auto select = [&](uint32_t id) {
+      std::string root;
+      if (container || valve) {
+        root = container ? "{\"sensors\":[" : "{\"floodSensorChannelIds\":[";
+        for (unsigned i = 0; i < (container ? 9u : 19u); ++i) root += "null,";
+        root += container ? "{\"channelId\":" + std::to_string(id) +
+                                ",\"fillLevel\":60}],\"warningAboveLevel\":7}"
+                          : std::to_string(id) +
+                                "],\"closeValveOnFloodType\":\"ALWAYS\"}";
+      } else {
+        root = std::string("{\"") + (binding ? "pumpSwitchChannelId"
+                                             : "mainThermometerChannelId") +
+               "\":" + std::to_string(id) + ",\"minOnTimeS\":7}";
+      }
+      // Independent trusted writer; no Cloud IPC/Grant mutation is simulated.
+      query("UPDATE supla_dev_channel SET user_config='" + root +
+            "' WHERE id=" + std::to_string(hvac));
+    };
+    auto verify_grants = [&](uint32_t reference) {
+      auto repo = factory();
+      std::vector<uint64_t> ids;
+      ASSERT_TRUE(repo->for_origin(CHANNEL_CONFIG_ORIGIN,
+                                   channel_config_origin(hvac, field), &ids));
+      ASSERT_EQ(reference ? 1u : 0u, ids.size());
+      if (reference) {
+        Association a;
+        ASSERT_TRUE(repo->load(ids[0], &a));
+        EXPECT_EQ(binding ? destination : reference == resource
+                            ? source : other_source, a.source);
+        EXPECT_EQ(binding ? reference == resource ? source : other_source
+                          : destination, a.destination);
+        std::vector<Grant> grants;
+        ASSERT_TRUE(repo->grants(a.id, &grants));
+        unsigned matched = 0;
+        for (const auto &g : grants) {
+          if (g.origin_type != CHANNEL_CONFIG_ORIGIN) continue;
+          ++matched;
+          EXPECT_EQ(channel_config_origin(hvac, field), g.origin_id);
+          EXPECT_EQ(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, g.resource_type);
+          EXPECT_EQ(binding ? hvac : reference, g.resource_id);
+          EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_READ, g.permissions);
+        }
+        EXPECT_EQ(1u, matched);
+      }
+      for (int endpoint : {source, other_source}) {
+        Association a;
+        ASSERT_TRUE(repo->find(binding ? destination : endpoint,
+                               binding ? endpoint : destination, &a));
+        uint32_t selected = endpoint == source ? resource : other_resource;
+        unsigned expected = reference == selected ? 1 : 0;
+        if (binding && endpoint == source) ++expected;  // Independent origin.
+        EXPECT_EQ(expected, a.acl.size());
+        for (const auto &entry : a.acl) {
+          EXPECT_EQ(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, entry.ResourceType);
+          EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_READ, entry.Permissions);
+          EXPECT_TRUE((binding && endpoint == source &&
+                       entry.ResourceId == local)
+                      || (reference == selected &&
+                          entry.ResourceId == (binding ? hvac : selected)));
+        }
+      }
+      EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_suplan_grant "
+                          "WHERE origin_type=99 AND origin_id=444 AND "
+                          "resource_id=" + std::to_string(local) +
+                          " AND permissions=1"));
+    };
+    // One no-conflict control, four single-conflict cases, one bounded failure.
+    for (unsigned scenario = 0; scenario < 6; ++scenario) {
+      uint32_t uploaded = scenario % 2 ? injected : resource;
+      uint32_t cloud = scenario >= 3 && scenario < 5 ? other_resource : 0;
+      if (!scenario) cloud = resource;
+      SCOPED_TRACE(::testing::Message() << "field=" << unsigned(field)
+                   << " scenario=" << scenario << " incoming=" << uploaded);
+      select(resource);
+      ASSERT_TRUE(reconcile());
+      verify_grants(resource);
+      ASSERT_FALSE(HasFatalFailure());
+      unsigned edits = 0;
+      with_destination([&](supla_device_channel *channel) {
+        TChannelConfig_HVAC h = {};
+        TChannelConfig_Container c = {};
+        TChannelConfig_Valve v = {};
+        if (binding) h.PumpSwitchChannelId = uploaded;
+        else h.MainThermometerChannelId = uploaded;
+        h.MinOnTimeS = 19;
+        c.SensorInfo[9].ChannelId = uploaded;
+        c.WarningAboveLevel = 20;  // Existing wire encoding: JSON level + 1.
+        v.SensorInfo[19].ChannelId = uploaded;
+        v.CloseValveOnFloodType = SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE;
+        Sql004Probe probe;
+        probe.after_config = [&](unsigned read) {
+          if (scenario && (read == 1 || scenario == 5)) {
+            cloud = scenario == 5 && read % 2 == 0 ? other_resource : cloud;
+            if (scenario == 5 && read % 2) cloud = 0;
+            select(cloud);
+            ++edits;
+          }
+          return false;
+        };
+        int result = channel->set_user_config(
+            SUPLA_CONFIG_TYPE_DEFAULT, container ? sizeof(c)
+                                      : valve ? sizeof(v) : sizeof(h),
+            container ? reinterpret_cast<char *>(&c)
+            : valve ? reinterpret_cast<char *>(&v)
+                    : reinterpret_cast<char *>(&h));
+        probe.finish("device-cloud-cas");
+        EXPECT_EQ(scenario == 5 ? SUPLA_CONFIG_RESULT_FALSE
+                               : SUPLA_CONFIG_RESULT_TRUE, result);
+        EXPECT_EQ(scenario == 0 ? 1u : scenario == 5 ? 3u : 2u,
+                  probe.config_cas);
+        EXPECT_EQ(scenario == 0 ? 2u : 3u, probe.config_reads);
+        std::cout << "SQL004CAS field=" << unsigned(field) << " scenario="
+                  << scenario << " R1=" << resource << " R2=" << other_resource
+                  << " R3=" << injected << " cloud=" << cloud << " edits="
+                  << edits << " cas=" << probe.config_cas << std::endl;
+      });
+      ASSERT_FALSE(HasFatalFailure());
+      EXPECT_EQ(scenario == 0 ? 0u : scenario == 5 ? 3u : 1u, edits);
+      uint32_t stored = 0;
+      ASSERT_TRUE(factory()->reference(hvac, field, &stored));
+      EXPECT_EQ(cloud, stored);
+      std::string scalar_key = container ? "warningAboveLevel"
+                               : valve ? "closeValveOnFloodType" : "minOnTimeS";
+      std::string expected = valve ? scenario == 5 ? "ALWAYS" : "ON_CHANGE"
+                                   : scenario == 5 ? "7" : "19";
+      EXPECT_EQ(1, scalar("SELECT JSON_VALUE(user_config,'$." + scalar_key +
+                          "')='" + expected +
+                          "' FROM supla_dev_channel WHERE id=" +
+                          std::to_string(hvac)));
+      verify_grants(resource);  // The trusted SQL edit delivered no IPC.
+      ASSERT_TRUE(reconcile());
+      verify_grants(cloud);
+      ASSERT_FALSE(HasFatalFailure());
+      with_destination([&](supla_device_channel *channel) {
+        TSD_ChannelConfig wire = {};
+        ASSERT_TRUE(channel->get_config(&wire, SUPLA_CONFIG_TYPE_DEFAULT, 0));
+        if (container) {
+          ASSERT_EQ(sizeof(TChannelConfig_Container), wire.ConfigSize);
+          EXPECT_EQ(cloud, reinterpret_cast<TChannelConfig_Container *>(
+                               wire.Config)->SensorInfo[9].ChannelId);
+          EXPECT_EQ(scenario == 5 ? 8 : 20,
+                    reinterpret_cast<TChannelConfig_Container *>(
+                        wire.Config)->WarningAboveLevel);
+        } else if (valve) {
+          ASSERT_EQ(sizeof(TChannelConfig_Valve), wire.ConfigSize);
+          EXPECT_EQ(cloud, reinterpret_cast<TChannelConfig_Valve *>(
+                               wire.Config)->SensorInfo[19].ChannelId);
+          EXPECT_EQ(scenario == 5 ? SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ALWAYS
+                                 : SUPLA_VALVE_CLOSE_ON_FLOOD_TYPE_ON_CHANGE,
+                    reinterpret_cast<TChannelConfig_Valve *>(
+                        wire.Config)->CloseValveOnFloodType);
+        } else {
+          ASSERT_EQ(sizeof(TChannelConfig_HVAC), wire.ConfigSize);
+          auto config = reinterpret_cast<TChannelConfig_HVAC *>(wire.Config);
+          EXPECT_EQ(cloud, binding ? config->PumpSwitchChannelId
+                                   : config->MainThermometerChannelId);
+          EXPECT_EQ(scenario == 5 ? 7 : 19, config->MinOnTimeS);
+        }
+      });
+    }
+  }
 }
 }  // namespace
