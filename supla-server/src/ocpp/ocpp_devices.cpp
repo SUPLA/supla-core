@@ -42,7 +42,8 @@ std::shared_ptr<supla_ocpp_device> supla_ocpp_devices::get(int device_id,
   if (channel_id) {
     for (const auto &item : devices) {
       if (item.second->get_meter_channel_id() == channel_id ||
-          item.second->get_switch_channel_id() == channel_id) {
+          item.second->get_switch_channel_id() == channel_id ||
+          item.second->get_soc_channel_id() == channel_id) {
         return item.second;
       }
     }
@@ -83,7 +84,8 @@ void supla_ocpp_devices::reload(int device_id) {
       for (const auto &config : loaded_devices) {
         if (config.device_id == it->first &&
             config.meter.id == it->second->get_meter_channel_id() &&
-            config.power_switch.id == it->second->get_switch_channel_id()) {
+            config.power_switch.id == it->second->get_switch_channel_id() &&
+            config.soc.id == it->second->get_soc_channel_id()) {
           exists = true;
           break;
         }
@@ -120,7 +122,8 @@ void supla_ocpp_devices::on_channel_deleted(int device_id, int channel_id) {
     auto it = devices.find(device_id);
     if (it != devices.end() &&
         (it->second->get_meter_channel_id() == channel_id ||
-         it->second->get_switch_channel_id() == channel_id)) {
+         it->second->get_switch_channel_id() == channel_id ||
+         it->second->get_soc_channel_id() == channel_id)) {
       removed = it->second;
       devices.erase(it);
     }

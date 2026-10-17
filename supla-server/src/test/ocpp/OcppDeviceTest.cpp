@@ -30,6 +30,11 @@ supla_ocpp_device_config make_config(const char *json = "{}") {
   config.power_switch.id = 140;
   config.power_switch.type = SUPLA_CHANNELTYPE_RELAY;
   config.power_switch.func = SUPLA_CHANNELFNC_POWERSWITCH;
+  config.soc.id = 142;
+  config.soc.type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT;
+  config.soc.func = SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+  config.soc.json.set_user_config(
+      R"({"valueMultiplier":1000,"valueDivider":1000})");
   return config;
 }
 
@@ -60,10 +65,12 @@ static_assert(!std::is_copy_constructible<supla_ocpp_device>::value,
 TEST(OcppDeviceTest, HeartbeatCannotInventMissingValues) {
   auto device = std::make_shared<supla_ocpp_device>(nullptr, make_config());
   device->renew_validity(90);
-  EXPECT_FALSE(device->is_online());
-  for (int id : {140, 141}) {
+  EXPECT_TRUE(device->is_online());
+  for (int id : {140, 141, 142}) {
     EXPECT_EQ(nullptr, device->get_channel(id).get_value());
-    EXPECT_TRUE(device->get_channel(id).get_availability_status().is_offline());
+    EXPECT_TRUE(device->get_channel(id)
+                    .get_availability_status()
+                    .is_online_but_not_available());
   }
   supla_ocpp_meter_report report;
   report.voltage[0] = 230000;
@@ -76,6 +83,23 @@ TEST(OcppDeviceTest, HeartbeatCannotInventMissingValues) {
   device->update_meter(report, 90);
   EXPECT_TRUE(device->get_channel(141).get_availability_status().is_online());
   EXPECT_DOUBLE_EQ(0, energy(device->get_channel(141).get_extended_value()));
+}
+
+TEST(OcppDeviceTest, SoCOnlyReadingDoesNotCreateMeterValue) {
+  auto device = std::make_shared<supla_ocpp_device>(nullptr, make_config());
+  device->update_soc(0, 90);
+  char raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  ASSERT_TRUE(device->get_channel(142).get_value(raw));
+  double soc = -1;
+  memcpy(&soc, raw, sizeof(soc));
+  EXPECT_DOUBLE_EQ(0, soc);
+  EXPECT_TRUE(device->get_channel(142).get_availability_status().is_online());
+  EXPECT_EQ(nullptr, device->get_channel(141).get_value());
+  EXPECT_EQ(nullptr, device->get_channel(141).get_extended_value());
+  device->update_soc(83, 90);
+  ASSERT_TRUE(device->get_channel(142).get_value(raw));
+  memcpy(&soc, raw, sizeof(soc));
+  EXPECT_DOUBLE_EQ(83, soc);
 }
 
 TEST(OcppDeviceTest, KeepsRawAdjustedAndHistoryCountersDistinct) {

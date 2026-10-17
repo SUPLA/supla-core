@@ -47,6 +47,7 @@ struct supla_ocpp_device_config {
   unsigned long long revision = 0;
   supla_ocpp_channel_config meter;
   supla_ocpp_channel_config power_switch;
+  supla_ocpp_channel_config soc;
   supla_ocpp_channel_persisted_values meter_persisted_values;
   supla_ocpp_channel_persisted_values power_switch_persisted_values;
 };
@@ -123,6 +124,7 @@ class supla_ocpp_device
   // state, not a queue of historical SQL writes. Failures retain these flags.
   bool meter_save_pending = false;
   bool switch_save_pending = false;
+  bool soc_save_pending = false;
   bool extended_save_pending = false;
   bool validity_save_pending = false;
   bool connection_save_pending = false;
@@ -132,6 +134,7 @@ class supla_ocpp_device
   bool restoring_phase_energy = false;
   runtime_channel meter;
   runtime_channel power_switch;
+  runtime_channel soc;
   std::unique_ptr<supla_abstract_data_analyzer> analyzer;
   std::map<unsigned long long, pending_command> pending_commands;
   unsigned long long latest_command = 0;
@@ -151,7 +154,8 @@ class supla_ocpp_device
   // The caller must hold mutex.
   void set_power_switch_channel_value(bool on);
   void persist(const supla_ocpp_channel &before_meter,
-               const supla_ocpp_channel &before_switch, bool renew_validity,
+               const supla_ocpp_channel &before_switch,
+               const supla_ocpp_channel &before_soc, bool renew_validity,
                bool force = false, bool new_connection = false);
   void notify_channel_change(const supla_ocpp_channel &before,
                              const supla_ocpp_channel &after);
@@ -170,6 +174,7 @@ class supla_ocpp_device
   int get_user_id(void) const;
   int get_meter_channel_id(void) const;
   int get_switch_channel_id(void) const;
+  int get_soc_channel_id(void) const;
   bool is_online(void) const;
   bool can_set_charging(int channel_id) const;
   supla_ocpp_channel get_channel(int channel_id) const;
@@ -182,6 +187,7 @@ class supla_ocpp_device
   void update_state(bool on, supla_ocpp_value_validity validity);
   void update_meter(const supla_ocpp_meter_report &report,
                     supla_ocpp_value_validity validity);
+  void update_soc(int percentage, supla_ocpp_value_validity validity);
   bool request_charging(unsigned long long command_id, bool on, bool toggle,
                         std::function<bool(bool)> send);
   void on_result(unsigned long long command_id, bool ok);

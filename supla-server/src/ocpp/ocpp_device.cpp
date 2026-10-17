@@ -13,6 +13,7 @@
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "device/value/channel_em_value.h"
+#include "device/value/channel_general_purpose_measurement_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_value_factory.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
@@ -89,6 +90,9 @@ supla_ocpp_device::supla_ocpp_device(supla_user *user,
   initialize(&meter, config.meter, config.meter_persisted_values);
   initialize(&power_switch, config.power_switch,
              config.power_switch_persisted_values);
+  // A persisted percentage may belong to a previous vehicle. The gateway
+  // replays its live snapshot after reconnect; until then SoC stays unknown.
+  if (config.soc.id) initialize(&soc, config.soc, {});
   restoring_phase_energy = meter.channel.extended_value != nullptr;
   char raw[SUPLA_CHANNELVALUE_SIZE] = {};
   if (power_switch.channel.get_value(raw)) {
@@ -133,6 +137,9 @@ int supla_ocpp_device::get_meter_channel_id(void) const {
 int supla_ocpp_device::get_switch_channel_id(void) const {
   return power_switch.channel.channel_id;
 }
+int supla_ocpp_device::get_soc_channel_id(void) const {
+  return soc.channel.channel_id;
+}
 
 bool supla_ocpp_device::is_online(void) const {
   std::lock_guard<std::mutex> lock(mutex);
@@ -153,6 +160,8 @@ supla_ocpp_channel supla_ocpp_device::get_channel(int channel_id) const {
     if (channel_id == meter.channel.channel_id) return meter.channel;
     if (channel_id == power_switch.channel.channel_id)
       return power_switch.channel;
+    if (soc.channel.channel_id && channel_id == soc.channel.channel_id)
+      return soc.channel;
   }
   return {};
 }
@@ -238,13 +247,15 @@ void supla_ocpp_device::renew_validity_locked(
     analyzer->reset();
   }
   connected = validity.is_valid();
-  for (auto target : {&meter, &power_switch}) {
+  for (auto target : {&meter, &power_switch, &soc}) {
+    if (!target->channel.channel_id) continue;
     target->channel.validity = validity;
   }
 }
 
 void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
                                 const supla_ocpp_channel &before_switch,
+                                const supla_ocpp_channel &before_soc,
                                 bool renew_validity, bool force,
                                 bool new_connection) {
   // Coalesce meter/validity writes for five seconds, including retries after
@@ -254,12 +265,13 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
   // Mutations are serialized, so a later report cannot overtake
   // this write. SQL runs outside the state lock and never rolls back live data.
   if (!user) return;
-  supla_ocpp_channel meter_value, switch_value;
+  supla_ocpp_channel meter_value, switch_value, soc_value;
   {
     std::lock_guard<std::mutex> lock(mutex);
     if (!active) return;
     meter_value = meter.channel;
     switch_value = power_switch.channel;
+    soc_value = soc.channel;
   }
   auto needs_value_save = [](const supla_ocpp_channel &before,
                              const supla_ocpp_channel &after) {
@@ -269,6 +281,7 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
   bool switch_changed = needs_value_save(before_switch, switch_value);
   meter_save_pending |= needs_value_save(before_meter, meter_value);
   switch_save_pending |= switch_changed;
+  soc_save_pending |= needs_value_save(before_soc, soc_value);
   extended_save_pending |=
       meter_value.extended_value &&
       (!before_meter.extended_value || meter_value.extended_value->is_differ(
@@ -280,8 +293,12 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
           meter_value.get_availability_status() ||
       before_switch.get_availability_status() !=
           switch_value.get_availability_status();
-  if (!meter_save_pending && !switch_save_pending && !extended_save_pending &&
-      !validity_save_pending && !connection_save_pending)
+  if (soc_value.channel_id)
+    availability_changed |= before_soc.get_availability_status() !=
+                            soc_value.get_availability_status();
+  if (!meter_save_pending && !switch_save_pending && !soc_save_pending &&
+      !extended_save_pending && !validity_save_pending &&
+      !connection_save_pending)
     return;
   auto now = std::chrono::steady_clock::now();
   if (!force && !new_connection && !switch_changed &&
@@ -296,6 +313,8 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
       success = false;
     if (switch_save_pending && !dao.save_value(get_user_id(), switch_value))
       success = false;
+    if (soc_save_pending && !dao.save_value(get_user_id(), soc_value))
+      success = false;
     if (extended_save_pending &&
         !dao.save_extended_value(get_user_id(), meter_value))
       success = false;
@@ -304,6 +323,7 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
       unsigned int seconds =
           std::max(meter_value.get_value_validity_time_sec(),
                    switch_value.get_value_validity_time_sec());
+      seconds = std::max(seconds, soc_value.get_value_validity_time_sec());
       if (!dao.renew_validity(get_user_id(), id, seconds,
                               connection_save_pending))
         success = false;
@@ -314,13 +334,14 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
   now = std::chrono::steady_clock::now();
   next_db_attempt = now + std::chrono::seconds(5);
   if (success) {
-    meter_save_pending = switch_save_pending = extended_save_pending =
-        validity_save_pending = false;
+    meter_save_pending = switch_save_pending = soc_save_pending =
+        extended_save_pending = validity_save_pending = false;
     connection_save_pending = false;
     // Very short heartbeat/replay validity must be refreshed before the
     // stored deadline, not after the normal five-second coalescing window.
     unsigned int seconds = std::max(meter_value.get_value_validity_time_sec(),
                                     switch_value.get_value_validity_time_sec());
+    seconds = std::max(seconds, soc_value.get_value_validity_time_sec());
     if (seconds) {
       next_db_attempt =
           now + std::chrono::milliseconds(std::min(5000U, seconds * 500U));
@@ -330,6 +351,7 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
     // attempt. Never restore an older report over a newer live value.
     meter_save_pending = meter_value.value != nullptr;
     switch_save_pending = switch_value.value != nullptr;
+    soc_save_pending = soc_value.value != nullptr;
     extended_save_pending = meter_value.extended_value != nullptr;
     validity_save_pending = true;
   }
@@ -337,7 +359,7 @@ void supla_ocpp_device::persist(const supla_ocpp_channel &before_meter,
 
 void supla_ocpp_device::notify_channel_change(const supla_ocpp_channel &before,
                                               const supla_ocpp_channel &after) {
-  if (!user) return;
+  if (!user || !after.channel_id) return;
   {
     std::lock_guard<std::mutex> lock(mutex);
     if (!active) return;
@@ -399,19 +421,22 @@ void supla_ocpp_device::raise_power_switch_value_change_event(bool before,
 
 void supla_ocpp_device::reload(const supla_ocpp_device_config &config) {
   serializer.post([self = shared_from_this(), config]() {
-    supla_ocpp_channel before[2], after[2];
+    supla_ocpp_channel before[3], after[3];
     {
       std::lock_guard<std::mutex> lock(self->mutex);
       if (!self->active || config.revision < self->configuration_revision ||
           config.device_id != self->id ||
           config.meter.id != self->get_meter_channel_id() ||
-          config.power_switch.id != self->get_switch_channel_id())
+          config.power_switch.id != self->get_switch_channel_id() ||
+          config.soc.id != self->get_soc_channel_id())
         return;
       self->configuration_revision = config.revision;
       int i = 0;
-      for (auto target : {&self->meter, &self->power_switch}) {
+      for (auto target : {&self->meter, &self->power_switch, &self->soc}) {
         before[i] = target->channel;
-        target->config = i == 0 ? config.meter : config.power_switch;
+        target->config = i == 0   ? config.meter
+                         : i == 1 ? config.power_switch
+                                  : config.soc;
         if (target->channel.value) {
           auto raw = target->channel.raw_value;
           self->set_value(target, raw.data());
@@ -429,9 +454,10 @@ void supla_ocpp_device::reload(const supla_ocpp_device_config &config) {
       // samples and never imports DB validity or resets the live analyzer.
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
+      after[2] = self->soc.channel;
     }
-    self->persist(before[0], before[1], false, true);
-    for (int i = 0; i < 2; i++)
+    self->persist(before[0], before[1], before[2], false, true);
+    for (int i = 0; i < 3; i++)
       self->notify_channel_change(before[i], after[i]);
   });
 }
@@ -449,18 +475,21 @@ void supla_ocpp_device::deactivate(void) {
 void supla_ocpp_device::renew_validity(supla_ocpp_value_validity validity,
                                        bool new_connection) {
   serializer.post([self = shared_from_this(), validity, new_connection]() {
-    supla_ocpp_channel before[2], after[2];
+    supla_ocpp_channel before[3], after[3];
     {
       std::lock_guard<std::mutex> lock(self->mutex);
       if (!self->active) return;
       before[0] = self->meter.channel;
       before[1] = self->power_switch.channel;
+      before[2] = self->soc.channel;
       self->renew_validity_locked(validity);
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
+      after[2] = self->soc.channel;
     }
-    self->persist(before[0], before[1], true, false, new_connection);
-    for (int i = 0; i < 2; i++)
+    self->persist(before[0], before[1], before[2], true, false,
+                  new_connection);
+    for (int i = 0; i < 3; i++)
       self->notify_channel_change(before[i], after[i]);
   });
 }
@@ -477,13 +506,14 @@ void supla_ocpp_device::set_power_switch_channel_value(bool on) {
 void supla_ocpp_device::update_state(bool on,
                                     supla_ocpp_value_validity validity) {
   serializer.post([self = shared_from_this(), on, validity]() {
-    supla_ocpp_channel before[2], after[2];
+    supla_ocpp_channel before[3], after[3];
     std::optional<bool> confirmed_before;
     {
       std::lock_guard<std::mutex> lock(self->mutex);
       if (!self->active) return;
       before[0] = self->meter.channel;
       before[1] = self->power_switch.channel;
+      before[2] = self->soc.channel;
       confirmed_before = self->confirmed_power_switch_value;
       self->confirmed_power_switch_value = on;
       self->pending_commands.clear();
@@ -492,9 +522,10 @@ void supla_ocpp_device::update_state(bool on,
       self->renew_validity_locked(validity);
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
+      after[2] = self->soc.channel;
     }
-    self->persist(before[0], before[1], true);
-    for (int i = 0; i < 2; i++)
+    self->persist(before[0], before[1], before[2], true);
+    for (int i = 0; i < 3; i++)
       self->notify_channel_change(before[i], after[i]);
     if (confirmed_before) {
       self->raise_power_switch_value_change_event(*confirmed_before, on);
@@ -505,12 +536,13 @@ void supla_ocpp_device::update_state(bool on,
 void supla_ocpp_device::update_meter(const supla_ocpp_meter_report &report,
                                      supla_ocpp_value_validity validity) {
   serializer.post([self = shared_from_this(), report, validity]() {
-    supla_ocpp_channel before[2], after[2];
+    supla_ocpp_channel before[3], after[3];
     {
       std::lock_guard<std::mutex> lock(self->mutex);
       if (!self->active) return;
       before[0] = self->meter.channel;
       before[1] = self->power_switch.channel;
+      before[2] = self->soc.channel;
       char raw[SUPLA_CHANNELVALUE_SIZE] = {};
       bool has_basic = self->meter.channel.get_raw_value(raw);
       supla_channel_em_value basic(raw);
@@ -651,12 +683,43 @@ void supla_ocpp_device::update_meter(const supla_ocpp_meter_report &report,
       }
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
+      after[2] = self->soc.channel;
     }
-    self->persist(before[0], before[1], true);
-    for (int i = 0; i < 2; i++) {
+    self->persist(before[0], before[1], before[2], true);
+    for (int i = 0; i < 3; i++) {
       self->notify_channel_change(before[i], after[i]);
       self->raise_value_change_events(before[i], after[i]);
     }
+  });
+}
+
+void supla_ocpp_device::update_soc(int percentage,
+                                   supla_ocpp_value_validity validity) {
+  if (percentage < 0 || percentage > 100) return;
+  serializer.post([self = shared_from_this(), percentage, validity]() {
+    supla_ocpp_channel before_meter, before_switch, before_soc;
+    supla_ocpp_channel after_meter, after_switch, after_soc;
+    {
+      std::lock_guard<std::mutex> lock(self->mutex);
+      if (!self->active || !self->soc.channel.channel_id) return;
+      before_meter = self->meter.channel;
+      before_switch = self->power_switch.channel;
+      before_soc = self->soc.channel;
+      supla_channel_general_purpose_measurement_value value;
+      value.set_value(percentage);
+      char raw[SUPLA_CHANNELVALUE_SIZE] = {};
+      value.get_raw_value(raw);
+      self->set_value(&self->soc, raw);
+      self->renew_validity_locked(validity);
+      after_meter = self->meter.channel;
+      after_switch = self->power_switch.channel;
+      after_soc = self->soc.channel;
+    }
+    self->persist(before_meter, before_switch, before_soc, true);
+    self->notify_channel_change(before_meter, after_meter);
+    self->notify_channel_change(before_switch, after_switch);
+    self->notify_channel_change(before_soc, after_soc);
+    self->raise_value_change_events(before_soc, after_soc);
   });
 }
 
@@ -665,7 +728,7 @@ bool supla_ocpp_device::request_charging(unsigned long long command_id, bool on,
                                          std::function<bool(bool)> send) {
   if (!can_set_charging(get_switch_channel_id())) return false;
   serializer.post([self = shared_from_this(), command_id, on, toggle, send]() {
-    supla_ocpp_channel before, after, before_meter;
+    supla_ocpp_channel before, after, before_meter, before_soc;
     bool requested = on;
     {
       std::lock_guard<std::mutex> lock(self->mutex);
@@ -674,6 +737,7 @@ bool supla_ocpp_device::request_charging(unsigned long long command_id, bool on,
         return;
       before = self->power_switch.channel;
       before_meter = self->meter.channel;
+      before_soc = self->soc.channel;
       char raw[SUPLA_CHANNELVALUE_SIZE] = {};
       before.get_value(raw);
       bool previous = supla_channel_onoff_value(raw).is_on();
@@ -686,7 +750,7 @@ bool supla_ocpp_device::request_charging(unsigned long long command_id, bool on,
       self->set_power_switch_channel_value(requested);
       after = self->power_switch.channel;
     }
-    self->persist(before_meter, before, false);
+    self->persist(before_meter, before, before_soc, false);
     self->notify_channel_change(before, after);
     bool sent = false;
     try {
@@ -701,7 +765,7 @@ bool supla_ocpp_device::request_charging(unsigned long long command_id, bool on,
 }
 
 void supla_ocpp_device::finish_command(unsigned long long command_id, bool ok) {
-  supla_ocpp_channel before, after, before_meter;
+  supla_ocpp_channel before, after, before_meter, before_soc;
   bool rollback = false;
   {
     std::lock_guard<std::mutex> lock(mutex);
@@ -723,6 +787,7 @@ void supla_ocpp_device::finish_command(unsigned long long command_id, bool ok) {
       if (!ok) {
         before = power_switch.channel;
         before_meter = meter.channel;
+        before_soc = soc.channel;
         set_power_switch_channel_value(command.previous_on);
         after = power_switch.channel;
         rollback = true;
@@ -730,7 +795,7 @@ void supla_ocpp_device::finish_command(unsigned long long command_id, bool ok) {
     }
   }
   if (rollback) {
-    persist(before_meter, before, false);
+    persist(before_meter, before, before_soc, false);
     notify_channel_change(before, after);
   }
 }
@@ -743,12 +808,13 @@ void supla_ocpp_device::on_result(unsigned long long command_id, bool ok) {
 
 void supla_ocpp_device::disconnect(void) {
   serializer.post([self = shared_from_this()]() {
-    supla_ocpp_channel before[2], after[2];
+    supla_ocpp_channel before[3], after[3];
     {
       std::lock_guard<std::mutex> lock(self->mutex);
       if (!self->active) return;
       before[0] = self->meter.channel;
       before[1] = self->power_switch.channel;
+      before[2] = self->soc.channel;
       if (self->latest_command) {
         self->set_power_switch_channel_value(
             self->pending_commands.at(self->latest_command).previous_on);
@@ -758,9 +824,10 @@ void supla_ocpp_device::disconnect(void) {
       self->renew_validity_locked(0);
       after[0] = self->meter.channel;
       after[1] = self->power_switch.channel;
+      after[2] = self->soc.channel;
     }
-    self->persist(before[0], before[1], true, true);
-    for (int i = 0; i < 2; i++)
+    self->persist(before[0], before[1], before[2], true, true);
+    for (int i = 0; i < 3; i++)
       self->notify_channel_change(before[i], after[i]);
   });
 }

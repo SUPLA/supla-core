@@ -118,6 +118,10 @@ bool supla_ocpp_dao::get_devices(
       target_config = &device.power_switch;
       target_values = &device.power_switch_persisted_values;
     }
+    if (channel.type == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT &&
+        channel.func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT) {
+      target_config = &device.soc;
+    }
     if (target_config) {
       if (target_config->id) {
         supla_log(LOG_WARNING, "Ambiguous OCPP channel mapping at device %i",
@@ -126,7 +130,7 @@ bool supla_ocpp_dao::get_devices(
         break;
       }
       *target_config = channel;
-      *target_values = persisted_values;
+      if (target_values) *target_values = persisted_values;
     }
   }
   success = success && status == MYSQL_NO_DATA;
