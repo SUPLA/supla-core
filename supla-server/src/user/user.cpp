@@ -508,7 +508,7 @@ void supla_user::before_device_delete(int UserID, int DeviceID,
 }
 
 // static
-void supla_user::on_device_deleted(int UserID, int DeviceID,
+bool supla_user::on_device_deleted(int UserID, int DeviceID,
                                    const supla_caller &caller) {
   supla_user *user = supla_user::find(UserID, false);
 
@@ -526,9 +526,10 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
     supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
                                                                DeviceID);
   }
+  return cleaned;
 }
 
-void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
+bool supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
                                     const supla_caller &caller) {
   supla_user *user = supla_user::find(user_id, false);
 
@@ -549,6 +550,7 @@ void supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
     supla_mqtt_client_suite::globalInstance()->onChannelDeleted(
         user_id, device_id, channel_id);
   }
+  return cleaned;
 }
 
 // static

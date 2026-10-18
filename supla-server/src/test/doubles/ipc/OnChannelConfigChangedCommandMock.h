@@ -32,7 +32,7 @@ class OnChannelConfigChangedCommandMock
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
   MOCK_METHOD6(on_channel_config_changed,
-               void(int user_id, int device_id, int channel_id, int type,
+               bool(int user_id, int device_id, int channel_id, int type,
                     int func, unsigned long long scope));
 };
 

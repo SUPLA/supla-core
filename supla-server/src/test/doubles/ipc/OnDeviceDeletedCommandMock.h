@@ -31,7 +31,7 @@ class OnDeviceDeletedCommandMock
   explicit OnDeviceDeletedCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD2(on_device_deleted, void(int user_id, int device_id));
+  MOCK_METHOD2(on_device_deleted, bool(int user_id, int device_id));
 };
 
 } /* namespace testing */

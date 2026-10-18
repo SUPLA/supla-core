@@ -219,12 +219,6 @@ void PeerProvisioner::reconnect(int device) {
     std::lock_guard<std::mutex> lock(flows_mutex);
     reconnect_due.erase(device);
   }
-  std::vector<ApprovalPair> failed;
-  if (!service.reconcile_approvals(0, device, &failed)) {
-    transport->diagnostic(0, device, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
-    defer_reconnect(device);
-    if (failed.empty()) return;  // Unknown scope: fail closed.
-  }
   auto repo = factory();
   std::vector<uint64_t> ids;
   if (!repo->for_device(device, false, &ids)) {
@@ -240,28 +234,25 @@ void PeerProvisioner::reconnect(int device) {
       continue;
     }
     if (!a.id) continue;
-    // Do not publish stale authorization for a failed pair, but keep
-    // independent associations converging (including revocations).
-    if (std::any_of(failed.begin(), failed.end(), [&](const ApprovalPair &p) {
-          return p.source == a.source && p.destination == a.destination;
-        })) continue;
-    // Recover missed deletion notifications after Server downtime. Query
-    // failure is never interpreted as authoritative endpoint/resource removal.
+    // No business interpretation on reconnect. Recover technical endpoint
+    // removal only from authoritative absence; logical ACL belongs to Cloud.
     if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, a.source, &owner)) {
       defer_reconnect(device);
       continue;
     }
-    if (!owner && !a.source_removed) service.remove_device(a.source);
+    if (!owner && !a.source_removed && !repo->cleanup_device(a.source)) {
+      defer_reconnect(device);
+      continue;
+    }
     if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, a.destination,
                      &owner)) {
       defer_reconnect(device);
       continue;
     }
-    if (!owner && !a.destination_removed) service.remove_device(a.destination);
-    for (const auto &entry : a.acl) {
-      if (repo->owner(entry.ResourceType, entry.ResourceId, &owner) &&
-          owner != a.source)
-        service.delete_resource(id, entry.ResourceType, entry.ResourceId);
+    if (!owner && !a.destination_removed &&
+        !repo->cleanup_device(a.destination)) {
+      defer_reconnect(device);
+      continue;
     }
     service.observe_root(id);
     reconcile(id, true);
@@ -377,12 +368,12 @@ void PeerProvisioner::send_destination(Flow *f, const unsigned char *key) {
   wipe_key(q.PeerKey, sizeof(q.PeerKey));
   sent(f, false, outcome);
 }
-void PeerProvisioner::reconcile(uint64_t id, bool meaningful_event) {
+bool PeerProvisioner::reconcile(uint64_t id, bool meaningful_event) {
   auto gate = association_gate(id);
   std::lock_guard<std::mutex> lock(*gate);
-  reconcile_locked(id, meaningful_event);
+  return reconcile_locked(id, meaningful_event);
 }
-void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
+bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
   Schedule update{this, id};
   auto repo = factory();
   Association a;
@@ -397,7 +388,7 @@ void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
   if (!repo->load(id, &a)) {
     defer();
     transport->diagnostic(id, 0, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
-    return;
+    return false;
   }
   if (!a.id || a.lifecycle == Lifecycle::Dormant) {
     auto old = flow(id, false);
@@ -408,20 +399,20 @@ void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
       resolved(old->desired.destination, id);
       retire_completed(id, old);
     }
-    return;
+    return true;
   }
   if (!repo->identity(a.source, &identity)) {
     defer();
-    return;
+    return false;
   }
   uint32_t root =
       a.lifecycle == Lifecycle::Draining && a.root ? a.root : identity.root;
   if (!root || root == UINT32_MAX) {
-    return;
+    return true;
   }
   if (a.lifecycle == Lifecycle::Active) {
     if (!identity.root || !transport->owner_ready(a.source, identity.root)) {
-      return;
+      return true;
     }
     // Both current DB ownership and accepted owner identity must agree. Never
     // replay a newly allocated/stale ChannelId merely because it exists in DB.
@@ -431,11 +422,11 @@ void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
       transport->diagnostic(id, a.source,
                             read_failed ? SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR
                                         : SUPLA_SUPLAN_RESULT_NOT_FOUND);
-      return;
+      return false;
     }
   }
   auto f = flow(id);
-  if (!f) return;
+  if (!f) return false;
   bool unchanged = same_state(f->desired, a) && f->wire_root == root;
   bool same_revision = f->wire_root == root &&
                        f->desired.source == a.source &&
@@ -487,7 +478,7 @@ void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     if (!a.destination_acked && !a.destination_removed)
       send_destination(f.get(), nullptr);
     retire_completed(id, f);
-    return;
+    return true;
   }
   bool new_context = a.root != root ||
                      a.provisioned_generation != a.generation || f->force_key;
@@ -505,6 +496,7 @@ void PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     send_destination(f.get(), nullptr);
   }
   retire_completed(id, f);
+  return true;
 }
 void PeerProvisioner::result(Flow *f, bool source, uint8_t code) {
   Side &side = source ? f->source : f->destination;

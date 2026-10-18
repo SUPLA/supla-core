@@ -486,9 +486,12 @@ ChannelReferenceEncoding supla_device_channel::device_reference_encoding() {
 bool supla_device_channel::reload_channel_config() {
   std::unique_ptr<supla_json_config> authoritative;
   int function = 0;
-  if (!supla_suplan_server_peers::reconcile_hvac(get_user_id(), get_id(),
-                                                 &authoritative, &function))
-    return false;
+  // Cloud commits authorization with business config. Reading ChannelConfig
+  // only reloads the authoritative JSON/function; it never authors grants.
+  supla_mariadb_access_provider db;
+  supla_device_dao dao(&db);
+  authoritative.reset(dao.get_channel_config(get_id(), nullptr, nullptr,
+                                             &function));
   if (!authoritative) return false;
   set_json_config(authoritative.release());
   // Func is selected business state, including NONE; Device Default and the

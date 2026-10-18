@@ -39,9 +39,14 @@ TEST_F(OnChannelDeletedCommandTest, noData) {
 }
 
 TEST_F(OnChannelDeletedCommandTest, channelDeleted) {
-  EXPECT_CALL(*cmd, on_channel_deleted(10, 20, 30));
+  EXPECT_CALL(*cmd, on_channel_deleted(10, 20, 30)).WillOnce(Return(true));
 
   commandProcessingTest("USER-ON-CHANNEL-DELETED:10,20,30\n", "OK:10\n");
+}
+
+TEST_F(OnChannelDeletedCommandTest, failedTechnicalCleanup) {
+  EXPECT_CALL(*cmd, on_channel_deleted(10, 20, 30)).WillOnce(Return(false));
+  commandProcessingTest("USER-ON-CHANNEL-DELETED:10,20,30\n", "ERROR:10\n");
 }
 
 TEST_F(OnChannelDeletedCommandTest, noParams) {

@@ -120,9 +120,9 @@ class supla_user {
                                const supla_caller &caller);
   static void before_device_delete(int UserID, int DeviceID,
                                    const supla_caller &caller);
-  static void on_device_deleted(int UserID, int DeviceID,
+  static bool on_device_deleted(int UserID, int DeviceID,
                                 const supla_caller &caller);
-  static void on_channel_deleted(int user_id, int device_id, int channel_id,
+  static bool on_channel_deleted(int user_id, int device_id, int channel_id,
                                  const supla_caller &caller);
   static void reset_timezone(int user_id);
   static unsigned int total_cd_count(bool client);

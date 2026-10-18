@@ -20,16 +20,12 @@
 #include "suplan/server_stream.h"
 #include "eh.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
-namespace supla_suplan {
-// Existing internal gate; test-only declaration, no production hook/API.
-std::shared_ptr<std::mutex> origin_gate(uint16_t type, uint64_t origin);
-}
 using namespace supla_suplan;  // NOLINT
 namespace {
 struct Store {
   std::recursive_mutex mutex;
   Association a;
-  std::vector<Grant> grants;
+  Acl authorization;
   Identity identity{123, {10, 11}};
   int writes = 0;
   bool fail_save = false;
@@ -53,26 +49,13 @@ class MemoryRepo : public Repository {
   Store *store;
   bool transaction = false;
   Association before;
-  std::vector<Grant> before_grants;
+
   int before_writes = 0;
 
  public:
   explicit MemoryRepo(Store *s) : store(s) {}
   ~MemoryRepo() override { rollback(); }
-  bool begin(int source, int destination, Association *a) override {
-    store->mutex.lock();
-    transaction = true;
-    before = store->a;
-    before_grants = store->grants;
-    before_writes = store->writes;
-    if (!store->a.id) {
-      store->a.id = 1;
-      store->a.source = source;
-      store->a.destination = destination;
-    }
-    *a = store->a;
-    return true;
-  }
+
   bool begin(uint64_t id, Association *a) override {
     if (store->fail_begin) return false;
     if (store->before_begin) {
@@ -83,7 +66,7 @@ class MemoryRepo : public Repository {
     store->mutex.lock();
     transaction = true;
     before = store->a;
-    before_grants = store->grants;
+
     before_writes = store->writes;
     return load(id, a) && a->id;
   }
@@ -107,56 +90,17 @@ class MemoryRepo : public Repository {
           item.second.destination == destination) *a = item.second;
     return true;
   }
-  bool grants(uint64_t, std::vector<Grant> *out) override {
-    *out = store->grants;
-    return true;
-  }
-  bool put(uint64_t, const Grant &g) override {
-    for (auto &old : store->grants)
-      if (old.resource_type == g.resource_type &&
-          old.resource_id == g.resource_id &&
-          old.origin_type == g.origin_type && old.origin_id == g.origin_id) {
-        old.permissions = g.permissions;
-        return true;
-      }
-    store->grants.push_back(g);
-    return true;
-  }
-  bool erase_origin(uint64_t, uint16_t type, uint64_t origin) override {
-    auto &g = store->grants;
-    g.erase(std::remove_if(g.begin(), g.end(),
-                           [&](const Grant &v) {
-                             return v.origin_type == type &&
-                                    v.origin_id == origin;
-                           }),
-            g.end());
-    return true;
-  }
-  bool erase_resource(uint64_t, uint8_t type, uint32_t resource) override {
-    auto &g = store->grants;
-    g.erase(std::remove_if(g.begin(), g.end(),
-                           [&](const Grant &v) {
-                             return v.resource_type == type &&
-                                    v.resource_id == resource;
-                           }),
-            g.end());
-    return true;
-  }
-  bool erase_grants(uint64_t) override {
-    store->grants.clear();
-    return true;
-  }
+
   bool save(const Association &a) override {
     if (store->fail_save) return false;
     if (store->additional.count(a.id)) store->additional[a.id] = a;
     if (store->a.id == a.id) store->a = a;
+    if ((a.source_removed || a.destination_removed) &&
+        a.source_acked && a.destination_acked) store->a = {};
     ++store->writes;
     return true;
   }
-  bool erase(uint64_t) override {
-    store->a = {};
-    return true;
-  }
+
   bool commit() override {
     if (store->fail_commit) return false;
     transaction = false;
@@ -172,7 +116,7 @@ class MemoryRepo : public Repository {
   void rollback() override {
     if (transaction) {
       store->a = before;
-      store->grants = before_grants;
+
       store->writes = before_writes;
       transaction = false;
       store->mutex.unlock();
@@ -214,7 +158,27 @@ class MemoryRepo : public Repository {
     *device = 0;
     return true;
   }
-  bool supports_batch() const override { return true; }
+  bool permissions(int destination, uint8_t type, uint32_t resource,
+                    bool, uint8_t *out) override {
+    std::lock_guard<std::recursive_mutex> lock(store->mutex);
+    *out = 0;
+    if (store->fail_find) return false;
+    if (store->a.destination != destination || store->a.source_removed ||
+        store->a.destination_removed) return true;
+    for (const auto &entry : store->authorization)
+      if ((entry.ResourceType == type && entry.ResourceId == resource) ||
+          (entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE &&
+           entry.ResourceId == static_cast<uint32_t>(store->a.source)))
+        *out |= entry.Permissions;
+    return true;
+  }
+  bool binding_granted(int, int, uint32_t, uint32_t, bool *out) override {
+    *out = false;
+    return true;
+  }
+  bool project_peer(int destination, uint32_t) override {
+    return store->a.id && store->a.destination == destination;
+  }
   bool channel(uint32_t id, ChannelInfo *out) override {
     *out = store->channel_info;
     return owner(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, id, &out->device);
@@ -250,151 +214,7 @@ class MemoryRepo : public Repository {
         out->push_back(item.first);
     return true;
   }
-  bool for_origin(uint16_t type, uint64_t origin,
-                  std::vector<uint64_t> *out) override {
-    out->clear();
-    for (auto &g : store->grants)
-      if (g.origin_type == type && g.origin_id == origin) {
-        out->push_back(1);
-        break;
-      }
-    return true;
-  }
-  bool for_resource(uint8_t type, uint32_t resource,
-                    std::vector<uint64_t> *out) override {
-    out->clear();
-    for (auto &g : store->grants)
-      if (g.resource_type == type && g.resource_id == resource) {
-        out->push_back(1);
-        break;
-      }
-    return true;
-  }
 };
-class OriginDiscoveryRepo : public MemoryRepo {
-  std::function<void()> discovered;
- public:
-  explicit OriginDiscoveryRepo(Store *store, std::function<void()> fn = {})
-      : MemoryRepo(store), discovered(fn) {}
-  bool channel(uint32_t id, ChannelInfo *out) override {
-    if (!MemoryRepo::channel(id, out)) return false;
-    if (id == 20) {
-      out->type = SUPLA_CHANNELTYPE_HVAC;
-      out->function = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
-    }
-    return true;
-  }
-  bool for_origin(uint16_t type, uint64_t origin,
-                  std::vector<uint64_t> *out) override {
-    if (!MemoryRepo::for_origin(type, origin, out)) return false;
-    if (discovered) discovered();
-    return true;
-  }
-};
-TEST(SupLanOriginTest,
-     DeleteDiscoveryFencesNewReferenceAndAllowsFreshAuthority) {
-  for (bool keep_authority : {false, true}) {
-    Store store;
-    PeerService::Factory factory = [&] {
-      return std::make_unique<OriginDiscoveryRepo>(&store);
-    };
-    const uint64_t origin = channel_config_origin(20, 1);
-    auto gate = origin_gate(CHANNEL_CONFIG_ORIGIN, origin);
-    PeerService writer(factory, nullptr);
-    std::atomic<uint32_t> current{10};
-    std::promise<void> discovered, captured, release, deleted, finished;
-    auto discovery = discovered.get_future();
-    auto snapshot = captured.get_future();
-    auto resume = release.get_future();
-    auto after_delete = deleted.get_future();
-    auto completion = finished.get_future();
-    std::promise<bool> inspected;
-    auto inspection = inspected.get_future();
-    bool gate_held = false;
-    auto work = std::async(std::launch::async, [&] {
-      discovery.wait();
-      bool unfenced;
-      {
-        // A different thread probes ownership; no same-thread recursive lock.
-        std::unique_lock<std::mutex> probe(*gate, std::try_to_lock);
-        unfenced = probe.owns_lock();
-      }
-      inspected.set_value(unfenced);
-      if (!unfenced) after_delete.wait();
-      bool ok = writer.reconcile_reference(20, 1, [&](uint32_t *value) {
-        *value = current.load();  // Read current authority, not desired R1.
-        if (unfenced) {
-          captured.set_value();
-          resume.wait();
-        }
-        return true;
-      });
-      finished.set_value();
-      return ok;
-    });
-    PeerService deleter([&] {
-      return std::make_unique<OriginDiscoveryRepo>(&store, [&] {
-        discovered.set_value();  // Discovery already returned an empty list.
-        bool unfenced = inspection.get();
-        gate_held = !unfenced;
-        EXPECT_FALSE(unfenced);
-        if (unfenced) snapshot.wait();
-        if (!keep_authority) current = 0;
-        if (unfenced) {
-          release.set_value();
-          completion.wait();  // Old delete would now miss the new Grant.
-        }
-      });
-    }, nullptr);
-    bool removed = deleter.delete_origin(CHANNEL_CONFIG_ORIGIN, origin);
-    deleted.set_value();
-    EXPECT_TRUE(work.get());
-    EXPECT_TRUE(removed);
-    std::cout << "ORIGIN008 keep_authority=" << keep_authority
-              << " gate_held=" << gate_held << " delete=" << removed
-              << " grants=" << store.grants.size()
-              << " acl=" << store.a.acl.size()
-              << " revision=" << store.a.revision
-              << " generation=" << store.a.generation << std::endl;
-    EXPECT_EQ(keep_authority ? 1u : 0u, store.grants.size());
-    EXPECT_EQ(keep_authority ? 1u : 0u, store.a.acl.size());
-  }
-}
-TEST(SupLanOriginTest, DeleteWaitsForReferenceCapturedBeforeAuthorityRemoval) {
-  Store store;
-  PeerService service([&] {
-    return std::make_unique<OriginDiscoveryRepo>(&store);
-  }, nullptr);
-  std::atomic<uint32_t> current{10};
-  std::promise<void> captured, resume, deleting;
-  auto snapshot = captured.get_future();
-  auto release = resume.get_future();
-  auto started = deleting.get_future();
-  auto first = std::async(std::launch::async, [&] {
-    return service.reconcile_reference(20, 1, [&](uint32_t *value) {
-      *value = current.load();
-      captured.set_value();
-      release.wait();
-      return true;
-    });
-  });
-  snapshot.wait();
-  current = 0;
-  auto second = std::async(std::launch::async, [&] {
-    deleting.set_value();
-    return service.delete_origin(CHANNEL_CONFIG_ORIGIN,
-                                  channel_config_origin(20, 1));
-  });
-  started.wait();
-  resume.set_value();
-  EXPECT_TRUE(first.get());
-  EXPECT_TRUE(second.get());
-  EXPECT_TRUE(store.grants.empty());
-  EXPECT_TRUE(store.a.acl.empty());
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
-  EXPECT_EQ(2u, store.a.revision);
-  EXPECT_EQ(1u, store.a.generation);
-}
 class Transport : public PeerTransport {
  public:
   bool online[3] = {false, true, true};
@@ -462,8 +282,44 @@ class SupLanPeerTest : public testing::Test {
     now += std::chrono::seconds(seconds);
     peers.iterate();
   }
-  Grant grant{1, 10, 1, 100, 1};
-  void add() { ASSERT_TRUE(peers.grants()->upsert(1, 2, grant)); }
+  TSuplaSuplanAclEntry entry{1, 10, 1};
+  // Explicit committed projection supplied by the SQL owner. No origin model.
+  void desired_acl(PeerProvisioner &target, const Acl &acl) {
+    {
+      auto gate = association_gate(1);
+      std::lock_guard<std::mutex> serial(*gate);
+      std::lock_guard<std::recursive_mutex> lock(store.mutex);
+      Association next = store.a;
+      if (!next.id) {
+        next.id = 1;
+        next.source = 1;
+        next.destination = 2;
+        next.lifecycle = Lifecycle::Active;
+      } else if (!acl.empty() && next.lifecycle != Lifecycle::Active) {
+        if (next.root == store.identity.root) ++next.generation;
+        next.revision = 0;
+      }
+      if (!equal_acl(next.acl, acl)) {
+        if (store.a.id) ++next.revision;
+        next.acl = acl;
+        next.source_acked = next.destination_acked = false;
+      }
+      next.lifecycle = acl.empty() ? Lifecycle::Draining : Lifecycle::Active;
+      if (acl.empty()) {
+        next.root = store.identity.root;
+        next.provisioned_generation = next.generation;
+      }
+      store.a = next;
+      store.authorization = acl;
+    }
+    target.reconcile(1);
+  }
+  void desired(PeerProvisioner &target, uint8_t permissions) {
+    desired_acl(target, permissions ? Acl{{entry.ResourceType,
+                                         entry.ResourceId, permissions}}
+                                    : Acl{});
+  }
+  void add() { desired(peers, entry.Permissions); }
   void source_ok(int index = -1, uint8_t result = 0) {
     if (index < 0) index = transport.sources.size() - 1;
     auto q = transport.sources.at(index);
@@ -489,19 +345,19 @@ class SupLanPeerTest : public testing::Test {
     source_ok();
     destination_result();
   }
-  void remove() { ASSERT_TRUE(peers.grants()->delete_origin(1, 100)); }
+  void remove() { desired(peers, 0); }
 };
 TEST_F(SupLanPeerTest, SendOutcomeClassifiesOfflineRootRaceAndEnqueue) {
   for (auto code : {PeerTransport::SendCode::NotReady,
                     PeerTransport::SendCode::ContextChanged,
                     PeerTransport::SendCode::EnqueueFailed}) {
     store.a = {};
-    store.grants.clear();
+    store.authorization.clear();
     PeerProvisioner isolated(factory, &transport, [&] { return now; });
     transport.source_send_ok = false;
     transport.source_failure = code;
     transport.forced.clear();
-    ASSERT_TRUE(isolated.grants()->upsert(1, 2, grant));
+    desired(isolated, entry.Permissions);
     EXPECT_EQ(code == PeerTransport::SendCode::EnqueueFailed ? 1u : 0u,
               transport.forced.size());
     EXPECT_EQ(0u, isolated.time_left_usec(1));
@@ -510,9 +366,9 @@ TEST_F(SupLanPeerTest, SendOutcomeClassifiesOfflineRootRaceAndEnqueue) {
 TEST_F(SupLanPeerTest, MatchedResultDatabaseErrorsCancelDeviceWatchdog) {
   for (int stage = 0; stage < 3; ++stage) {
     store.a = {};
-    store.grants.clear();
+    store.authorization.clear();
     PeerProvisioner isolated(factory, &transport, [&] { return now; });
-    ASSERT_TRUE(isolated.grants()->upsert(1, 2, grant));
+    desired(isolated, entry.Permissions);
     auto request = transport.sources.back();
     TDS_SuplaSetSuplanSourceAssociationResult reply{};
     reply.PeerContext = request.PeerContext;
@@ -815,8 +671,8 @@ TEST_F(SupLanPeerTest, RevisionConflictSurvivesTimerAndReconnectUntilChange) {
   EXPECT_EQ(1u, transport.sources.size());
   EXPECT_TRUE(transport.destinations.empty());
   EXPECT_EQ(1u, store.a.generation);
-  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  desired(peers, entry.Permissions);
   ASSERT_EQ(2u, transport.sources.size());
   EXPECT_EQ(2u, static_cast<uint32_t>(transport.sources.back().AclRevision));
   source_ok();
@@ -899,8 +755,8 @@ TEST_F(SupLanPeerTest, PermanentResultsAndRepeatedPersistenceDoNotTimerLoop) {
 }
 TEST_F(SupLanPeerTest, DestinationConflictKeepsIndependentSourceConvergence) {
   installed();
-  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  desired(peers, entry.Permissions);
   destination_result(SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
   auto sends = transport.destinations.size();
   source_ok();
@@ -909,8 +765,8 @@ TEST_F(SupLanPeerTest, DestinationConflictKeepsIndependentSourceConvergence) {
   advance(600);
   EXPECT_EQ(sends, transport.destinations.size());
   EXPECT_EQ(1u, store.a.generation);
-  grant.permissions = SUPLA_SUPLAN_PERMISSION_READ;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
+  desired(peers, entry.Permissions);
   EXPECT_EQ(sends + 1, transport.destinations.size());
   source_ok();
   destination_result();
@@ -1051,7 +907,7 @@ TEST_F(SupLanPeerTest, ConcurrentTimerMutationAndStaleResultsConverge) {
     return std::chrono::steady_clock::time_point() +
            std::chrono::seconds(seconds.load());
   });
-  ASSERT_TRUE(concurrent.grants()->upsert(1, 2, grant));
+  desired(concurrent, entry.Permissions);
   const auto first = transport.sources.back();
   auto reply = [&](const TSDS_SuplaSetSuplanSourceAssociation &q) {
     TDS_SuplaSetSuplanSourceAssociationResult r = {};
@@ -1072,10 +928,10 @@ TEST_F(SupLanPeerTest, ConcurrentTimerMutationAndStaleResultsConverge) {
   });
   std::thread mutation([&] {
     for (int i = 0; i < 200; ++i) {
-      auto g = grant;
-      g.permissions = i % 2 ? SUPLA_SUPLAN_PERMISSION_CONTROL
+      auto g = entry;
+      g.Permissions = i % 2 ? SUPLA_SUPLAN_PERMISSION_CONTROL
                             : SUPLA_SUPLAN_PERMISSION_READ;
-      EXPECT_TRUE(concurrent.grants()->upsert(1, 2, g));
+      desired(concurrent, g.Permissions);
     }
   });
   std::thread stale([&] {
@@ -1095,8 +951,8 @@ TEST_F(SupLanPeerTest, ConcurrentTimerMutationAndStaleResultsConverge) {
 }
 TEST_F(SupLanPeerTest, KeyRequiredCannotReplayConflictedSourceSnapshot) {
   installed();
-  grant.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
+  desired(peers, entry.Permissions);
   source_ok(-1, SUPLA_SUPLAN_RESULT_REVISION_CONFLICT);
   destination_result(SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED);
   EXPECT_EQ(2u, transport.sources.size());
@@ -1136,13 +992,10 @@ TEST_F(SupLanPeerTest, PostCommitReadFailureRederivesInsteadOfLosingFlow) {
 TEST_F(SupLanPeerTest, OwnershipReadFailureCannotLoseControlRevocationRetry) {
   installed();
   for (uint32_t failed_resource : {1u, 2u, 10u}) {
-    auto extra = grant;
-    extra.origin_id = 200;
-    extra.permissions = SUPLA_SUPLAN_PERMISSION_CONTROL;
-    ASSERT_TRUE(peers.grants()->upsert(1, 2, extra));
+    desired(peers, SUPLA_SUPLAN_PERMISSION_CONTROL);
     source_ok();
     destination_result();
-    ASSERT_TRUE(peers.grants()->delete_origin(1, 200));
+    desired(peers, SUPLA_SUPLAN_PERMISSION_READ);
     destination_result();
     const auto revision = store.a.revision;
     const auto attempts = transport.sources.size();
@@ -1219,8 +1072,8 @@ TEST_F(SupLanPeerTest, CompletedNewContextRetiresFlow) {
 TEST_F(SupLanPeerTest, CompletedAclOnlyUpdateRetiresFlow) {
   installed();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
-  grant.permissions = 2;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = 2;
+  desired(peers, entry.Permissions);
   EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   EXPECT_EQ(0, transport.sources.back().Flags);
   EXPECT_EQ(0, transport.destination_key_sizes.back());
@@ -1381,46 +1234,7 @@ TEST_F(SupLanPeerTest, OfflineUnsentWorkDoesNotNeedResidentFlow) {
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
-TEST_F(SupLanPeerTest, OriginsUnionControlNormalizationAndNoopRemoval) {
-  installed();
-  auto second = grant;
-  second.origin_id = 200;
-  int writes = store.writes;
-  auto sends = transport.order.size();
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, second));
-  EXPECT_EQ(writes, store.writes);
-  EXPECT_EQ(sends, transport.order.size());
-  ASSERT_TRUE(peers.grants()->delete_origin(1, 100));
-  EXPECT_EQ(writes, store.writes);
-  EXPECT_EQ(1u, store.a.revision);
-  second.permissions = 3;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, second));
-  EXPECT_EQ(2, store.a.acl[0].Permissions);
-  EXPECT_EQ(2u, store.a.revision);
-  EXPECT_EQ(writes + 1, store.writes);
-  auto third = second;
-  third.origin_id = 300;
-  third.permissions = 4;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, third));
-  EXPECT_EQ(6, store.a.acl[0].Permissions);
-  EXPECT_EQ(3u, store.a.revision);
-  EXPECT_EQ(1u, store.a.generation);
-}
-TEST_F(SupLanPeerTest, StableOriginUpdatesInPlace) {
-  installed();
-  grant.permissions = 4;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
-  EXPECT_EQ(1u, store.grants.size());
-  EXPECT_EQ(2u, store.a.revision);
-}
-TEST_F(SupLanPeerTest, UnsupportedBitsAndWrongOwnerRejected) {
-  grant.permissions = 8;
-  EXPECT_FALSE(peers.grants()->upsert(1, 2, grant));
-  grant.permissions = 1;
-  grant.resource_id = 20;
-  EXPECT_FALSE(peers.grants()->upsert(1, 2, grant));
-  EXPECT_FALSE(peers.grants()->upsert(1, 1, grant));
-}
+
 TEST_F(SupLanPeerTest, FinalRemovalPartialDurableCleanupAndDormant) {
   installed();
   remove();
@@ -1475,7 +1289,7 @@ TEST_F(SupLanPeerTest, RootChangeReprovisionsWithoutAclOrGenerationBump) {
                 transport.sources.back().PeerContext.RootEpoch));
   source_ok();
   EXPECT_EQ(456u, store.a.root);
-  EXPECT_EQ(1u, store.grants.size());
+  ASSERT_EQ(1u, store.authorization.size());
 }
 TEST_F(SupLanPeerTest, RootChangeDuringDrainingSatisfiesOnlySource) {
   installed();
@@ -1593,9 +1407,9 @@ TEST_F(SupLanPeerTest, SourceOfflineWaitsForFirstCredential) {
 TEST_F(SupLanPeerTest, AclOnlyDestinationConvergesWithSourceOffline) {
   installed();
   transport.online[1] = false;
-  grant.permissions = 2;
+  entry.Permissions = 2;
   auto source_count = transport.sources.size();
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  desired(peers, entry.Permissions);
   EXPECT_EQ(source_count, transport.sources.size());
   EXPECT_EQ(0, transport.destination_key_sizes.back());
   EXPECT_EQ(2u, store.a.revision);
@@ -1708,8 +1522,8 @@ TEST_F(SupLanPeerTest, OldNonemptyKeyResponseFencedAfterEmptyCleanup) {
 TEST_F(SupLanPeerTest, StaleSourceAckCannotForwardKeyForNewAcl) {
   add();
   auto old_count = transport.destinations.size();
-  grant.permissions = 2;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
+  entry.Permissions = 2;
+  desired(peers, entry.Permissions);
   source_ok(0);
   EXPECT_EQ(old_count, transport.destinations.size());
   source_ok();
@@ -1723,22 +1537,7 @@ TEST_F(SupLanPeerTest, SourceAckCannotForwardKeyForAnObsoleteOwnerSnapshot) {
   EXPECT_FALSE(transport.key_seen);
   EXPECT_EQ(0u, store.a.provisioned_generation);
 }
-TEST_F(SupLanPeerTest, ConcurrentOriginsNoLostUpdate) {
-  add();
-  std::vector<std::thread> threads;
-  for (int i = 0; i < 12; ++i)
-    threads.emplace_back([&, i] {
-      auto g = grant;
-      g.origin_id += i + 1;
-      g.permissions = i % 2 ? 2 : 4;
-      EXPECT_TRUE(peers.grants()->upsert(1, 2, g));
-    });
-  for (auto &thread : threads) thread.join();
-  EXPECT_EQ(13u, store.grants.size());
-  EXPECT_EQ(6, store.a.acl[0].Permissions);
-  EXPECT_GE(2u, store.a.revision - 1);
-  EXPECT_EQ(1u, store.a.generation);
-}
+
 TEST_F(SupLanPeerTest, CapacityAndPersistenceDoNotSpamUnchangedEnsure) {
   add();
   source_ok(-1, SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED);
@@ -1783,7 +1582,9 @@ TEST_F(SupLanPeerTest, OwnerAcceptanceGateBlocksNewChannelProvisioning) {
 }
 TEST_F(SupLanPeerTest, RemovedEndpointRequiresSurvivorCleanup) {
   installed();
-  ASSERT_TRUE(peers.grants()->remove_device(1));
+  remove();
+  store.a.source_removed = store.a.source_acked = true;
+  peers.reconcile(1);
   EXPECT_TRUE(store.a.source_removed);
   EXPECT_TRUE(store.a.source_acked);
   EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
@@ -1792,7 +1593,9 @@ TEST_F(SupLanPeerTest, RemovedEndpointRequiresSurvivorCleanup) {
 }
 TEST_F(SupLanPeerTest, RemovedDestinationRequiresSourceCleanup) {
   installed();
-  ASSERT_TRUE(peers.grants()->remove_device(2));
+  remove();
+  store.a.destination_removed = store.a.destination_acked = true;
+  peers.reconcile(1);
   EXPECT_TRUE(store.a.destination_removed);
   source_ok();
   EXPECT_EQ(0u, store.a.id);
@@ -1819,7 +1622,7 @@ TEST_F(SupLanPeerTest, EnsureValidationAndNoAuthorizationOrApprovalCreation) {
   q.Permissions = SUPLA_SUPLAN_PERMISSION_READ;
   q.Flags = 1;
   r = peers.grants()->ensure_access(2, q);
-  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, r.Result);
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, r.Result);
   EXPECT_EQ(0u, store.a.id);
   installed();
   r = peers.grants()->ensure_access(2, q);
@@ -1827,8 +1630,8 @@ TEST_F(SupLanPeerTest, EnsureValidationAndNoAuthorizationOrApprovalCreation) {
   EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, r.DeliveryMode);
   remove();
   r = peers.grants()->ensure_access(2, q);
-  EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, r.Result);
-  EXPECT_TRUE(store.grants.empty());
+  EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, r.Result);
+  EXPECT_TRUE(store.authorization.empty());
 }
 TEST_F(SupLanPeerTest, ShareRequiresAuthoritativeBindingNotAnUnrelatedGrant) {
   installed();
@@ -1841,16 +1644,7 @@ TEST_F(SupLanPeerTest, ShareRequiresAuthoritativeBindingNotAnUnrelatedGrant) {
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT,
             peers.grants()->ensure_share(1, q).Result);
 }
-TEST_F(SupLanPeerTest, RevisionExhaustionAndExplicitDistrustRotateGeneration) {
-  installed();
-  store.a.revision = UINT32_MAX;
-  grant.permissions = 2;
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, grant));
-  EXPECT_EQ(2u, store.a.generation);
-  EXPECT_EQ(1u, store.a.revision);
-  ASSERT_TRUE(peers.grants()->distrust(1));
-  EXPECT_EQ(3u, store.a.generation);
-}
+
 TEST_F(SupLanPeerTest, CleanupBeforeFirstSourceAckStillFencesReactivation) {
   add();
   remove();
@@ -1918,22 +1712,11 @@ TEST_F(SupLanPeerTest, MalformedKeyReplyIsWipedAndCannotReachDestination) {
   EXPECT_EQ(0, r.PeerKey[0]);
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT, transport.errors.back());
 }
-TEST_F(SupLanPeerTest, GenerationExhaustionRollsBackGrantMutation) {
-  installed();
-  store.a.generation = UINT32_MAX;
-  store.a.revision = UINT32_MAX;
-  grant.permissions = 2;
-  int writes = store.writes;
-  EXPECT_FALSE(peers.grants()->upsert(1, 2, grant));
-  EXPECT_EQ(1, store.grants[0].permissions);
-  EXPECT_EQ(1, store.a.acl[0].Permissions);
-  EXPECT_EQ(writes, store.writes);
-  EXPECT_EQ(UINT32_MAX, store.a.generation);
-}
+
 TEST_F(SupLanPeerTest, DeviceScopeUnionCoversLeafEnsure) {
-  grant.resource_type = 2;
-  grant.resource_id = 1;
-  grant.permissions = 2;
+  entry.ResourceType = 2;
+  entry.ResourceId = 1;
+  entry.Permissions = 2;
   add();
   TDS_SuplaEnsureResourceAccess q = {
       {1, 11}, 1, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 0};
@@ -1944,17 +1727,17 @@ TEST_F(SupLanPeerTest, DeviceScopeUnionCoversLeafEnsure) {
             peers.grants()->ensure_access(2, q).Result);
 }
 TEST(SupLanCanonicalTest, CapacityIsExplicitAndNeverTruncates) {
-  std::vector<Grant> grants;
+  Acl entries;
   for (int i = 0; i < 90; ++i)
-    grants.push_back({1, static_cast<uint32_t>(i + 1), 1, 1, 1});
+    entries.push_back({1, static_cast<uint32_t>(i + 1), 1});
   Acl acl;
-  EXPECT_FALSE(canonicalize(grants, &acl));
+  EXPECT_FALSE(canonicalize(entries, &acl));
   EXPECT_TRUE(acl.empty());
 }
 TEST(SupLanCanonicalTest, DeterministicByteEncodingAndRejectNoncanonicalInput) {
   Acl acl;
   ASSERT_TRUE(canonicalize(
-      {{2, 1, 1, 3, 1}, {1, 11, 1, 2, 1}, {1, 10, 1, 1, 3}}, &acl));
+      {{2, 1, 1}, {1, 11, 1}, {1, 10, 3}}, &acl));
   EXPECT_EQ((std::vector<unsigned char>{1, 0, 0, 0, 10, 2, 1, 0, 0, 0, 11, 1, 2,
                                         0, 0, 0, 1, 1}),
             encode_acl(acl));
@@ -2017,8 +1800,8 @@ TEST_F(SupLanPeerTest, M5InvalidEnsureCannotReconcileOrTouchAuthorization) {
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, stream.Result);
   EXPECT_EQ(SUPLA_RESOURCE_DELIVERY_SERVER_STREAM, stream.DeliveryMode);
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, stream.AccessStatus);
-  // The valid missing resource audits stale origins before NOT_FOUND.
-  EXPECT_EQ(1, reconciliations);
+  // ADR-013: ENSURE never invokes a Core business-authority callback.
+  EXPECT_EQ(0, reconciliations);
   EXPECT_TRUE(same_state(before, store.a));
   EXPECT_EQ(writes, store.writes);
 }
@@ -2049,14 +1832,13 @@ TEST_F(SupLanPeerTest,
   store.identity.channels = {10, 11};
   EXPECT_EQ(0, reconciliations);
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, ensure().AccessStatus);
-  EXPECT_EQ(1, reconciliations);
+  EXPECT_EQ(0, reconciliations);
 }
 
 TEST_F(SupLanPeerTest,
        M5UnsupportedActionPreservesExistingReadEvenWithBroadAcl) {
   installed();
-  Grant broad{2, 1, 7, 700, 4};
-  ASSERT_TRUE(peers.grants()->upsert(1, 2, broad));
+  desired_acl(peers, {{1, 10, 1}, {2, 1, 4}});
   const auto before = store.a;
   const auto writes = store.writes;
   TDS_SuplaEnsureResourceAccess q = {
@@ -2076,7 +1858,7 @@ TEST_F(SupLanPeerTest,
   store.channel_info.type = SUPLA_CHANNELTYPE_ACTIONTRIGGER;
   store.channel_info.function = SUPLA_CHANNELFNC_ACTIONTRIGGER;
   store.channel_info.action_capabilities = 2;
-  grant.permissions = 4;
+  entry.Permissions = 4;
   installed();
   const auto before = store.a;
   const auto writes = store.writes;
@@ -2101,7 +1883,8 @@ TEST_F(SupLanPeerTest,
             peers.grants()->ensure_access(2, q).Result);
 }
 
-TEST_F(SupLanPeerTest, M5MissingExtensionFailsClosedWithoutCloudSchema) {
+TEST_F(SupLanPeerTest,
+       M5MissingExtensionFailsClosedOnPendingPersistenceFailure) {
   store.channel_info.type = SUPLA_CHANNELTYPE_RELAY;
   store.channel_info.function = SUPLA_CHANNELFNC_POWERSWITCH;
   installed();
@@ -2112,14 +1895,14 @@ TEST_F(SupLanPeerTest, M5MissingExtensionFailsClosedWithoutCloudSchema) {
       {1, 10}, 2, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, 1};
   for (int i = 0; i < 20; ++i) {
     const auto result = peers.grants()->ensure_access(2, q);
-    EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED, result.Result);
+    EXPECT_EQ(SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR, result.Result);
     EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_INVALID, result.AccessStatus);
   }
   EXPECT_TRUE(same_state(before, store.a));
   EXPECT_EQ(writes, store.writes);
   EXPECT_EQ(sends, transport.order.size());
-  ASSERT_EQ(1u, store.grants.size());
-  EXPECT_EQ(1, store.grants.front().permissions);
+  ASSERT_EQ(1u, store.authorization.size());
+
   q.Permissions = 1;
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED,
             peers.grants()->ensure_access(2, q).AccessStatus);
@@ -2688,7 +2471,7 @@ TEST_F(SupLanPeerTest, BatchProvisioningMessageAccounting) {
     for (bool existing : {false, true}) {
       Store data;
       Transport wire;
-      auto time = std::chrono::steady_clock::time_point{};
+      auto time = std::chrono::steady_clock::time_point();
       PeerProvisioner batch([&] { return std::make_unique<MemoryRepo>(&data); },
                             &wire, [&] { return time; });
       const auto started = std::chrono::steady_clock::now();

@@ -34,39 +34,18 @@ supla_on_channel_config_changed_command::
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_on_channel_config_changed_command(socket_adapter) {}
 
-void supla_on_channel_config_changed_command::on_channel_config_changed(
+bool supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
   auto stream_user = supla_user::find(user_id, false);
   if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
-  // Notifications carry no authorization. Even a cold/offline user must have
-  // the current committed business projection reconciled before delivery.
-  supla_mariadb_access_provider dba;
-  supla_device_dao dao(&dba);
-  std::unique_ptr<supla_json_config> authoritative;
-  bool reconciled = true;
-  if ((scope &
-       (CONFIG_CHANGE_SCOPE_RELATIONS | CONFIG_CHANGE_SCOPE_FUNCTION)) &&
-      !supla_suplan_server_peers::reconcile_manual(user_id, channel_id))
-    reconciled = false;
-  if (type == SUPLA_CHANNELTYPE_HVAC || type == SUPLA_CHANNELTYPE_CONTAINER ||
-      (type == SUPLA_CHANNELTYPE_VALVE_OPENCLOSE ||
-       type == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE) ||
-      (scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
-    if (!supla_suplan_server_peers::reconcile_hvac(user_id, channel_id,
-                                                   &authoritative))
-      reconciled = false;
-  }
-  if (((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
-       (type == SUPLA_CHANNELTYPE_HVAC &&
-        (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT))) &&
-      !supla_suplan_server_peers::reconcile_dependencies(user_id, channel_id)) {
-    reconciled = false;
-  }
-  if (!reconciled) return;
+  // Cloud has already committed logical grants and their desired projection.
+  // Failure leaves the durable marker for bounded cyclic recovery.
+  if (stream_user && !stream_user->get_suplan_peers()->drain_changes())
+    return false;
   supla_user *user = supla_user::find(user_id, false);
   if (!user) {
-    return;
+    return true;
   }
 
   if (!user->get_devices()->get(device_id)) {
@@ -111,21 +90,22 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
           if (!(scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
-            return;
+            return true;
           }
           break;
         default:
-          return;
+          return true;
       }
   }
 
+  supla_mariadb_access_provider dba;
+  supla_device_dao dao(&dba);
   if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
     dao.erase_channel_properties(user_id, channel_id);
   }
 
   supla_json_config *json_config =
-      authoritative ? authoritative.release()
-                    : dao.get_channel_config(channel_id, nullptr, nullptr);
+      dao.get_channel_config(channel_id, nullptr, nullptr);
 
   shared_ptr<supla_device> device = user->get_devices()->get(device_id);
 
@@ -192,4 +172,5 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   if (json_config) {
     delete json_config;
   }
+  return true;
 }

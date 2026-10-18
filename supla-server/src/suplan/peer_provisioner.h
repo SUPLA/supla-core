@@ -102,7 +102,7 @@ class PeerProvisioner {
   void send_source(Flow *flow, bool key);
   void send_destination(Flow *flow, const unsigned char *key);
   void result(Flow *flow, bool source, uint8_t result);
-  void reconcile_locked(uint64_t id, bool meaningful_event);
+  bool reconcile_locked(uint64_t id, bool meaningful_event);
   void finish_cleanup(const Association &sent, bool source,
                       const std::shared_ptr<Flow> &flow);
 
@@ -115,7 +115,7 @@ class PeerProvisioner {
   PeerService *grants() { return &service; }
   bool accepted(int device, const Identity &identity);
   void reconnect(int device);
-  void reconcile(uint64_t id, bool meaningful_event = false);
+  bool reconcile(uint64_t id, bool meaningful_event = false);
   void on_source(int device, TDS_SuplaSetSuplanSourceAssociationResult *result,
                  uint64_t session = 0);
   void on_destination(

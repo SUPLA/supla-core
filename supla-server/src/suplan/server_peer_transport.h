@@ -15,21 +15,14 @@ class supla_suplan_server_peers : public supla_suplan::PeerTransport {
   supla_user *user;
   std::mutex stream_mutex;
   std::vector<std::weak_ptr<supla_suplan::StreamConnection>> streams;
+  std::mutex changes_mutex;
+  uint64_t changes_cursor = 0;
   supla_suplan::PeerProvisioner provisioner;
 
  public:
   std::shared_ptr<supla_suplan::StreamConnection> new_stream(supla_device *d);
   void stream_dirty(uint32_t channel);
-  // Durable delete handling without constructing a runtime user or transport.
-  static bool reconcile_dependencies(int user_id, int source_channel_id);
-  static bool reconcile_manual(int user_id, uint32_t source_channel);
-  // Access checks audit only origins capable of authorizing this request.
-  static bool reconcile_access_dependencies(
-      int user_id, int resource_channel_id, int destination_device_id);
-  static bool reconcile_hvac(
-      int user_id, int channel_id,
-      std::unique_ptr<supla_json_config> *current = nullptr,
-      int *selected_function = nullptr);
+  bool drain_changes();
   static bool channel_deleted(int user_id, int channel_id);
   static bool device_deleted(int user_id, int device_id);
   explicit supla_suplan_server_peers(supla_user *user);

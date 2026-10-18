@@ -23,57 +23,49 @@ class PeerDao : public Repository {
  public:
   explicit PeerDao(int user);
   ~PeerDao() override;
-  bool begin(int source, int destination, Association *a) override;
   bool begin(uint64_t id, Association *a) override;
   bool load(uint64_t id, Association *a) override;
-  bool grants(uint64_t id, std::vector<Grant> *out) override;
-  bool put(uint64_t id, const Grant &g) override;
-  bool erase_origin(uint64_t id, uint16_t type, uint64_t origin) override;
-  bool erase_resource(uint64_t id, uint8_t type, uint32_t resource) override;
-  bool erase_grants(uint64_t id) override;
   bool save(const Association &a) override;
-  bool erase(uint64_t id) override;
   bool commit() override;
   void rollback() override;
   bool identity(int device, Identity *out) override;
   bool accept_identity(int device, const Identity &identity) override;
   bool owner(uint8_t type, uint32_t resource, int *device) override;
-  bool binding_consumers(std::vector<uint64_t> *out);
-  bool config_origin_fields(uint32_t consumer, std::vector<uint64_t> *out);
-  bool hvac_dependents(uint32_t source, std::vector<uint64_t> *out);
   bool reference(uint32_t channel, uint8_t field, uint32_t *out) override;
   bool channel(uint32_t id, ChannelInfo *out) override;
   bool device(int id, DeviceInfo *out) override;
-  bool approval_schema(bool *available) override;
   bool approval_pairs(uint32_t resource, int device,
                       std::vector<ApprovalPair> *out) override;
-  bool approval_lock(ApprovalPair *pair, bool create) override;
   bool approval_decisions(uint64_t pair,
                           std::vector<ApprovalDecision> *out) override;
-  bool approval_pending(uint64_t pair, uint8_t permissions,
-                        const ApprovalDecision *pending) override;
-  bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
-                        DeviceInfo *source, DeviceInfo *destination,
-                        Identity *identity) override;
-  bool stream_schema(bool *available) override;
   bool stream_permissions(int destination, uint32_t resource,
                           uint8_t *permissions) override;
-  bool approval_stream_pending(uint64_t pair,
-                              const ApprovalDecision *pending) override;
-  bool approval_stream_mode(const ApprovalDecision &decision) override;
+  bool binding_granted(int source, int destination, uint32_t resource,
+                       uint32_t target, bool *out) override;
+  bool stream_access(int destination, uint32_t resource, ChannelInfo *channel,
+                     uint8_t *permissions, bool *ready) override;
+  bool permissions(int destination, uint8_t type, uint32_t resource,
+                    bool peer, uint8_t *out) override;
+  bool request_pending(int destination, uint32_t resource,
+                       uint8_t permissions, uint8_t mode,
+                       bool allow = true) override;
+  bool project_share(int destination, uint32_t resource,
+                     uint32_t target) override;
+  bool project_peer(int destination, uint32_t resource) override;
+  bool cleanup_device(int device) override;
+  bool cleanup_resource(uint32_t resource) override;
+  bool observe_root(uint64_t id) override;
+  bool changed_pairs(uint64_t after, size_t limit,
+                     std::vector<std::pair<uint64_t, uint64_t>> *out) override;
+  bool ack_changed(uint64_t id, uint64_t revision) override;
   bool stream_metadata(uint32_t channel, TDS_SuplaDeviceChannel_E *out);
   bool has_master_dependents(uint32_t channel, bool *out) override;
-  bool supports_batch() const override { return true; }
   bool device_exists(int device) override;
   bool owns_acl(int source, int destination, const Acl &acl) override;
   bool check_acl_ownership(int source, int destination, const Acl &acl,
                            bool *owned) override;
   bool for_device(int device, bool include_dormant,
                   std::vector<uint64_t> *out) override;
-  bool for_origin(uint16_t type, uint64_t origin,
-                  std::vector<uint64_t> *out) override;
-  bool for_resource(uint8_t type, uint32_t resource,
-                    std::vector<uint64_t> *out) override;
   bool find(int source, int destination, Association *a) override;
 };
 }  // namespace supla_suplan

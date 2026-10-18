@@ -17,9 +17,6 @@ namespace supla_suplan {
 // Internal business origin namespace; never a wire discriminator.
 constexpr uint16_t CHANNEL_CONFIG_ORIGIN = 1;
 constexpr uint16_t USER_APPROVAL_ORIGIN = 2;
-inline uint64_t main_thermometer_origin(uint32_t channel) {
-  return (static_cast<uint64_t>(channel) << 8) | 1;
-}
 // Low-byte field codes are stable; Main=1 remains unchanged from M3B.
 inline uint64_t channel_config_origin(uint32_t channel, uint8_t field) {
   return (static_cast<uint64_t>(channel) << 8) | field;
@@ -34,13 +31,6 @@ struct ChannelInfo {
   bool is_virtual = false;
 };
 enum class Lifecycle : uint8_t { Active = 1, Draining = 2, Dormant = 3 };
-struct Grant {
-  uint8_t resource_type;
-  uint32_t resource_id;
-  uint16_t origin_type;
-  uint64_t origin_id;
-  uint8_t permissions;
-};
 using Acl = std::vector<TSuplaSuplanAclEntry>;
 struct Association {
   uint64_t id = 0;
@@ -88,16 +78,9 @@ struct ApprovalDecision {
 class Repository {
  public:
   virtual ~Repository() = default;
-  virtual bool begin(int source, int destination, Association *a) = 0;
   virtual bool begin(uint64_t id, Association *a) = 0;
   virtual bool load(uint64_t id, Association *a) = 0;
-  virtual bool grants(uint64_t id, std::vector<Grant> *out) = 0;
-  virtual bool put(uint64_t id, const Grant &g) = 0;
-  virtual bool erase_origin(uint64_t id, uint16_t type, uint64_t origin) = 0;
-  virtual bool erase_resource(uint64_t id, uint8_t type, uint32_t resource) = 0;
-  virtual bool erase_grants(uint64_t id) = 0;
   virtual bool save(const Association &a) = 0;
-  virtual bool erase(uint64_t id) = 0;
   virtual bool commit() = 0;
   virtual void rollback() = 0;
   virtual bool identity(int device, Identity *out) = 0;
@@ -105,10 +88,6 @@ class Repository {
   virtual bool owner(uint8_t type, uint32_t resource, int *device) = 0;
   virtual bool channel(uint32_t id, ChannelInfo *out) { return false; }
   virtual bool device(int id, DeviceInfo *out) { return false; }
-  virtual bool approval_schema(bool *available) {
-    *available = false;
-    return true;
-  }
   // Resource + device selects that Destination only; device alone selects
   // both endpoint roles for reconnect. Resource alone selects all Destinations.
   virtual bool approval_pairs(uint32_t resource, int device,
@@ -116,33 +95,36 @@ class Repository {
     out->clear();
     return true;
   }
-  // Same DB transaction as Grant/effective ACL projection. Pair is locked
-  // before metadata/association rows, matching the Cloud mutation contract.
-  virtual bool approval_lock(ApprovalPair *pair, bool create) { return false; }
   virtual bool approval_decisions(uint64_t pair,
                                   std::vector<ApprovalDecision> *out) {
     return false;
   }
-  virtual bool approval_pending(uint64_t pair, uint8_t permissions,
-                                const ApprovalDecision *pending) {
+  virtual bool stream_access(int destination, uint32_t resource,
+                             ChannelInfo *channel, uint8_t *permissions,
+                             bool *ready) { return false; }
+  virtual bool permissions(int destination, uint8_t type, uint32_t resource,
+                           bool peer, uint8_t *out) { return false; }
+  virtual bool request_pending(int destination, uint32_t resource,
+                              uint8_t permissions, uint8_t mode,
+                              bool allow = true) {
     return false;
   }
-  virtual bool approval_context(const ApprovalPair &pair, ChannelInfo *channel,
-                                DeviceInfo *source, DeviceInfo *destination,
-                                Identity *identity) { return false; }
-  virtual bool stream_schema(bool *available) {
-    *available = false;
-    return true;
+  virtual bool binding_granted(int source, int destination, uint32_t resource,
+                               uint32_t target, bool *out) { return false; }
+  virtual bool project_share(int destination, uint32_t resource,
+                             uint32_t target) { return false; }
+  virtual bool project_peer(int destination, uint32_t resource) {
+    return false;
   }
+  virtual bool cleanup_device(int device) { return false; }
+  virtual bool cleanup_resource(uint32_t resource) { return false; }
+  virtual bool observe_root(uint64_t id);
+  virtual bool changed_pairs(uint64_t after, size_t limit,
+      std::vector<std::pair<uint64_t, uint64_t>> *out) { return false; }
+  virtual bool ack_changed(uint64_t id, uint64_t revision) { return false; }
   virtual bool stream_permissions(int destination, uint32_t resource,
                                   uint8_t *permissions) { return false; }
-  virtual bool approval_stream_pending(uint64_t pair,
-                                      const ApprovalDecision *pending) {
-    return false;
-  }
-  virtual bool approval_stream_mode(const ApprovalDecision &decision) {
-    return false;
-  }
+  // Local-only protected merge validation, never a permission source.
   virtual bool reference(uint32_t channel, uint8_t field, uint32_t *out) {
     *out = 0;
     return true;
@@ -151,7 +133,6 @@ class Repository {
     *out = false;
     return true;
   }
-  virtual bool supports_batch() const { return false; }
   virtual bool device_exists(int device) = 0;
   virtual bool owns_acl(int source, int destination, const Acl &acl);
   // Return query success separately from the authoritative ownership verdict.
@@ -159,10 +140,6 @@ class Repository {
                                    bool *owned);
   virtual bool for_device(int device, bool include_dormant,
                           std::vector<uint64_t> *out) = 0;
-  virtual bool for_origin(uint16_t type, uint64_t origin,
-                          std::vector<uint64_t> *out) = 0;
-  virtual bool for_resource(uint8_t type, uint32_t resource,
-                            std::vector<uint64_t> *out) = 0;
   virtual bool find(int source, int destination, Association *a) = 0;
 };
 
@@ -172,7 +149,7 @@ uint8_t normalize(uint8_t p);
 // Effective CONTROL covers READ; only still-missing canonical rights can
 // enter a later approval workflow. This helper never creates authorization.
 uint8_t missing_permissions(uint8_t requested, uint8_t effective);
-bool canonicalize(const std::vector<Grant> &grants, Acl *acl);
+bool canonicalize(const Acl &entries, Acl *acl);
 bool equal_acl(const Acl &a, const Acl &b);
 bool same_state(const Association &a, const Association &b);
 TSuplaSuplanPeerContext context(const Association &a, uint32_t root);
@@ -190,61 +167,13 @@ class PeerService {
   using Changed = std::function<void(uint64_t)>;
 
  private:
-  enum class ReferenceReconciliation {
-    Desired, RevokeStale, RequestedTarget, RequestedAccess
-  };
-  bool reconcile_reference(
-      uint32_t channel, uint8_t field,
-      const std::function<bool(uint32_t *)> &read_current,
-      ReferenceReconciliation mode, uint32_t requested_channel = 0,
-      int requested_destination = 0);
   Factory factory;
   Changed changed;
-  bool reconcile_origin_locked(uint16_t type, uint64_t origin, int source,
-                               int destination, const Grant *desired,
-                               std::unique_lock<std::mutex> &origin_lock);
-  bool recompute(Repository *repo, Association *a, uint32_t current_root);
   bool mutate(uint64_t id,
               const std::function<bool(Repository *, Association *)> &fn);
-  bool reconcile_approval_pair(
-      ApprovalPair pair, uint8_t requested, bool allow_approval,
-      TSD_SuplaEnsureResourceAccessResult *result,
-      bool project_stream = false);
 
  public:
   PeerService(Factory factory, Changed changed);
-  bool upsert(int source, int destination, const Grant &grant);
-  // Replace one origin atomically, then notify M2 after the shared commit.
-  bool reconcile_origin(uint16_t type, uint64_t origin, int source,
-                        int destination, const Grant *desired);
-  bool reconcile_main_thermometer(uint32_t destination_channel,
-                                  uint32_t source_channel);
-  bool reconcile_main_thermometer(
-      uint32_t destination_channel,
-      const std::function<bool(uint32_t *)> &read_current_source);
-  // HVAC 1..6; Container slots 32..41; Valve slots 64..83.
-  bool reconcile_reference(uint32_t channel, uint8_t field,
-                           const std::function<bool(uint32_t *)> &read_current);
-  // ENSURE_ACCESS derives only origins for this resource/recipient; other
-  // persisted origins are audited for revocation under the same origin gate.
-  bool reconcile_access_reference(
-      uint32_t channel, uint8_t field, uint32_t resource, int destination,
-      const std::function<bool(uint32_t *)> &read_current);
-  // Deletion audit: retain current authorization, revoke stale origins;
-  // never derive a new Grant or expand an unrelated desired ACL.
-  bool revoke_stale_reference(
-      uint32_t channel, uint8_t field,
-      const std::function<bool(uint32_t *)> &read_current);
-  bool delete_origin(uint16_t type, uint64_t origin);
-  bool delete_resource(uint8_t type, uint32_t resource);
-  bool delete_resource(uint64_t association, uint8_t type, uint32_t resource);
-  bool remove_device(int device);
-  // On failure, a nonempty failed list identifies isolated pair failures.
-  // An empty list means enumeration failed: no pair is safe to publish.
-  bool reconcile_approvals(uint32_t resource, int device = 0,
-                           std::vector<ApprovalPair> *failed = nullptr,
-                           bool project_stream = false);
-  bool distrust(uint64_t id);
   bool cleanup_ack(const Association &sent, bool source);
   bool observe_root(uint64_t id);
   // Persist only after Source OK; no speculative/mass root writes.

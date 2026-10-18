@@ -24,8 +24,9 @@ supla_on_channel_deleted_command::supla_on_channel_deleted_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_on_channel_deleted_command(socket_adapter) {}
 
-void supla_on_channel_deleted_command::on_channel_deleted(int user_id,
+bool supla_on_channel_deleted_command::on_channel_deleted(int user_id,
                                                           int device_id,
                                                           int channel_id) {
-  supla_user::on_channel_deleted(user_id, device_id, channel_id, get_caller());
+  return supla_user::on_channel_deleted(user_id, device_id, channel_id,
+                                        get_caller());
 }
