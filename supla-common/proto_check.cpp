@@ -210,7 +210,7 @@ static_assert(sizeof(TChannelConfig_StaircaseTimer) <=
 static_assert(sizeof(TChannelConfig_RollerShutter) == 44);
 static_assert(sizeof(TChannelConfig_RollerShutter) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-static_assert(sizeof(TChannelConfig_ActionTrigger) == 4);
+static_assert(sizeof(TChannelConfig_ActionTrigger) == 16);
 static_assert(sizeof(TChannelConfig_ActionTrigger) <=
               (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 static_assert((unsigned int)539 == sizeof(TSDS_SetDeviceConfig));
