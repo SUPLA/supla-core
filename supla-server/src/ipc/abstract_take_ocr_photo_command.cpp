@@ -24,7 +24,7 @@ using std::string;
 
 supla_abstract_take_ocr_photo_command::supla_abstract_take_ocr_photo_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter) {}
+    : supla_abstract_calcfg_ipc_command(socket_adapter) {}
 
 const string supla_abstract_take_ocr_photo_command::get_command_name(void) {
   return "TAKE-OCR-PHOTO:";
@@ -34,8 +34,13 @@ void supla_abstract_take_ocr_photo_command::on_command_match(
     const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        if (take_ocr_photo(user_id, device_id, channel_id)) {
-          send_result("OK:", channel_id);
+        unsigned _supla_int64_t queued_at = 0;
+        bool waiting_for_result = false;
+
+        if (take_ocr_photo(user_id, device_id, channel_id, &queued_at,
+                           &waiting_for_result)) {
+          send_calcfg_result("OK:", channel_id, channel_id, queued_at,
+                             waiting_for_result);
           return true;
         }
 

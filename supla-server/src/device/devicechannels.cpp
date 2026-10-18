@@ -51,9 +51,8 @@ using std::vector;
 supla_device_channels::supla_device_channels(
     supla_abstract_device_dao *dao, supla_device *device,
     TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_E *schannel_e,
-    int channel_count) {
-  this->device = device;
-
+    int channel_count)
+    : device(device), channel_config_sync_coordinator(device) {
   channels = dao->get_channels(device);
 
   for (int a = 0; a < channel_count; a++) {
@@ -78,6 +77,10 @@ supla_device_channels::supla_device_channels(
       at_orops = schannel_e[a].actionTriggerProperties;
       flags = schannel_e[a].Flags;
       status.set_proto_offline(schannel_e[a].Offline);
+
+      if (flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION) {
+        status.set_offline(true);
+      }
     }
 
     int channel_id = get_channel_id(number);
@@ -252,9 +255,8 @@ bool supla_device_channels::get_relay_value(int channel_id,
   if (relay_value) {
     supla_device_channel *channel = find_channel(channel_id);
 
-    if (channel && (channel->get_func() == SUPLA_CHANNELFNC_POWERSWITCH ||
-                    channel->get_func() == SUPLA_CHANNELFNC_LIGHTSWITCH ||
-                    channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER)) {
+    if (channel &&
+        supla_weekly_schedule_is_relay_function(channel->get_func())) {
       char value[SUPLA_CHANNELVALUE_SIZE];
       channel->get_value(value);
       memcpy(relay_value, value, sizeof(TRelayChannel_Value));
@@ -265,10 +267,28 @@ bool supla_device_channels::get_relay_value(int channel_id,
   return false;
 }
 
+bool supla_device_channels::get_action_trigger_value(
+    int channel_id, TActionTriggerProperties *at_value) {
+  if (at_value) {
+    supla_device_channel *channel = find_channel(channel_id);
+
+    if (channel && channel->get_func() == SUPLA_CHANNELFNC_ACTIONTRIGGER) {
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      channel->get_value(value);
+      memcpy(at_value, value, sizeof(TActionTriggerProperties));
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool supla_device_channels::calcfg_cmd(int channel_id,
                                        unsigned _supla_int64_t flag,
                                        bool superuser_authorized,
-                                       _supla_int_t cmd) {
+                                       _supla_int_t cmd,
+                                       unsigned _supla_int64_t *queued_at,
+                                       bool *waiting_for_result) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel && ((!flag || (channel->get_flags() & flag)))) {
@@ -278,39 +298,55 @@ bool supla_device_channels::calcfg_cmd(int channel_id,
     request.Command = cmd;
     request.SuperUserAuthorized = superuser_authorized;
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-    return true;
+    return device->send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
 }
 
-bool supla_device_channels::reset_counters(int channel_id) {
+bool supla_device_channels::reset_counters(int channel_id,
+                                           unsigned _supla_int64_t *queued_at,
+                                           bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS, true,
-                    SUPLA_CALCFG_CMD_RESET_COUNTERS);
+                    SUPLA_CALCFG_CMD_RESET_COUNTERS, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device_channels::take_ocr_photo(int channel_id) {
-  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO);
+bool supla_device_channels::take_ocr_photo(int channel_id,
+                                           unsigned _supla_int64_t *queued_at,
+                                           bool *waiting_for_result) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_TAKE_OCR_PHOTO,
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device_channels::mute_alarm_sound(int channel_id) {
-  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND);
+bool supla_device_channels::mute_alarm_sound(int channel_id,
+                                             unsigned _supla_int64_t *queued_at,
+                                             bool *waiting_for_result) {
+  return calcfg_cmd(channel_id, 0, true, SUPLA_CALCFG_CMD_MUTE_ALARM_SOUND,
+                    queued_at, waiting_for_result);
 }
 
-bool supla_device_channels::restart_subdevice(int channel_id) {
+bool supla_device_channels::restart_subdevice(
+    int channel_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_RESTART_SUBDEVICE,
-                    true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE);
+                    true, SUPLA_CALCFG_CMD_RESTART_SUBDEVICE, queued_at,
+                    waiting_for_result);
 }
 
-bool supla_device_channels::identify_subdevice(int channel_id) {
+bool supla_device_channels::identify_subdevice(
+    int channel_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   return calcfg_cmd(channel_id, SUPLA_CHANNEL_FLAG_CALCFG_IDENTIFY_SUBDEVICE,
-                    true, SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE);
+                    true, SUPLA_CALCFG_CMD_IDENTIFY_SUBDEVICE, queued_at,
+                    waiting_for_result);
 }
 
 bool supla_device_channels::recalibrate(int channel_id,
                                         const supla_caller &caller,
-                                        bool superuser_authorized) {
+                                        bool superuser_authorized,
+                                        unsigned _supla_int64_t *queued_at,
+                                        bool *waiting_for_result) {
   supla_device_channel *channel = find_channel(channel_id);
 
   if (channel &&
@@ -347,8 +383,7 @@ bool supla_device_channels::recalibrate(int channel_id,
       }
     }
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &request);
-    return true;
+    return device->send_calcfg_request(&request, queued_at, waiting_for_result);
   }
 
   return false;
@@ -683,8 +718,7 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
                             : request->DataSize;
     memcpy(drequest.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
-    srpc_sd_async_device_calcfg_request(get_srpc(), &drequest);
-    return true;
+    return device->send_calcfg_request(&drequest);
   }
 
   return false;
@@ -1247,6 +1281,41 @@ bool supla_device_channels::action_hvac(
   return result;
 }
 
+bool supla_device_channels::action_weekly_schedule_switch_to_mode(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    unsigned char relay_mode, unsigned char button_mode, bool *function_match) {
+  bool result = false;
+  *function_match = false;
+
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    unsigned char mode_type =
+        supla_weekly_schedule_get_program_mode_type(channel->get_func());
+
+    if (mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY &&
+        mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+      return;
+    }
+
+    *function_match = true;
+
+    if (!(channel->get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE)) {
+      return;
+    }
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY) {
+      ((TRelayChannel_Value *)value)->RelayMode = relay_mode;
+    } else {
+      ((TActionTriggerProperties *)value)->ButtonMode = button_mode;
+    }
+
+    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    result = true;
+  });
+
+  return result;
+}
+
 bool supla_device_channels::action_hvac_set_parameters(
     const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
     const supla_action_hvac_parameters *params) {
@@ -1297,10 +1366,8 @@ bool supla_device_channels::action_hvac_set_parameters(
             }
           }
 
-          if (req->Command && device && device->get_connection()) {
-            device->get_connection()
-                ->get_srpc_adapter()
-                ->sd_async_device_calcfg_request(req);
+          if (req->Command && device) {
+            device->send_calcfg_request(req);
           }
 
           req->Command = SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE;
@@ -1331,6 +1398,78 @@ bool supla_device_channels::action_hvac_set_parameters(
                      });
 }
 
+bool supla_device_channels::action_set_at_parameters(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_mode_parameters *params) {
+  if (!params) {
+    return false;
+  }
+
+  bool result = false;
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    unsigned char mode = params->get_mode();
+    if (channel->get_func() != SUPLA_CHANNELFNC_ACTIONTRIGGER ||
+        !(channel->get_flags() & SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED) ||
+        (mode != SUPLA_BUTTON_MODE_NOT_SET &&
+         mode != SUPLA_BUTTON_MODE_LOCKED)) {
+      return;
+    }
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ((TActionTriggerProperties *)value)->ButtonMode = mode;
+    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    result = true;
+  });
+
+  return result;
+}
+
+bool supla_device_channels::action_set_relay_parameters(
+    const supla_caller &caller, int channel_id, int group_id, unsigned char eol,
+    const supla_action_mode_parameters *params) {
+  if (!params) {
+    return false;
+  }
+
+  bool result = false;
+  access_channel(channel_id, [&](supla_device_channel *channel) -> void {
+    if (!supla_weekly_schedule_is_relay_function(channel->get_func())) {
+      return;
+    }
+
+    unsigned char mode = params->get_mode();
+    unsigned _supla_int64_t flags = channel->get_flags();
+    bool supported = false;
+    switch (mode) {
+      case SUPLA_RELAY_MODE_NOT_SET:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_START_ON:
+      case SUPLA_RELAY_MODE_START_OFF:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_FORCED_ON:
+      case SUPLA_RELAY_MODE_FORCED_OFF:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED;
+        break;
+      case SUPLA_RELAY_MODE_AUTOMATIC:
+        supported = flags & SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED;
+        break;
+    }
+
+    if (!supported) {
+      return;
+    }
+
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ((TRelayChannel_Value *)value)->RelayMode = mode;
+    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    result = true;
+  });
+
+  return result;
+}
+
 bool supla_device_channels::hp_action(
     int channel_id, bool *function_match,
     function<bool(supla_device_channel *, TSD_DeviceCalCfgRequest *req)>
@@ -1347,11 +1486,8 @@ bool supla_device_channels::hp_action(
                      TSD_DeviceCalCfgRequest req = {};
                      req.ChannelNumber = channel->get_channel_number();
 
-                     if (device && device->get_connection() &&
-                         on_calcfg(channel, &req) &&
-                         device->get_connection()
-                             ->get_srpc_adapter()
-                             ->sd_async_device_calcfg_request(&req)) {
+                     if (device && on_calcfg(channel, &req) &&
+                         device->send_calcfg_request(&req)) {
                        result = true;
                      }
                    }
@@ -1360,11 +1496,21 @@ bool supla_device_channels::hp_action(
   return result;
 }
 
-bool supla_device_channels::action_hvac_switch_to_manual_mode(
+bool supla_device_channels::action_switch_to_manual_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool function_match = false;
+  bool result = action_weekly_schedule_switch_to_mode(
+      caller, channel_id, group_id, eol,
+      SUPLA_RELAY_MODE_CMD_SWITCH_TO_MANUAL,
+      SUPLA_BUTTON_MODE_CMD_SWITCH_TO_MANUAL, &function_match);
+
+  if (function_match) {
+    return result;
+  }
+
   bool hp_match = false;
-  bool result = hp_action(
+  result = hp_action(
       channel_id, &hp_match,
       [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
         req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
@@ -1386,11 +1532,20 @@ bool supla_device_channels::action_hvac_switch_to_manual_mode(
                      });
 }
 
-bool supla_device_channels::action_hvac_switch_to_program_mode(
+bool supla_device_channels::action_switch_to_program_mode(
     const supla_caller &caller, int channel_id, int group_id,
     unsigned char eol) {
+  bool function_match = false;
+  bool result = action_weekly_schedule_switch_to_mode(
+      caller, channel_id, group_id, eol, SUPLA_RELAY_MODE_CMD_WEEKLY_SCHEDULE,
+      SUPLA_BUTTON_MODE_CMD_WEEKLY_SCHEDULE, &function_match);
+
+  if (function_match) {
+    return result;
+  }
+
   bool hp_match = false;
-  bool result = hp_action(
+  result = hp_action(
       channel_id, &hp_match,
       [](supla_device_channel *channel, TSD_DeviceCalCfgRequest *req) -> bool {
         req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO;
@@ -1440,10 +1595,7 @@ bool supla_device_channels::action_hvac_set_temperature(
           supla_channel_hp_thermostat_ev_decorator decorator(th);
           if (decorator.get_state_flags() & HP_STATUS_PROGRAMMODE) {
             // When setting the temperature, force switching to manual mode.
-            if (device && device->get_connection() &&
-                device->get_connection()
-                    ->get_srpc_adapter()
-                    ->sd_async_device_calcfg_request(req)) {
+            if (device && device->send_calcfg_request(req)) {
               req->Command = SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL;
               req->Data[0] = 0;  // Do not force the power on
               req->DataSize = 1;
@@ -1637,8 +1789,21 @@ vector<supla_channel_fragment> supla_device_channels::get_fragments(void) {
   return result;
 }
 
-void supla_device_channels::send_configs_to_device(void) {
-  for_each([](supla_device_channel *channel, bool *will_continue) -> void {
-    channel->send_config_to_device();
-  });
+void supla_device_channels::send_configs_to_device(
+    std::function<void(supla_device *)> on_finished) {
+  channel_config_sync_coordinator.start(&channels, on_finished);
+}
+
+void supla_device_channels::on_set_channel_config_result(
+    TSDS_SetChannelConfigResult *result) {
+  channel_config_sync_coordinator.on_set_channel_config_result(result);
+}
+
+void supla_device_channels::iterate(void) {
+  channel_config_sync_coordinator.iterate();
+}
+
+unsigned _supla_int64_t
+supla_device_channels::channel_config_batch_time_left_usec(void) {
+  return channel_config_sync_coordinator.time_left_usec();
 }

@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef ARDUINO
 
@@ -22,6 +7,7 @@
 #define suplatools_H_
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "proto.h"
 
@@ -57,6 +43,7 @@ void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE],
 
 char *st_str2hex(char *buffer, const char *str, size_t maxlen);
 char *st_bin2hex(char *buffer, const char *src, size_t len);
+int st_hex2bin(char *buffer, const char *src, size_t len);
 
 char st_read_randkey_from_file(char *file, char *KEY, int size, char create);
 char st_read_guid_from_file(char *file, char *GUID, char create);
@@ -64,6 +51,7 @@ char st_read_authkey_from_file(char *file, char *AuthKey, char create);
 
 time_t st_get_utc_time(void);
 
+char *st_timestamp_to_zulu_time(char buffer[64], time_t timestamp);
 char *st_get_zulu_time(char buffer[64]);
 char *st_get_datetime_str(char buffer[64]);
 
@@ -71,7 +59,7 @@ _color_hsv_t st_rgb2hsv(int rgb);
 int st_hsv2rgb(_color_hsv_t in);
 int st_hue2rgb(double hue);
 
-void st_random_alpha_string(char *buffer, int buffer_size);
+char st_random_alpha_string(char *buffer, size_t buffer_size);
 void st_uuid_v4(char buffer[37]);
 
 #ifdef __BCRYPT

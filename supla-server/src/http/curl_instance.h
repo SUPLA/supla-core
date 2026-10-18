@@ -32,8 +32,14 @@ class supla_curl_instance {
   std::string url;
   CURL *curl;
   struct curl_slist *header;
+
+ protected:
+  static constexpr size_t default_max_response_body_size = 16 * 1024 * 1024;
+  size_t max_response_body_size;
   static size_t write_callback(void *contents, size_t size, size_t nmemb,
                                void *userp);
+
+ private:
   static size_t header_callback(void *contents, size_t size, size_t nmemb,
                                 void *userp);
 

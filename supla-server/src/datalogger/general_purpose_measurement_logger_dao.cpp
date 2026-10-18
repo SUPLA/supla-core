@@ -65,9 +65,8 @@ void supla_general_purpose_measurement_logger_dao::tsdb_add(
     double max) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params(
-      "SELECT supla_add_gp_measurement_log_item ($1,$2,$3,$4,$5,$6)",
-      channel_id, first, last, avg, max, min);
+  ntx.exec("SELECT supla_add_gp_measurement_log_item ($1,$2,$3,$4,$5,$6)",
+           pqxx::params{channel_id, first, last, avg, max, min});
 }
 
 void supla_general_purpose_measurement_logger_dao::add(

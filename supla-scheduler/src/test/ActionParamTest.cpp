@@ -25,6 +25,7 @@
 #include "action_reveal_partially.h"
 #include "action_rgb.h"
 #include "action_set.h"
+#include "action_set_mode.h"
 #include "action_shut.h"
 #include "action_shut_partially.h"
 
@@ -59,6 +60,8 @@ void ActionParamTest::SetUp() {
   ON_CALL(*worker, ipcc_action_copy).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_get_fb_value).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_action_shut_partially).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_action_set_at_parameters).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_action_set_relay_parameters).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_execute_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_and_execute_scene)
@@ -69,6 +72,49 @@ void ActionParamTest::SetUp() {
 void ActionParamTest::TearDown() {
   Test::TearDown();
   delete worker;
+}
+
+TEST_F(ActionParamTest, setAtModeParameters) {
+  s_worker_action_set_at_parameters action(worker);
+  unsigned char mode = 255;
+  string action_param = "{\"mode\":\"NOT_SET\"}";
+  EXPECT_CALL(*worker, get_action_param)
+      .WillRepeatedly(Return(action_param.c_str()));
+  EXPECT_TRUE(action.get_mode(&mode));
+  EXPECT_EQ(mode, SUPLA_BUTTON_MODE_NOT_SET);
+
+  action_param = "{\"mode\":\"LOCKED\"}";
+  EXPECT_TRUE(action.get_mode(&mode));
+  EXPECT_EQ(mode, SUPLA_BUTTON_MODE_LOCKED);
+
+  action_param = "{\"mode\":\"AUTOMATIC\"}";
+  EXPECT_FALSE(action.get_mode(&mode));
+
+  action_param = "{\"mode\":1}";
+  EXPECT_FALSE(action.get_mode(&mode));
+}
+
+TEST_F(ActionParamTest, setRelayModeParameters) {
+  s_worker_action_set_relay_parameters action(worker);
+  unsigned char mode = 255;
+  string action_param = "{\"mode\":\"AUTOMATIC\"}";
+  EXPECT_CALL(*worker, get_action_param)
+      .WillRepeatedly(Return(action_param.c_str()));
+  EXPECT_TRUE(action.get_mode(&mode));
+  EXPECT_EQ(mode, SUPLA_RELAY_MODE_AUTOMATIC);
+
+  action_param = "{\"mode\":\"NOT_SET\"}";
+  EXPECT_TRUE(action.get_mode(&mode));
+  EXPECT_EQ(mode, SUPLA_RELAY_MODE_NOT_SET);
+
+  action_param = "{\"mode\":\"LOCKED\"}";
+  EXPECT_FALSE(action.get_mode(&mode));
+
+  action_param = "{\"mode\":\"automatic\"}";
+  EXPECT_FALSE(action.get_mode(&mode));
+
+  action_param = "{\"mode\":5}";
+  EXPECT_FALSE(action.get_mode(&mode));
 }
 
 TEST_F(ActionParamTest, shutPartiallyParameters) {

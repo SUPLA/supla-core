@@ -21,14 +21,16 @@
 
 #include <string>
 
-#include "ipc/abstract_ipc_command.h"
+#include "ipc/abstract_calcfg_ipc_command.h"
 
 class supla_abstract_set_cfg_mode_password_command
-    : public supla_abstract_ipc_command {
+    : public supla_abstract_calcfg_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
   virtual bool set_cfg_mode_password(int user_id, int device_id,
-                                     const char *password) = 0;
+                                     const char *password,
+                                     unsigned _supla_int64_t *queued_at,
+                                     bool *waiting_for_result) = 0;
 
  public:
   explicit supla_abstract_set_cfg_mode_password_command(

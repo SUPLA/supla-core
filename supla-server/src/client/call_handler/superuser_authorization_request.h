@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_SUPERUSER_AUTHORIZATION_REQUEST_H_
 #define SUPLA_CH_SUPERUSER_AUTHORIZATION_REQUEST_H_
 
+#include <sys/types.h>
+
 #include <memory>
 
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
@@ -30,6 +32,7 @@ class supla_ch_superuser_authorization_request
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
+  virtual __useconds_t get_hold_time_on_failure_usec(void);
 
  public:
   supla_ch_superuser_authorization_request(void);

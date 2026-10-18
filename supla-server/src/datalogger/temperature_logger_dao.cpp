@@ -60,8 +60,8 @@ void supla_temperature_logger_dao::tsdb_add_temperature(int channel_id,
                                                         char *temperature) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params("SELECT supla_add_temperature_log_item($1,$2)", channel_id,
-                  temperature);
+  ntx.exec("SELECT supla_add_temperature_log_item($1,$2)",
+           pqxx::params{channel_id, temperature});
 }
 
 void supla_temperature_logger_dao::add_temperature(int channel_id,
@@ -114,8 +114,8 @@ void supla_temperature_logger_dao::tsdb_add_temperature_and_humidity(
     int channel_id, char *temperature, char *humidity) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params("SELECT supla_add_temphumidity_log_item($1,$2,$3)",
-                  channel_id, temperature, humidity);
+  ntx.exec("SELECT supla_add_temphumidity_log_item($1,$2,$3)",
+           pqxx::params{channel_id, temperature, humidity});
 }
 
 void supla_temperature_logger_dao::add_temperature_and_humidity(

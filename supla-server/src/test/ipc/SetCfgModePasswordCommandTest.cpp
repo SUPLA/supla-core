@@ -39,7 +39,8 @@ TEST_F(SetCfgModePasswordCommandTest, noData) {
 }
 
 TEST_F(SetCfgModePasswordCommandTest, setPasswordWithFailure) {
-  EXPECT_CALL(*cmd, set_cfg_mode_password(10, 20, _)).WillOnce(Return(false));
+  EXPECT_CALL(*cmd, set_cfg_mode_password(10, 20, _, _, _))
+      .WillOnce(Return(false));
 
   commandProcessingTest("SET-CFG-MODE-PASSWORD:10,20,YWJjZA==\n",
                         "UNKNOWN:20\n");
@@ -49,7 +50,8 @@ TEST_F(SetCfgModePasswordCommandTest, maximumPasswordLength) {
   EXPECT_CALL(*cmd,
               set_cfg_mode_password(10, 20,
                                     StrEq("This is the maximum length of the "
-                                          "password.....................")))
+                                          "password....................."),
+                                    _, _))
       .WillOnce(Return(true));
 
   commandProcessingTest(
@@ -60,7 +62,7 @@ TEST_F(SetCfgModePasswordCommandTest, maximumPasswordLength) {
 }
 
 TEST_F(SetCfgModePasswordCommandTest, minimumPasswordLength) {
-  EXPECT_CALL(*cmd, set_cfg_mode_password(10, 20, StrEq("1")))
+  EXPECT_CALL(*cmd, set_cfg_mode_password(10, 20, StrEq("1"), _, _))
       .WillOnce(Return(true));
 
   commandProcessingTest("SET-CFG-MODE-PASSWORD:10,20,MQ==\n", "OK:20\n");

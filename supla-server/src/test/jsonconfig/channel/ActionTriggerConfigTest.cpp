@@ -978,7 +978,7 @@ TEST_F(ActionTriggerConfigTest, sendPush) {
   delete config;
 }
 
-TEST_F(ActionTriggerConfigTest, hvacSwitchToProgramMode) {
+TEST_F(ActionTriggerConfigTest, switchToProgramMode) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
 
@@ -990,14 +990,14 @@ TEST_F(ActionTriggerConfigTest, hvacSwitchToProgramMode) {
   config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
   config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
 
-  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+  EXPECT_EQ(config->get_action_id(), ACTION_SWITCH_TO_PROGRAM_MODE);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
 
-TEST_F(ActionTriggerConfigTest, hvacSwitchToManualMode) {
+TEST_F(ActionTriggerConfigTest, switchToManualMode) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
 
@@ -1009,7 +1009,7 @@ TEST_F(ActionTriggerConfigTest, hvacSwitchToManualMode) {
   config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
   config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
 
-  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_action_id(), ACTION_SWITCH_TO_MANUAL_MODE);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
@@ -1057,7 +1057,7 @@ TEST_F(ActionTriggerConfigTest, hvacSetHeatingTemperature) {
   config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
   config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
 
-  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_action_id(), ACTION_SWITCH_TO_MANUAL_MODE);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
@@ -1088,7 +1088,7 @@ TEST_F(ActionTriggerConfigTest, hvacSetCoolingTemperature) {
   config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
   config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
 
-  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_action_id(), ACTION_SWITCH_TO_MANUAL_MODE);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
@@ -1120,7 +1120,7 @@ TEST_F(ActionTriggerConfigTest, hvacSetHeatingAndCoolingTemperature) {
   config->set_capabilities(SUPLA_ACTION_CAP_TURN_ON);
   config->set_active_cap(SUPLA_ACTION_CAP_TURN_ON);
 
-  EXPECT_EQ(config->get_action_id(), ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+  EXPECT_EQ(config->get_action_id(), ACTION_SWITCH_TO_MANUAL_MODE);
   EXPECT_EQ(config->get_subject_id(), 272);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 

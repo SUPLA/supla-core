@@ -36,5 +36,10 @@ bool supla_ch_set_channel_config_result::can_handle_call(unsigned int call_id) {
 void supla_ch_set_channel_config_result::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
-  // This call has no effect
+  if (!rd->data.sds_set_channel_config_result) {
+    return;
+  }
+
+  device->get_channels()->on_set_channel_config_result(
+      rd->data.sds_set_channel_config_result);
 }

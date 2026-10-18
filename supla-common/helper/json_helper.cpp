@@ -1,37 +1,52 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <ctype.h>
 #include <helper/json_helper.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdexcept>
+#include "tools.h"
 
 #define MAX_STR_LEN 100
 
 using std::map;
 using std::string;
-using std::stringstream;
 
 supla_json_helper::supla_json_helper(void) {}
 
 supla_json_helper::~supla_json_helper(void) {}
+
+// static
+cJSON *supla_json_helper::add_zulu_time_to_object(cJSON *parent,
+                                                  const char *name,
+                                                  time_t timestamp) {
+  if (!parent || !name) {
+    return nullptr;
+  }
+
+  char buffer[64] = {};
+  if (timestamp && st_timestamp_to_zulu_time(buffer, timestamp) && buffer[0]) {
+    return cJSON_AddStringToObject(parent, name, buffer);
+  }
+
+  return cJSON_AddNullToObject(parent, name);
+}
+
+bool supla_json_helper::get_int(cJSON *parent, const char *key, int *value) {
+  if (!parent || !key || !value) {
+    return false;
+  }
+
+  cJSON *json_value = cJSON_GetObjectItem(parent, key);
+  if (json_value && cJSON_IsNumber(json_value)) {
+    *value = json_value->valueint;
+    return true;
+  }
+
+  *value = 0;
+  return false;
+}
 
 bool supla_json_helper::equal_ci(const char *str1, const char *str2) {
   if (!str1 || !str2) {
@@ -102,6 +117,51 @@ bool supla_json_helper::get_string(cJSON *parent, const char *key,
   }
 
   return false;
+}
+
+bool supla_json_helper::get_zulu_time_from_object(cJSON *parent,
+                                                  const char *name,
+                                                  time_t *timestamp,
+                                                  bool allow_null) {
+  if (!parent || !name || !timestamp) {
+    return false;
+  }
+
+  cJSON *json_value = cJSON_GetObjectItem(parent, name);
+  if (!json_value) {
+    return false;
+  }
+
+  if (cJSON_IsNull(json_value) && allow_null) {
+    *timestamp = 0;
+    return true;
+  }
+
+  const char *value = cJSON_GetStringValue(json_value);
+  if (!value) {
+    return false;
+  }
+
+  struct tm timeinfo = {};
+  char *end = strptime(value, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  if (!end || *end != 0) {
+    return false;
+  }
+
+  timeinfo.tm_isdst = 0;
+  time_t parsed = timegm(&timeinfo);
+  if (parsed < 0) {
+    return false;
+  }
+
+  char normalized[64] = {};
+  if (!st_timestamp_to_zulu_time(normalized, parsed) ||
+      strcmp(normalized, value) != 0) {
+    return false;
+  }
+
+  *timestamp = parsed;
+  return true;
 }
 
 cJSON *supla_json_helper::set_item_value(cJSON *parent, const std::string &name,
@@ -208,29 +268,4 @@ bool supla_json_helper::merge(cJSON *src_parent, cJSON *dst_parent,
   }
 
   return dst_changed;
-}
-
-// static
-string supla_json_helper::to_string(const nlohmann::json &j) {
-  string result;
-
-  try {
-    if (j.is_string()) {
-      result = j.get<std::string>();
-
-    } else if (j.is_number_integer()) {
-      result = std::to_string(j.get<int>());
-
-    } else if (j.is_number_float()) {
-      result = std::to_string(j.get<double>());
-
-    } else if (j.is_boolean()) {
-      result = j.get<bool>() ? "true" : "false";
-    } else {
-      result = j.dump();
-    }
-  } catch (const std::exception &e) {
-  }
-
-  return result;
 }

@@ -26,7 +26,7 @@ using std::string;
 supla_abstract_ota_perform_update_command::
     supla_abstract_ota_perform_update_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter) {}
+    : supla_abstract_calcfg_ipc_command(socket_adapter) {}
 
 const string supla_abstract_ota_perform_update_command::get_command_name(void) {
   return "OTA-PERFORM-UPDATE:";
@@ -36,13 +36,16 @@ void supla_abstract_ota_perform_update_command::on_command_match(
     const char *params) {
   int user_id = 0;
   int device_id = 0;
+  unsigned _supla_int64_t queued_at = 0;
+  bool waiting_for_result = false;
 
   if (params) {
     sscanf(params, "%i,%i", &user_id, &device_id);
 
     if (user_id && device_id) {
-      if (perform_update(user_id, device_id)) {
-        send_result("OK:", user_id);
+      if (perform_update(user_id, device_id, &queued_at, &waiting_for_result)) {
+        send_calcfg_result("OK:", user_id, device_id, queued_at,
+                           waiting_for_result);
         return;
       }
     }
