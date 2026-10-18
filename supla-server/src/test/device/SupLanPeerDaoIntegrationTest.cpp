@@ -1215,6 +1215,81 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     ASSERT_TRUE(command.process_command(buffer.data(), buffer.size(),
                                         input.size()));
   }
+  void config_delivery_with_unrelated_peer_failure(bool weekly) {
+    register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                    weekly);
+    ASSERT_FALSE(HasFatalFailure());
+    auto user = supla_user::find(99126, false);
+    ASSERT_NE(nullptr, user);
+    // DB recreation resets association IDs; discard the previous test cursor.
+    ASSERT_TRUE(user->get_suplan_peers()->drain_changes());
+    // Another consumer's committed grant has a dirty peer whose Source map
+    // no longer contains its resource. Config reads/writes remain healthy.
+    auto consumer = add_channel(destination, 239, SUPLA_CHANNELTYPE_HVAC,
+                                SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+    query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+          std::to_string(consumer));
+    cloud_grant(99126, channel_config_origin(consumer, 1), source, destination,
+                resource, 1);
+    ASSERT_TRUE(factory()->accept_identity(source, {123, {}}));
+    PeerDao repo(99126);
+    std::vector<std::pair<uint64_t, uint64_t>> before, after;
+    ASSERT_TRUE(repo.changed_pairs(0, 64, &before));
+    ASSERT_EQ(1u, before.size());
+    if (weekly) {
+      TChannelConfig_WeeklySchedule schedule{};
+      schedule.Quarters[0] = 0x22;
+      schedule.Program[0].Mode = SUPLA_HVAC_MODE_HEAT;
+      weekly_schedule_config config;
+      config.set_config(&schedule, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+      supla_mariadb_access_provider db;
+      supla_device_dao dao(&db);
+      ASSERT_TRUE(dao.set_channel_config(99126, hvac, &config));
+    } else {
+      query("UPDATE supla_dev_channel SET user_config='{\"minOnTimeS\":23}' "
+            "WHERE id=" + std::to_string(hvac));
+    }
+    unsigned long long scope = weekly ? CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE
+                                      : CONFIG_CHANGE_SCOPE_JSON_DEFAULT;
+    testing::IpcSocketAdapterMock socket(-1);
+    EXPECT_CALL(socket, send_data(std::string("ERROR:99126\n"))).Times(1);
+    supla_on_channel_config_changed_command command(&socket);
+    auto input = "USER-ON-CHANNEL-CONFIG-CHANGED:99126," +
+        std::to_string(destination) + "," + std::to_string(hvac) + "," +
+        std::to_string(publication_type) + "," +
+        std::to_string(publication_function) + "," + std::to_string(scope) +
+        "\n";
+    std::vector<char> buffer(input.begin(), input.end());
+    buffer.push_back(0);
+    ASSERT_TRUE(command.process_command(buffer.data(), buffer.size(),
+                                        input.size()));
+    ASSERT_TRUE(repo.changed_pairs(0, 64, &after));
+    EXPECT_EQ(before, after);  // Failed handoff must not consume the marker.
+    TSuplaDataPacket packet{};
+    ASSERT_TRUE(receive_packet(&packet));
+    ASSERT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packet.call_id);
+    TSDS_SetChannelConfig config{};
+    memcpy(&config, packet.data, packet.data_size);
+    if (weekly) {
+      ASSERT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, config.ConfigType);
+      ASSERT_EQ(sizeof(TChannelConfig_WeeklySchedule), config.ConfigSize);
+      EXPECT_EQ(0x22, reinterpret_cast<TChannelConfig_WeeklySchedule *>(
+                          config.Config)->Quarters[0]);
+    } else {
+      ASSERT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, config.ConfigType);
+      ASSERT_EQ(sizeof(TChannelConfig_HVAC), config.ConfigSize);
+      EXPECT_EQ(23, reinterpret_cast<TChannelConfig_HVAC *>(
+                        config.Config)->MinOnTimeS);
+    }
+    EXPECT_EQ(240, config.ChannelNumber);
+    acknowledge(config);
+    EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_grant"));
+    // Finish the empty pagination tail before the next fixture resets DB IDs.
+    ASSERT_TRUE(user->get_suplan_peers()->drain_changes());
+    ASSERT_TRUE(repo.changed_pairs(0, 64, &after));
+    EXPECT_EQ(before, after);
+  }
+
   void register_family(int type, int function, bool weekly = false) {
     publication_type = type;
     publication_function = function;
@@ -1488,6 +1563,15 @@ TEST_F(SupLanHvacWireIntegrationTest, MissingWeeklyAfterIpcKeepsDeviceUsable) {
   memcpy(&hvac_config, config.Config, sizeof(hvac_config));
   EXPECT_EQ(23, hvac_config.MinOnTimeS);
   acknowledge(config);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       UnrelatedPeerFailureStillPublishesCurrentHvacConfig) {
+  config_delivery_with_unrelated_peer_failure(false);
+}
+TEST_F(SupLanHvacWireIntegrationTest,
+       UnrelatedPeerFailureStillPublishesCurrentWeeklySchedule) {
+  config_delivery_with_unrelated_peer_failure(true);
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
@@ -2779,8 +2863,8 @@ class SupLanCloudGrantIntegrationTest : public testing::Test,
     runSqlScript("SupLanM2TestSchema.sql");
     runSqlScript("SupLanM5TestSchema.sql");
     runSqlScript("SupLanM7TestSchema.sql");
-    // Generated in /tmp only from the actual Cloud versioned migration inputs.
-    // No production or test copy of procedure definitions is owned by Core.
+    // Pinned test-only SQL snapshot; production migrations belong to Cloud.
+    // The standard Core runner needs no sibling checkout or generator.
     runSqlScript("SupLanCloudGrantContract.sql");
     ASSERT_TRUE(admin.connect());
     source = scalar("SELECT MIN(id) FROM supla_iodevice WHERE user_id=2");

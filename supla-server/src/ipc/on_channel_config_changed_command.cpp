@@ -39,13 +39,13 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
     unsigned long long scope) {
   auto stream_user = supla_user::find(user_id, false);
   if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
-  // Cloud has already committed logical grants and their desired projection.
-  // Failure leaves the durable marker for bounded cyclic recovery.
-  if (stream_user && !stream_user->get_suplan_peers()->drain_changes())
-    return false;
+  // Cloud committed config and desired authorization. An unrelated peer failure
+  // retains its marker, but must not suppress this config's publication.
+  bool reconciled = !stream_user ||
+      stream_user->get_suplan_peers()->drain_changes();
   supla_user *user = supla_user::find(user_id, false);
   if (!user) {
-    return true;
+    return reconciled;
   }
 
   if (!user->get_devices()->get(device_id)) {
@@ -90,11 +90,11 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
           if (!(scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
-            return true;
+            return reconciled;
           }
           break;
         default:
-          return true;
+          return reconciled;
       }
   }
 
@@ -172,5 +172,5 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
   if (json_config) {
     delete json_config;
   }
-  return true;
+  return reconciled;
 }
