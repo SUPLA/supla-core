@@ -19,6 +19,7 @@
 #include "on_channel_config_changed_command.h"
 
 #include <memory>
+#include <mutex>
 
 #include "amazon/alexa_delete_request.h"
 #include "device/device_dao.h"
@@ -85,6 +86,9 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
                                     // we only react to changes in the OCR area.
       break;
     default:
+      // A weekly edit must refresh the cache even for Relay/ActionTrigger.
+      if ((scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) &&
+          supla_weekly_schedule_is_function_supported(func)) break;
       switch (func) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -98,54 +102,72 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
       }
   }
 
+  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
+  supla_device_channel *channel = nullptr;
+  std::unique_lock<std::mutex> config_lock;
+  if (device) {
+    device->get_channels()->access_channel(
+        channel_id, [&](supla_device_channel *current) {
+          channel = current;
+          config_lock =
+              std::unique_lock<std::mutex>(current->get_config_mutex());
+        });
+  }
+
   supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
   if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
     dao.erase_channel_properties(user_id, channel_id);
   }
 
+  int selected_function = 0;
   supla_json_config *json_config =
-      dao.get_channel_config(channel_id, nullptr, nullptr);
+      dao.get_channel_config(channel_id, nullptr, nullptr, &selected_function);
 
-  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
+  bool reconnect_device =
+      (scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+      (force_device_reconnect && scope != CONFIG_CHANGE_SCOPE_RELATIONS);
+  bool update_config = scope & (CONFIG_CHANGE_SCOPE_JSON_DEFAULT |
+                                CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE |
+                                CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE |
+                                CONFIG_CHANGE_SCOPE_OCR);
+  if (channel && json_config && update_config && !reconnect_device) {
+    // Read after acquiring the producer lock, then install one coherent root.
+    std::lock_guard<supla_device_channel> guard(*channel);
+    channel->set_json_config(new supla_json_config(json_config, true));
+    channel->set_func(selected_function);
+  }
+  if (config_lock.owns_lock()) config_lock.unlock();
 
   if (device) {
     // A pure RELATIONS hint (manual consent) changes authorization, not the
     // Source's configuration. In particular a legacy thermometer must stay
     // connected while its new STREAM interest is activated.
-    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
-        (force_device_reconnect && scope != CONFIG_CHANGE_SCOPE_RELATIONS)) {
+    if (reconnect_device) {
       device->reconnect();
-    } else if (json_config &&
-               ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||
-                (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) ||
-                (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) ||
-                (scope & CONFIG_CHANGE_SCOPE_OCR))) {
-      device->get_channels()->access_channel(
-          channel_id, [&](supla_device_channel *channel) -> void {
-            auto publish = [&](unsigned char type) {
-              channel->request_config_publication(type);
-            };
+    } else if (channel && json_config && update_config) {
+      auto publish = [&](unsigned char type) {
+        channel->request_config_publication(type);
+      };
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
-              publish(SUPLA_CONFIG_TYPE_DEFAULT);
-              if (channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
-                publish(SUPLA_CONFIG_TYPE_EXTENDED);
-              }
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
+        publish(SUPLA_CONFIG_TYPE_DEFAULT);
+        if (channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+          publish(SUPLA_CONFIG_TYPE_EXTENDED);
+        }
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {
-              publish(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {
+        publish(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
-              publish(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
+        publish(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_OCR) {
-              publish(SUPLA_CONFIG_TYPE_OCR);
-            }
-          });
+      if (scope & CONFIG_CHANGE_SCOPE_OCR) {
+        publish(SUPLA_CONFIG_TYPE_OCR);
+      }
     }
   }
 

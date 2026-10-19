@@ -24,9 +24,9 @@ using namespace supla_suplan;  // NOLINT
 namespace {
 struct Store {
   std::recursive_mutex mutex;
-  Association a;
-  Acl authorization;
-  Identity identity{123, {10, 11}};
+  association_t a;
+  acl_t authorization;
+  identity_t identity{123, {10, 11}};
   int writes = 0;
   bool fail_save = false;
   bool fail_commit = false;
@@ -39,16 +39,16 @@ struct Store {
   bool fail_load = false;
   uint32_t fail_owner_resource = 0;
   bool fail_load_after_commit = false;
-  std::map<uint64_t, Association> additional;
-  ChannelInfo channel_info{1, SUPLA_CHANNELTYPE_THERMOMETER,
-                           SUPLA_CHANNELFNC_THERMOMETER,
-                           SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 0};
-  DeviceInfo device_info{SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 29};
+  std::map<uint64_t, association_t> additional;
+  channel_info_t channel_info{1, SUPLA_CHANNELTYPE_THERMOMETER,
+                              SUPLA_CHANNELFNC_THERMOMETER,
+                              SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 0};
+  device_info_t device_info{SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED, 29};
 };
-class MemoryRepo : public Repository {
+class MemoryRepo : public repository {
   Store *store;
   bool transaction = false;
-  Association before;
+  association_t before;
 
   int before_writes = 0;
 
@@ -56,7 +56,7 @@ class MemoryRepo : public Repository {
   explicit MemoryRepo(Store *s) : store(s) {}
   ~MemoryRepo() override { rollback(); }
 
-  bool begin(uint64_t id, Association *a) override {
+  bool begin(uint64_t id, association_t *a) override {
     if (store->fail_begin) return false;
     if (store->before_begin) {
       auto change = std::move(store->before_begin);
@@ -70,28 +70,28 @@ class MemoryRepo : public Repository {
     before_writes = store->writes;
     return load(id, a) && a->id;
   }
-  bool load(uint64_t id, Association *a) override {
+  bool load(uint64_t id, association_t *a) override {
     std::lock_guard<std::recursive_mutex> lock(store->mutex);
     ++store->reads;
     if (store->fail_load) return false;
-    *a = store->a.id == id ? store->a : Association{};
+    *a = store->a.id == id ? store->a : association_t{};
     auto it = store->additional.find(id);
     if (it != store->additional.end()) *a = it->second;
     return true;
   }
-  bool find(int source, int destination, Association *a) override {
+  bool find(int source, int destination, association_t *a) override {
     std::lock_guard<std::recursive_mutex> lock(store->mutex);
     if (store->fail_find) return false;
     *a = store->a.source == source && store->a.destination == destination
              ? store->a
-             : Association{};
+             : association_t{};
     for (const auto &item : store->additional)
       if (item.second.source == source &&
           item.second.destination == destination) *a = item.second;
     return true;
   }
 
-  bool save(const Association &a) override {
+  bool save(const association_t &a) override {
     if (store->fail_save) return false;
     if (store->additional.count(a.id)) store->additional[a.id] = a;
     if (store->a.id == a.id) store->a = a;
@@ -122,12 +122,12 @@ class MemoryRepo : public Repository {
       store->mutex.unlock();
     }
   }
-  bool identity(int, Identity *out) override {
+  bool identity(int, identity_t *out) override {
     if (store->fail_identity) return false;
     *out = store->identity;
     return true;
   }
-  bool accept_identity(int, const Identity &i) override {
+  bool accept_identity(int, const identity_t &i) override {
     store->identity = i;
     return true;
   }
@@ -179,16 +179,16 @@ class MemoryRepo : public Repository {
   bool project_peer(int destination, uint32_t) override {
     return store->a.id && store->a.destination == destination;
   }
-  bool channel(uint32_t id, ChannelInfo *out) override {
+  bool channel(uint32_t id, channel_info_t *out) override {
     *out = store->channel_info;
     return owner(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, id, &out->device);
   }
-  bool device(int, DeviceInfo *out) override {
+  bool device(int, device_info_t *out) override {
     *out = store->device_info;
     return true;
   }
   bool device_exists(int d) override { return d > 0 && d <= 5000; }
-  bool check_acl_ownership(int source, int destination, const Acl &acl,
+  bool check_acl_ownership(int source, int destination, const acl_t &acl,
                            bool *owned) override {
     *owned = false;
     if (store->fail_owner_resource == static_cast<uint32_t>(source) ||
@@ -207,7 +207,7 @@ class MemoryRepo : public Repository {
   bool for_device(int d, bool dormant, std::vector<uint64_t> *out) override {
     out->clear();
     if (store->a.id && (store->a.source == d || store->a.destination == d) &&
-        (dormant || store->a.lifecycle != Lifecycle::Dormant))
+        (dormant || store->a.lifecycle != lifecycle_t::dormant))
       out->push_back(store->a.id);
     for (const auto &item : store->additional)
       if (item.second.source == d || item.second.destination == d)
@@ -215,7 +215,7 @@ class MemoryRepo : public Repository {
     return true;
   }
 };
-class Transport : public PeerTransport {
+class Transport : public peer_transport {
  public:
   bool online[3] = {false, true, true};
   bool owner_gate = true;
@@ -230,8 +230,8 @@ class Transport : public PeerTransport {
   std::map<int, uint64_t> sessions;
   std::vector<int> forced;
   std::vector<int> wakes;
-  SendCode source_failure = SendCode::EnqueueFailed;
-  SendCode destination_failure = SendCode::EnqueueFailed;
+  send_code source_failure = send_code::enqueue_failed;
+  send_code destination_failure = send_code::enqueue_failed;
   uint64_t session(int d) override {
     return sessions.count(d) ? sessions[d] : static_cast<uint64_t>(d);
   }
@@ -247,13 +247,13 @@ class Transport : public PeerTransport {
   bool destination_send_ok = true;
   bool ready(int d) override { return d > 2 || online[d]; }
   bool owner_ready(int, uint32_t) override { return owner_gate; }
-  SendResult send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
+  send_result_t send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
     order.push_back(d);
     sources.push_back(*q);
-    return {source_send_ok ? SendCode::Queued : source_failure, session(d)};
+    return {source_send_ok ? send_code::queued : source_failure, session(d)};
   }
-  SendResult send(int d,
-                  TSDS_SuplaSetSuplanDestinationAssociation *q) override {
+  send_result_t send(int d,
+                     TSDS_SuplaSetSuplanDestinationAssociation *q) override {
     order.push_back(d);
     destinations.push_back({q->PeerContext, q->AclRevision, 0});
     destination_key_sizes.push_back(q->PeerKeySize);
@@ -261,7 +261,7 @@ class Transport : public PeerTransport {
       key_seen = true;
       for (auto b : q->PeerKey) EXPECT_EQ(0xA5, b);
     }
-    return {destination_send_ok ? SendCode::Queued : destination_failure,
+    return {destination_send_ok ? send_code::queued : destination_failure,
             session(d)};
   }
   void rebootstrap(int) override { ++refreshes; }
@@ -273,29 +273,29 @@ class SupLanPeerTest : public testing::Test {
  protected:
   Store store;
   Transport transport;
-  PeerService::Factory factory = [this] {
+  peer_service::factory_t factory = [this] {
     return std::make_unique<MemoryRepo>(&store);
   };
   std::chrono::steady_clock::time_point now{};
-  PeerProvisioner peers{factory, &transport, [this] { return now; }};
+  peer_provisioner peers{factory, &transport, [this] { return now; }};
   void advance(int seconds) {
     now += std::chrono::seconds(seconds);
     peers.iterate();
   }
   TSuplaSuplanAclEntry entry{1, 10, 1};
   // Explicit committed projection supplied by the SQL owner. No origin model.
-  void desired_acl(PeerProvisioner &target, const Acl &acl) {
+  void desired_acl(peer_provisioner &target, const acl_t &acl) {
     {
       auto gate = association_gate(1);
       std::lock_guard<std::mutex> serial(*gate);
       std::lock_guard<std::recursive_mutex> lock(store.mutex);
-      Association next = store.a;
+      association_t next = store.a;
       if (!next.id) {
         next.id = 1;
         next.source = 1;
         next.destination = 2;
-        next.lifecycle = Lifecycle::Active;
-      } else if (!acl.empty() && next.lifecycle != Lifecycle::Active) {
+        next.lifecycle = lifecycle_t::active;
+      } else if (!acl.empty() && next.lifecycle != lifecycle_t::active) {
         if (next.root == store.identity.root) ++next.generation;
         next.revision = 0;
       }
@@ -304,7 +304,8 @@ class SupLanPeerTest : public testing::Test {
         next.acl = acl;
         next.source_acked = next.destination_acked = false;
       }
-      next.lifecycle = acl.empty() ? Lifecycle::Draining : Lifecycle::Active;
+      next.lifecycle =
+          acl.empty() ? lifecycle_t::draining : lifecycle_t::active;
       if (acl.empty()) {
         next.root = store.identity.root;
         next.provisioned_generation = next.generation;
@@ -314,10 +315,10 @@ class SupLanPeerTest : public testing::Test {
     }
     target.reconcile(1);
   }
-  void desired(PeerProvisioner &target, uint8_t permissions) {
-    desired_acl(target, permissions ? Acl{{entry.ResourceType,
-                                         entry.ResourceId, permissions}}
-                                    : Acl{});
+  void desired(peer_provisioner &target, uint8_t permissions) {
+    desired_acl(target, permissions ? acl_t{{entry.ResourceType,
+                                             entry.ResourceId, permissions}}
+                                    : acl_t{});
   }
   void add() { desired(peers, entry.Permissions); }
   void source_ok(int index = -1, uint8_t result = 0) {
@@ -348,17 +349,17 @@ class SupLanPeerTest : public testing::Test {
   void remove() { desired(peers, 0); }
 };
 TEST_F(SupLanPeerTest, SendOutcomeClassifiesOfflineRootRaceAndEnqueue) {
-  for (auto code : {PeerTransport::SendCode::NotReady,
-                    PeerTransport::SendCode::ContextChanged,
-                    PeerTransport::SendCode::EnqueueFailed}) {
+  for (auto code : {peer_transport::send_code::not_ready,
+                    peer_transport::send_code::context_changed,
+                    peer_transport::send_code::enqueue_failed}) {
     store.a = {};
     store.authorization.clear();
-    PeerProvisioner isolated(factory, &transport, [&] { return now; });
+    peer_provisioner isolated(factory, &transport, [&] { return now; });
     transport.source_send_ok = false;
     transport.source_failure = code;
     transport.forced.clear();
     desired(isolated, entry.Permissions);
-    EXPECT_EQ(code == PeerTransport::SendCode::EnqueueFailed ? 1u : 0u,
+    EXPECT_EQ(code == peer_transport::send_code::enqueue_failed ? 1u : 0u,
               transport.forced.size());
     EXPECT_EQ(0u, isolated.time_left_usec(1));
   }
@@ -367,7 +368,7 @@ TEST_F(SupLanPeerTest, MatchedResultDatabaseErrorsCancelDeviceWatchdog) {
   for (int stage = 0; stage < 3; ++stage) {
     store.a = {};
     store.authorization.clear();
-    PeerProvisioner isolated(factory, &transport, [&] { return now; });
+    peer_provisioner isolated(factory, &transport, [&] { return now; });
     desired(isolated, entry.Permissions);
     auto request = transport.sources.back();
     TDS_SuplaSetSuplanSourceAssociationResult reply{};
@@ -450,7 +451,7 @@ TEST_F(SupLanPeerTest, OtherAcknowledgementsCannotHideSilentFlowOrResetBudget) {
   add();  // Keep association 1 silent.
   unsigned results = 0;
   for (uint64_t id = 2; id <= 170; ++id) {
-    Association a = store.a;
+    association_t a = store.a;
     a.id = id;
     a.destination = id + 2;
     a.root = store.identity.root;
@@ -647,7 +648,7 @@ TEST_F(SupLanPeerTest,
   EXPECT_EQ(0, transport.sources.back().AclEntryCount);
   source_ok();
   EXPECT_TRUE(store.a.source_acked);
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, store.a.lifecycle);
   transport.online[2] = true;
   peers.reconnect(2);
   advance(16);
@@ -656,7 +657,7 @@ TEST_F(SupLanPeerTest,
   transport.sessions[2] = 200;
   peers.reconnect(2);
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
 
@@ -728,7 +729,7 @@ TEST_F(SupLanPeerTest, CleanupAckCommitFailuresRecoverIndependently) {
   EXPECT_TRUE(store.a.destination_acked);
   EXPECT_FALSE(store.a.source_acked);
   source_ok();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
 }
 TEST_F(SupLanPeerTest, PermanentResultsAndRepeatedPersistenceDoNotTimerLoop) {
@@ -791,11 +792,11 @@ TEST_F(SupLanPeerTest, LateNoKeyAckCannotBlockKeyRecoveryAfterReconnect) {
 
 TEST_F(SupLanPeerTest, Serial100msBatchExposesFixedWatchdogLimit) {
   for (uint64_t id = 1; id <= 170; ++id) {
-    Association a;
+    association_t a;
     a.id = id;
     a.source = 1;
     a.destination = id + 2;
-    a.lifecycle = Lifecycle::Active;
+    a.lifecycle = lifecycle_t::active;
     a.root = store.identity.root;
     a.provisioned_generation = a.generation;
     a.acl = {{1, 10, 1}};
@@ -903,7 +904,7 @@ TEST_F(SupLanPeerTest, WatchdogReadsNewRootAndNeverForwardsOldKey) {
 }
 TEST_F(SupLanPeerTest, ConcurrentTimerMutationAndStaleResultsConverge) {
   std::atomic<int> seconds{0};
-  PeerProvisioner concurrent(factory, &transport, [&] {
+  peer_provisioner concurrent(factory, &transport, [&] {
     return std::chrono::steady_clock::time_point() +
            std::chrono::seconds(seconds.load());
   });
@@ -1044,7 +1045,7 @@ TEST_F(SupLanPeerTest, InvalidTopologyDoesNotBecomeTransientRetry) {
 }
 TEST_F(SupLanPeerTest, OneGrantSourceKeyThenDestination) {
   add();
-  EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::active, store.a.lifecycle);
   EXPECT_EQ(1u, store.a.revision);
   ASSERT_EQ(1u, transport.order.size());
   EXPECT_EQ(1, transport.order[0]);
@@ -1066,7 +1067,7 @@ TEST_F(SupLanPeerTest, CompletedNewContextRetiresFlow) {
   EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
-  EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::active, store.a.lifecycle);
   EXPECT_EQ(123u, store.a.root);
 }
 TEST_F(SupLanPeerTest, CompletedAclOnlyUpdateRetiresFlow) {
@@ -1082,7 +1083,7 @@ TEST_F(SupLanPeerTest, CompletedAclOnlyUpdateRetiresFlow) {
   EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   source_ok();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
-  EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::active, store.a.lifecycle);
   EXPECT_EQ(2u, store.a.revision);
 }
 TEST_F(SupLanPeerTest, SourceOnlyRetiresAndDestinationReconstructsKeyRecovery) {
@@ -1120,7 +1121,7 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   auto empty = transport.sources.size() - 1;
   source_ok();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, store.a.lifecycle);
   EXPECT_TRUE(store.a.source_acked);
   auto writes = store.writes;
   auto sends = transport.order.size();
@@ -1136,7 +1137,7 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   EXPECT_EQ(0, transport.destination_key_sizes.back());
   EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
   add();
   writes = store.writes;
@@ -1146,7 +1147,7 @@ TEST_F(SupLanPeerTest, RetiredCleanupCannotReplayNonemptyOrAckReactivatedFlow) {
   EXPECT_EQ(writes, store.writes);
   EXPECT_EQ(sends, transport.order.size());
   EXPECT_EQ(1u, PeerProvisionerTestAccess::count(peers));
-  EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::active, store.a.lifecycle);
   EXPECT_EQ(2u, store.a.generation);
   source_ok();
   destination_result();
@@ -1175,7 +1176,7 @@ TEST_F(SupLanPeerTest, SequentialCompletedAssociationsExceedFormerLifetimeCap) {
     store.a.id = id;
     store.a.source = 1;
     store.a.destination = 2;
-    store.a.lifecycle = Lifecycle::Active;
+    store.a.lifecycle = lifecycle_t::active;
     store.a.acl = {{1, 10, 1}};
     peers.reconcile(id);
     ASSERT_EQ(id, transport.sources.size());
@@ -1185,17 +1186,17 @@ TEST_F(SupLanPeerTest, SequentialCompletedAssociationsExceedFormerLifetimeCap) {
     ASSERT_EQ(0u, PeerProvisionerTestAccess::count(peers))
         << "association=" << id;
     ASSERT_TRUE(transport.errors.empty());
-    ASSERT_EQ(Lifecycle::Active, store.a.lifecycle);
+    ASSERT_EQ(lifecycle_t::active, store.a.lifecycle);
   }
 }
 TEST_F(SupLanPeerTest, ConcurrentLiveWorkStillHonorsSafetyCapAndReusesSlot) {
-  Association first;
+  association_t first;
   for (uint64_t id = 1; id <= 4097; ++id) {
     store.a = {};
     store.a.id = id;
     store.a.source = 1;
     store.a.destination = id + 2;
-    store.a.lifecycle = Lifecycle::Active;
+    store.a.lifecycle = lifecycle_t::active;
     store.a.acl = {{1, 10, 1}};
     store.additional[id] = store.a;
     if (id == 1) first = store.a;
@@ -1238,18 +1239,18 @@ TEST_F(SupLanPeerTest, OfflineUnsentWorkDoesNotNeedResidentFlow) {
 TEST_F(SupLanPeerTest, FinalRemovalPartialDurableCleanupAndDormant) {
   installed();
   remove();
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, store.a.lifecycle);
   EXPECT_EQ(2u, store.a.revision);
   EXPECT_EQ(1u, store.a.generation);
   source_ok();
   EXPECT_TRUE(store.a.source_acked);
   EXPECT_FALSE(store.a.destination_acked);
   transport.online[1] = false;
-  PeerProvisioner restarted(factory, &transport);
+  peer_provisioner restarted(factory, &transport);
   restarted.reconnect(2);
   auto r = transport.destinations.back();
   restarted.on_destination(2, &r);
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   auto sends = transport.order.size();
   restarted.reconnect(1);
   restarted.reconnect(2);
@@ -1264,13 +1265,13 @@ TEST_F(SupLanPeerTest, DrainingAndDormantReactivationFreshGeneration) {
   EXPECT_EQ(1u, store.a.revision);
   peers.grants()->cleanup_ack(old, true);
   peers.grants()->cleanup_ack(old, false);
-  EXPECT_EQ(Lifecycle::Active, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::active, store.a.lifecycle);
   source_ok();
   destination_result();
   remove();
   source_ok();
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   add();
   EXPECT_EQ(3u, store.a.generation);
   EXPECT_EQ(1u, store.a.revision);
@@ -1302,7 +1303,7 @@ TEST_F(SupLanPeerTest, RootChangeDuringDrainingSatisfiesOnlySource) {
             static_cast<uint32_t>(
                 transport.destinations.back().PeerContext.RootEpoch));
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   add();
   EXPECT_EQ(1u, store.a.generation);
   EXPECT_EQ(1u, store.a.revision);
@@ -1335,10 +1336,10 @@ TEST_F(SupLanPeerTest,
   source_ok(old_source);  // Late non-empty ACK cannot forward the old key.
   EXPECT_EQ(sends, transport.order.size());
   destination_result();
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, store.a.lifecycle);
   EXPECT_FALSE(store.a.source_acked);
   source_ok();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   add();
   EXPECT_EQ(2u, store.a.generation);
   EXPECT_EQ(1u, store.a.revision);
@@ -1354,7 +1355,7 @@ TEST_F(SupLanPeerTest, RootReprovisionCleanupSurvivesRestartAndPartialAck) {
   destination_result();
   EXPECT_TRUE(store.a.destination_acked);
   EXPECT_FALSE(store.a.source_acked);
-  PeerProvisioner restarted(factory, &transport);
+  peer_provisioner restarted(factory, &transport);
   auto destination_count = transport.destinations.size();
   restarted.reconnect(1);
   EXPECT_EQ(destination_count, transport.destinations.size());
@@ -1366,7 +1367,7 @@ TEST_F(SupLanPeerTest, RootReprovisionCleanupSurvivesRestartAndPartialAck) {
   r.PeerContext = q.PeerContext;
   r.AclRevision = q.AclRevision;
   restarted.on_source(1, &r);
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
 }
 TEST_F(SupLanPeerTest,
        ChangedRootDrainingReactivationDoesNotCompareGenerations) {
@@ -1506,7 +1507,7 @@ TEST_F(SupLanPeerTest, OldNonemptyKeyResponseFencedAfterEmptyCleanup) {
   remove();
   source_ok();
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   auto count = transport.order.size();
   TDS_SuplaSetSuplanSourceAssociationResult r = {};
   r.PeerContext = old.PeerContext;
@@ -1587,7 +1588,7 @@ TEST_F(SupLanPeerTest, RemovedEndpointRequiresSurvivorCleanup) {
   peers.reconcile(1);
   EXPECT_TRUE(store.a.source_removed);
   EXPECT_TRUE(store.a.source_acked);
-  EXPECT_EQ(Lifecycle::Draining, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, store.a.lifecycle);
   destination_result();
   EXPECT_EQ(0u, store.a.id);
 }
@@ -1650,7 +1651,7 @@ TEST_F(SupLanPeerTest, CleanupBeforeFirstSourceAckStillFencesReactivation) {
   remove();
   source_ok();
   destination_result();
-  EXPECT_EQ(Lifecycle::Dormant, store.a.lifecycle);
+  EXPECT_EQ(lifecycle_t::dormant, store.a.lifecycle);
   EXPECT_EQ(123u, store.a.root);
   add();
   EXPECT_EQ(2u, store.a.generation);
@@ -1675,7 +1676,7 @@ TEST_F(SupLanPeerTest, SourceOfflineKeyRecoveryWaitsUntilReconnect) {
 TEST_F(SupLanPeerTest, RestartAfterSourceOkDoesNotAssumeDestinationHasKey) {
   add();
   source_ok();
-  PeerProvisioner restarted(factory, &transport);
+  peer_provisioner restarted(factory, &transport);
   restarted.reconnect(2);
   EXPECT_EQ(0, transport.destination_key_sizes.back());
   auto r = transport.destinations.back();
@@ -1727,21 +1728,21 @@ TEST_F(SupLanPeerTest, DeviceScopeUnionCoversLeafEnsure) {
             peers.grants()->ensure_access(2, q).Result);
 }
 TEST(SupLanCanonicalTest, CapacityIsExplicitAndNeverTruncates) {
-  Acl entries;
+  acl_t entries;
   for (int i = 0; i < 90; ++i)
     entries.push_back({1, static_cast<uint32_t>(i + 1), 1});
-  Acl acl;
+  acl_t acl;
   EXPECT_FALSE(canonicalize(entries, &acl));
   EXPECT_TRUE(acl.empty());
 }
 TEST(SupLanCanonicalTest, DeterministicByteEncodingAndRejectNoncanonicalInput) {
-  Acl acl;
+  acl_t acl;
   ASSERT_TRUE(canonicalize(
       {{2, 1, 1}, {1, 11, 1}, {1, 10, 3}}, &acl));
   EXPECT_EQ((std::vector<unsigned char>{1, 0, 0, 0, 10, 2, 1, 0, 0, 0, 11, 1, 2,
                                         0, 0, 0, 1, 1}),
             encode_acl(acl));
-  Acl decoded;
+  acl_t decoded;
   auto data = encode_acl(acl);
   EXPECT_TRUE(decode_acl(data.data(), data.size(), &decoded));
   data[5] = 3;
@@ -1911,17 +1912,17 @@ TEST_F(SupLanPeerTest,
 namespace {
 class SupLanStreamConnectionTest : public testing::Test {
  protected:
-  StreamConnection::Time now{};
+  stream_connection::time_point_t now{};
   bool connected = true, database = true, allowed = true, pending = false;
   bool send_ok = true;
   unsigned checks = 0, approval_requests = 0, reads = 0;
   std::vector<TSD_SuplaRemoteChannelState> messages;
   std::vector<unsigned> order;
-  StreamConnection::Snapshot current;
+  stream_connection::snapshot_t current;
   std::function<void()> during_read;
   unsigned notifications = 0;
   std::function<void()> on_notify;
-  StreamConnection connection{
+  stream_connection connection{
       2,
       [this](uint32_t, bool create, bool) {
         ++checks;
@@ -1939,7 +1940,7 @@ class SupLanStreamConnectionTest : public testing::Test {
                           : SUPLA_SUPLAN_ACCESS_STATUS_REJECTED),
             SUPLA_RESOURCE_DELIVERY_SERVER_STREAM};
       },
-      [this](uint32_t, StreamConnection::Snapshot *snapshot) {
+      [this](uint32_t, stream_connection::snapshot_t *snapshot) {
         ++reads;
         *snapshot = current;
         if (during_read) {
@@ -2335,7 +2336,7 @@ TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
   std::atomic<bool> allowed{true};
   std::atomic<int> value{0};
   std::vector<TSD_SuplaRemoteChannelState> messages;
-  StreamConnection stream(
+  stream_connection stream(
       256,
       [&](uint32_t, bool, bool) {
         return TSD_SuplaEnsureResourceAccessResult{
@@ -2345,7 +2346,7 @@ TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
                         : SUPLA_SUPLAN_ACCESS_STATUS_REJECTED),
             2};
       },
-      [&](uint32_t, StreamConnection::Snapshot *s) {
+      [&](uint32_t, stream_connection::snapshot_t *s) {
         s->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
         s->state.Channel.value[0] = value.load();
         return true;
@@ -2383,19 +2384,19 @@ TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
   EXPECT_EQ(0u, stream.size());
 }
 TEST(SupLanStreamLoadTest, FanoutCoalescesFloodWithinConfiguredBounds) {
-  std::vector<std::unique_ptr<StreamConnection>> destinations;
+  std::vector<std::unique_ptr<stream_connection>> destinations;
   unsigned reads = 0, authorizations = 0, messages = 0;
   int value = 0;
   auto began = std::chrono::steady_clock::now();
   for (unsigned n = 0; n < 64; ++n) {
-    destinations.emplace_back(new StreamConnection(
+    destinations.emplace_back(new stream_connection(
         256,
         [&](uint32_t, bool, bool) {
           ++authorizations;
           return TSD_SuplaEnsureResourceAccessResult{
               0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
         },
-        [&](uint32_t, StreamConnection::Snapshot *s) {
+        [&](uint32_t, stream_connection::snapshot_t *s) {
           ++reads;
           s->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
           s->state.Channel.value[0] = value;
@@ -2430,16 +2431,17 @@ TEST(SupLanStreamLoadTest, FanoutCoalescesFloodWithinConfiguredBounds) {
 }
 
 TEST(SupLanStreamLoadTest, ExpiryDrainsAcrossBoundedBatchesWithoutNewTraffic) {
-  StreamConnection::Time now{};
+  stream_connection::time_point_t now{};
   unsigned online = 0, offline = 0;
-  StreamConnection stream(
+  stream_connection stream(
       64,
       [](uint32_t, bool, bool) {
         return TSD_SuplaEnsureResourceAccessResult{
             0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
       },
-      [&](uint32_t, StreamConnection::Snapshot *snapshot) {
-        snapshot->expires = StreamConnection::Time() + std::chrono::seconds(5);
+      [&](uint32_t, stream_connection::snapshot_t *snapshot) {
+        snapshot->expires =
+            stream_connection::time_point_t() + std::chrono::seconds(5);
         return true;
       },
       [&](const TSD_SuplaRemoteChannelState &snapshot) {
@@ -2472,15 +2474,16 @@ TEST_F(SupLanPeerTest, BatchProvisioningMessageAccounting) {
       Store data;
       Transport wire;
       auto time = std::chrono::steady_clock::time_point();
-      PeerProvisioner batch([&] { return std::make_unique<MemoryRepo>(&data); },
-                            &wire, [&] { return time; });
+      peer_provisioner batch(
+          [&] { return std::make_unique<MemoryRepo>(&data); }, &wire,
+          [&] { return time; });
       const auto started = std::chrono::steady_clock::now();
       for (unsigned id = 1; id <= 170; ++id) {
-        Association a;
+        association_t a;
         a.id = id;
         a.source = many_sources ? id + 2 : 1;
         a.destination = many_sources ? 2 : id + 2;
-        a.lifecycle = Lifecycle::Active;
+        a.lifecycle = lifecycle_t::active;
         if (existing) {
           a.root = data.identity.root;
           a.provisioned_generation = a.generation;
@@ -2626,4 +2629,53 @@ TEST_F(SupLanPeerTest, OfflineReplayCannotRetireUnresolvedReconnectIncident) {
   source_ok();
   destination_result();
   EXPECT_EQ(0u, PeerProvisionerTestAccess::count(peers));
+}
+
+TEST(SupLanStreamLoadTest, SparseDirtyFanoutDoesNoUnsubscribedWork) {
+  for (unsigned count : {1u, 10u, 100u, 500u}) {
+    unsigned reads = 0, auth = 0, sent = 0, wakes = 0;
+    std::vector<std::unique_ptr<stream_connection>> streams;
+    for (unsigned n = 0; n < count; ++n) {
+      streams.emplace_back(new stream_connection(
+          1,
+          [&](uint32_t, bool, bool) {
+            ++auth;
+            return TSD_SuplaEnsureResourceAccessResult{
+                0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
+          },
+          [&](uint32_t, stream_connection::snapshot_t *) {
+            ++reads;
+            return true;
+          },
+          [&](const TSD_SuplaRemoteChannelState &) {
+            ++sent;
+            return true;
+          },
+          [] { return true; }, std::chrono::steady_clock::now,
+          [&] { ++wakes; }));
+      streams.back()->ensure({{1, n + 1}, 1, 2, 0},
+          [](const TSD_SuplaEnsureResourceAccessResult &) { return true; });
+    }
+    const auto before_auth = auth, before_reads = reads, before_sent = sent;
+    auto began = std::chrono::steady_clock::now();
+    // Mirrors the current per-user registry fanout; includes unrelated IDs.
+    for (unsigned update = 0; update < 1000; ++update)
+      for (auto &stream : streams) {
+        stream->dirty(1);
+        stream->dirty(count + 1);
+      }
+    auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - began).count();
+    EXPECT_EQ(before_auth, auth);
+    EXPECT_EQ(before_reads, reads);
+    EXPECT_EQ(before_sent, sent);
+    EXPECT_EQ(1u, wakes);  // Only the interested Destination is signalled.
+    for (auto &stream : streams) stream->iterate();
+    EXPECT_EQ(before_auth + 1, auth);
+    EXPECT_EQ(before_reads + 1, reads);
+    EXPECT_EQ(before_sent, sent);  // Unchanged snapshot is coalesced.
+    std::cout << "sparse STREAM connections=" << count
+              << " dirty_calls=" << count * 2000
+              << " elapsed_us=" << elapsed << std::endl;
+  }
 }

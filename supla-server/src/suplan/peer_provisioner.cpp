@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 namespace supla_suplan {
-static bool current_topology(Repository *repo, const Association &a,
-                             const Identity &identity,
+static bool current_topology(repository *repo, const association_t &a,
+                             const identity_t &identity,
                              bool *read_failed = nullptr) {
   if (read_failed) *read_failed = false;
   for (const auto &entry : a.acl) {
@@ -31,23 +31,23 @@ void wipe_key(void *buffer, size_t size) {
   volatile unsigned char *p = static_cast<volatile unsigned char *>(buffer);
   while (size--) *p++ = 0;
 }
-PeerProvisioner::PeerProvisioner(PeerService::Factory factory,
-                                 PeerTransport *transport, Clock clock)
+peer_provisioner::peer_provisioner(peer_service::factory_t factory,
+                                   peer_transport *transport, clock_t clock)
     : factory(factory),
       transport(transport),
       // NOLINTNEXTLINE(whitespace/indent_namespace)
       service(factory, [this](uint64_t id) { reconcile(id); }),
       clock(clock) {}
-uint64_t PeerProvisioner::time_left_usec(int device) {
+uint64_t peer_provisioner::time_left_usec(int device) {
   std::lock_guard<std::mutex> lock(flows_mutex);
-  auto next = Time::max();
+  auto next = time_point_t::max();
   auto found = deadlines.find(device);
   if (found != deadlines.end())
     for (const auto &entry : found->second)
       next = std::min(next, entry.second.due);
   for (const auto &entry : reconnect_due)
     if (entry.second.owner == device) next = std::min(next, entry.second.due);
-  if (next == Time::max()) return 0;
+  if (next == time_point_t::max()) return 0;
   return next <= clock()
              ? 1
              : std::max<int64_t>(
@@ -55,12 +55,12 @@ uint64_t PeerProvisioner::time_left_usec(int device) {
                           next - clock())
                           .count());
 }
-void PeerProvisioner::schedule(uint64_t id) {
+void peer_provisioner::schedule(uint64_t id) {
   // Association gate held. Only this flow's endpoints/DB timer owner change.
   auto f = flow(id, false);
   if (!f) return;
   int owner = 0;
-  if (f->refresh_at != Time()) {
+  if (f->refresh_at != time_point_t()) {
     owner = transport->ready(f->desired.source) ? f->desired.source
             : transport->ready(f->desired.destination) ? f->desired.destination
                                                       : 0;
@@ -72,7 +72,7 @@ void PeerProvisioner::schedule(uint64_t id) {
     for (int device : {f->desired.source, f->desired.destination,
                        f->recovery_owner, owner}) {
       if (!device) continue;
-      auto due = Time::max();
+      auto due = time_point_t::max();
       uint64_t session = 0;
       const auto &side =
           device == f->desired.source ? f->source : f->destination;
@@ -83,7 +83,7 @@ void PeerProvisioner::schedule(uint64_t id) {
       }
       if (device == owner) due = std::min(due, f->refresh_at);
       auto &entries = deadlines[device];
-      if (due == Time::max()) {
+      if (due == time_point_t::max()) {
         entries.erase(id);
         if (entries.empty()) deadlines.erase(device);
       } else {
@@ -96,14 +96,14 @@ void PeerProvisioner::schedule(uint64_t id) {
   }
   for (int device : notify) transport->wake(device, transport->session(device));
 }
-void PeerProvisioner::resolved(int device, uint64_t id) {
+void peer_provisioner::resolved(int device, uint64_t id) {
   std::lock_guard<std::mutex> lock(flows_mutex);
   auto found = incidents.find(device);
   if (found == incidents.end()) return;
   found->second.associations.erase(id);
   if (found->second.associations.empty()) incidents.erase(found);
 }
-void PeerProvisioner::defer_reconnect(int device) {
+void peer_provisioner::defer_reconnect(int device) {
   int owner = transport->ready(device) ? device : transport->recovery_device();
   {
     std::lock_guard<std::mutex> lock(flows_mutex);
@@ -111,7 +111,7 @@ void PeerProvisioner::defer_reconnect(int device) {
   }
   if (owner) transport->wake(owner, transport->session(owner));
 }
-void PeerProvisioner::iterate(int device) {
+void peer_provisioner::iterate(int device) {
   std::vector<uint64_t> due;
   std::vector<int> recovery;
   {
@@ -141,10 +141,10 @@ void PeerProvisioner::iterate(int device) {
     // section instead of repeatedly rearming an expired timer every 100 ms.
     // No map/Device/SRPC lock is held while waiting.
     std::lock_guard<std::mutex> lock(*gate);
-    Schedule update{this, id};
+    schedule_guard update{this, id};
     auto f = flow(id, false);
     if (!f) continue;
-    bool db = f->refresh_at != Time() && clock() >= f->refresh_at;
+    bool db = f->refresh_at != time_point_t() && clock() >= f->refresh_at;
     if (db) {
       f->refresh_at = {};
       reconcile_locked(id, false);
@@ -153,11 +153,11 @@ void PeerProvisioner::iterate(int device) {
         auto &side = source ? f->source : f->destination;
         if (!side.pending || clock() < side.deadline) continue;
         auto repo = factory();
-        Association a;
+        association_t a;
         auto state = current(repo.get(), *f, &a);
-        if (state == Current::DatabaseError) {
+        if (state == current_state::database_error) {
           db_failure(f.get(), source);
-        } else if (state == Current::Stale) {
+        } else if (state == current_state::stale) {
           side.pending = false;
           reconcile_locked(id, false);
           break;
@@ -169,8 +169,8 @@ void PeerProvisioner::iterate(int device) {
     if (++work == 16) break;
   }
 }
-std::shared_ptr<PeerProvisioner::Flow> PeerProvisioner::flow(uint64_t id,
-                                                             bool create) {
+std::shared_ptr<peer_provisioner::flow_t> peer_provisioner::flow(uint64_t id,
+                                                                 bool create) {
   std::lock_guard<std::mutex> lock(flows_mutex);
   auto it = flows.find(id);
   if (it != flows.end()) return it->second;
@@ -180,16 +180,16 @@ std::shared_ptr<PeerProvisioner::Flow> PeerProvisioner::flow(uint64_t id,
     transport->diagnostic(id, 0, SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED);
     return nullptr;
   }
-  auto f = std::make_shared<Flow>();
+  auto f = std::make_shared<flow_t>();
   flows[id] = f;
   return f;
 }
-void PeerProvisioner::retire_completed(uint64_t id,
-                                      const std::shared_ptr<Flow> &f) {
-  if (f->refresh_at != Time()) return;
+void peer_provisioner::retire_completed(uint64_t id,
+                                        const std::shared_ptr<flow_t> &f) {
+  if (f->refresh_at != time_point_t()) return;
   // Caller holds the association gate. Finish phase transitions/forwarding
   // before this check: their pending replies still need the duplicate fences.
-  for (const Side *side : {&f->source, &f->destination}) {
+  for (const side_t *side : {&f->source, &f->destination}) {
     if (side->pending || side->blocked || side->committing ||
         (side->sent && !side->acknowledged))
       return;
@@ -210,11 +210,11 @@ void PeerProvisioner::retire_completed(uint64_t id,
     flows.erase(it);
   }
 }
-bool PeerProvisioner::accepted(int device, const Identity &identity) {
+bool peer_provisioner::accepted(int device, const identity_t &identity) {
   auto repo = factory();
   return repo->accept_identity(device, identity);
 }
-void PeerProvisioner::reconnect(int device) {
+void peer_provisioner::reconnect(int device) {
   {
     std::lock_guard<std::mutex> lock(flows_mutex);
     reconnect_due.erase(device);
@@ -227,7 +227,7 @@ void PeerProvisioner::reconnect(int device) {
     return;
   }
   for (auto id : ids) {
-    Association a;
+    association_t a;
     int owner = 0;
     if (!repo->load(id, &a)) {
       defer_reconnect(device);
@@ -258,23 +258,24 @@ void PeerProvisioner::reconnect(int device) {
     reconcile(id, true);
   }
 }
-PeerProvisioner::Current PeerProvisioner::current(Repository *repo,
-                                                  const Flow &f,
-                                                  Association *a) {
-  Identity identity;
-  if (!repo->load(f.desired.id, a)) return Current::DatabaseError;
-  if (!a->id || !same_state(*a, f.desired)) return Current::Stale;
-  if (!repo->identity(a->source, &identity)) return Current::DatabaseError;
-  if (a->lifecycle == Lifecycle::Draining) return Current::Yes;
+peer_provisioner::current_state peer_provisioner::current(repository *repo,
+                                                          const flow_t &f,
+                                                          association_t *a) {
+  identity_t identity;
+  if (!repo->load(f.desired.id, a)) return current_state::database_error;
+  if (!a->id || !same_state(*a, f.desired)) return current_state::stale;
+  if (!repo->identity(a->source, &identity))
+    return current_state::database_error;
+  if (a->lifecycle == lifecycle_t::draining) return current_state::yes;
   if (identity.root != f.wire_root ||
       !transport->owner_ready(a->source, identity.root))
-    return Current::Stale;
+    return current_state::stale;
   bool failed = false;
   if (!current_topology(repo, *a, identity, &failed))
-    return failed ? Current::DatabaseError : Current::Stale;
-  return Current::Yes;
+    return failed ? current_state::database_error : current_state::stale;
+  return current_state::yes;
 }
-void PeerProvisioner::db_failure(Flow *f, bool source) {
+void peer_provisioner::db_failure(flow_t *f, bool source) {
   auto &side = source ? f->source : f->destination;
   if (side.key_requested) {
     f->force_key = true;
@@ -287,7 +288,7 @@ void PeerProvisioner::db_failure(Flow *f, bool source) {
   transport->diagnostic(f->desired.id, 0,
                         SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
 }
-void PeerProvisioner::no_response(Flow *f, bool source, bool timeout) {
+void peer_provisioner::no_response(flow_t *f, bool source, bool timeout) {
   auto &side = source ? f->source : f->destination;
   int device = source ? f->desired.source : f->desired.destination;
   side.pending = false;
@@ -319,22 +320,22 @@ void PeerProvisioner::no_response(Flow *f, bool source, bool timeout) {
       incidents.erase(found);  // No eligible reconnect: no budget spent.
   }
 }
-void PeerProvisioner::sent(Flow *f, bool source,
-                           PeerTransport::SendResult result) {
+void peer_provisioner::sent(flow_t *f, bool source,
+                            peer_transport::send_result_t result) {
   auto &side = source ? f->source : f->destination;
   side.session = result.session;
-  side.pending = result.code == PeerTransport::SendCode::Queued;
+  side.pending = result.code == peer_transport::send_code::queued;
   if (side.pending) {
     side.deadline = clock() + std::chrono::seconds(15);
-  } else if (result.code == PeerTransport::SendCode::EnqueueFailed) {
+  } else if (result.code == peer_transport::send_code::enqueue_failed) {
     no_response(f, source, false);
   } else {
     side.sent = false;
     // A root/bootstrap race waits for its authoritative registration event.
-    side.blocked = result.code == PeerTransport::SendCode::ContextChanged;
+    side.blocked = result.code == peer_transport::send_code::context_changed;
   }
 }
-void PeerProvisioner::send_source(Flow *f, bool key) {
+void peer_provisioner::send_source(flow_t *f, bool key) {
   if (f->source.sent || f->source.blocked ||
       !transport->ready(f->desired.source))
     return;
@@ -349,7 +350,7 @@ void PeerProvisioner::send_source(Flow *f, bool key) {
   if (!key) f->source_no_key_sent = true;
   sent(f, true, transport->send(f->desired.source, &q));
 }
-void PeerProvisioner::send_destination(Flow *f, const unsigned char *key) {
+void peer_provisioner::send_destination(flow_t *f, const unsigned char *key) {
   if (f->destination.sent || f->destination.blocked ||
       !transport->ready(f->desired.destination))
     return;
@@ -368,16 +369,16 @@ void PeerProvisioner::send_destination(Flow *f, const unsigned char *key) {
   wipe_key(q.PeerKey, sizeof(q.PeerKey));
   sent(f, false, outcome);
 }
-bool PeerProvisioner::reconcile(uint64_t id, bool meaningful_event) {
+bool peer_provisioner::reconcile(uint64_t id, bool meaningful_event) {
   auto gate = association_gate(id);
   std::lock_guard<std::mutex> lock(*gate);
   return reconcile_locked(id, meaningful_event);
 }
-bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
-  Schedule update{this, id};
+bool peer_provisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
+  schedule_guard update{this, id};
   auto repo = factory();
-  Association a;
-  Identity identity;
+  association_t a;
+  identity_t identity;
   auto defer = [&] {
     auto f = flow(id);
     if (f) {
@@ -390,7 +391,7 @@ bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     transport->diagnostic(id, 0, SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR);
     return false;
   }
-  if (!a.id || a.lifecycle == Lifecycle::Dormant) {
+  if (!a.id || a.lifecycle == lifecycle_t::dormant) {
     auto old = flow(id, false);
     if (old) {
       old->source = old->destination = {};
@@ -406,11 +407,11 @@ bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     return false;
   }
   uint32_t root =
-      a.lifecycle == Lifecycle::Draining && a.root ? a.root : identity.root;
+      a.lifecycle == lifecycle_t::draining && a.root ? a.root : identity.root;
   if (!root || root == UINT32_MAX) {
     return true;
   }
-  if (a.lifecycle == Lifecycle::Active) {
+  if (a.lifecycle == lifecycle_t::active) {
     if (!identity.root || !transport->owner_ready(a.source, identity.root)) {
       return true;
     }
@@ -440,8 +441,8 @@ bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
   if (!unchanged || meaningful_event) {
     // Destination reconnect must not overlap a still-live Source request
     // with a different RETURN_PEER_KEY flag: the frozen reply has no flag echo.
-    Side pending_source;
-    Side conflict_destination;
+    side_t pending_source;
+    side_t conflict_destination;
     // Neither reconnect nor provisioned-root bookkeeping repairs a conflict
     // at the same wire context/revision. A changed payload alone is not repair.
     if (same_revision && f->source.conflict) pending_source = f->source;
@@ -469,7 +470,7 @@ bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     std::lock_guard<std::mutex> lock(flows_mutex);
     pairs[{a.source, a.destination}] = id;
   }
-  if (a.lifecycle == Lifecycle::Draining) {
+  if (a.lifecycle == lifecycle_t::draining) {
     if (a.source_acked || a.source_removed || identity.root != root)
       f->source = {};
     if (a.destination_acked || a.destination_removed) f->destination = {};
@@ -498,8 +499,8 @@ bool PeerProvisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
   retire_completed(id, f);
   return true;
 }
-void PeerProvisioner::result(Flow *f, bool source, uint8_t code) {
-  Side &side = source ? f->source : f->destination;
+void peer_provisioner::result(flow_t *f, bool source, uint8_t code) {
+  side_t &side = source ? f->source : f->destination;
   side.pending = false;
   side.acknowledged = code == SUPLA_SUPLAN_RESULT_OK;
   if (code == SUPLA_SUPLAN_RESULT_OK) {
@@ -509,7 +510,7 @@ void PeerProvisioner::result(Flow *f, bool source, uint8_t code) {
     return;
   }
   if (!source && code == SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED &&
-      f->desired.lifecycle == Lifecycle::Active && !f->key_recovery_started &&
+      f->desired.lifecycle == lifecycle_t::active && !f->key_recovery_started &&
       !f->source.blocked) {
     f->key_recovery_started = true;
     f->force_key = true;
@@ -529,34 +530,34 @@ void PeerProvisioner::result(Flow *f, bool source, uint8_t code) {
   if (source && code == SUPLA_SUPLAN_RESULT_ROOT_EPOCH_MISMATCH)
     transport->rebootstrap(f->desired.source);
 }
-uint64_t PeerProvisioner::correlate(const TSuplaSuplanPeerContext &ctx) {
+uint64_t peer_provisioner::correlate(const TSuplaSuplanPeerContext &ctx) {
   std::lock_guard<std::mutex> lock(flows_mutex);
   auto found = pairs.find({static_cast<int>(ctx.SourceNodeId),
                            static_cast<int>(ctx.DestinationNodeId)});
   return found == pairs.end() ? 0 : found->second;
 }
 
-void PeerProvisioner::on_source(int device,
-                                TDS_SuplaSetSuplanSourceAssociationResult *q,
-                                uint64_t session) {
+void peer_provisioner::on_source(int device,
+                                 TDS_SuplaSetSuplanSourceAssociationResult *q,
+                                 uint64_t session) {
   if (!q) return;
-  struct KeyWiper {
+  struct key_wiper {
     unsigned char *key;
-    ~KeyWiper() { wipe_key(key, SUPLA_SUPLAN_PEER_KEY_SIZE); }
+    ~key_wiper() { wipe_key(key, SUPLA_SUPLAN_PEER_KEY_SIZE); }
   } wiper{q->PeerKey};
   if (!session) session = transport->session(device);
   auto id = correlate(q->PeerContext);
   if (!id) return;
   auto repo = factory();
-  Association pair;
-  Association cleanup;
+  association_t pair;
+  association_t cleanup;
   bool ack = false;
   {
     auto gate = association_gate(id);
     std::lock_guard<std::mutex> lock(*gate);
-    Schedule update{this, id};
+    schedule_guard update{this, id};
     auto f = flow(id, false);
-    Association a;
+    association_t a;
     if (!f || device != f->desired.source || !f->source.pending ||
         f->source.committing ||
         f->source.session != session)
@@ -579,12 +580,13 @@ void PeerProvisioner::on_source(int device,
     }
     bool found = repo->find(q->PeerContext.SourceNodeId,
                             q->PeerContext.DestinationNodeId, &pair);
-    auto state = found ? current(repo.get(), *f, &a) : Current::DatabaseError;
-    if (state == Current::DatabaseError) {
+    auto state =
+        found ? current(repo.get(), *f, &a) : current_state::database_error;
+    if (state == current_state::database_error) {
       db_failure(f.get(), true);
       return;
     }
-    if (!pair.id || pair.id != id || state == Current::Stale) {
+    if (!pair.id || pair.id != id || state == current_state::stale) {
       f->source.pending = false;
       reconcile_locked(id, false);
       return;
@@ -593,7 +595,7 @@ void PeerProvisioner::on_source(int device,
       result(f.get(), true, q->Result);
       return;
     }
-    if (a.lifecycle == Lifecycle::Draining) {
+    if (a.lifecycle == lifecycle_t::draining) {
       cleanup = a;
       ack = true;
       f->source.pending = false;
@@ -626,8 +628,8 @@ void PeerProvisioner::on_source(int device,
       bool rederive = f->force_key && transport->ready(pair.destination);
       if (forward || rederive) {
         auto state = current(repo.get(), *f, &a);
-        if (state != Current::Yes) {
-          if (state == Current::DatabaseError) {
+        if (state != current_state::yes) {
+          if (state == current_state::database_error) {
             f->force_key = true;
             db_failure(f.get(), true);
           } else {
@@ -650,7 +652,7 @@ void PeerProvisioner::on_source(int device,
   }
   if (ack) finish_cleanup(cleanup, true, flow(cleanup.id, false));
 }
-void PeerProvisioner::on_destination(
+void peer_provisioner::on_destination(
     int device, const TDS_SuplaSetSuplanDestinationAssociationResult *q,
     uint64_t session) {
   if (!q) return;
@@ -658,14 +660,14 @@ void PeerProvisioner::on_destination(
   auto id = correlate(q->PeerContext);
   if (!id) return;
   auto repo = factory();
-  Association pair, cleanup;
+  association_t pair, cleanup;
   bool ack = false;
   {
     auto gate = association_gate(id);
     std::lock_guard<std::mutex> lock(*gate);
-    Schedule update{this, id};
+    schedule_guard update{this, id};
     auto f = flow(id, false);
-    Association a;
+    association_t a;
     if (!f || device != f->desired.destination || !f->destination.pending ||
         f->destination.committing ||
         f->destination.session != session)
@@ -676,12 +678,13 @@ void PeerProvisioner::on_destination(
       return;
     bool found = repo->find(q->PeerContext.SourceNodeId,
                             q->PeerContext.DestinationNodeId, &pair);
-    auto state = found ? current(repo.get(), *f, &a) : Current::DatabaseError;
-    if (state == Current::DatabaseError) {
+    auto state =
+        found ? current(repo.get(), *f, &a) : current_state::database_error;
+    if (state == current_state::database_error) {
       db_failure(f.get(), false);
       return;
     }
-    if (!pair.id || pair.id != id || state == Current::Stale) {
+    if (!pair.id || pair.id != id || state == current_state::stale) {
       f->destination.pending = false;
       reconcile_locked(id, false);
       return;
@@ -692,7 +695,7 @@ void PeerProvisioner::on_destination(
         f->key_recovery_started && f->destination.key_requested)
       return;
     if (q->Result == SUPLA_SUPLAN_RESULT_OK &&
-        a.lifecycle == Lifecycle::Draining) {
+        a.lifecycle == lifecycle_t::draining) {
       cleanup = a;
       ack = true;
       f->destination.pending = false;
@@ -704,16 +707,16 @@ void PeerProvisioner::on_destination(
   }
   if (ack) finish_cleanup(cleanup, false, flow(cleanup.id, false));
 }
-void PeerProvisioner::finish_cleanup(const Association &sent, bool source,
-                                     const std::shared_ptr<Flow> &f) {
+void peer_provisioner::finish_cleanup(const association_t &sent, bool source,
+                                      const std::shared_ptr<flow_t> &f) {
   // PeerService acquires the same gate and may invoke reconcile after commit.
   // Never call it while holding the gate. Keep the Flow until that commit.
   bool ok = service.cleanup_ack(sent, source);
   auto gate = association_gate(sent.id);
   std::lock_guard<std::mutex> lock(*gate);
   if (!f || flow(sent.id, false) != f || !same_state(f->desired, sent)) return;
-  Schedule update{this, sent.id};
-  Side &side = source ? f->source : f->destination;
+  schedule_guard update{this, sent.id};
+  side_t &side = source ? f->source : f->destination;
   side.committing = false;
   if (ok)
     result(f.get(), source, SUPLA_SUPLAN_RESULT_OK);
@@ -721,7 +724,7 @@ void PeerProvisioner::finish_cleanup(const Association &sent, bool source,
     db_failure(f.get(), source);
   retire_completed(sent.id, f);
 }
-void PeerProvisioner::disconnected(int device, uint64_t session) {
+void peer_provisioner::disconnected(int device, uint64_t session) {
   // Move error-only inventory recovery off a closing connection if another
   // eligible connection exists. A later natural registration also reloads it.
   int replacement = transport->recovery_device();
@@ -748,7 +751,7 @@ void PeerProvisioner::disconnected(int device, uint64_t session) {
     std::lock_guard<std::mutex> lock(*gate);
     auto f = flow(id, false);
     if (!f) continue;
-    Schedule update{this, id};
+    schedule_guard update{this, id};
     for (bool source : {true, false}) {
       auto &side = source ? f->source : f->destination;
       if (device == (source ? f->desired.source : f->desired.destination) &&

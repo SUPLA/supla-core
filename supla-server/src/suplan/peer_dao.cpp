@@ -16,10 +16,10 @@ static std::string hex(const std::vector<unsigned char> &data) {
   }
   return out + "'";
 }
-PeerDao::PeerDao(int user) : user(user) {}
-PeerDao::~PeerDao() { rollback(); }
-std::string PeerDao::scope() const { return "user_id=" + to_string(user); }
-bool PeerDao::execute(const std::string &sql) {
+peer_dao::peer_dao(int user) : user(user) {}
+peer_dao::~peer_dao() { rollback(); }
+std::string peer_dao::scope() const { return "user_id=" + to_string(user); }
+bool peer_dao::execute(const std::string &sql) {
   if (!dba.is_connected() && !dba.connect()) return false;
   if (sql.compare(0, 5, "CALL ") != 0) return !dba.query(sql.c_str(), true);
   MYSQL_STMT *statement = nullptr;
@@ -33,8 +33,9 @@ bool PeerDao::execute(const std::string &sql) {
   mysql_stmt_close(statement);
   return status == -1;
 }
-bool PeerDao::select(const std::string &sql,
-                     std::vector<std::vector<uint64_t>> *rows, size_t columns) {
+bool peer_dao::select(const std::string &sql,
+                      std::vector<std::vector<uint64_t>> *rows,
+                      size_t columns) {
   rows->clear();
   if (!dba.is_connected() && !dba.connect()) return false;
   MYSQL_STMT *stmt = nullptr;
@@ -56,7 +57,7 @@ bool PeerDao::select(const std::string &sql,
   mysql_stmt_close(stmt);
   return ok;
 }
-bool PeerDao::read(const std::string &where, Association *a, bool lock) {
+bool peer_dao::read(const std::string &where, association_t *a, bool lock) {
   *a = {};
   if (!dba.is_connected() && !dba.connect()) return false;
   const std::string sql =
@@ -90,7 +91,7 @@ bool PeerDao::read(const std::string &where, Association *a, bool lock) {
     a->id = values[0];
     a->source = values[1];
     a->destination = values[2];
-    a->lifecycle = static_cast<Lifecycle>(values[3]);
+    a->lifecycle = static_cast<lifecycle_t>(values[3]);
     a->generation = values[4];
     a->revision = values[5];
     a->root = values[6];
@@ -108,7 +109,7 @@ bool PeerDao::read(const std::string &where, Association *a, bool lock) {
   if (ok && lock && a->id) locked = *a;
   return ok;
 }
-bool PeerDao::begin(uint64_t id, Association *a) {
+bool peer_dao::begin(uint64_t id, association_t *a) {
   if (!transaction && !execute("START TRANSACTION")) return false;
   transaction = true;
   std::vector<std::vector<uint64_t>> rows;
@@ -116,15 +117,15 @@ bool PeerDao::begin(uint64_t id, Association *a) {
                 " FOR UPDATE", &rows, 1) && rows.size() == 1 &&
          read("id=" + to_string(id), a, true) && a->id;
 }
-bool PeerDao::load(uint64_t id, Association *a) {
+bool peer_dao::load(uint64_t id, association_t *a) {
   return read("id=" + to_string(id), a, false);
 }
-bool PeerDao::find(int source, int destination, Association *a) {
+bool peer_dao::find(int source, int destination, association_t *a) {
   return read("source_device_id=" + to_string(source) +
                   " AND destination_device_id=" + to_string(destination),
               a, false);
 }
-bool PeerDao::save(const Association &a) {
+bool peer_dao::save(const association_t &a) {
   if (!transaction || locked.id != a.id ||
       a.source != locked.source || a.destination != locked.destination ||
       a.generation != locked.generation || a.revision != locked.revision ||
@@ -146,12 +147,11 @@ bool PeerDao::save(const Association &a) {
                  "," + to_string(a.generation) + "," + to_string(a.revision) +
                  (source ? ",1,1)" : ",2,1)"))) return false;
   }
-  Association current;
+  association_t current;
   if (!load(a.id, &current)) return false;
   // The ACK procedure deletes only terminal cleanup for removed endpoints.
-  if (!current.id && a.lifecycle == Lifecycle::Dormant &&
-      a.source_acked && a.destination_acked &&
-      (a.source_removed || a.destination_removed)) {
+  if (!current.id && a.lifecycle == lifecycle_t::dormant && a.source_acked &&
+      a.destination_acked && (a.source_removed || a.destination_removed)) {
     locked = {};
     return true;
   }
@@ -161,18 +161,18 @@ bool PeerDao::save(const Association &a) {
   locked = current;
   return true;
 }
-bool PeerDao::commit() {
+bool peer_dao::commit() {
   if (!transaction || !execute("COMMIT")) return false;
   transaction = false;
   return true;
 }
-void PeerDao::rollback() {
+void peer_dao::rollback() {
   if (transaction) {
     execute("ROLLBACK");
     transaction = false;
   }
 }
-bool PeerDao::identity(int device, Identity *out) {
+bool peer_dao::identity(int device, identity_t *out) {
   *out = {};
   if (!dba.is_connected() && !dba.connect()) return false;
   MYSQL_STMT *stmt = nullptr;
@@ -216,8 +216,8 @@ bool PeerDao::identity(int device, Identity *out) {
   mysql_stmt_close(stmt);
   return ok;
 }
-bool PeerDao::accept_identity(int device, const Identity &identity) {
-  Identity previous;
+bool peer_dao::accept_identity(int device, const identity_t &identity) {
+  identity_t previous;
   if (!identity.root || identity.root == UINT32_MAX ||
       identity.channels.size() > SUPLA_CHANNELMAXCOUNT ||
       !this->identity(device, &previous))
@@ -238,7 +238,7 @@ bool PeerDao::accept_identity(int device, const Identity &identity) {
                  "," + to_string(device) + "," + to_string(identity.root) +
                  "," + hex(blob) + ")") && commit();
 }
-bool PeerDao::owner(uint8_t type, uint32_t resource, int *device) {
+bool peer_dao::owner(uint8_t type, uint32_t resource, int *device) {
   std::vector<std::vector<uint64_t>> rows;
   std::string sql;
   if (!resource || resource > INT32_MAX) return false;
@@ -253,7 +253,7 @@ bool PeerDao::owner(uint8_t type, uint32_t resource, int *device) {
   *device = rows.empty() ? 0 : rows[0][0];
   return true;
 }
-bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
+bool peer_dao::channel(uint32_t id, channel_info_t *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
   if (!select("SELECT c.iodevice_id,c.type,c.func,d.flags,c.channel_number,"
@@ -278,12 +278,12 @@ bool PeerDao::channel(uint32_t id, ChannelInfo *out) {
   }
   return true;
 }
-bool PeerDao::device_exists(int device) {
+bool peer_dao::device_exists(int device) {
   int owner_id = 0;
   return owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, device, &owner_id) &&
          owner_id == device;
 }
-bool PeerDao::device(int id, DeviceInfo *out) {
+bool peer_dao::device(int id, device_info_t *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
   if (!select("SELECT flags,protocol_version,is_virtual FROM supla_iodevice "
@@ -298,11 +298,11 @@ bool PeerDao::device(int id, DeviceInfo *out) {
   }
   return true;
 }
-bool PeerDao::owns_acl(int source, int destination, const Acl &acl) {
-  return Repository::owns_acl(source, destination, acl);
+bool peer_dao::owns_acl(int source, int destination, const acl_t &acl) {
+  return repository::owns_acl(source, destination, acl);
 }
-bool PeerDao::check_acl_ownership(int source, int destination, const Acl &acl,
-                                  bool *owned) {
+bool peer_dao::check_acl_ownership(int source, int destination,
+                                   const acl_t &acl, bool *owned) {
   *owned = false;
   std::vector<std::vector<uint64_t>> rows;
   if (source == destination) return true;
@@ -341,8 +341,8 @@ static void ids(const std::vector<std::vector<uint64_t>> &rows,
   out->clear();
   for (const auto &r : rows) out->push_back(r[0]);
 }
-bool PeerDao::for_device(int device, bool include_dormant,
-                         std::vector<uint64_t> *out) {
+bool peer_dao::for_device(int device, bool include_dormant,
+                          std::vector<uint64_t> *out) {
   std::vector<std::vector<uint64_t>> rows;
   std::string filter = include_dormant ? "" : " AND lifecycle IN (1,2)";
   std::string base =
@@ -354,8 +354,8 @@ bool PeerDao::for_device(int device, bool include_dormant,
   ids(rows, out);
   return ok;
 }
-bool PeerDao::approval_pairs(uint32_t resource, int device,
-                              std::vector<ApprovalPair> *out) {
+bool peer_dao::approval_pairs(uint32_t resource, int device,
+                              std::vector<approval_pair_t> *out) {
   std::vector<std::vector<uint64_t>> rows;
   std::string filter = resource
                            ? " AND source_channel_id=" + to_string(resource)
@@ -374,8 +374,8 @@ bool PeerDao::approval_pairs(uint32_t resource, int device,
                     static_cast<uint32_t>(r[3])});
   return true;
 }
-bool PeerDao::approval_decisions(uint64_t pair,
-                                 std::vector<ApprovalDecision> *out) {
+bool peer_dao::approval_decisions(uint64_t pair,
+                                  std::vector<approval_decision_t> *out) {
   std::vector<std::vector<uint64_t>> rows;
   if (!select(
       "SELECT id,permissions,revision,CASE status WHEN 'PENDING' THEN 1 "
@@ -388,11 +388,11 @@ bool PeerDao::approval_decisions(uint64_t pair,
     if (!valid_permissions(r[1]) || !r[2]) return false;
     out->push_back(
         {r[0], static_cast<uint8_t>(r[1]), static_cast<uint32_t>(r[2]),
-         static_cast<ApprovalStatus>(r[3]), static_cast<uint8_t>(r[4])});
+         static_cast<approval_status>(r[3]), static_cast<uint8_t>(r[4])});
   }
   return true;
 }
-bool PeerDao::binding_granted(int source, int destination, uint32_t resource,
+bool peer_dao::binding_granted(int source, int destination, uint32_t resource,
                                uint32_t target, bool *out) {
   *out = false;
   std::vector<std::vector<uint64_t>> rows;
@@ -407,7 +407,7 @@ bool PeerDao::binding_granted(int source, int destination, uint32_t resource,
   *out = rows[0][0] != 0;
   return true;
 }
-bool PeerDao::project_share(int destination, uint32_t resource,
+bool peer_dao::project_share(int destination, uint32_t resource,
                              uint32_t target) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
@@ -415,8 +415,8 @@ bool PeerDao::project_share(int destination, uint32_t resource,
                  to_string(destination) + "," + to_string(resource) + "," +
                  to_string(target) + ")") && commit();
 }
-bool PeerDao::stream_access(int destination, uint32_t resource,
-                             ChannelInfo *channel, uint8_t *permissions,
+bool peer_dao::stream_access(int destination, uint32_t resource,
+                             channel_info_t *channel, uint8_t *permissions,
                              bool *ready) {
   *channel = {};
   *permissions = 0;
@@ -453,8 +453,8 @@ bool PeerDao::stream_access(int destination, uint32_t resource,
   }
   return true;
 }
-bool PeerDao::permissions(int destination, uint8_t type, uint32_t resource,
-                          bool peer, uint8_t *out) {
+bool peer_dao::permissions(int destination, uint8_t type, uint32_t resource,
+                           bool peer, uint8_t *out) {
   *out = 0;
   std::vector<std::vector<uint64_t>> rows;
   if (!select("SELECT COALESCE(BIT_OR(permissions),0) FROM "
@@ -467,12 +467,12 @@ bool PeerDao::permissions(int destination, uint8_t type, uint32_t resource,
   *out = rows[0][0];
   return true;
 }
-bool PeerDao::stream_permissions(int destination, uint32_t resource,
+bool peer_dao::stream_permissions(int destination, uint32_t resource,
                                   uint8_t *out) {
   return permissions(destination, SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL,
                      resource, false, out);
 }
-bool PeerDao::request_pending(int destination, uint32_t resource,
+bool peer_dao::request_pending(int destination, uint32_t resource,
                                uint8_t permissions, uint8_t mode, bool allow) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
@@ -481,32 +481,32 @@ bool PeerDao::request_pending(int destination, uint32_t resource,
                  "," + to_string(permissions) + "," + to_string(mode) +
                  "," + to_string(allow) + ")") && commit();
 }
-bool PeerDao::cleanup_device(int device) {
+bool peer_dao::cleanup_device(int device) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
   return execute("CALL supla_suplan_cleanup(" + to_string(user) + "," +
                  to_string(device) + ")") && commit();
 }
-bool PeerDao::cleanup_resource(uint32_t resource) {
+bool peer_dao::cleanup_resource(uint32_t resource) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
   return execute("CALL supla_suplan_resource_cleanup(" + to_string(user) +
                  "," + to_string(resource) + ")") && commit();
 }
-bool PeerDao::observe_root(uint64_t id) {
+bool peer_dao::observe_root(uint64_t id) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
   return execute("CALL supla_suplan_observe_root(" + to_string(user) + "," +
                  to_string(id) + ")") && commit();
 }
-bool PeerDao::project_peer(int destination, uint32_t resource) {
+bool peer_dao::project_peer(int destination, uint32_t resource) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
   return execute("CALL supla_suplan_peer_demand(" + to_string(user) + "," +
                  to_string(destination) + "," + to_string(resource) + ")") &&
          commit();
 }
-bool PeerDao::changed_pairs(uint64_t after, size_t limit,
+bool peer_dao::changed_pairs(uint64_t after, size_t limit,
                              std::vector<std::pair<uint64_t, uint64_t>> *out) {
   out->clear();
   std::vector<std::vector<uint64_t>> rows;
@@ -518,14 +518,14 @@ bool PeerDao::changed_pairs(uint64_t after, size_t limit,
   for (const auto &row : rows) out->push_back({row[0], row[1]});
   return true;
 }
-bool PeerDao::ack_changed(uint64_t id, uint64_t revision) {
+bool peer_dao::ack_changed(uint64_t id, uint64_t revision) {
   if (!execute("START TRANSACTION")) return false;
   transaction = true;
   return execute("CALL supla_suplan_changed_ack(" + to_string(user) + "," +
                  to_string(id) + "," + to_string(revision) + ")") && commit();
 }
-bool PeerDao::stream_metadata(uint32_t channel,
-                              TDS_SuplaDeviceChannel_E *out) {
+bool peer_dao::stream_metadata(uint32_t channel,
+                               TDS_SuplaDeviceChannel_E *out) {
   *out = {};
   std::vector<std::vector<uint64_t>> rows;
   if (!select("SELECT type,func,COALESCE(flist,0),COALESCE(flags,0),"
@@ -544,7 +544,7 @@ bool PeerDao::stream_metadata(uint32_t channel,
 }
 
 // Read-only local config validation; these lookups never authorize a Grant.
-bool PeerDao::reference(uint32_t channel, uint8_t field, uint32_t *out) {
+bool peer_dao::reference(uint32_t channel, uint8_t field, uint32_t *out) {
   std::string path;
   static const char *hvac_keys[] = {
       "mainThermometerChannelId", "auxThermometerChannelId",
@@ -575,7 +575,7 @@ bool PeerDao::reference(uint32_t channel, uint8_t field, uint32_t *out) {
   return true;
 }
 
-bool PeerDao::has_master_dependents(uint32_t channel, bool *out) {
+bool peer_dao::has_master_dependents(uint32_t channel, bool *out) {
   std::vector<std::vector<uint64_t>> rows;
   if (!select(
           "SELECT COUNT(*) FROM supla_dev_channel WHERE user_id=" +

@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <dlfcn.h>
 #include <gtest/gtest.h>
+#include <openssl/ssl.h>
 #include <poll.h>
 #include <unistd.h>
 
@@ -167,6 +168,12 @@ using namespace supla_suplan;  // NOLINT
 class PublicationPauseAdapter : public supla_srpc_adapter {
  public:
   std::atomic<bool> pause_get{false};
+  std::atomic<bool> fail_device_config{false};
+  _supla_int_t sd_async_set_device_config_request(
+      TSDS_SetDeviceConfig *config) override {
+    if (fail_device_config.exchange(false)) return 0;
+    return supla_srpc_adapter::sd_async_set_device_config_request(config);
+  }
   std::promise<void> prepared, release;
   std::shared_future<void> resume = release.get_future().share();
   explicit PublicationPauseAdapter(void *srpc) : supla_srpc_adapter(srpc) {}
@@ -192,7 +199,7 @@ class supla_connection_test_access {
   }
 };
 namespace {
-class DeleteTransport : public PeerTransport {
+class DeleteTransport : public peer_transport {
  public:
   std::vector<TSDS_SuplaSetSuplanSourceAssociation> sources;
   std::vector<TSDS_SuplaSetSuplanDestinationAssociation> destinations;
@@ -202,14 +209,14 @@ class DeleteTransport : public PeerTransport {
   bool reconnect_session(int, uint64_t) override { return false; }
   bool ready(int) override { return true; }
   bool owner_ready(int, uint32_t) override { return true; }
-  SendResult send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
+  send_result_t send(int d, TSDS_SuplaSetSuplanSourceAssociation *q) override {
     sources.push_back(*q);
-    return {SendCode::Queued, session(d)};
+    return {send_code::queued, session(d)};
   }
-  SendResult send(int d,
-                  TSDS_SuplaSetSuplanDestinationAssociation *q) override {
+  send_result_t send(int d,
+                     TSDS_SuplaSetSuplanDestinationAssociation *q) override {
     destinations.push_back(*q);
-    return {SendCode::Queued, session(d)};
+    return {send_code::queued, session(d)};
   }
   void rebootstrap(int) override { ADD_FAILURE(); }
   void diagnostic(uint64_t, int, uint8_t) override { ADD_FAILURE(); }
@@ -237,8 +244,8 @@ void cloud_grant(int user, uint64_t origin, int source, int destination,
   };
   std::string grants = "[]";
   if (permissions) {
-    ChannelInfo channel;
-    ASSERT_TRUE(PeerDao(user).channel(resource, &channel));
+    channel_info_t channel;
+    ASSERT_TRUE(peer_dao(user).channel(resource, &channel));
     grants = "[{\"source\":" + std::to_string(source) +
         ",\"destination\":" + std::to_string(destination) +
         ",\"resource\":" + std::to_string(resource) +
@@ -259,8 +266,10 @@ void cloud_grant(int user, uint64_t origin, int source, int destination,
 class SupLanPeerDaoIntegrationTest : public testing::Test,
                                      public testing::IntegrationTest {
  protected:
-  PeerService::Factory factory = [] { return std::make_unique<PeerDao>(2); };
-  PeerService service{factory, nullptr};
+  peer_service::factory_t factory = [] {
+    return std::make_unique<peer_dao>(2);
+  };
+  peer_service service{factory, nullptr};
   int source = 0, destination = 0;
   uint32_t resource = 0;
   void SetUp() override {
@@ -334,11 +343,11 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
     return service.ensure_stream(destination, resource, approval, nullptr,
                                  true);
   }
-  std::vector<ApprovalDecision> decisions() {
+  std::vector<approval_decision_t> decisions() {
     auto repo = factory();
-    std::vector<ApprovalPair> pairs;
+    std::vector<approval_pair_t> pairs;
     EXPECT_TRUE(repo->approval_pairs(resource, destination, &pairs));
-    std::vector<ApprovalDecision> rows;
+    std::vector<approval_decision_t> rows;
     if (!pairs.empty()) {
       EXPECT_TRUE(repo->approval_decisions(pairs.front().id, &rows));
     }
@@ -350,13 +359,13 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
         {1, resource}, permissions, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER, flags};
     return service.ensure_access(destination, q);
   }
-  int commit_cloud_decision(const ApprovalDecision &snapshot,
+  int commit_cloud_decision(const approval_decision_t &snapshot,
                             const char *status) {
     // Trusted fixture-side Cloud transaction. Core never authors this Grant.
     // Tests exercise the real migrated procedures, not Cloud PHP validation/UI.
     auto repo = factory();
-    ChannelInfo channel;
-    DeviceInfo from, to;
+    channel_info_t channel;
+    device_info_t from, to;
     if (!repo->channel(resource, &channel) || !repo->device(source, &from) ||
         !repo->device(destination, &to)) return 0;
     bool peer = !channel.is_virtual && !from.is_virtual &&
@@ -423,8 +432,8 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
     }
     return 1;
   }
-  Association state() {
-    Association a;
+  association_t state() {
+    association_t a;
     auto dao = factory();
     EXPECT_TRUE(dao->find(source, destination, &a));
     return a;
@@ -433,12 +442,12 @@ class SupLanPeerDaoIntegrationTest : public testing::Test,
 
 TEST_F(SupLanPeerDaoIntegrationTest, OwnershipVerdictSeparatesQueryFailure) {
   auto dao = factory();
-  Acl acl{{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, resource,
-           SUPLA_SUPLAN_PERMISSION_READ}};
+  acl_t acl{{SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, resource,
+             SUPLA_SUPLAN_PERMISSION_READ}};
   bool owned = false;
   ASSERT_TRUE(dao->check_acl_ownership(source, destination, acl, &owned));
   ASSERT_TRUE(owned);
-  PeerDao other_account(1);
+  peer_dao other_account(1);
   owned = true;
   EXPECT_TRUE(other_account.check_acl_ownership(source, destination, acl,
                                                &owned));
@@ -502,8 +511,8 @@ class SupLanHvacIntegrationTest : public SupLanPeerDaoIntegrationTest {
     query("UPDATE supla_iodevice SET user_id=99124 WHERE user_id=2");
     query("UPDATE supla_dev_channel SET user_id=99124 WHERE user_id=2");
     query("UPDATE supla_suplan_device_state SET user_id=99124 WHERE user_id=2");
-    factory = [] { return std::make_unique<PeerDao>(99124); };
-    service = PeerService(factory, nullptr);
+    factory = [] { return std::make_unique<peer_dao>(99124); };
+    service = peer_service(factory, nullptr);
     ASSERT_TRUE(factory()->accept_identity(source, {123, {resource}}));
     query("UPDATE supla_iodevice SET flags=flags|" +
           std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
@@ -1013,6 +1022,9 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
  protected:
   void *listener = nullptr, *worker = nullptr, *wire = nullptr;
   int client = -1;
+  SSL *client_tls = nullptr;
+  bool secure = true;
+  int extra_device_flags = 0;
   supla_connection *connection = nullptr;
   PublicationPauseAdapter *publication_adapter = nullptr;
   int publication_type = SUPLA_CHANNELTYPE_HVAC;
@@ -1033,8 +1045,8 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     query(
         "UPDATE supla_suplan_device_state SET user_id=99126 WHERE "
         "user_id=99124");
-    factory = [] { return std::make_unique<PeerDao>(99126); };
-    service = PeerService(factory, nullptr);
+    factory = [] { return std::make_unique<peer_dao>(99126); };
+    service = peer_service(factory, nullptr);
     query("DELETE FROM supla_dev_channel WHERE iodevice_id=" +
           std::to_string(destination) + " AND id<>" + std::to_string(hvac));
     query("UPDATE supla_iodevice SET guid=UNHEX(REPEAT('ab',16)),"
@@ -1051,7 +1063,9 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
   }
 
   void start_connection() {
-    listener = ssocket_server_init(nullptr, nullptr, 0, 0);
+    listener = ssocket_server_init(
+        secure ? "../../test/cert/cert.crt" : nullptr,
+        secure ? "../../test/cert/private.key" : nullptr, 0, secure ? 1 : 0);
     ASSERT_NE(nullptr, listener);
     ASSERT_TRUE(ssocket_openlistener(listener));
     sockaddr_in address = {};
@@ -1064,6 +1078,8 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     ASSERT_EQ(0, connect(client, reinterpret_cast<sockaddr *>(&address), size));
     timeval timeout = {2, 0};
     ASSERT_EQ(0, setsockopt(client, SOL_SOCKET, SO_SNDTIMEO, &timeout,
+                            sizeof(timeout)));
+    ASSERT_EQ(0, setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, &timeout,
                             sizeof(timeout)));
     void *accepted = nullptr;
     unsigned int ip = 0;
@@ -1078,6 +1094,18 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
           static_cast<supla_connection *>(conn)->execute(thread);
         }, connection, false, &worker);
     ASSERT_NE(nullptr, worker);
+    if (secure) {
+      auto context = SSL_CTX_new(TLS_client_method());
+      ASSERT_NE(nullptr, context);
+      // Dedicated repository test certificate; not a product trust override.
+      SSL_CTX_set_verify(context, SSL_VERIFY_NONE, nullptr);
+      client_tls = SSL_new(context);
+      SSL_CTX_free(context);
+      ASSERT_NE(nullptr, client_tls);
+      SSL_set_fd(client_tls, client);
+      ASSERT_EQ(1, SSL_connect(client_tls));
+      ASSERT_TRUE(connection->is_secure());
+    }
   }
 
   void close_connection() {
@@ -1088,6 +1116,8 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
       sthread_free(worker);
     }
     delete connection;
+    if (client_tls) SSL_free(client_tls);
+    client_tls = nullptr;
     if (client >= 0) close(client);
     if (wire) sproto_free(wire);
     if (listener) ssocket_free(listener);
@@ -1103,6 +1133,7 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     void *listener, *worker, *wire;
     int client;
     supla_connection *connection;
+    SSL *client_tls;
     PublicationPauseAdapter *adapter;
     bool other_selected = true;
     bool closed = false;
@@ -1115,9 +1146,11 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
           wire(fixture->wire),
           client(fixture->client),
           connection(fixture->connection),
+          client_tls(fixture->client_tls),
           adapter(fixture->publication_adapter) {
       fixture->listener = fixture->worker = fixture->wire = nullptr;
       fixture->client = -1;
+      fixture->client_tls = nullptr;
       fixture->connection = nullptr;
       fixture->publication_adapter = nullptr;
       fixture->start_connection();
@@ -1128,6 +1161,7 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
       std::swap(worker, fixture->worker);
       std::swap(wire, fixture->wire);
       std::swap(client, fixture->client);
+      std::swap(client_tls, fixture->client_tls);
       std::swap(connection, fixture->connection);
       std::swap(adapter, fixture->publication_adapter);
       other_selected = other;
@@ -1168,7 +1202,9 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     while (auto count = sproto_pop_out_data(wire, bytes, sizeof(bytes))) {
       size_t sent = 0;
       while (sent < count) {
-        int n = send(client, bytes + sent, count - sent, MSG_NOSIGNAL);
+        int n = client_tls ? SSL_write(client_tls, bytes + sent, count - sent)
+                           : send(client, bytes + sent, count - sent,
+                                  MSG_NOSIGNAL);
         ASSERT_GT(n, 0);
         sent += n;
       }
@@ -1183,9 +1219,11 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
           deadline - std::chrono::steady_clock::now()).count();
       if (left <= 0) return false;
       pollfd fd = {client, POLLIN, 0};
-      if (poll(&fd, 1, left) <= 0) return false;
+      if ((!client_tls || !SSL_pending(client_tls)) &&
+          poll(&fd, 1, left) <= 0) return false;
       char bytes[4096];
-      int n = recv(client, bytes, sizeof(bytes), MSG_DONTWAIT);
+      int n = client_tls ? SSL_read(client_tls, bytes, sizeof(bytes))
+                         : recv(client, bytes, sizeof(bytes), MSG_DONTWAIT);
       if (n <= 0) return false;
       if (sproto_in_buffer_append(wire, bytes, n) != SUPLA_RESULT_TRUE)
         return false;
@@ -1232,7 +1270,7 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     cloud_grant(99126, channel_config_origin(consumer, 1), source, destination,
                 resource, 1);
     ASSERT_TRUE(factory()->accept_identity(source, {123, {}}));
-    PeerDao repo(99126);
+    peer_dao repo(99126);
     std::vector<std::pair<uint64_t, uint64_t>> before, after;
     ASSERT_TRUE(repo.changed_pairs(0, 64, &before));
     ASSERT_EQ(1u, before.size());
@@ -1299,18 +1337,16 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     register_existing_family(type, function, function, weekly);
   }
 
-  void register_existing_family(int type, int advertised_function,
-                                int selected_function, bool weekly = false,
-                                bool suplan = true,
-                                std::function<void(const TSuplaDataPacket &)>
-                                    observe = {}) {
+  void begin_registration(int type, int advertised_function,
+                          bool weekly = false, bool suplan = true) {
     TDS_SuplaRegisterDevice_G registration = {};
     snprintf(registration.Email, sizeof(registration.Email), "%s",
              "hvac-wire@test.invalid");
     memset(registration.GUID, 0xab, sizeof(registration.GUID));
     registration.AuthKey[0] = 1;
     registration.Flags = (suplan ? SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED : 0) |
-                         SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
+                         SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED |
+                         extra_device_flags;
     registration.channel_count = 1;
     auto &channel = registration.channels[0];
     channel.Number = 240;
@@ -1320,6 +1356,14 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
                     (weekly ? SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE : 0);
     send_packet(SUPLA_DS_CALL_REGISTER_DEVICE_G, &registration,
                 sizeof(TDS_SuplaRegisterDeviceHeader) + sizeof(channel));
+  }
+
+  void register_existing_family(int type, int advertised_function,
+                                int selected_function, bool weekly = false,
+                                bool suplan = true,
+                                std::function<void(const TSuplaDataPacket &)>
+                                    observe = {}) {
+    begin_registration(type, advertised_function, weekly, suplan);
     bool registered = false, synced = false;
     TSuplaDataPacket packet = {};
     for (unsigned i = 0; i < 10 && !synced; ++i) {
@@ -1345,6 +1389,229 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
       }
     }
     ASSERT_TRUE(registered && synced);
+  }
+
+  void weekly_ipc_publication(int type, int function, unsigned char mode) {
+    register_family(type, function, true);
+    ASSERT_FALSE(HasFatalFailure());
+    TChannelConfig_WeeklySchedule weekly = {};
+    weekly.Quarters[0] = 0x11;
+    weekly.Program[0].Mode = mode;
+    weekly_schedule_config stored;
+    stored.set_config(&weekly, function);
+    supla_mariadb_access_provider db;
+    supla_device_dao dao(&db);
+    ASSERT_TRUE(dao.set_channel_config(99126, hvac, &stored));
+    {
+      Sql004Probe probe;
+      notify(CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE);
+      // One mutation read; publication performs no second config read.
+      EXPECT_EQ(1u, probe.config_reads);
+    }
+    TSuplaDataPacket packet = {};
+    ASSERT_TRUE(receive_packet(&packet));
+    ASSERT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, packet.call_id);
+    TSDS_SetChannelConfig published = {};
+    memcpy(&published, packet.data, packet.data_size);
+    EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, published.ConfigType);
+    ASSERT_EQ(sizeof(weekly), published.ConfigSize);
+    EXPECT_EQ(0, memcmp(&weekly, published.Config, sizeof(weekly)));
+    acknowledge(published);
+    auto target =
+        supla_user::find(99126, false)->get_devices()->get(destination);
+    ASSERT_NE(nullptr, target);
+    EXPECT_EQ(789u, target->get_suplan_root_epoch());
+    target->get_channels()->access_channel(hvac, [&](supla_device_channel *c) {
+      Sql004Probe probe;
+      for (unsigned n = 0; n < 3; ++n) {
+        TSD_ChannelConfig config = {};
+        ASSERT_TRUE(
+            c->get_config(&config, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, 0));
+        ASSERT_EQ(sizeof(weekly), config.ConfigSize);
+        EXPECT_EQ(0, memcmp(&weekly, config.Config, sizeof(weekly)));
+      }
+      EXPECT_EQ(0u, probe.config_reads);
+      EXPECT_EQ(0u, probe.selects);
+    });
+  }
+
+  void config_writer_then_cloud(bool from_device, unsigned char cloud_type) {
+    register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                    true);
+    ASSERT_FALSE(HasFatalFailure());
+    auto user = supla_user::find(99126, false);
+    auto target = user->get_devices()->get(destination);
+    ASSERT_NE(nullptr, target);
+    supla_device_channel *channel = nullptr;
+    target->get_channels()->access_channel(
+        hvac, [&](supla_device_channel *c) { channel = c; });
+    ASSERT_NE(nullptr, channel);
+    auto api = std::make_shared<M4ConfigClient>(connection, user);
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    ASSERT_TRUE(api->get_channels()->add(new supla_client_channel(
+        api->get_channels(), hvac, 240, destination, 0, SUPLA_CHANNELTYPE_HVAC,
+        SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+        "", 0, 0, 0, 0, 29, SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE, value, 0, "{}",
+        "{}", false)));
+    TChannelConfig_WeeklySchedule weekly = {};
+    weekly.Quarters[0] = 0x22;
+    TSCS_ChannelConfig client_request = {};
+    client_request.ChannelId = hvac;
+    client_request.ConfigType = SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE;
+    client_request.ConfigSize = sizeof(weekly);
+    memcpy(client_request.Config, &weekly, sizeof(weekly));
+    TSDS_SetChannelConfig device_request = {};
+    device_request.ChannelNumber = 240;
+    device_request.ConfigType = client_request.ConfigType;
+    device_request.ConfigSize = sizeof(weekly);
+    memcpy(device_request.Config, &weekly, sizeof(weekly));
+    std::promise<void> selected, release;
+    auto selected_future = selected.get_future();
+    auto released = release.get_future();
+    auto writer = std::async(std::launch::async, [&] {
+      Sql004Probe probe;
+      probe.after_config = [&](unsigned reads) {
+        // First SELECT precedes CAS; second reads the committed merged root.
+        if (reads == 2) {
+          selected.set_value();
+          released.wait();
+        }
+        return false;
+      };
+      testing::SrpcAdapterMock reply;
+      TsrpcReceivedData rd = {};
+      if (from_device) {
+        rd.data.sds_set_channel_config_request = &device_request;
+        EXPECT_CALL(reply, sd_async_set_channel_config_result(testing::_))
+            .WillOnce([](TSDS_SetChannelConfigResult *r) {
+              EXPECT_EQ(SUPLA_CONFIG_RESULT_TRUE, r->Result);
+              return 1;
+            });
+        EXPECT_TRUE(target->get_srpc_call_handler_collection()->handle_call(
+            target, &reply, &rd, SUPLA_DS_CALL_SET_CHANNEL_CONFIG, 29));
+      } else {
+        rd.data.scs_channel_config = &client_request;
+        EXPECT_CALL(reply, sc_async_channel_config_update_or_result(testing::_))
+            .WillOnce([](TSC_ChannelConfigUpdateOrResult *r) {
+              EXPECT_EQ(SUPLA_CONFIG_RESULT_TRUE, r->Result);
+              return 1;
+            });
+        EXPECT_TRUE(api->get_srpc_call_handler_collection()->handle_call(
+            api, &reply, &rd, SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 29));
+      }
+      EXPECT_EQ(2u, probe.config_reads);
+    });
+    if (selected_future.wait_for(std::chrono::seconds(2)) !=
+        std::future_status::ready) {
+      release.set_value();
+      writer.get();
+      FAIL() << "Writer did not reach merged-root SELECT";
+    }
+    // Deterministic ordering check, from another thread than the writer.
+    bool unlocked = channel->get_config_mutex().try_lock();
+    if (unlocked) channel->get_config_mutex().unlock();
+    EXPECT_FALSE(unlocked) << "DB snapshot must remain fenced until cached";
+    // Ordinary cached reads do not take the producer lock or issue SQL.
+    {
+      Sql004Probe probe;
+      TSD_ChannelConfig cached = {};
+      EXPECT_TRUE(channel->get_config(&cached, SUPLA_CONFIG_TYPE_DEFAULT, 0));
+      EXPECT_EQ(0u, probe.selects);
+    }
+    // A separate trusted Cloud-like transaction is not blocked by Core's lock.
+    unsigned long long scope = CONFIG_CHANGE_SCOPE_JSON_DEFAULT;
+    if (cloud_type == SUPLA_CONFIG_TYPE_DEFAULT) {
+      query(
+          "UPDATE supla_dev_channel SET user_config="
+          "JSON_SET(user_config,'$.minOnTimeS',23) WHERE id=" +
+          std::to_string(hvac));
+    } else {
+      const char *key = cloud_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE
+                            ? "weeklySchedule"
+                            : "altWeeklySchedule";
+      query(
+          "UPDATE supla_dev_channel SET user_config="
+          "JSON_SET(user_config,'$." +
+          std::string(key) +
+          "',JSON_OBJECT('quarters',JSON_ARRAY(3,3))) WHERE id=" +
+          std::to_string(hvac));
+      scope = cloud_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE
+                  ? CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE
+                  : CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE;
+    }
+    auto ipc = std::async(std::launch::async, [&] {
+      Sql004Probe probe;
+      probe.after_config = [&](unsigned) {
+        TSD_ChannelConfig cached = {};
+        EXPECT_TRUE(
+            channel->get_config(&cached, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, 0));
+        EXPECT_EQ(sizeof(weekly), cached.ConfigSize);
+        EXPECT_EQ(0, memcmp(&weekly, cached.Config, sizeof(weekly)))
+            << "IPC must read only after the preceding writer installs cache";
+        return false;
+      };
+      notify(scope);
+      EXPECT_EQ(1u, probe.config_reads);
+    });
+    release.set_value();
+    writer.get();
+    ipc.get();
+    unlocked = channel->get_config_mutex().try_lock();
+    EXPECT_TRUE(unlocked);
+    if (unlocked) channel->get_config_mutex().unlock();
+    supla_mariadb_access_provider db;
+    supla_device_dao dao(&db);
+    std::unique_ptr<supla_json_config> root(
+        dao.get_channel_config(hvac, nullptr, nullptr));
+    ASSERT_NE(nullptr, root);
+    std::unique_ptr<supla_json_config> cached_root(channel->get_json_config());
+    char *authoritative_json = root->get_user_config();
+    char *cached_json = cached_root->get_user_config();
+    EXPECT_STREQ(authoritative_json, cached_json);
+    free(authoritative_json);
+    free(cached_json);
+    for (auto type :
+         {SUPLA_CONFIG_TYPE_DEFAULT, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE,
+          SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE}) {
+      // Compare fresh DB serialization with cached and real SRPC GET bytes.
+      TSD_ChannelConfig cached = {};
+      {
+        Sql004Probe probe;
+        ASSERT_TRUE(channel->get_config(&cached, type, 0));
+        EXPECT_EQ(0u, probe.selects);
+      }
+      if (type == cloud_type && type == SUPLA_CONFIG_TYPE_DEFAULT) {
+        EXPECT_EQ(
+            23,
+            reinterpret_cast<TChannelConfig_HVAC *>(cached.Config)->MinOnTimeS);
+      } else if (type == cloud_type) {
+        EXPECT_EQ(0x33, reinterpret_cast<TChannelConfig_WeeklySchedule *>(
+                            cached.Config)
+                            ->Quarters[0]);
+      }
+      TDS_GetChannelConfigRequest get = {};
+      get.ChannelNumber = 240;
+      get.ConfigType = type;
+      send_packet(SUPLA_DS_CALL_GET_CHANNEL_CONFIG, &get, sizeof(get));
+      TSuplaDataPacket packet = {};
+      bool received = false;
+      for (unsigned n = 0; n < 10 && !received; ++n) {
+        ASSERT_TRUE(receive_packet(&packet));
+        if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG) {
+          TSDS_SetChannelConfig pushed = {};
+          memcpy(&pushed, packet.data, packet.data_size);
+          acknowledge(pushed);
+        } else if (packet.call_id == SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT) {
+          TSD_ChannelConfig actual = {};
+          memcpy(&actual, packet.data, packet.data_size);
+          EXPECT_EQ(cached.Func, actual.Func);
+          EXPECT_EQ(cached.ConfigSize, actual.ConfigSize);
+          EXPECT_EQ(0, memcmp(cached.Config, actual.Config, cached.ConfigSize));
+          received = true;
+        }
+      }
+      EXPECT_TRUE(received);
+    }
   }
 
   void expect_access(uint32_t channel, uint8_t result, uint8_t status,
@@ -1386,6 +1653,13 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
             "' WHERE id=" + std::to_string(hvac));
     };
     save(false);
+    notify(CONFIG_CHANGE_SCOPE_JSON_DEFAULT);
+    TSuplaDataPacket initial = {};
+    ASSERT_TRUE(receive_packet(&initial));
+    ASSERT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, initial.call_id);
+    TSDS_SetChannelConfig established = {};
+    memcpy(&established, initial.data, initial.data_size);
+    acknowledge(established);
     auto paused = publication_adapter->prepared.get_future();
     publication_adapter->pause_get = true;
     TDS_GetChannelConfigRequest request = {};
@@ -1399,7 +1673,7 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     }
     save(true);
     // This is the real IPC producer while the Device thread is paused.
-    // It must only queue an intent and must not publish/replace Device cache.
+    // It updates the cache before queuing an owner-thread publication.
     notify(CONFIG_CHANGE_SCOPE_JSON_DEFAULT);
     publication_adapter->release.set_value();
     TSuplaDataPacket packet = {};
@@ -1440,6 +1714,83 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     }
   }
 };
+
+TEST_F(SupLanHvacWireIntegrationTest, ClientWeeklyThenCloudDefaultKeepsBoth) {
+  config_writer_then_cloud(false, SUPLA_CONFIG_TYPE_DEFAULT);
+}
+TEST_F(SupLanHvacWireIntegrationTest, ClientWeeklyThenCloudWeeklyKeepsLatest) {
+  config_writer_then_cloud(false, SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+}
+TEST_F(SupLanHvacWireIntegrationTest, ClientWeeklyThenCloudAltKeepsBoth) {
+  config_writer_then_cloud(false, SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+}
+TEST_F(SupLanHvacWireIntegrationTest, DeviceWeeklyThenCloudDefaultKeepsBoth) {
+  config_writer_then_cloud(true, SUPLA_CONFIG_TYPE_DEFAULT);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       QuietIdentityBootstrapDisconnectsAtDeadline) {
+  begin_registration(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  bool registered = false, identities = false;
+  TSuplaDataPacket packet = {};
+  for (unsigned n = 0; n < 10 && !identities; ++n) {
+    ASSERT_TRUE(receive_packet(&packet));
+    if (packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT ||
+        packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B) {
+      TSD_SuplaRegisterDeviceResult result = {};
+      memcpy(&result, packet.data, sizeof(result));
+      ASSERT_EQ(SUPLA_RESULTCODE_TRUE, result.result_code);
+      registered = true;
+    } else if (packet.call_id == SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES) {
+      identities = true;
+    } else if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG ||
+               packet.call_id == SUPLA_SD_CALL_DEVICE_SYNC_DONE) {
+      FAIL() << "Configuration must wait for identity confirmation";
+    }
+  }
+  ASSERT_TRUE(registered && identities);
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  EXPECT_LE(target->wait_time_usec(), 15000001u);
+  // No Result, ping, manual iterate or injected timer: the real connection
+  // loop must close the otherwise quiet TLS session at the bootstrap deadline.
+  EXPECT_FALSE(receive_packet(&packet, 17000));
+  EXPECT_TRUE(sthread_isterminated(worker));
+  EXPECT_EQ(0u, target->get_suplan_root_epoch());
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, DeviceConfigEnqueueFailureIsNotSuccess) {
+  extra_device_flags = SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED;
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  publication_adapter->fail_device_config = true;
+  EXPECT_FALSE(target->send_config_to_device());
+  EXPECT_FALSE(publication_adapter->fail_device_config.load());
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, PeerCredentialsNeverUsePlainConnection) {
+  close_connection();
+  secure = false;
+  start_connection();
+  ASSERT_FALSE(HasFatalFailure());
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_FALSE(connection->is_secure());
+  auto peers = supla_user::find(99126, false)->get_suplan_peers();
+  EXPECT_FALSE(peers->ready(destination));
+  TSDS_SuplaSetSuplanSourceAssociation source_request = {};
+  source_request.Flags = SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY;
+  EXPECT_EQ(peer_transport::send_code::not_ready,
+            peers->send(destination, &source_request).code);
+  TSDS_SuplaSetSuplanDestinationAssociation destination_request = {};
+  destination_request.PeerKeySize = SUPLA_SUPLAN_PEER_KEY_SIZE;
+  memset(destination_request.PeerKey, 0xab,
+         sizeof(destination_request.PeerKey));
+  EXPECT_EQ(peer_transport::send_code::not_ready,
+            peers->send(destination, &destination_request).code);
+}
 
 TEST_F(SupLanHvacWireIntegrationTest,
        M6StreamWakeHandleRacesConnectionDestruction) {
@@ -1582,6 +1933,18 @@ TEST_F(SupLanHvacWireIntegrationTest, ValvePausedGetCannotPublishStaleLast) {
   paused_get_then_newer_ipc(false);
 }
 TEST_F(SupLanHvacWireIntegrationTest,
+       RelayWeeklyIpcUpdatesCacheWithoutReconnect) {
+  weekly_ipc_publication(SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+                         SUPLA_RELAY_MODE_START_ON);
+}
+TEST_F(SupLanHvacWireIntegrationTest,
+       ActionTriggerWeeklyIpcUpdatesCacheWithoutReconnect) {
+  weekly_ipc_publication(SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                         SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                         SUPLA_BUTTON_MODE_LOCKED);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
        RelayPausedWeeklyGetThenClientAndIpcPublishLatest) {
   register_family(SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH, true);
   ASSERT_FALSE(HasFatalFailure());
@@ -1593,6 +1956,13 @@ TEST_F(SupLanHvacWireIntegrationTest,
   supla_mariadb_access_provider db;
   supla_device_dao dao(&db);
   ASSERT_TRUE(dao.set_channel_config(99126, hvac, &stored));
+  notify(CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE);
+  TSuplaDataPacket initial = {};
+  ASSERT_TRUE(receive_packet(&initial));
+  ASSERT_EQ(SUPLA_SD_CALL_SET_CHANNEL_CONFIG, initial.call_id);
+  TSDS_SetChannelConfig established = {};
+  memcpy(&established, initial.data, initial.data_size);
+  acknowledge(established);
   auto paused = publication_adapter->prepared.get_future();
   publication_adapter->pause_get = true;
   TDS_GetChannelConfigRequest get = {};
@@ -1654,9 +2024,9 @@ TEST_F(SupLanHvacWireIntegrationTest,
        AssociationBatchUsesRealSrpcWithoutAdmissionWindow) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
-  PeerDao repo(99126);
-  PeerService previous([] { return std::make_unique<PeerDao>(99126); },
-                       nullptr);
+  peer_dao repo(99126);
+  peer_service previous([] { return std::make_unique<peer_dao>(99126); },
+                        nullptr);
   uint32_t first_channel = 0;
   for (unsigned i = 0; i < 16; ++i) {
     // Historical registered, currently offline Sources in the isolated Core DB.
@@ -1681,7 +2051,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
           std::to_string(consumer));
     cloud_grant(99126, channel_config_origin(consumer, 1), owner, destination,
                 channel, 1);
-    Association a;
+    association_t a;
     ASSERT_TRUE(repo.find(owner, destination, &a));
     ASSERT_TRUE(previous.provisioned(a, 123 + i));
   }
@@ -1728,15 +2098,15 @@ TEST_F(SupLanHvacWireIntegrationTest,
        QuietConnectionWatchdogReconnectsAndReplaysDraining) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
-  PeerDao repo(99126);
+  peer_dao repo(99126);
   ASSERT_TRUE(repo.accept_identity(source, {123, {resource}}));
   // Previously accepted Source context, reconstructed from authoritative DB.
   // Source is now offline. The real Destination socket stays connected.
-  PeerService previous([] { return std::make_unique<PeerDao>(99126); },
-                       nullptr);
+  peer_service previous([] { return std::make_unique<peer_dao>(99126); },
+                        nullptr);
   cloud_grant(99126, channel_config_origin(hvac, 1), source, destination,
               resource, 1);
-  Association a;
+  association_t a;
   ASSERT_TRUE(repo.find(source, destination, &a));
   ASSERT_TRUE(previous.provisioned(a, 123));
   auto user = supla_user::find(99126, false);
@@ -1849,7 +2219,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
                 SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
   ASSERT_TRUE(repo.load(a.id, &a));
-  EXPECT_EQ(Lifecycle::Draining, a.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, a.lifecycle);
   EXPECT_TRUE(a.destination_acked);
   EXPECT_FALSE(a.source_acked);
 }
@@ -1888,8 +2258,8 @@ TEST_F(SupLanHvacWireIntegrationTest,
   EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_grant "
       "WHERE user_id=99126 AND origin_type=1 AND origin_id=" +
       std::to_string(channel_config_origin(hvac, 5))));
-  Association a;
-  ASSERT_TRUE(PeerDao(99126).find(destination, source, &a));
+  association_t a;
+  ASSERT_TRUE(peer_dao(99126).find(destination, source, &a));
   EXPECT_EQ(destination, a.source);
   EXPECT_EQ(source, a.destination);
   ASSERT_EQ(1u, a.acl.size());
@@ -2096,7 +2466,7 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   device.join();
   const auto rows = decisions();
   ASSERT_FALSE(rows.empty());
-  EXPECT_EQ(ApprovalStatus::Pending, rows.back().status);
+  EXPECT_EQ(approval_status::pending, rows.back().status);
   EXPECT_EQ(2, rows.back().permissions);
   if (accepted) {
     ASSERT_EQ(2u, rows.size());
@@ -2140,7 +2510,7 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_UNSUPPORTED, manual_ensure(4).Result);
   // Reads never rewrite business ACL.
   EXPECT_TRUE(same_state(before, state()));
-  EXPECT_EQ(ApprovalStatus::Accepted, decisions().front().status);
+  EXPECT_EQ(approval_status::accepted, decisions().front().status);
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
@@ -2149,7 +2519,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
   query("UPDATE supla_iodevice SET protocol_version=29 WHERE user_id=99126");
-  PeerDao repo(99126);
+  peer_dao repo(99126);
   ASSERT_TRUE(repo.accept_identity(source, {123, {resource}}));
   expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
                 SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
@@ -2329,7 +2699,7 @@ TEST_F(SupLanPeerDaoIntegrationTest,
   EXPECT_LE(remaining, 5000000);
   for (auto &channel : dao.get_virtual_channels(user, 0))
     EXPECT_NE(resource, channel.get_channel_id());  // Legacy read unchanged.
-  ChannelInfo info;
+  channel_info_t info;
   ASSERT_TRUE(factory()->channel(resource, &info));
   EXPECT_FALSE(info.is_virtual);  // No Source-model or persistent mutation.
 }
@@ -2354,7 +2724,7 @@ TEST_F(SupLanPeerDaoIntegrationTest,
               service.ensure_access(destination, request).Result);
   }
   EXPECT_TRUE(decisions().empty());
-  PeerService foreign{[] { return std::make_unique<PeerDao>(1); }, nullptr};
+  peer_service foreign{[] { return std::make_unique<peer_dao>(1); }, nullptr};
   EXPECT_EQ(SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
             foreign.ensure_access(destination, request).Result);
 }
@@ -2454,8 +2824,8 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
   memcpy(&snapshot, packet.data, sizeof(snapshot));
   EXPECT_EQ(1, snapshot.Channel.Offline);
-  Association association;
-  ASSERT_TRUE(PeerDao(99126).find(source, destination, &association));
+  association_t association;
+  ASSERT_TRUE(peer_dao(99126).find(source, destination, &association));
   EXPECT_EQ(0u, association.id);
 }
 
@@ -2582,7 +2952,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   memcpy(&snapshot, packet.data, sizeof(snapshot));
   memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
   EXPECT_DOUBLE_EQ(25, temperature);
-  std::shared_ptr<StreamConnection> previous_stream;
+  std::shared_ptr<stream_connection> previous_stream;
   {
     auto target =
         supla_user::find(99126, false)->get_devices()->get(destination);
@@ -2633,8 +3003,8 @@ TEST_F(SupLanHvacWireIntegrationTest,
   EXPECT_EQ(1, snapshot.Channel.Offline);
   memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
   EXPECT_DOUBLE_EQ(26, temperature);
-  Association association;
-  ASSERT_TRUE(PeerDao(99126).find(source, destination, &association));
+  association_t association;
+  ASSERT_TRUE(peer_dao(99126).find(source, destination, &association));
   EXPECT_EQ(0u, association.id);
   query("DELETE FROM supla_dev_channel WHERE id=" + std::to_string(resource));
   supla_user::on_channel_deleted(99126, source, resource, supla_caller());
@@ -2720,7 +3090,7 @@ TEST_F(SupLanHvacIntegrationTest,
                           std::to_string(independent_origin) +
                           " AND resource_id=" + std::to_string(local) +
                           " AND permissions=1"));
-      Association independent;
+      association_t independent;
       ASSERT_TRUE(factory()->find(destination, source, &independent));
       EXPECT_TRUE(std::any_of(independent.acl.begin(), independent.acl.end(),
           [&](const TSuplaSuplanAclEntry &entry) {
@@ -2829,8 +3199,10 @@ class SupLanCloudGrantIntegrationTest : public testing::Test,
                                        public testing::IntegrationTest {
  protected:
   supla_mariadb_access_provider admin;
-  PeerService::Factory factory = [] { return std::make_unique<PeerDao>(2); };
-  PeerService service{factory, nullptr};
+  peer_service::factory_t factory = [] {
+    return std::make_unique<peer_dao>(2);
+  };
+  peer_service service{factory, nullptr};
   int source = 0, destination = 0;
   uint32_t resource = 0, consumer = 0;
   void execute(const std::string &sql) {
@@ -2951,8 +3323,8 @@ class SupLanCloudGrantIntegrationTest : public testing::Test,
             "," + std::to_string(origin) + ",'" + grants + "')");
     execute("COMMIT");
   }
-  Association state() {
-    Association out;
+  association_t state() {
+    association_t out;
     EXPECT_TRUE(factory()->find(source, destination, &out));
     return out;
   }
@@ -2987,7 +3359,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
   EXPECT_TRUE(same_state(accepted, state()));
   replace(2, 90001, 0);
   auto draining = state();
-  EXPECT_EQ(Lifecycle::Draining, draining.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, draining.lifecycle);
   EXPECT_EQ(accepted.revision + 1, draining.revision);
   EXPECT_EQ(accepted.generation, draining.generation);
   EXPECT_TRUE(draining.acl.empty());
@@ -2998,9 +3370,9 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     auto partial = state();
     EXPECT_TRUE(partial.source_acked);
     EXPECT_FALSE(partial.destination_acked);
-    EXPECT_EQ(Lifecycle::Draining, partial.lifecycle);
+    EXPECT_EQ(lifecycle_t::draining, partial.lifecycle);
     EXPECT_TRUE(service.cleanup_ack(draining, false));
-    EXPECT_EQ(Lifecycle::Dormant, state().lifecycle);
+    EXPECT_EQ(lifecycle_t::dormant, state().lifecycle);
     EXPECT_EQ(0u, probe.dml);
     probe.finish("adr013-independent-empty-acks");
   }
@@ -3056,7 +3428,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
        DirtyMarkerCompareAndClearDoesNotAcknowledgeDeviceOrNewerChange) {
   const auto origin = channel_config_origin(consumer, 1);
   replace(1, origin, 1);
-  PeerDao dao(2);
+  peer_dao dao(2);
   std::vector<std::pair<uint64_t, uint64_t>> markers;
   ASSERT_TRUE(dao.changed_pairs(0, 64, &markers));
   ASSERT_EQ(1u, markers.size());
@@ -3065,7 +3437,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
   {
     Sql004Probe probe;
     probe.restricted = true;
-    PeerDao restricted(2);
+    peer_dao restricted(2);
     ASSERT_TRUE(restricted.ack_changed(first.first, first.second));
     ASSERT_TRUE(restricted.changed_pairs(0, 64, &markers));
     ASSERT_EQ(1u, markers.size());
@@ -3114,16 +3486,16 @@ TEST_F(SupLanCloudGrantIntegrationTest,
 TEST_F(SupLanCloudGrantIntegrationTest,
        StreamUsesOneCurrentReadPerPublicationAndQuietCheckThenTerminalOffline) {
   replace(2, 90002, 1, false);
-  auto now = StreamConnection::Time() + std::chrono::seconds(1);
+  auto now = stream_connection::time_point_t() + std::chrono::seconds(1);
   unsigned value = 0;
   std::vector<TSD_SuplaRemoteChannelState> sent;
-  StreamConnection stream(
+  stream_connection stream(
       32,
       [&](uint32_t id, bool approval, bool request) {
         return service.ensure_stream(destination, id, approval, nullptr,
                                      request);
       },
-      [&](uint32_t, StreamConnection::Snapshot *out) {
+      [&](uint32_t, stream_connection::snapshot_t *out) {
         out->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
         out->state.Channel.Default = SUPLA_CHANNELFNC_THERMOMETER;
         out->state.Channel.value[0] = value;
@@ -3192,8 +3564,9 @@ TEST_F(SupLanCloudGrantIntegrationTest,
               channel->get_config(&config, SUPLA_CONFIG_TYPE_DEFAULT, 0));
           EXPECT_EQ(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, config.Func);
         }
-        EXPECT_EQ(3u, probe.config_reads);
-        EXPECT_EQ(3u, probe.selects);
+        EXPECT_EQ(0u, probe.config_reads);
+        EXPECT_EQ(0u, probe.selects);
+        EXPECT_EQ(0u, probe.connections);
         EXPECT_EQ(0u, probe.dml);
         EXPECT_EQ(0u, probe.calls);
         probe.finish("adr013-get-config-three");
@@ -3219,7 +3592,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
        SourceOkCommitsBeforeForwardingKeyAndRevokeKeepsIndependentSides) {
   replace(1, channel_config_origin(consumer, 1), 1);
   DeleteTransport transport;
-  PeerProvisioner peers(factory, &transport);
+  peer_provisioner peers(factory, &transport);
   const auto initial = state();
   {
     Sql004Probe probe;
@@ -3261,13 +3634,13 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     peers.on_destination(destination, &reply);
     EXPECT_TRUE(state().destination_acked);
     EXPECT_FALSE(state().source_acked);
-    EXPECT_EQ(Lifecycle::Draining, state().lifecycle);
+    EXPECT_EQ(lifecycle_t::draining, state().lifecycle);
     TDS_SuplaSetSuplanSourceAssociationResult empty{};
     empty.PeerContext = transport.sources.back().PeerContext;
     empty.AclRevision = transport.sources.back().AclRevision;
     empty.Result = SUPLA_SUPLAN_RESULT_OK;
     peers.on_source(source, &empty);
-    EXPECT_EQ(Lifecycle::Dormant, state().lifecycle);
+    EXPECT_EQ(lifecycle_t::dormant, state().lifecycle);
     EXPECT_EQ(0u, probe.dml);
   }
 }
@@ -3384,8 +3757,9 @@ TEST_F(SupLanCloudGrantIntegrationTest,
           ASSERT_TRUE(
               channel->get_config(&config, SUPLA_CONFIG_TYPE_DEFAULT, 0));
           EXPECT_EQ(item.function, config.Func);
-          EXPECT_EQ(1u, probe.config_reads);
-          EXPECT_EQ(1u, probe.selects);
+          EXPECT_EQ(0u, probe.config_reads);
+          EXPECT_EQ(0u, probe.selects);
+          EXPECT_EQ(0u, probe.connections);
           EXPECT_EQ(0u, probe.calls);
           EXPECT_EQ(0u, probe.dml);
           probe.finish(item.label);
@@ -3407,7 +3781,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     }
   } transport;
   auto now = std::chrono::steady_clock::time_point() + std::chrono::seconds(1);
-  PeerProvisioner peers(factory, &transport, [&] { return now; });
+  peer_provisioner peers(factory, &transport, [&] { return now; });
   ASSERT_TRUE(peers.reconcile(state().id));
   ASSERT_EQ(1u, transport.sources.size());
   execute("CREATE TRIGGER suplan_fixture_fail_source BEFORE UPDATE ON "
@@ -3480,7 +3854,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     ASSERT_TRUE(factory()->cleanup_device(source));
     auto draining = state();
     ASSERT_NE(0u, draining.id);
-    EXPECT_EQ(Lifecycle::Draining, draining.lifecycle);
+    EXPECT_EQ(lifecycle_t::draining, draining.lifecycle);
     EXPECT_TRUE(draining.source_removed);
     EXPECT_TRUE(draining.source_acked);
     EXPECT_FALSE(draining.destination_acked);
@@ -3524,7 +3898,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_FALSE(HasFatalFailure());
   auto user = supla_user::find(99126, false);
   ASSERT_NE(nullptr, user);
-  PeerDao trusted(99126);
+  peer_dao trusted(99126);
   auto origin = channel_config_origin(hvac, 1);
   query("UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
         "'mainThermometerChannelId'," + std::to_string(resource) +
@@ -3533,9 +3907,9 @@ TEST_F(SupLanHvacWireIntegrationTest,
   query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
         std::to_string(hvac));
   cloud_grant(99126, origin, source, destination, resource, 0);
-  Association desired;
+  association_t desired;
   ASSERT_TRUE(trusted.find(source, destination, &desired));
-  ASSERT_EQ(Lifecycle::Draining, desired.lifecycle);
+  ASSERT_EQ(lifecycle_t::draining, desired.lifecycle);
   std::vector<std::pair<uint64_t, uint64_t>> markers;
   ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
   ASSERT_EQ(1u, markers.size());
@@ -3567,6 +3941,6 @@ TEST_F(SupLanHvacWireIntegrationTest,
   ASSERT_TRUE(trusted.load(desired.id, &desired));
   EXPECT_FALSE(desired.source_acked);
   EXPECT_FALSE(desired.destination_acked);
-  EXPECT_EQ(Lifecycle::Draining, desired.lifecycle);
+  EXPECT_EQ(lifecycle_t::draining, desired.lifecycle);
 }
 }  // namespace

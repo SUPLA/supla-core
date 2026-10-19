@@ -80,7 +80,7 @@ class supla_channel_config_sync_coordinator {
   void iterate(void);
   unsigned _supla_int64_t time_left_usec(void);
   // Connection-thread only: deferred pushes must not overlap replay ACKs.
-  bool is_finished() const { return state == sync_state_finished; }
+  bool is_finished() const;
 };
 
 #endif /* CHANNEL_CONFIG_SYNC_COORDINATOR_H_ */

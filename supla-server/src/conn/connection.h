@@ -104,6 +104,7 @@ class supla_connection {
   virtual ~supla_connection();
 
   supla_abstract_srpc_adapter *get_srpc_adapter(void);
+  bool is_secure() const;
   unsigned int get_client_ipv4(void);
   int get_client_sd(void);
   void set_activity_timeout(unsigned char timeout);

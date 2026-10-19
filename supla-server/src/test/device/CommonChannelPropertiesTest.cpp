@@ -1233,8 +1233,8 @@ TEST_F(CommonChannelPropertiesTest, explicitAllSixRecipientEncoding) {
       if (!more) break;
     }
   });
-  for (auto encoding : {ChannelReferenceEncoding::ChannelId,
-                        ChannelReferenceEncoding::LocalChannelNumber}) {
+  for (auto encoding : {channel_reference_encoding::server_channel_id,
+                        channel_reference_encoding::device_channel_number}) {
     char buffer[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
     unsigned _supla_int16_t size = 0;
     destination.get_config(buffer, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0,
@@ -1242,19 +1242,19 @@ TEST_F(CommonChannelPropertiesTest, explicitAllSixRecipientEncoding) {
     ASSERT_EQ(sizeof(TChannelConfig_HVAC), size);
     auto wire = reinterpret_cast<TChannelConfig_HVAC *>(buffer);
     unsigned int base =
-        encoding == ChannelReferenceEncoding::ChannelId ? 70000 : 20;
+        encoding == channel_reference_encoding::server_channel_id ? 70000 : 20;
     EXPECT_EQ(base, wire->MainThermometerChannelId);
     EXPECT_EQ(base + 1, wire->AuxThermometerChannelId);
     EXPECT_EQ(base + 2, wire->BinarySensorChannelId);
-    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
                   ? base + 3
                   : ((base + 3) << 8) | 1,
               wire->MasterThermostatChannelId);
-    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
                   ? base + 4
                   : ((base + 4) << 8) | 1,
               wire->PumpSwitchChannelId);
-    EXPECT_EQ(encoding == ChannelReferenceEncoding::ChannelId
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
                   ? base + 5
                   : ((base + 5) << 8) | 1,
               wire->HeatOrColdSourceSwitchChannelId);

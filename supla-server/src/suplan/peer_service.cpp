@@ -12,26 +12,26 @@
 
 namespace supla_suplan {
 
-bool Repository::observe_root(uint64_t id) {
-  Association a;
-  Identity identity;
+bool repository::observe_root(uint64_t id) {
+  association_t a;
+  identity_t identity;
   if (!begin(id, &a) || !this->identity(a.source, &identity)) return false;
-  if (a.lifecycle == Lifecycle::Draining && !a.source_acked &&
+  if (a.lifecycle == lifecycle_t::draining && !a.source_acked &&
       (a.source_removed ||
        (a.root && identity.root && a.root != identity.root))) {
     a.source_acked = true;
-    if (a.destination_acked) a.lifecycle = Lifecycle::Dormant;
+    if (a.destination_acked) a.lifecycle = lifecycle_t::dormant;
     if (!save(a)) return false;
   }
   return commit();
 }
 
-bool Repository::owns_acl(int source, int destination, const Acl &acl) {
+bool repository::owns_acl(int source, int destination, const acl_t &acl) {
   bool owned = false;
   return check_acl_ownership(source, destination, acl, &owned) && owned;
 }
-bool Repository::check_acl_ownership(int source, int destination,
-                                      const Acl &acl, bool *owned) {
+bool repository::check_acl_ownership(int source, int destination,
+                                     const acl_t &acl, bool *owned) {
   *owned = false;
   for (int endpoint : {source, destination}) {
     int current_owner = 0;
@@ -56,8 +56,8 @@ uint8_t missing_permissions(uint8_t requested, uint8_t effective) {
     effective |= SUPLA_SUPLAN_PERMISSION_READ;
   return normalize(requested) & ~effective;
 }
-static bool active_binary_source(const ChannelInfo &info);
-static bool manual_permissions_supported(const ChannelInfo &c, uint8_t p) {
+static bool active_binary_source(const channel_info_t &info);
+static bool manual_permissions_supported(const channel_info_t &c, uint8_t p) {
   if (!c.type || !c.function || !valid_permissions(p))
     return false;
   if (c.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
@@ -138,7 +138,7 @@ static bool manual_permissions_supported(const ChannelInfo &c, uint8_t p) {
   }
   return false;
 }
-bool stream_read_supported(const ChannelInfo &channel) {
+bool stream_read_supported(const channel_info_t &channel) {
   if (!channel.type || !channel.function ||
       channel.type == SUPLA_CHANNELTYPE_ACTIONTRIGGER ||
       channel.function == SUPLA_CHANNELFNC_ACTIONTRIGGER) return false;
@@ -157,8 +157,8 @@ bool stream_read_supported(const ChannelInfo &channel) {
       if (c.function != SUPLA_CHANNELFNC_POWERSWITCH &&
           c.function != SUPLA_CHANNELFNC_LIGHTSWITCH &&
           c.function != SUPLA_CHANNELFNC_STAIRCASETIMER)
-        return stream_read_supported(ChannelInfo{c.device,
-            SUPLA_CHANNELTYPE_RELAYHFD4, c.function});
+        return stream_read_supported(
+            channel_info_t{c.device, SUPLA_CHANNELTYPE_RELAYHFD4, c.function});
       return true;
     case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
       c.type = SUPLA_CHANNELTYPE_RELAY;
@@ -200,7 +200,7 @@ bool stream_read_supported(const ChannelInfo &channel) {
   return manual_permissions_supported(c, SUPLA_SUPLAN_PERMISSION_READ);
 }
 
-static bool active_binary_source(const ChannelInfo &info) {
+static bool active_binary_source(const channel_info_t &info) {
   if (info.type != SUPLA_CHANNELTYPE_BINARYSENSOR) return false;
   switch (info.function) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -224,8 +224,7 @@ static bool active_binary_source(const ChannelInfo &info) {
   }
 }
 
-
-bool canonicalize(const Acl &input, Acl *acl) {
+bool canonicalize(const acl_t &input, acl_t *acl) {
   std::map<std::pair<uint8_t, uint32_t>, uint8_t> entries;
   for (const auto &g : input) {
     if (!valid_permissions(g.Permissions) || !g.ResourceId ||
@@ -241,7 +240,7 @@ bool canonicalize(const Acl &input, Acl *acl) {
   }
   return true;
 }
-bool equal_acl(const Acl &a, const Acl &b) {
+bool equal_acl(const acl_t &a, const acl_t &b) {
   if (a.size() != b.size()) return false;
   for (size_t i = 0; i < a.size(); ++i) {
     if (a[i].ResourceType != b[i].ResourceType ||
@@ -251,7 +250,7 @@ bool equal_acl(const Acl &a, const Acl &b) {
   }
   return true;
 }
-bool same_state(const Association &a, const Association &b) {
+bool same_state(const association_t &a, const association_t &b) {
   return a.id == b.id && a.source == b.source &&
          a.destination == b.destination && a.root == b.root &&
          a.provisioned_generation == b.provisioned_generation &&
@@ -260,7 +259,7 @@ bool same_state(const Association &a, const Association &b) {
          a.destination_removed == b.destination_removed &&
          equal_acl(a.acl, b.acl);
 }
-TSuplaSuplanPeerContext context(const Association &a, uint32_t root) {
+TSuplaSuplanPeerContext context(const association_t &a, uint32_t root) {
   return {SUPLA_SUPLAN_AUTHORITY_TYPE_SERVER,
           0,
           SUPLA_SUPLAN_NODE_ID_NAMESPACE_DEVICE_ID,
@@ -270,7 +269,7 @@ TSuplaSuplanPeerContext context(const Association &a, uint32_t root) {
           root,
           a.generation};
 }
-bool matches(const TSuplaSuplanPeerContext &p, const Association &a) {
+bool matches(const TSuplaSuplanPeerContext &p, const association_t &a) {
   return p.AuthorityType == SUPLA_SUPLAN_AUTHORITY_TYPE_SERVER &&
          p.AuthorityId == 0 &&
          p.SourceNodeIdNamespace == SUPLA_SUPLAN_NODE_ID_NAMESPACE_DEVICE_ID &&
@@ -280,7 +279,7 @@ bool matches(const TSuplaSuplanPeerContext &p, const Association &a) {
          p.DestinationNodeId == static_cast<uint32_t>(a.destination) &&
          p.RootEpoch == a.root && p.PeerGeneration == a.generation;
 }
-std::vector<unsigned char> encode_acl(const Acl &acl) {
+std::vector<unsigned char> encode_acl(const acl_t &acl) {
   std::vector<unsigned char> out;
   for (const auto &e : acl) {
     out.push_back(e.ResourceType);
@@ -290,9 +289,9 @@ std::vector<unsigned char> encode_acl(const Acl &acl) {
   }
   return out;
 }
-bool decode_acl(const unsigned char *data, size_t size, Acl *acl) {
+bool decode_acl(const unsigned char *data, size_t size, acl_t *acl) {
   if (size % 6 || size > SUPLA_SUPLAN_MAX_ACL_ENTRIES * 6) return false;
-  Acl entries;
+  acl_t entries;
   for (size_t i = 0; i < size; i += 6) {
     uint32_t id = 0;
     for (size_t j = 1; j < 5; ++j) id = (id << 8) | data[i + j];
@@ -320,19 +319,19 @@ std::shared_ptr<std::mutex> association_gate(uint64_t id) {
   }
   return gate;
 }
-PeerService::PeerService(Factory factory, Changed changed)
+peer_service::peer_service(factory_t factory, changed_callback_t changed)
     : factory(factory), changed(changed) {}
 
-bool PeerService::mutate(
-    uint64_t id, const std::function<bool(Repository *, Association *)> &fn) {
+bool peer_service::mutate(
+    uint64_t id, const std::function<bool(repository *, association_t *)> &fn) {
   bool notify = false;
   {
     auto gate = association_gate(id);
     std::lock_guard<std::mutex> lock(*gate);
     auto repo = factory();
-    Association a;
+    association_t a;
     if (!repo->begin(id, &a)) return false;
-    Association before = a;
+    association_t before = a;
     if (!fn(repo.get(), &a)) {
       repo->rollback();
       return false;
@@ -346,27 +345,27 @@ bool PeerService::mutate(
   if (notify && changed) changed(id);
   return true;
 }
-bool PeerService::cleanup_ack(const Association &sent, bool source) {
-  return mutate(sent.id, [&](Repository *r, Association *a) {
-    if (!same_state(sent, *a) || a->lifecycle != Lifecycle::Draining)
+bool peer_service::cleanup_ack(const association_t &sent, bool source) {
+  return mutate(sent.id, [&](repository *r, association_t *a) {
+    if (!same_state(sent, *a) || a->lifecycle != lifecycle_t::draining)
       return true;
     bool &acked = source ? a->source_acked : a->destination_acked;
     if (acked) return true;
     acked = true;
     if (a->source_acked && a->destination_acked) {
-      a->lifecycle = Lifecycle::Dormant;
+      a->lifecycle = lifecycle_t::dormant;
     }
     return r->save(*a);
   });
 }
-bool PeerService::observe_root(uint64_t id) {
+bool peer_service::observe_root(uint64_t id) {
   auto gate = association_gate(id);
   std::lock_guard<std::mutex> lock(*gate);
   return factory()->observe_root(id);
 }
-bool PeerService::provisioned(const Association &sent, uint32_t root) {
-  return mutate(sent.id, [&](Repository *r, Association *a) {
-    Identity identity;
+bool peer_service::provisioned(const association_t &sent, uint32_t root) {
+  return mutate(sent.id, [&](repository *r, association_t *a) {
+    identity_t identity;
     if (!same_state(sent, *a)) return true;
     if (!r->identity(a->source, &identity) || identity.root != root)
       return false;
@@ -378,8 +377,7 @@ bool PeerService::provisioned(const Association &sent, uint32_t root) {
   });
 }
 
-
-TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
+TSD_SuplaEnsureResourceAccessResult peer_service::ensure_access(
     int destination, const TDS_SuplaEnsureResourceAccess &q,
     const std::function<bool()> &) {
   TSD_SuplaEnsureResourceAccessResult result = {
@@ -406,8 +404,8 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
   if (stream) return ensure_stream(destination, q.Resource.ResourceId,
                                     q.Flags != 0, nullptr, true);
   auto repo = factory();
-  DeviceInfo to, from;
-  Identity accepted;
+  device_info_t to, from;
+  identity_t accepted;
   int source = 0, requester = 0;
   auto fail = [&]() {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
@@ -442,7 +440,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     return result;
   }
   if (q.Resource.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL) {
-    ChannelInfo channel;
+    channel_info_t channel;
     if (!repo->channel(q.Resource.ResourceId, &channel)) return fail();
     if (channel.device != source) {
       result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
@@ -477,9 +475,9 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     return fail();
   if (!missing_permissions(q.Permissions, allowed)) {
     if (!stream) {
-      Association association;
+      association_t association;
       if (!repo->find(source, destination, &association)) return fail();
-      auto coverage = [&](const Association &a) {
+      auto coverage = [&](const association_t &a) {
         uint8_t mask = 0;
         for (const auto &entry : a.acl)
           if ((entry.ResourceType == q.Resource.ResourceType &&
@@ -487,7 +485,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
               (entry.ResourceType == SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE &&
                entry.ResourceId == static_cast<uint32_t>(source)))
             mask |= entry.Permissions;
-        return a.id && a.lifecycle == Lifecycle::Active &&
+        return a.id && a.lifecycle == lifecycle_t::active &&
                !a.source_removed && !a.destination_removed &&
                !missing_permissions(q.Permissions, mask);
       };
@@ -523,22 +521,23 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
     result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
     return result;
   }
-  std::vector<ApprovalPair> pairs;
+  std::vector<approval_pair_t> pairs;
   if (!repo->approval_pairs(q.Resource.ResourceId, destination, &pairs))
     return fail();
   result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
   bool pending_covers = false;
   for (const auto &pair : pairs) {
-    std::vector<ApprovalDecision> decisions;
+    std::vector<approval_decision_t> decisions;
     if (!repo->approval_decisions(pair.id, &decisions)) return fail();
     for (const auto &decision : decisions) {
-      if (decision.status != ApprovalStatus::Pending &&
-          decision.status != ApprovalStatus::Rejected) continue;
+      if (decision.status != approval_status::pending &&
+          decision.status != approval_status::rejected)
+        continue;
       result.Result = SUPLA_SUPLAN_RESULT_OK;
-      result.AccessStatus = decision.status == ApprovalStatus::Rejected
-          ? SUPLA_SUPLAN_ACCESS_STATUS_REJECTED
-          : SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
-      if (decision.status == ApprovalStatus::Rejected) return result;
+      result.AccessStatus = decision.status == approval_status::rejected
+                                ? SUPLA_SUPLAN_ACCESS_STATUS_REJECTED
+                                : SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
+      if (decision.status == approval_status::rejected) return result;
       pending_covers = decision.delivery_mode == q.DeliveryMode &&
           !missing_permissions(missing_permissions(q.Permissions, allowed),
                                 decision.permissions);
@@ -553,7 +552,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_access(
   }
   return result;
 }
-TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
+TSD_SuplaEnsureResourceAccessResult peer_service::ensure_stream(
     int destination, uint32_t resource, bool allow_approval,
     const std::function<bool()> &, bool record_request) {
   TSD_SuplaEnsureResourceAccessResult result = {
@@ -561,7 +560,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
       SUPLA_RESOURCE_DELIVERY_SERVER_STREAM};
   if (destination <= 0 || !resource || resource > INT32_MAX) return result;
   auto repo = factory();
-  ChannelInfo channel;
+  channel_info_t channel;
   uint8_t allowed = 0;
   bool ready = false;
   if (!repo->stream_access(destination, resource, &channel, &allowed, &ready)) {
@@ -574,7 +573,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
     // lookups for authorized value publication or quiet revalidation.
     if (record_request) {
       int owner = 0;
-      DeviceInfo info;
+      device_info_t info;
       if (!repo->owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, destination,
                        &owner) ||
           !repo->device(destination, &info)) {
@@ -593,22 +592,23 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
   }
   if (!missing_permissions(SUPLA_SUPLAN_PERMISSION_READ, allowed)) {
     if (record_request) {
-      std::vector<ApprovalPair> pairs;
+      std::vector<approval_pair_t> pairs;
       if (!repo->approval_pairs(resource, destination, &pairs)) {
         result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
         return result;
       }
       for (const auto &pair : pairs) {
-        std::vector<ApprovalDecision> decisions;
+        std::vector<approval_decision_t> decisions;
         if (!repo->approval_decisions(pair.id, &decisions)) {
           result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
           return result;
         }
         for (const auto &decision : decisions) {
-          if (decision.status != ApprovalStatus::Accepted ||
+          if (decision.status != approval_status::accepted ||
               decision.delivery_mode == SUPLA_RESOURCE_DELIVERY_SERVER_STREAM ||
               missing_permissions(SUPLA_SUPLAN_PERMISSION_READ,
-                                  decision.permissions)) continue;
+                                  decision.permissions))
+            continue;
           // Existing consent provenance only. A revoke racing this call must
           // never turn Flags=0 into a new approval request.
           if (!repo->request_pending(destination, resource, 1, 2, false)) {
@@ -623,7 +623,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
     result.AccessStatus = SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
     return result;
   }
-  std::vector<ApprovalPair> pairs;
+  std::vector<approval_pair_t> pairs;
   if (!repo->approval_pairs(resource, destination, &pairs)) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;
@@ -631,19 +631,20 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
   result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
   bool pending = false, stream_mode = false;
   for (const auto &pair : pairs) {
-    std::vector<ApprovalDecision> decisions;
+    std::vector<approval_decision_t> decisions;
     if (!repo->approval_decisions(pair.id, &decisions)) {
       result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
       return result;
     }
     for (const auto &decision : decisions) {
-      if (decision.status != ApprovalStatus::Pending &&
-          decision.status != ApprovalStatus::Rejected) continue;
+      if (decision.status != approval_status::pending &&
+          decision.status != approval_status::rejected)
+        continue;
       result.Result = SUPLA_SUPLAN_RESULT_OK;
-      result.AccessStatus = decision.status == ApprovalStatus::Rejected
-          ? SUPLA_SUPLAN_ACCESS_STATUS_REJECTED
-          : SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
-      if (decision.status == ApprovalStatus::Rejected) return result;
+      result.AccessStatus = decision.status == approval_status::rejected
+                                ? SUPLA_SUPLAN_ACCESS_STATUS_REJECTED
+                                : SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL;
+      if (decision.status == approval_status::rejected) return result;
       pending = true;
       stream_mode = decision.delivery_mode ==
                     SUPLA_RESOURCE_DELIVERY_SERVER_STREAM;
@@ -660,7 +661,7 @@ TSD_SuplaEnsureResourceAccessResult PeerService::ensure_stream(
   }
   return result;
 }
-TSD_SuplaEnsureResourceShareResult PeerService::ensure_share(
+TSD_SuplaEnsureResourceShareResult peer_service::ensure_share(
     int source, const TDS_SuplaEnsureResourceShare &request) {
   TSD_SuplaEnsureResourceShareResult result = {
       SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT, 0};
@@ -716,7 +717,7 @@ TSD_SuplaEnsureResourceShareResult PeerService::ensure_share(
       result.Result = SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED;
     return result;
   }
-  Association association;
+  association_t association;
   if (!repo->find(source, destination, &association)) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;

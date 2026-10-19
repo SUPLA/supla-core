@@ -6,12 +6,13 @@
 namespace supla_suplan {
 class PeerProvisionerTestAccess {
  public:
-  static size_t count(PeerProvisioner &peers) {
+  static size_t count(peer_provisioner &peers) {
     std::lock_guard<std::mutex> lock(peers.flows_mutex);
     return peers.flows.size();
   }
-  static PeerTransport *transport(PeerProvisioner &peers, PeerTransport *next) {
-    PeerTransport *previous = peers.transport;
+  static peer_transport *transport(peer_provisioner &peers,
+                                   peer_transport *next) {
+    peer_transport *previous = peers.transport;
     peers.transport = next;
     return previous;
   }

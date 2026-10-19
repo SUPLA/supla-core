@@ -19,13 +19,20 @@
 #ifndef SUPLAN_IDENTITY_BOOTSTRAP_H_
 #define SUPLAN_IDENTITY_BOOTSTRAP_H_
 
+#include <chrono>
+
 #include "srpc/abstract_srpc_adapter.h"
 
 // Connection-local barrier for future SupLAN-dependent provisioning.
 // The owning Device serializes access; no identity becomes active on DB
 // allocation.
 class supla_suplan_identity_bootstrap {
+ public:
+  using clock_t = std::chrono::steady_clock;
+  using time_point_t = clock_t::time_point;
+
  private:
+  time_point_t deadline{};
   bool pending = false;
   unsigned _supla_int_t root_epoch = 0;
 
@@ -33,37 +40,53 @@ class supla_suplan_identity_bootstrap {
   void reset() {
     pending = false;
     root_epoch = 0;
+    deadline = {};
   }
 
-  enum class StartResult { Disabled, Pending, Failed };
+  enum class start_result { disabled, pending, failed };
 
-  StartResult start(supla_abstract_srpc_adapter *srpc, int flags,
-             TSD_SuplaDeviceIdentities *identities) {
+  start_result start(supla_abstract_srpc_adapter *srpc, int flags,
+                     TSD_SuplaDeviceIdentities *identities,
+                     time_point_t now = clock_t::now()) {
     reset();
     if (!(flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) ||
         !(flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED) ||
         srpc->get_proto_version() < 29) {
-      return StartResult::Disabled;
+      return start_result::disabled;
     }
     if (identities->DeviceId <= 0 ||
         identities->ChannelCount < 0 ||
         identities->ChannelCount > SUPLA_CHANNELMAXCOUNT) {
-      return StartResult::Failed;
+      return start_result::failed;
     }
     for (int i = 0; i < identities->ChannelCount; i++) {
-      if (identities->ChannelId[i] <= 0) return StartResult::Failed;
+      if (identities->ChannelId[i] <= 0) return start_result::failed;
     }
     pending = srpc->sd_async_suplan_device_identities(identities) > 0;
-    return pending ? StartResult::Pending : StartResult::Failed;
+    if (pending) deadline = now + std::chrono::seconds(15);
+    return pending ? start_result::pending : start_result::failed;
   }
 
   void on_result(const TDS_SuplaDeviceIdentitiesResult *result) {
-    bool was_pending = pending;
+    if (!pending) return;
     reset();
-    if (was_pending && result && result->Result == SUPLA_SUPLAN_RESULT_OK &&
+    if (result && result->Result == SUPLA_SUPLAN_RESULT_OK &&
         result->RootEpoch != 0 && result->RootEpoch != 0xFFFFFFFFu) {
       root_epoch = result->RootEpoch;
     }
+  }
+
+  uint64_t time_left_usec(time_point_t now = clock_t::now()) const {
+    if (!pending) return 0;
+    if (now >= deadline) return 1;
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+        deadline - now).count() + 1;
+  }
+
+  bool expire(time_point_t now = clock_t::now()) {
+    if (!pending || now < deadline) return false;
+    reset();
+    return true;
   }
 
   bool is_pending() const { return pending; }

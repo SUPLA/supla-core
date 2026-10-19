@@ -38,12 +38,13 @@ supla_suplan_server_peers::supla_suplan_server_peers(supla_user *user)
     : user(user),
       provisioner(
           [user]() {
-            return std::make_unique<supla_suplan::PeerDao>(user->getUserID());
+            return std::make_unique<supla_suplan::peer_dao>(user->getUserID());
           },
           this) {}
 bool supla_suplan_server_peers::ready(int id) {
   auto d = user->get_devices()->get(id);
-  return d && d->get_connection() && d->is_suplan_peer_ready();
+  return d && d->get_connection() && d->get_connection()->is_secure() &&
+         d->is_suplan_peer_ready();
 }
 bool supla_suplan_server_peers::owner_ready(int id, uint32_t root) {
   auto d = user->get_devices()->get(id);
@@ -76,33 +77,35 @@ bool supla_suplan_server_peers::reconnect_session(int id, uint64_t expected) {
   return d && d->get_connection() && d->is_suplan_peer_ready() &&
          d->get_connection()->get_session_id() == expected && d->reconnect();
 }
-supla_suplan::PeerTransport::SendResult supla_suplan_server_peers::send(
+supla_suplan::peer_transport::send_result_t supla_suplan_server_peers::send(
     int id, TSDS_SuplaSetSuplanSourceAssociation *q) {
   auto d = user->get_devices()->get(id);
-  if (!d || !d->get_connection() || !d->is_suplan_peer_ready())
-    return {SendCode::NotReady, 0};
+  if (!d || !d->get_connection() || !d->get_connection()->is_secure() ||
+      !d->is_suplan_peer_ready())
+    return {send_code::not_ready, 0};
   auto current = d->get_connection()->get_session_id();
   if (d->get_suplan_root_epoch() != q->PeerContext.RootEpoch)
-    return {SendCode::ContextChanged, current};
+    return {send_code::context_changed, current};
   auto srpc = d->get_connection()->get_srpc_adapter();
   srpc->lock();
   bool ok =
       srpc_sd_async_set_suplan_source_association(srpc->get_srpc(), q) > 0;
   srpc->unlock();
-  return {ok ? SendCode::Queued : SendCode::EnqueueFailed, current};
+  return {ok ? send_code::queued : send_code::enqueue_failed, current};
 }
-supla_suplan::PeerTransport::SendResult supla_suplan_server_peers::send(
+supla_suplan::peer_transport::send_result_t supla_suplan_server_peers::send(
     int id, TSDS_SuplaSetSuplanDestinationAssociation *q) {
   auto d = user->get_devices()->get(id);
-  if (!d || !d->get_connection() || !d->is_suplan_peer_ready())
-    return {SendCode::NotReady, 0};
+  if (!d || !d->get_connection() || !d->get_connection()->is_secure() ||
+      !d->is_suplan_peer_ready())
+    return {send_code::not_ready, 0};
   auto current = d->get_connection()->get_session_id();
   auto srpc = d->get_connection()->get_srpc_adapter();
   srpc->lock();
   bool ok =
       srpc_sd_async_set_suplan_destination_association(srpc->get_srpc(), q) > 0;
   srpc->unlock();
-  return {ok ? SendCode::Queued : SendCode::EnqueueFailed, current};
+  return {ok ? send_code::queued : send_code::enqueue_failed, current};
 }
 void supla_suplan_server_peers::rebootstrap(int source) {
   auto d = user->get_devices()->get(source);
@@ -130,12 +133,12 @@ bool supla_suplan_server_peers::drain_changes() {
   // IPC is a latency hint. The existing cyclic task recovers lost hints.
   std::unique_lock<std::mutex> lock(changes_mutex, std::try_to_lock);
   if (!lock.owns_lock()) return true;
-  supla_suplan::PeerDao repo(user->getUserID());
+  supla_suplan::peer_dao repo(user->getUserID());
   std::vector<std::pair<uint64_t, uint64_t>> changed;
   if (!repo.changed_pairs(changes_cursor, 64, &changed)) return false;
   for (const auto &entry : changed) {
     changes_cursor = entry.first;
-    supla_suplan::Association association;
+    supla_suplan::association_t association;
     if (!repo.load(entry.first, &association)) return false;
     if (association.id && (ready(association.source) ||
                            ready(association.destination))) {
@@ -148,7 +151,7 @@ bool supla_suplan_server_peers::drain_changes() {
 }
 bool supla_suplan_server_peers::channel_deleted(int user_id, int channel) {
   if (channel) {
-    supla_suplan::PeerDao repo(user_id);
+    supla_suplan::peer_dao repo(user_id);
     int owner = 0;
     if (!repo.owner(SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL, channel, &owner))
       return false;
@@ -158,7 +161,7 @@ bool supla_suplan_server_peers::channel_deleted(int user_id, int channel) {
   return !current || current->get_suplan_peers()->drain_changes();
 }
 bool supla_suplan_server_peers::device_deleted(int user_id, int device) {
-  supla_suplan::PeerDao repo(user_id);
+  supla_suplan::peer_dao repo(user_id);
   int owner = 0;
   if (!repo.owner(SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE, device, &owner))
     return false;
@@ -168,19 +171,20 @@ bool supla_suplan_server_peers::device_deleted(int user_id, int device) {
   return channel_deleted(user_id, 0);
 }
 
-std::shared_ptr<supla_suplan::StreamConnection>
+std::shared_ptr<supla_suplan::stream_connection>
 supla_suplan_server_peers::new_stream(supla_device *destination) {
   using namespace supla_suplan;  // NOLINT
   int device = destination->get_id();
   int account = user->getUserID();
-  auto stream = std::make_shared<StreamConnection>(
+  auto stream = std::make_shared<stream_connection>(
       std::max(0, scfg_int(CFG_SERVER_STREAM_MAX_CHANNELS)),
       [this, account, device](uint32_t channel, bool approval, bool request) {
         return provisioner.grants()->ensure_stream(device, channel, approval,
                                                    nullptr, request);
       },
-      [this, account](uint32_t channel, StreamConnection::Snapshot *snapshot) {
-        PeerDao dao(account);
+      [this, account](uint32_t channel,
+                      stream_connection::snapshot_t *snapshot) {
+        peer_dao dao(account);
         if (!dao.stream_metadata(channel, &snapshot->state.Channel))
           return false;
         snapshot->state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
@@ -241,17 +245,20 @@ supla_suplan_server_peers::new_stream(supla_device *destination) {
                (destination->get_flags() &
                 SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
                destination->is_server_stream_ready();
-      }, std::chrono::steady_clock::now,
+      },
+      std::chrono::steady_clock::now,
       destination->get_connection()->event_notifier());
   std::lock_guard<std::mutex> lock(stream_mutex);
   streams.erase(std::remove_if(streams.begin(), streams.end(),
-      [](const std::weak_ptr<StreamConnection> &s) { return s.expired(); }),
-      streams.end());
+                               [](const std::weak_ptr<stream_connection> &s) {
+                                 return s.expired();
+                               }),
+                streams.end());
   streams.push_back(stream);
   return stream;
 }
 void supla_suplan_server_peers::stream_dirty(uint32_t channel) {
-  std::vector<std::shared_ptr<supla_suplan::StreamConnection>> current;
+  std::vector<std::shared_ptr<supla_suplan::stream_connection>> current;
   {
     std::lock_guard<std::mutex> lock(stream_mutex);
     for (auto it = streams.begin(); it != streams.end();) {
@@ -270,7 +277,7 @@ void supla_suplan_server_peers::stream_dirty(uint32_t channel) {
 supla_suplan_server_peers::~supla_suplan_server_peers() {
   // Runtime shutdown ends connection demands before callbacks lose their
   // account/service owner. Do not hold the registry lock while closing.
-  std::vector<std::shared_ptr<supla_suplan::StreamConnection>> current;
+  std::vector<std::shared_ptr<supla_suplan::stream_connection>> current;
   {
     std::lock_guard<std::mutex> lock(stream_mutex);
     for (auto &weak : streams) if (auto stream = weak.lock())

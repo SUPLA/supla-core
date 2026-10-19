@@ -272,3 +272,7 @@ unsigned _supla_int64_t supla_channel_config_sync_coordinator::time_left_usec(
 
   return result;
 }
+
+bool supla_channel_config_sync_coordinator::is_finished() const {
+  return state == sync_state_finished;
+}

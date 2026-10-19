@@ -503,7 +503,7 @@ void supla_abstract_common_channel_properties::resolve_sensor_identifiers(
 void supla_abstract_common_channel_properties::get_config(
     char *config, unsigned _supla_int16_t *config_size,
     unsigned char config_type, unsigned _supla_int_t flags,
-    ChannelReferenceEncoding encoding) {
+    channel_reference_encoding encoding) {
   *config_size = 0;
 
   if (flags != 0) {
@@ -558,7 +558,7 @@ void supla_abstract_common_channel_properties::get_config(
         });
 
     if (*config_size &&
-        encoding == ChannelReferenceEncoding::LocalChannelNumber) {
+        encoding == channel_reference_encoding::device_channel_number) {
       TChannelConfig_HVAC *hvac = (TChannelConfig_HVAC *)config;
       auto number = [&](unsigned int id) -> unsigned int {
         unsigned int result = get_channel_number();
@@ -621,7 +621,7 @@ void supla_abstract_common_channel_properties::get_config(
     JSON_TO_CONFIG(container_config, TChannelConfig_Container, config,
                    config_size);
 
-    if (encoding == ChannelReferenceEncoding::LocalChannelNumber) {
+    if (encoding == channel_reference_encoding::device_channel_number) {
       resolve_sensor_identifiers<TChannelConfig_Container,
                                  TContainer_SensorInfo>(
           (TChannelConfig_Container *)config);
@@ -632,7 +632,7 @@ void supla_abstract_common_channel_properties::get_config(
               get_type() == SUPLA_CHANNELTYPE_VALVE_PERCENTAGE)) {
     JSON_TO_CONFIG(valve_config, TChannelConfig_Valve, config, config_size);
 
-    if (encoding == ChannelReferenceEncoding::LocalChannelNumber) {
+    if (encoding == channel_reference_encoding::device_channel_number) {
       resolve_sensor_identifiers<TChannelConfig_Valve, TValve_SensorInfo>(
           (TChannelConfig_Valve *)config);
     }
@@ -729,7 +729,7 @@ int supla_abstract_common_channel_properties::set_user_config(
       config_size == sizeof(TChannelConfig_HVAC)) {
     TChannelConfig_HVAC incoming = *(TChannelConfig_HVAC *)config;
     if (device_reference_encoding() ==
-        ChannelReferenceEncoding::LocalChannelNumber) {
+        channel_reference_encoding::device_channel_number) {
       auto id = [&](unsigned char number) -> unsigned int {
         return number == get_channel_number() ? 0 : get_channel_id(number);
       };
@@ -753,8 +753,8 @@ int supla_abstract_common_channel_properties::set_user_config(
       int user = get_user_id(), device = get_device_id(), consumer = get_id();
       hvac->protect_device_references([user, device, consumer](
                                           size_t field, unsigned int id) {
-        supla_suplan::PeerDao repo(user);
-        supla_suplan::ChannelInfo info;
+        supla_suplan::peer_dao repo(user);
+        supla_suplan::channel_info_t info;
         if (!repo.channel(id, &info)) return false;
         if (!id) return true;
         if (info.device != device ||
@@ -884,7 +884,7 @@ int supla_abstract_common_channel_properties::set_user_config(
     }
     auto translate = [&](auto *incoming) {
       if (device_reference_encoding() !=
-          ChannelReferenceEncoding::LocalChannelNumber) {
+          channel_reference_encoding::device_channel_number) {
         return;
       }
       for (auto &entry : incoming->SensorInfo) {
@@ -900,8 +900,8 @@ int supla_abstract_common_channel_properties::set_user_config(
       if (id == static_cast<unsigned int>(consumer)) {
         return false;
       }
-      supla_suplan::PeerDao repo(user);
-      supla_suplan::ChannelInfo info;
+      supla_suplan::peer_dao repo(user);
+      supla_suplan::channel_info_t info;
       return repo.channel(id, &info) && info.device == device &&
              info.type == SUPLA_CHANNELTYPE_BINARYSENSOR;
     };

@@ -6,9 +6,11 @@
 #include <cstring>
 #include <utility>
 namespace supla_suplan {
-StreamConnection::StreamConnection(size_t limit, Authorize authorize, Read read,
-                                   Send send, std::function<bool()> ready,
-                                   Clock clock, std::function<void()> notify)
+stream_connection::stream_connection(size_t limit,
+                                     authorize_callback_t authorize,
+                                     read_callback_t read, send_callback_t send,
+                                     std::function<bool()> ready, clock_t clock,
+                                     std::function<void()> notify)
     // NOLINTNEXTLINE(whitespace/indent_namespace)
     : capacity(std::min(limit, size_t(4096))),
       authorize(authorize),
@@ -17,12 +19,12 @@ StreamConnection::StreamConnection(size_t limit, Authorize authorize, Read read,
       ready(ready),
       clock(clock),
       notify(notify) {}  // NOLINT(whitespace/indent_namespace)
-uint64_t StreamConnection::serial(uint32_t id) {
+uint64_t stream_connection::serial(uint32_t id) {
   std::lock_guard<std::mutex> lock(dirty_mutex);
   auto it = serials.find(id);
   return it == serials.end() ? 0 : it->second;
 }
-void StreamConnection::dirty(uint32_t id) {
+void stream_connection::dirty(uint32_t id) {
   // Mutation hooks never acquire the publication lock, do SQL or send SRPC.
   // A Channel lock -> publication lock inversion is therefore impossible.
   bool signal = false;
@@ -36,20 +38,20 @@ void StreamConnection::dirty(uint32_t id) {
   }
   if (signal && notify) notify();
 }
-uint64_t StreamConnection::time_left_usec() const {
+uint64_t stream_connection::time_left_usec() const {
   auto deadline = due.load();
-  if (deadline == Time::max()) return 0;
+  if (deadline == time_point_t::max()) return 0;
   auto now = clock();
   if (wake.load() || deadline <= now) return 1;
   return std::max<int64_t>(1, std::chrono::duration_cast<
       std::chrono::microseconds>(deadline - now).count());
 }
-void StreamConnection::erase(uint32_t id) {
+void stream_connection::erase(uint32_t id) {
   interests.erase(id);
   std::lock_guard<std::mutex> lock(dirty_mutex);
   serials.erase(id);
 }
-void StreamConnection::terminal(uint32_t id, Interest *interest) {
+void stream_connection::terminal(uint32_t id, interest_t *interest) {
   if (!interest->active) return;
   auto state = interest->last.state;  // No new protected lookup after revoke.
   state.ChannelId = id;
@@ -57,7 +59,7 @@ void StreamConnection::terminal(uint32_t id, Interest *interest) {
   state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
   if (ready() && !send(state)) closed = true;
 }
-void StreamConnection::suspend(Interest *interest) {
+void stream_connection::suspend(interest_t *interest) {
   if (!interest->active || interest->last.state.Channel.Offline == 1) return;
   auto state = interest->last.state;
   state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
@@ -66,9 +68,9 @@ void StreamConnection::suspend(Interest *interest) {
   else
     closed = true;
 }
-bool StreamConnection::publish(uint32_t id, Interest *interest) {
+bool stream_connection::publish(uint32_t id, interest_t *interest) {
   auto observed = serial(id);
-  Snapshot snapshot;
+  snapshot_t snapshot;
   bool obtained = read(id, &snapshot);
   // Revalidate AFTER snapshot construction, including races with initial read.
   auto access = authorize(id, false, false);
@@ -82,7 +84,7 @@ bool StreamConnection::publish(uint32_t id, Interest *interest) {
   if (!obtained || !ready()) return false;
   snapshot.state.ChannelId = id;
   snapshot.state.Channel.Number = 0xFF;
-  if (snapshot.expires != Time() && clock() >= snapshot.expires)
+  if (snapshot.expires != time_point_t() && clock() >= snapshot.expires)
     snapshot.state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
   auto comparable = snapshot.state;
   auto previous = interest->last.state;
@@ -99,16 +101,16 @@ bool StreamConnection::publish(uint32_t id, Interest *interest) {
   interest->active = true;
   interest->serial = observed;
   interest->check = clock() + std::chrono::seconds(30);
-  interest->retry_after = Time();
+  interest->retry_after = time_point_t();
   return true;
 }
-void StreamConnection::schedule() {
-  auto next = Time::max();
+void stream_connection::schedule() {
+  auto next = time_point_t::max();
   auto now = clock();
   for (const auto &item : interests) {
     auto deadline = item.second.check;
     auto expiry = item.second.last.expires;
-    if (item.second.active && expiry != Time() &&
+    if (item.second.active && expiry != time_point_t() &&
         item.second.last.state.Channel.Offline !=
             SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE)
       deadline = std::min(deadline, expiry);
@@ -121,8 +123,8 @@ void StreamConnection::schedule() {
   }
   due = next;
 }
-void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
-                              Reply reply) {
+void stream_connection::ensure(const TDS_SuplaEnsureResourceAccess &q,
+                               reply_callback_t reply) {
   std::lock_guard<std::mutex> lock(mutex);
   TSD_SuplaEnsureResourceAccessResult result = {
       SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT, SUPLA_SUPLAN_ACCESS_STATUS_INVALID,
@@ -185,7 +187,7 @@ void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
   if (found == interests.end()) {
     std::lock_guard<std::mutex> dirty_lock(dirty_mutex);
     serials[id] = 1;
-    found = interests.emplace(id, Interest{}).first;
+    found = interests.emplace(id, interest_t{}).first;
     found->second.serial = 1;
   }
   if (result.AccessStatus == SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL &&
@@ -197,7 +199,7 @@ void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
       shutdown();
       return;
     }
-    found->second = Interest{};
+    found->second = interest_t{};
     found->second.serial = serial(id);
   }
   found->second.check = clock() + std::chrono::seconds(30);
@@ -214,7 +216,7 @@ void StreamConnection::ensure(const TDS_SuplaEnsureResourceAccess &q,
   }
   schedule();
 }
-void StreamConnection::iterate() {
+void stream_connection::iterate() {
   std::unique_lock<std::mutex> lock(mutex, std::try_to_lock);
   if (!lock || closed) return;
   if (!ready()) {
@@ -232,7 +234,7 @@ void StreamConnection::iterate() {
     auto id = current->first;
     auto &interest = current->second;
     if (clock() < interest.retry_after) continue;
-    bool expired = interest.active && interest.last.expires != Time() &&
+    bool expired = interest.active && interest.last.expires != time_point_t() &&
                    clock() >= interest.last.expires &&
                    interest.last.state.Channel.Offline !=
                        SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
@@ -300,19 +302,19 @@ void StreamConnection::iterate() {
   }
   schedule();
 }
-void StreamConnection::shutdown() {
+void stream_connection::shutdown() {
   closed = true;
   interests.clear();
   std::lock_guard<std::mutex> dirty_lock(dirty_mutex);
   serials.clear();
   wake = false;
-  due = Time::max();
+  due = time_point_t::max();
 }
-void StreamConnection::close() {
+void stream_connection::close() {
   std::lock_guard<std::mutex> lock(mutex);
   shutdown();
 }
-size_t StreamConnection::size() {
+size_t stream_connection::size() {
   std::lock_guard<std::mutex> lock(mutex);
   return interests.size();
 }

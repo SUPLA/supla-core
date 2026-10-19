@@ -808,8 +808,10 @@ bool supla_device_channels::get_channel_config(unsigned char channel_number,
   if (channel) {
     if (!channel->get_config(config, type, flags) ||
         !channel->is_config_identity_ready(type)) {
-      device->reset_suplan_identity_bootstrap();
-      device->terminate();
+      if (device->get_suplan_root_epoch()) {
+        device->reset_suplan_identity_bootstrap();
+        device->terminate();
+      }
       return false;
     }
     return true;
@@ -1810,9 +1812,7 @@ void supla_device_channels::iterate(void) {
   // Keep pending pushes until replay completes so their ACKs cannot satisfy it.
   if (!channel_config_sync_coordinator.is_finished()) return;
   for (auto channel : channels) {
-    if (!channel->publish_pending_config()) {
-      return;
-    }
+    channel->publish_pending_config();
   }
 }
 

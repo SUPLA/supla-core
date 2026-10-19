@@ -48,11 +48,34 @@ class supla_ch_suplan_peer_calls
       return;
     }
     auto source_result = rd->data.ds_set_suplan_source_association_result;
-    if (!d->get_user() || version < 29 || !d->get_suplan_root_epoch()) {
+    bool insecure_result =
+        (id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT ||
+         id == SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT) &&
+        (!d->get_connection() || !d->get_connection()->is_secure());
+    if (!d->get_user() || version < 29 || !d->get_suplan_root_epoch() ||
+        insecure_result) {
       if (id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT &&
           source_result)
         supla_suplan::wipe_key(source_result->PeerKey,
                                sizeof(source_result->PeerKey));
+      // A rejected request still gets a bounded, explicit result. Results from
+      // an ineligible session never reach provisioning or business procedures.
+      bool sent = true;
+      if (id == SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS &&
+          rd->data.ds_ensure_suplan_resource_access) {
+        TSD_SuplaEnsureResourceAccessResult result = {
+            SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+            SUPLA_SUPLAN_ACCESS_STATUS_INVALID,
+            rd->data.ds_ensure_suplan_resource_access->DeliveryMode};
+        sent = srpc_sd_async_ensure_suplan_resource_access_result(
+                   srpc->get_srpc(), &result) > 0;
+      } else if (id == SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE) {
+        TSD_SuplaEnsureResourceShareResult result = {
+            SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED};
+        sent = srpc_sd_async_ensure_suplan_resource_share_result(
+                   srpc->get_srpc(), &result) > 0;
+      }
+      if (!sent) d->terminate();
       return;
     }
     auto p = d->get_user()->get_suplan_peers()->peers();
@@ -68,17 +91,19 @@ class supla_ch_suplan_peer_calls
       auto request = rd->data.ds_ensure_suplan_resource_access;
       auto result = p->grants()->ensure_access(d->get_id(), *request);
       srpc->lock();
-      srpc_sd_async_ensure_suplan_resource_access_result(srpc->get_srpc(),
-                                                         &result);
+      bool sent = srpc_sd_async_ensure_suplan_resource_access_result(
+                      srpc->get_srpc(), &result) > 0;
       srpc->unlock();
+      if (!sent) d->terminate();
     } else if (id == SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE &&
                rd->data.ds_ensure_suplan_resource_share) {
       auto result = p->grants()->ensure_share(
           d->get_id(), *rd->data.ds_ensure_suplan_resource_share);
       srpc->lock();
-      srpc_sd_async_ensure_suplan_resource_share_result(srpc->get_srpc(),
-                                                        &result);
+      bool sent = srpc_sd_async_ensure_suplan_resource_share_result(
+                      srpc->get_srpc(), &result) > 0;
       srpc->unlock();
+      if (!sent) d->terminate();
     }
   }
 };

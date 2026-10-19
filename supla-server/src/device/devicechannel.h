@@ -19,13 +19,12 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
-#include <cstdint>
-
 #include <atomic>
-
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 #include <vector>
 
 #include "analyzer/abstract_data_analyzer.h"
@@ -68,11 +67,14 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   bool stream_has_expiry = false;
   supla_abstract_channel_extended_value *extended_value;
   supla_json_config *json_config;
+  // Serialize config producers from DB work through cache installation.
+  // Independent of the value/cache mutex; no SRPC or Client fan-out under it.
+  std::mutex config_mutex;
   supla_abstract_channel_extended_value *logger_purpose_extended_value;
   supla_abstract_data_analyzer *data_analyzer;
 
-  // Cross-thread producers store intent only; the connection thread owns
-  // config reload, cache publication and SRPC enqueue. No snapshot is queued.
+  // Producers update the cache; the connection thread owns SRPC publication.
+  // Only bounded ConfigType intents are queued, never stale snapshots.
   std::atomic<unsigned int> pending_config_types{0};
   // Connection-thread cursor prevents frequent defaults starving schedules.
   unsigned char next_config_type = SUPLA_CONFIG_TYPE_DEFAULT;
@@ -95,8 +97,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
 
   void set_extended_value(TSuplaChannelExtendedValue *ev,
                           supla_abstract_channel_extended_value *new_value);
-  virtual bool reload_channel_config();
-  ChannelReferenceEncoding device_reference_encoding() override;
+  channel_reference_encoding device_reference_encoding() override;
   virtual void for_each(
       bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>
@@ -105,6 +106,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   virtual unsigned char get_protocol_version(void);
 
  public:
+  std::mutex &get_config_mutex();
   supla_device_channel(supla_device *device, int id,
                        unsigned char channel_number, int type, int func,
                        int param1, int param2, int param3, int param4,
@@ -180,7 +182,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   // IPC/Client entry point: coalesces intent without reading config or SRPC.
   bool request_config_publication(unsigned char config_type);
   // Connection-thread only; processes at most one config type per call.
-  bool publish_pending_config();
+  void publish_pending_config();
   bool is_config_identity_ready(unsigned char config_type);
   // ChannelConfig preparation/sends belong to the connection thread.
   // False with failed=false means unsupported/absent optional configuration.

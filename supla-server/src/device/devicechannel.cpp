@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "analyzer/data_analyzer_factory.h"
@@ -240,6 +241,8 @@ int supla_device_channel::func_list_filter(int func_list, int type) {
 void supla_device_channel::lock(void) { lck_lock(lck); }
 
 void supla_device_channel::unlock(void) { lck_unlock(lck); }
+
+std::mutex &supla_device_channel::get_config_mutex() { return config_mutex; }
 
 int supla_device_channel::get_id(void) { return id; }
 
@@ -477,38 +480,18 @@ void supla_device_channel::get_char(char *value) {
   }
 }
 
-ChannelReferenceEncoding supla_device_channel::device_reference_encoding() {
-  return device && (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)
-             ? ChannelReferenceEncoding::ChannelId
-             : ChannelReferenceEncoding::LocalChannelNumber;
-}
-
-bool supla_device_channel::reload_channel_config() {
-  std::unique_ptr<supla_json_config> authoritative;
-  int function = 0;
-  // Cloud commits authorization with business config. Reading ChannelConfig
-  // only reloads the authoritative JSON/function; it never authors grants.
-  supla_mariadb_access_provider db;
-  supla_device_dao dao(&db);
-  authoritative.reset(dao.get_channel_config(get_id(), nullptr, nullptr,
-                                             &function));
-  if (!authoritative) return false;
-  set_json_config(authoritative.release());
-  // Func is selected business state, including NONE; Device Default and the
-  // previously registered channel cache are not authoritative here.
-  set_func(function);
-  return true;
+channel_reference_encoding supla_device_channel::device_reference_encoding() {
+  return device && device->get_protocol_version() >= 29 &&
+                 (device->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED)
+             ? channel_reference_encoding::server_channel_id
+             : channel_reference_encoding::device_channel_number;
 }
 
 bool supla_device_channel::get_config(TSD_ChannelConfig *config,
                                       unsigned char config_type,
                                       unsigned _supla_int_t flags) {
-  // Every ChannelConfig type uses the authoritative root; IPC/Client producers
-  // no longer publish cached snapshots, including weekly schedules.
-  if (!reload_channel_config()) {
-    *config = {};
-    return false;
-  }
+  // Config producers update the existing cache. Serialization never reads DB.
+  std::lock_guard<supla_device_channel> guard(*this);
   supla_abstract_common_channel_properties::get_config(
       config->Config, &config->ConfigSize, config_type, flags,
       device_reference_encoding());
@@ -1114,6 +1097,8 @@ bool supla_device_channel::prepare_config_for_device(
     return false;
   }
 
+  // One cached root/function for all ConfigTypes in the registration batch.
+  std::lock_guard<supla_device_channel> guard(*this);
   configs->clear();
 
   if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
@@ -1178,9 +1163,9 @@ bool supla_device_channel::request_config_publication(
   return true;
 }
 
-bool supla_device_channel::publish_pending_config() {
+void supla_device_channel::publish_pending_config() {
   unsigned int pending = pending_config_types.exchange(0);
-  if (!pending) return true;
+  if (!pending) return;
   constexpr unsigned char limit = SUPLA_CONFIG_TYPE_EXTENDED + 1;
   unsigned char type = next_config_type;
   // A fixed fair scan over the bounded supported ConfigType bitset.
@@ -1198,35 +1183,10 @@ bool supla_device_channel::publish_pending_config() {
       device->get_connection()->raise_event();
     }
   }
-  // Unsupported runtime updates are ordinary compatibility cases, not faults.
-  bool supported = type == SUPLA_CONFIG_TYPE_DEFAULT ||
-                   ((type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
-                     type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) &&
-                    (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) &&
-                    supla_weekly_schedule_is_function_supported(get_func()) &&
-                    (type != SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE ||
-                     get_func() == SUPLA_CHANNELFNC_HVAC_THERMOSTAT)) ||
-                   (type == SUPLA_CONFIG_TYPE_OCR &&
-                    get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-                    get_protocol_version() >= 25) ||
-                   (type == SUPLA_CONFIG_TYPE_EXTENDED &&
-                    get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER);
-  if (!(get_flags() & SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) ||
-      get_protocol_version() < 21 || !supported) {
-    return true;
-  }
-  bool failed = false;
-  if (!send_config_to_device(type, &failed) && failed) {
-    // Never spin/retry a failed read, desired commit or full SRPC queue.
-    // Reconnection replays authoritative configuration after the fault clears.
-    pending_config_types.store(0);
-    if (device) {
-      device->reset_suplan_identity_bootstrap();
-      device->terminate();
-    }
-    return false;
-  }
-  return true;
+  // Preserve ordinary runtime publication behavior: unsupported/absent config
+  // or a failed enqueue does not reset identity or force a reconnect. Required
+  // registration replay keeps its separate fail-closed policy.
+  send_config_to_device(type);
 }
 
 bool supla_device_channel::send_config_to_device(unsigned char config_type,

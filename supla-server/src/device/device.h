@@ -36,9 +36,13 @@ class supla_device_call_handler_collection;
 class supla_register_device;
 class supla_device : public supla_abstract_connection_object {
  private:
+  void reconcile_suplan_peers(void);
+  void send_sync_done_to_device(void);
+  void send_queued_calcfg_requests(void);
+  int take_latest_calcfg_command(void);
   supla_suplan_identity_bootstrap identity_bootstrap;
   bool registration_sync_pending = false;
-  std::shared_ptr<supla_suplan::StreamConnection> stream_connection;
+  std::shared_ptr<supla_suplan::stream_connection> stream_connection;
   bool stream_sync_done = false;
   bool suplan_peer_ready = false;
   std::vector<uint32_t> suplan_registration_channels;
@@ -74,7 +78,6 @@ class supla_device : public supla_abstract_connection_object {
   virtual void connection_will_close(void);
   void reset_suplan_identity_bootstrap(void);
   bool is_suplan_peer_ready(void);
-  void reconcile_suplan_peers(void);
   void start_registration_sync(supla_abstract_srpc_adapter *srpc,
                                TSD_SuplaDeviceIdentities *identities);
   void on_suplan_device_identities_result(
@@ -88,21 +91,17 @@ class supla_device : public supla_abstract_connection_object {
 
   supla_device_channels *get_channels(void);
   int get_flags(void);
-  std::shared_ptr<supla_suplan::StreamConnection> get_stream(bool create);
+  std::shared_ptr<supla_suplan::stream_connection> get_stream(bool create);
   bool is_server_stream_ready();
   short get_manufacturer_id(void);
 
   bool enter_cfg_mode(unsigned _supla_int64_t *queued_at = nullptr,
                       bool *waiting_for_result = nullptr);
-  void send_config_to_device(void);
-  void send_sync_done_to_device(void);
+  bool send_config_to_device(void);
   bool send_calcfg_request(TSD_DeviceCalCfgRequest *request,
                            unsigned _supla_int64_t *queued_at = nullptr,
                            bool *waiting_for_result = nullptr);
-  void send_queued_calcfg_requests(void);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
-  int take_latest_calcfg_command(void);
-  size_t get_calcfg_queue_size(void);
   bool pair_subdevice(const supla_caller &caller, bool superuser_authorized,
                       unsigned _supla_int64_t *queued_at = nullptr,
                       bool *waiting_for_result = nullptr);

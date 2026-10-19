@@ -9,41 +9,42 @@
 #include "db/mariadb_access_provider.h"
 #include "suplan/peer_service.h"
 namespace supla_suplan {
-class PeerDao : public Repository {
+class peer_dao : public repository {
   supla_mariadb_access_provider dba;
   int user;
   bool transaction = false;
-  Association locked;
+  association_t locked;
   bool execute(const std::string &sql);
   bool select(const std::string &sql, std::vector<std::vector<uint64_t>> *rows,
               size_t columns);
-  bool read(const std::string &where, Association *a, bool lock);
+  bool read(const std::string &where, association_t *a, bool lock);
   std::string scope() const;
 
  public:
-  explicit PeerDao(int user);
-  ~PeerDao() override;
-  bool begin(uint64_t id, Association *a) override;
-  bool load(uint64_t id, Association *a) override;
-  bool save(const Association &a) override;
+  explicit peer_dao(int user);
+  ~peer_dao() override;
+  bool begin(uint64_t id, association_t *a) override;
+  bool load(uint64_t id, association_t *a) override;
+  bool save(const association_t &a) override;
   bool commit() override;
   void rollback() override;
-  bool identity(int device, Identity *out) override;
-  bool accept_identity(int device, const Identity &identity) override;
+  bool identity(int device, identity_t *out) override;
+  bool accept_identity(int device, const identity_t &identity) override;
   bool owner(uint8_t type, uint32_t resource, int *device) override;
   bool reference(uint32_t channel, uint8_t field, uint32_t *out) override;
-  bool channel(uint32_t id, ChannelInfo *out) override;
-  bool device(int id, DeviceInfo *out) override;
+  bool channel(uint32_t id, channel_info_t *out) override;
+  bool device(int id, device_info_t *out) override;
   bool approval_pairs(uint32_t resource, int device,
-                      std::vector<ApprovalPair> *out) override;
+                      std::vector<approval_pair_t> *out) override;
   bool approval_decisions(uint64_t pair,
-                          std::vector<ApprovalDecision> *out) override;
+                          std::vector<approval_decision_t> *out) override;
   bool stream_permissions(int destination, uint32_t resource,
                           uint8_t *permissions) override;
   bool binding_granted(int source, int destination, uint32_t resource,
                        uint32_t target, bool *out) override;
-  bool stream_access(int destination, uint32_t resource, ChannelInfo *channel,
-                     uint8_t *permissions, bool *ready) override;
+  bool stream_access(int destination, uint32_t resource,
+                     channel_info_t *channel, uint8_t *permissions,
+                     bool *ready) override;
   bool permissions(int destination, uint8_t type, uint32_t resource,
                     bool peer, uint8_t *out) override;
   bool request_pending(int destination, uint32_t resource,
@@ -61,12 +62,12 @@ class PeerDao : public Repository {
   bool stream_metadata(uint32_t channel, TDS_SuplaDeviceChannel_E *out);
   bool has_master_dependents(uint32_t channel, bool *out) override;
   bool device_exists(int device) override;
-  bool owns_acl(int source, int destination, const Acl &acl) override;
-  bool check_acl_ownership(int source, int destination, const Acl &acl,
+  bool owns_acl(int source, int destination, const acl_t &acl) override;
+  bool check_acl_ownership(int source, int destination, const acl_t &acl,
                            bool *owned) override;
   bool for_device(int device, bool include_dormant,
                   std::vector<uint64_t> *out) override;
-  bool find(int source, int destination, Association *a) override;
+  bool find(int source, int destination, association_t *a) override;
 };
 }  // namespace supla_suplan
 #endif  // SUPLA_SUPLAN_PEER_DAO_H_
