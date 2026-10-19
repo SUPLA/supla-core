@@ -187,7 +187,41 @@ class PublicationPauseAdapter : public supla_srpc_adapter {
   }
 };
 class supla_connection_test_access {
+  void *listener = nullptr;
+  int peer = -1;
+  std::unique_ptr<supla_connection> connection;
+
  public:
+  // DAO/serialization fixtures still need a negotiated protocol version.
+  // Use a real transport object rather than treating a null connection as v29.
+  supla_connection_test_access() { supla_connection::init(); }
+  ~supla_connection_test_access() {
+    connection.reset();
+    if (peer >= 0) close(peer);
+    if (listener) ssocket_free(listener);
+    supla_connection::cleanup();
+  }
+  bool open() {
+    listener = ssocket_server_init(nullptr, nullptr, 0, 0);
+    if (!listener || !ssocket_openlistener(listener)) return false;
+    sockaddr_in address = {};
+    socklen_t size = sizeof(address);
+    if (getsockname(ssocket_get_fd(listener),
+                    reinterpret_cast<sockaddr *>(&address), &size)) {
+      return false;
+    }
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    peer = socket(AF_INET, SOCK_STREAM, 0);
+    if (peer < 0 || connect(peer, reinterpret_cast<sockaddr *>(&address), size))
+      return false;
+    void *accepted = nullptr;
+    unsigned int ip = 0;
+    if (!ssocket_accept(listener, &ip, &accepted)) return false;
+    connection.reset(new supla_connection(listener, accepted, ip));
+    connection->get_srpc_adapter()->set_proto_version(29);
+    return true;
+  }
+  supla_connection *get() { return connection.get(); }
   static std::weak_ptr<TEventHandler> event(supla_connection *connection) {
     return connection->eh;
   }
@@ -547,7 +581,9 @@ class SupLanHvacIntegrationTest : public SupLanPeerDaoIntegrationTest {
   void with_destination(
       const std::function<void(supla_device_channel *)> &visit,
       int flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) {
-    testing::DeviceStub device(nullptr);
+    supla_connection_test_access protocol;
+    ASSERT_TRUE(protocol.open());
+    testing::DeviceStub device(protocol.get());
     device.set_id(destination);
     device.set_flags(flags);
     device.set_user(supla_user::find(99124, true));
@@ -1556,6 +1592,13 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     release.set_value();
     writer.get();
     ipc.get();
+    // A delayed hint for the earlier weekly edit carries no old JSON: it must
+    // reload the latest root, including Cloud's newer default/weekly/alt edit.
+    {
+      Sql004Probe probe;
+      notify(CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE);
+      EXPECT_EQ(1u, probe.config_reads);
+    }
     unlocked = channel->get_config_mutex().try_lock();
     EXPECT_TRUE(unlocked);
     if (unlocked) channel->get_config_mutex().unlock();
@@ -1790,6 +1833,47 @@ TEST_F(SupLanHvacWireIntegrationTest, PeerCredentialsNeverUsePlainConnection) {
          sizeof(destination_request.PeerKey));
   EXPECT_EQ(peer_transport::send_code::not_ready,
             peers->send(destination, &destination_request).code);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       PeerCredentialsUseRegisteredTlsConnection) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_TRUE(connection->is_secure());
+  auto peers = supla_user::find(99126, false)->get_suplan_peers();
+  ASSERT_TRUE(peers->ready(destination));
+  association_t pair;
+  pair.source = destination;
+  pair.destination = source;
+  TSDS_SuplaSetSuplanSourceAssociation source_request = {};
+  source_request.PeerContext = context(pair, 789);
+  source_request.AclRevision = 1;
+  source_request.Flags = SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY;
+  ASSERT_EQ(peer_transport::send_code::queued,
+            peers->send(destination, &source_request).code);
+  TSuplaDataPacket packet = {};
+  ASSERT_TRUE(receive_packet(&packet));
+  ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION, packet.call_id);
+  TSDS_SuplaSetSuplanSourceAssociation source_wire = {};
+  memcpy(&source_wire, packet.data, packet.data_size);
+  EXPECT_EQ(source_request.Flags, source_wire.Flags);
+  EXPECT_EQ(789u, source_wire.PeerContext.RootEpoch);
+  pair.source = source;
+  pair.destination = destination;
+  TSDS_SuplaSetSuplanDestinationAssociation request = {};
+  request.PeerContext = context(pair, 123);
+  request.AclRevision = 1;
+  request.PeerKeySize = sizeof(request.PeerKey);
+  memset(request.PeerKey, 0xab, sizeof(request.PeerKey));
+  ASSERT_EQ(peer_transport::send_code::queued,
+            peers->send(destination, &request).code);
+  ASSERT_TRUE(receive_packet(&packet));
+  ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, packet.call_id);
+  TSDS_SuplaSetSuplanDestinationAssociation actual = {};
+  memcpy(&actual, packet.data, packet.data_size);
+  EXPECT_EQ(request.PeerKeySize, actual.PeerKeySize);
+  EXPECT_EQ(0,
+            memcmp(request.PeerKey, actual.PeerKey, sizeof(request.PeerKey)));
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
@@ -3547,7 +3631,9 @@ TEST_F(SupLanCloudGrantIntegrationTest,
           std::to_string(SUPLA_CHANNELFNC_HVAC_THERMOSTAT) +
           ",user_config=JSON_OBJECT('mainThermometerChannelId'," +
           std::to_string(resource) + ") WHERE id=" + std::to_string(consumer));
-  testing::DeviceStub device(nullptr);
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  testing::DeviceStub device(protocol.get());
   device.set_id(destination);
   device.set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
   device.set_user(supla_user::find(2, true));
@@ -3742,7 +3828,9 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     execute("UPDATE supla_dev_channel SET type=" + std::to_string(item.type) +
             ",func=" + std::to_string(item.function) + ",user_config='" +
             item.json + "' WHERE id=" + std::to_string(consumer));
-    testing::DeviceStub device(nullptr);
+    supla_connection_test_access protocol;
+    ASSERT_TRUE(protocol.open());
+    testing::DeviceStub device(protocol.get());
     device.set_id(destination);
     device.set_flags(item.suplan ? SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED : 0);
     device.set_user(supla_user::find(2, true));
