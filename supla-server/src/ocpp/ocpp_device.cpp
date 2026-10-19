@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <limits>
 #include <utility>
 
 #include "analyzer/data_analyzer_factory.h"
@@ -67,14 +68,9 @@ supla_channel_availability_status supla_ocpp_channel::get_availability_status(
     void) const {
   supla_channel_availability_status result(true);
   if (validity.is_valid()) {
-    if (value) {
-      result.set_offline(false);
-    } else {
-      // The charger is connected, but it has not provided a reading yet.
-      // Do not present this as a disconnected meter or invent a zero value.
-      result.set_proto_online(
-          SUPLA_CHANNEL_ONLINE_FLAG_ONLINE_BUT_NOT_AVAILABLE);
-    }
+    // Availability describes the charger's connection, not whether this
+    // channel has received its first measurement. Missing values stay absent.
+    result.set_offline(false);
   }
   return result;
 }
@@ -90,9 +86,18 @@ supla_ocpp_device::supla_ocpp_device(supla_user *user,
   initialize(&meter, config.meter, config.meter_persisted_values);
   initialize(&power_switch, config.power_switch,
              config.power_switch_persisted_values);
-  // A persisted percentage may belong to a previous vehicle. The gateway
-  // replays its live snapshot after reconnect; until then SoC stays unknown.
-  if (config.soc.id) initialize(&soc, config.soc, {});
+  if (config.soc.id) {
+    // A persisted percentage may belong to a previous vehicle. Replace it
+    // with NaN in both the live channel and the database on the next gateway
+    // activity; a reported 0% must remain distinguishable from no reading.
+    initialize(&soc, config.soc, {});
+    supla_channel_general_purpose_measurement_value unknown;
+    unknown.set_value(std::numeric_limits<double>::quiet_NaN());
+    char raw[SUPLA_CHANNELVALUE_SIZE] = {};
+    unknown.get_raw_value(raw);
+    set_value(&soc, raw);
+    soc_save_pending = true;
+  }
   restoring_phase_energy = meter.channel.extended_value != nullptr;
   char raw[SUPLA_CHANNELVALUE_SIZE] = {};
   if (power_switch.channel.get_value(raw)) {

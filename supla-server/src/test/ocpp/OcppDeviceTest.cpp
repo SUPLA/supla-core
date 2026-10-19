@@ -62,16 +62,20 @@ bool is_on(const std::shared_ptr<supla_ocpp_device> &device) {
 static_assert(!std::is_copy_constructible<supla_ocpp_device>::value,
               "Live charger state must never be copied with its analyzer");
 
-TEST(OcppDeviceTest, HeartbeatCannotInventMissingValues) {
+TEST(OcppDeviceTest, HeartbeatCannotInventMissingMeasurements) {
   auto device = std::make_shared<supla_ocpp_device>(nullptr, make_config());
   device->renew_validity(90);
   EXPECT_TRUE(device->is_online());
-  for (int id : {140, 141, 142}) {
+  for (int id : {140, 141}) {
     EXPECT_EQ(nullptr, device->get_channel(id).get_value());
-    EXPECT_TRUE(device->get_channel(id)
-                    .get_availability_status()
-                    .is_online_but_not_available());
+    EXPECT_TRUE(device->get_channel(id).get_availability_status().is_online());
   }
+  char soc_raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  ASSERT_TRUE(device->get_channel(142).get_value(soc_raw));
+  double soc_percentage = 0;
+  memcpy(&soc_percentage, soc_raw, sizeof(soc_percentage));
+  EXPECT_TRUE(std::isnan(soc_percentage));
+  EXPECT_TRUE(device->get_channel(142).get_availability_status().is_online());
   supla_ocpp_meter_report report;
   report.voltage[0] = 230000;
   device->update_meter(report, 90);

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -339,10 +340,10 @@ TEST_F(OcppLoggerIntegrationTest, ChannelReadersSeeConfirmedOcppState) {
                                       sizeof(wrong_device_request) - 1));
 }
 
-TEST_F(OcppLoggerIntegrationTest, ConnectedMeterWithoutEnergyIsNotAvailable) {
+TEST_F(OcppLoggerIntegrationTest, ConnectedMeterWithoutEnergyIsOnline) {
   ASSERT_TRUE(user->get_devices()->is_online(73));
   auto meter = user->get_devices()->get_ocpp_channel(141);
-  EXPECT_TRUE(meter.get_availability_status().is_online_but_not_available());
+  EXPECT_TRUE(meter.get_availability_status().is_online());
   EXPECT_EQ(nullptr, meter.get_value());
 
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -352,15 +353,15 @@ TEST_F(OcppLoggerIntegrationTest, ConnectedMeterWithoutEnergyIsNotAvailable) {
   ASSERT_TRUE(user->get_channel_value(73, 141, value, sub_value,
                                       &sub_value_type, nullptr, nullptr,
                                       &client_status, nullptr, true));
-  EXPECT_TRUE(client_status.is_online_but_not_available());
+  EXPECT_TRUE(client_status.is_online());
 
   supla_channel_property_getter getter;
-  EXPECT_TRUE(getter.get_channel_availability_status(2, 73, 141)
-                  .is_online_but_not_available());
+  EXPECT_TRUE(
+      getter.get_channel_availability_status(2, 73, 141).is_online());
 
   gateway.on_meter(suid, 73, 1, {{"voltage", {230000}}}, 90);
   meter = user->get_devices()->get_ocpp_channel(141);
-  EXPECT_TRUE(meter.get_availability_status().is_online_but_not_available());
+  EXPECT_TRUE(meter.get_availability_status().is_online());
   EXPECT_EQ(nullptr, meter.get_value());
 
   gateway.on_meter(suid, 73, 1, {{"energy", 12000}}, 90);
@@ -369,6 +370,48 @@ TEST_F(OcppLoggerIntegrationTest, ConnectedMeterWithoutEnergyIsNotAvailable) {
   gateway.on_disconnected(suid, 73);
   meter = user->get_devices()->get_ocpp_channel(141);
   EXPECT_TRUE(meter.get_availability_status().is_offline());
+}
+
+TEST_F(OcppLoggerIntegrationTest, MissingSocIsNanForClients) {
+  std::string sql =
+      "UPDATE supla_dev_channel SET is_virtual=1,type=" +
+      std::to_string(SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT) +
+      ",func=" + std::to_string(SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT) +
+      " WHERE id=142";
+  ASSERT_EQ(0, dba.query(sql.c_str(), true));
+  user->get_devices()->reload_ocpp_devices(73);
+  gateway.on_connected(suid, 73, 90);
+
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  char sub_value_type = 0;
+  supla_channel_availability_status status(true);
+  ASSERT_TRUE(user->get_channel_value(73, 142, value, sub_value,
+                                      &sub_value_type, nullptr, nullptr,
+                                      &status, nullptr, true));
+  double soc = 0;
+  memcpy(&soc, value, sizeof(soc));
+  EXPECT_TRUE(status.is_online());
+  EXPECT_TRUE(std::isnan(soc));
+  const char hex_digits[] = "0123456789ABCDEF";
+  std::string expected_hex;
+  for (unsigned char byte : value) {
+    expected_hex += hex_digits[byte >> 4];
+    expected_hex += hex_digits[byte & 0x0F];
+  }
+  std::string stored_hex;
+  sqlQuery(
+      "SELECT HEX(value) FROM supla_dev_channel_value "
+      "WHERE channel_id=142",
+      &stored_hex);
+  EXPECT_EQ(expected_hex, stored_hex);
+
+  gateway.on_meter(suid, 73, 1, {{"soc", 0}}, 90);
+  ASSERT_TRUE(user->get_channel_value(73, 142, value, sub_value,
+                                      &sub_value_type, nullptr, nullptr,
+                                      &status, nullptr, true));
+  memcpy(&soc, value, sizeof(soc));
+  EXPECT_DOUBLE_EQ(0, soc);
 }
 
 TEST_F(OcppLoggerIntegrationTest, LastConnectedChangesOnlyOnNewConnection) {
