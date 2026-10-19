@@ -1924,7 +1924,7 @@ class SupLanStreamConnectionTest : public testing::Test {
   std::function<void()> on_notify;
   stream_connection connection{
       2,
-      [this](uint32_t, bool create, bool) {
+      [this](uint32_t, bool create, bool, TDS_SuplaDeviceChannel_E *) {
         ++checks;
         if (create && !allowed) {
           ++approval_requests;
@@ -2338,7 +2338,7 @@ TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
   std::vector<TSD_SuplaRemoteChannelState> messages;
   stream_connection stream(
       256,
-      [&](uint32_t, bool, bool) {
+      [&](uint32_t, bool, bool, TDS_SuplaDeviceChannel_E *) {
         return TSD_SuplaEnsureResourceAccessResult{
             0,
             static_cast<unsigned char>(
@@ -2391,7 +2391,7 @@ TEST(SupLanStreamLoadTest, FanoutCoalescesFloodWithinConfiguredBounds) {
   for (unsigned n = 0; n < 64; ++n) {
     destinations.emplace_back(new stream_connection(
         256,
-        [&](uint32_t, bool, bool) {
+        [&](uint32_t, bool, bool, TDS_SuplaDeviceChannel_E *) {
           ++authorizations;
           return TSD_SuplaEnsureResourceAccessResult{
               0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
@@ -2435,7 +2435,7 @@ TEST(SupLanStreamLoadTest, ExpiryDrainsAcrossBoundedBatchesWithoutNewTraffic) {
   unsigned online = 0, offline = 0;
   stream_connection stream(
       64,
-      [](uint32_t, bool, bool) {
+      [](uint32_t, bool, bool, TDS_SuplaDeviceChannel_E *) {
         return TSD_SuplaEnsureResourceAccessResult{
             0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};
       },
@@ -2638,7 +2638,7 @@ TEST(SupLanStreamLoadTest, SparseDirtyFanoutDoesNoUnsubscribedWork) {
     for (unsigned n = 0; n < count; ++n) {
       streams.emplace_back(new stream_connection(
           1,
-          [&](uint32_t, bool, bool) {
+          [&](uint32_t, bool, bool, TDS_SuplaDeviceChannel_E *) {
             ++auth;
             return TSD_SuplaEnsureResourceAccessResult{
                 0, SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 2};

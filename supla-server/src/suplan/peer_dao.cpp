@@ -417,7 +417,7 @@ bool peer_dao::project_share(int destination, uint32_t resource,
 }
 bool peer_dao::stream_access(int destination, uint32_t resource,
                              channel_info_t *channel, uint8_t *permissions,
-                             bool *ready) {
+                             bool *ready, TDS_SuplaDeviceChannel_E *metadata) {
   *channel = {};
   *permissions = 0;
   *ready = false;
@@ -426,7 +426,7 @@ bool peer_dao::stream_access(int destination, uint32_t resource,
           "SELECT "
           "c.iodevice_id,c.type,c.func,COALESCE(BIT_OR(g.permissions),0),"
           "d.protocol_version,d.flags,d.is_virtual,COALESCE(i.current_root_"
-          "epoch,0) "
+          "epoch,0),COALESCE(c.flist,0),COALESCE(c.alt_icon,0),c.sub_device_id "
           "FROM supla_dev_channel c JOIN supla_iodevice d ON d.id=" +
               to_string(destination) +
               " AND d.user_id=c.user_id "
@@ -438,12 +438,18 @@ bool peer_dao::stream_access(int destination, uint32_t resource,
               to_string(user) + " AND c.id=" + to_string(resource) +
               " GROUP BY "
               "c.iodevice_id,c.type,c.func,d.protocol_version,d.flags,"
-              "d.is_virtual,i.current_root_epoch",
-          &rows, 8))
+              "d.is_virtual,i.current_root_epoch,c.flist,c.alt_icon,"
+              "c.sub_device_id",
+          &rows, 11))
     return false;
   if (!rows.empty()) {
     const auto &row = rows.front();
     if (row[3] > 7) return false;
+    if (metadata) {
+      metadata->FuncList = row[8];
+      metadata->DefaultIcon = row[9];
+      metadata->SubDeviceId = row[10];
+    }
     channel->device = row[0];
     channel->type = row[1];
     channel->function = row[2];

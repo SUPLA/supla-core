@@ -73,7 +73,7 @@ bool stream_connection::publish(uint32_t id, interest_t *interest) {
   snapshot_t snapshot;
   bool obtained = read(id, &snapshot);
   // Revalidate AFTER snapshot construction, including races with initial read.
-  auto access = authorize(id, false, false);
+  auto access = authorize(id, false, false, &snapshot.state.Channel);
   if (access.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) return false;
   if (access.Result != SUPLA_SUPLAN_RESULT_OK ||
       access.AccessStatus != SUPLA_SUPLAN_ACCESS_STATUS_GRANTED) {
@@ -155,7 +155,7 @@ void stream_connection::ensure(const TDS_SuplaEnsureResourceAccess &q,
     reply(result);
     return;
   }
-  result = authorize(id, q.Flags != 0, true);
+  result = authorize(id, q.Flags != 0, true, nullptr);
   if (!reply(result)) {
     shutdown();
     return;
@@ -261,7 +261,7 @@ void stream_connection::iterate() {
       if (++work == 16) break;
       continue;
     }
-    auto access = authorize(id, false, false);
+    auto access = authorize(id, false, false, nullptr);
     if (access.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) {
       suspend(&interest);
       if (closed) {

@@ -104,7 +104,8 @@ class repository {
   }
   virtual bool stream_access(int destination, uint32_t resource,
                              channel_info_t *channel, uint8_t *permissions,
-                             bool *ready) {
+                             bool *ready,
+                             TDS_SuplaDeviceChannel_E *metadata = nullptr) {
     return false;
   }
   virtual bool permissions(int destination, uint8_t type, uint32_t resource,
@@ -189,7 +190,8 @@ class peer_service {
   TSD_SuplaEnsureResourceAccessResult ensure_stream(
       int destination, uint32_t resource, bool allow_approval,
       const std::function<bool()> &reconcile = nullptr,
-      bool record_request = false);
+      bool record_request = false,
+      TDS_SuplaDeviceChannel_E *metadata = nullptr);
   TSD_SuplaEnsureResourceShareResult ensure_share(
       int source, const TDS_SuplaEnsureResourceShare &request);
 };

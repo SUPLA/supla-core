@@ -396,6 +396,11 @@ void supla_device_channel::get_stream_value(TDS_SuplaDeviceChannel_E *out,
                                              bool *has_expiry,
                                              int64_t *remaining_usec) {
   lock();
+  *out = {};
+  out->Number = 0xFF;
+  out->Type = type;
+  out->Default = func;
+  out->Flags = flags;
   memcpy(out->value, value, sizeof(out->value));
   out->Offline = availability_status.get_proto_offline();
   *has_expiry = stream_has_expiry;

@@ -16,7 +16,8 @@ class stream_connection {
   using time_point_t = std::chrono::steady_clock::time_point;
   using clock_t = std::function<time_point_t()>;
   using authorize_callback_t =
-      std::function<TSD_SuplaEnsureResourceAccessResult(uint32_t, bool, bool)>;
+      std::function<TSD_SuplaEnsureResourceAccessResult(
+          uint32_t, bool, bool, TDS_SuplaDeviceChannel_E *)>;
   struct snapshot_t {
     TSD_SuplaRemoteChannelState state{};
     time_point_t expires{};

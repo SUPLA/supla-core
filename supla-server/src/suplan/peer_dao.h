@@ -44,7 +44,9 @@ class peer_dao : public repository {
                        uint32_t target, bool *out) override;
   bool stream_access(int destination, uint32_t resource,
                      channel_info_t *channel, uint8_t *permissions,
-                     bool *ready) override;
+                     bool *ready,
+                             TDS_SuplaDeviceChannel_E *metadata = nullptr)
+      override;
   bool permissions(int destination, uint8_t type, uint32_t resource,
                     bool peer, uint8_t *out) override;
   bool request_pending(int destination, uint32_t resource,

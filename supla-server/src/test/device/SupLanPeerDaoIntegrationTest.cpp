@@ -66,6 +66,8 @@ struct Sql004Probe {
   std::string statement;
   std::function<bool(unsigned)> after_config;
   std::function<void()> after_permissions;
+  std::function<bool(const std::string &)> fail_execute;
+  unsigned stream_metadata_reads = 0;
   std::chrono::steady_clock::time_point started =
       std::chrono::steady_clock::now();
   Sql004Probe() { sql004 = this; }
@@ -74,6 +76,8 @@ struct Sql004Probe {
     ++executions;
     if (sql.compare(0, 5, "CALL ") == 0) ++calls;
     if (sql.compare(0, 6, "SELECT") == 0) ++selects;
+    if (sql.find("SELECT type,func,COALESCE(flist,0)") == 0)
+      ++stream_metadata_reads;
     if (sql.compare(0, 6, "INSERT") == 0 || sql.compare(0, 6, "UPDATE") == 0 ||
         sql.compare(0, 6, "DELETE") == 0) ++dml;
   }
@@ -133,6 +137,8 @@ extern "C" int STDCALL mysql_stmt_execute(MYSQL_STMT *stmt) {
       "mysql_stmt_execute");
   if (sql004) {
     sql004->count(stmt == sql004->last ? sql004->statement : "");
+    if (stmt == sql004->last && sql004->fail_execute &&
+        sql004->fail_execute(sql004->statement)) return 1;
     if (stmt == sql004->config_statement) ++sql004->config_reads;
     if (stmt == sql004->last && sql004->statement ==
         "CALL `supla_set_channel_json_config`(?,?,?,?,?,?)")
@@ -1358,8 +1364,9 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     EXPECT_EQ(240, config.ChannelNumber);
     acknowledge(config);
     EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_grant"));
-    // Finish the empty pagination tail before the next fixture resets DB IDs.
-    ASSERT_TRUE(user->get_suplan_peers()->drain_changes());
+    // A repeated handoff still fails: recovery must retry this marker,
+    // rather than skip it and return success after an empty pagination tail.
+    EXPECT_FALSE(user->get_suplan_peers()->drain_changes());
     ASSERT_TRUE(repo.changed_pairs(0, 64, &after));
     EXPECT_EQ(before, after);
   }
@@ -2948,6 +2955,11 @@ TEST_F(SupLanHvacWireIntegrationTest,
       "UPDATE supla_iodevice SET guid=UNHEX(REPEAT('cd',16)),auth_key=NULL,"
       "enabled=1,flags=0 WHERE id=" +
       std::to_string(source));
+  // Existing channel metadata is owned by the product, not overwritten by
+  // Device re-registration. Include nonzero ancillary fields in the wire check.
+  query("UPDATE supla_dev_channel SET flist=" +
+        std::to_string(SUPLA_BIT_FUNC_THERMOMETER) +
+        ",alt_icon=1,sub_device_id=17 WHERE id=" + std::to_string(resource));
   OtherConnection source_connection(this);
   ASSERT_FALSE(HasFatalFailure());
   TDS_SuplaRegisterDevice_G registration{};
@@ -2964,6 +2976,9 @@ TEST_F(SupLanHvacWireIntegrationTest,
       std::to_string(resource));
   channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
   channel.Default = SUPLA_CHANNELFNC_THERMOMETER;
+  channel.FuncList = SUPLA_BIT_FUNC_THERMOMETER;
+  channel.DefaultIcon = 1;
+  channel.SubDeviceId = 17;
   double temperature = 20;
   memcpy(channel.value, &temperature, sizeof(temperature));
   send_packet(SUPLA_DS_CALL_REGISTER_DEVICE_G, &registration,
@@ -3014,6 +3029,12 @@ TEST_F(SupLanHvacWireIntegrationTest,
   memcpy(&snapshot, packet.data, sizeof(snapshot));
   EXPECT_EQ(resource, snapshot.ChannelId);
   EXPECT_EQ(0, snapshot.Channel.Offline);
+  EXPECT_EQ(0xFF, snapshot.Channel.Number);
+  EXPECT_EQ(SUPLA_CHANNELTYPE_THERMOMETER, snapshot.Channel.Type);
+  EXPECT_EQ(SUPLA_CHANNELFNC_THERMOMETER, snapshot.Channel.Default);
+  EXPECT_EQ(SUPLA_BIT_FUNC_THERMOMETER, snapshot.Channel.FuncList);
+  EXPECT_EQ(1, snapshot.Channel.DefaultIcon);
+  EXPECT_EQ(17, snapshot.Channel.SubDeviceId);
   memcpy(&temperature, snapshot.Channel.value, sizeof(temperature));
   EXPECT_DOUBLE_EQ(20, temperature);
   {
@@ -3022,6 +3043,32 @@ TEST_F(SupLanHvacWireIntegrationTest,
     auto timeout = target->wait_time_usec();
     EXPECT_GT(timeout, 1000000u);
     EXPECT_LE(timeout, 30000000u);
+  }
+  {
+    auto user = supla_user::find(99126, false);
+    auto target = user->get_devices()->get(destination);
+    auto stream = user->get_suplan_peers()->new_stream(target.get());
+    TDS_SuplaEnsureResourceAccess request{{1, static_cast<uint32_t>(resource)},
+                                         1, 2, 0};
+    stream->ensure(request, [](const TSD_SuplaEnsureResourceAccessResult &r) {
+      EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, r.AccessStatus);
+      return true;
+    });
+    ASSERT_TRUE(receive_packet(&packet, 5000));
+    ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+    // Run the real production snapshot + authorization callbacks on this
+    // thread so the native SQL probe measures both, not a synthetic reader.
+    Sql004Probe probe;
+    for (unsigned i = 0; i < 3; ++i) {
+      stream->dirty(resource);
+      stream->iterate();
+    }
+    EXPECT_EQ(3u, probe.selects);
+    EXPECT_EQ(3u, probe.connections);
+    EXPECT_EQ(0u, probe.stream_metadata_reads);
+    EXPECT_EQ(0u, probe.calls);
+    EXPECT_EQ(0u, probe.dml);
+    probe.finish("stream-live-full-snapshot-three");
   }
   source_connection.select(true);
   TDS_SuplaDeviceChannelValue_B update{};
@@ -3575,9 +3622,10 @@ TEST_F(SupLanCloudGrantIntegrationTest,
   std::vector<TSD_SuplaRemoteChannelState> sent;
   stream_connection stream(
       32,
-      [&](uint32_t id, bool approval, bool request) {
+      [&](uint32_t id, bool approval, bool request,
+          TDS_SuplaDeviceChannel_E *metadata) {
         return service.ensure_stream(destination, id, approval, nullptr,
-                                     request);
+                                     request, metadata);
       },
       [&](uint32_t, stream_connection::snapshot_t *out) {
         out->state.Channel.Type = SUPLA_CHANNELTYPE_THERMOMETER;
@@ -3978,6 +4026,46 @@ TEST_F(SupLanCloudGrantIntegrationTest,
   EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_resource_access_grant"));
   EXPECT_EQ(0, scalar("SELECT COUNT(*) FROM supla_resource_access_decision "
                      "WHERE status='PENDING'"));
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       DirtyMarkerSqlFailureRetriesSameEntryOnNextPass) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  auto peers = supla_user::find(99126, false)->get_suplan_peers();
+  peer_dao trusted(99126);
+  const auto origin = channel_config_origin(hvac, 1);
+  // Fail the initial load, the provisioner's authoritative reload, then ACK.
+  for (unsigned failure = 0; failure < 3; ++failure) {
+    cloud_grant(99126, origin, source, destination, resource, 1);
+    cloud_grant(99126, origin, source, destination, resource, 0);
+    std::vector<std::pair<uint64_t, uint64_t>> markers;
+    ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
+    ASSERT_EQ(1u, markers.size());
+    unsigned loads = 0;
+    bool injected = false;
+    {
+      Sql004Probe probe;
+      probe.fail_execute = [&](const std::string &sql) {
+        if (sql.find("canonical_acl FROM supla_suplan_peer_association") !=
+            std::string::npos) ++loads;
+        bool fail = !injected &&
+            ((failure < 2 && loads == failure + 1 &&
+              sql.find("canonical_acl FROM") != std::string::npos) ||
+             (failure == 2 && sql.find("CALL supla_suplan_changed_ack(") == 0));
+        if (fail) injected = true;
+        return fail;
+      };
+      EXPECT_FALSE(peers->drain_changes());
+    }
+    ASSERT_TRUE(injected);
+    ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
+    ASSERT_EQ(1u, markers.size());
+    // No empty cursor-wrap pass, reconnect, IPC or timer is needed to retry.
+    ASSERT_TRUE(peers->drain_changes());
+    ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
+    EXPECT_TRUE(markers.empty());
+  }
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,

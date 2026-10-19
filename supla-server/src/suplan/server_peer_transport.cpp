@@ -137,7 +137,6 @@ bool supla_suplan_server_peers::drain_changes() {
   std::vector<std::pair<uint64_t, uint64_t>> changed;
   if (!repo.changed_pairs(changes_cursor, 64, &changed)) return false;
   for (const auto &entry : changed) {
-    changes_cursor = entry.first;
     supla_suplan::association_t association;
     if (!repo.load(entry.first, &association)) return false;
     if (association.id && (ready(association.source) ||
@@ -145,6 +144,9 @@ bool supla_suplan_server_peers::drain_changes() {
       if (!provisioner.reconcile(entry.first) ||
           !repo.ack_changed(entry.first, entry.second)) return false;
     }
+    // Failed work must remain ahead of the cursor for the next recovery pass.
+    // Offline pairs retain their marker but must not starve later live pairs.
+    changes_cursor = entry.first;
   }
   if (changed.size() < 64) changes_cursor = 0;
   return true;
@@ -178,26 +180,30 @@ supla_suplan_server_peers::new_stream(supla_device *destination) {
   int account = user->getUserID();
   auto stream = std::make_shared<stream_connection>(
       std::max(0, scfg_int(CFG_SERVER_STREAM_MAX_CHANNELS)),
-      [this, account, device](uint32_t channel, bool approval, bool request) {
+      [this, device](uint32_t channel, bool approval, bool request,
+                     TDS_SuplaDeviceChannel_E *metadata) {
         return provisioner.grants()->ensure_stream(device, channel, approval,
-                                                   nullptr, request);
+                                                   nullptr, request, metadata);
       },
       [this, account](uint32_t channel,
                       stream_connection::snapshot_t *snapshot) {
-        peer_dao dao(account);
-        if (!dao.stream_metadata(channel, &snapshot->state.Channel))
-          return false;
-        snapshot->state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
         auto physical = user->get_devices()->get(0, channel);
         bool has_expiry = false;
         int64_t remaining = 0;
         if (physical) {
+          bool found = false;
           physical->get_channels()->access_channel(channel,
               [&](supla_device_channel *source) {
+                found = true;
                 source->get_stream_value(&snapshot->state.Channel, &has_expiry,
                                          &remaining);
               });
+          if (!found) return false;
         } else {
+          peer_dao dao(account);
+          if (!dao.stream_metadata(channel, &snapshot->state.Channel))
+            return false;
+          snapshot->state.Channel.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
           supla_mariadb_access_provider db;
           supla_user_dao virtuals(&db);
           // Read one current persisted value: virtual or disconnected

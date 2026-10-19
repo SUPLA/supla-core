@@ -554,7 +554,8 @@ TSD_SuplaEnsureResourceAccessResult peer_service::ensure_access(
 }
 TSD_SuplaEnsureResourceAccessResult peer_service::ensure_stream(
     int destination, uint32_t resource, bool allow_approval,
-    const std::function<bool()> &, bool record_request) {
+    const std::function<bool()> &, bool record_request,
+    TDS_SuplaDeviceChannel_E *metadata) {
   TSD_SuplaEnsureResourceAccessResult result = {
       SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT, SUPLA_SUPLAN_ACCESS_STATUS_INVALID,
       SUPLA_RESOURCE_DELIVERY_SERVER_STREAM};
@@ -563,7 +564,8 @@ TSD_SuplaEnsureResourceAccessResult peer_service::ensure_stream(
   channel_info_t channel;
   uint8_t allowed = 0;
   bool ready = false;
-  if (!repo->stream_access(destination, resource, &channel, &allowed, &ready)) {
+  if (!repo->stream_access(destination, resource, &channel, &allowed, &ready,
+                           metadata)) {
     result.Result = SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR;
     return result;
   }
