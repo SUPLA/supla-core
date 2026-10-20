@@ -136,20 +136,27 @@ bool supla_suplan_server_peers::drain_changes() {
   supla_suplan::peer_dao repo(user->getUserID());
   std::vector<std::pair<uint64_t, uint64_t>> changed;
   if (!repo.changed_pairs(changes_cursor, 64, &changed)) return false;
+  bool success = true;
   for (const auto &entry : changed) {
+    // Pagination is not an ACK: failed/offline markers remain in SQL and
+    // are revisited after this bounded sweep, without starving other pairs.
+    changes_cursor = entry.first;
     supla_suplan::association_t association;
-    if (!repo.load(entry.first, &association)) return false;
+    if (!repo.load(entry.first, &association)) {
+      success = false;
+      continue;
+    }
     if (association.id && (ready(association.source) ||
                            ready(association.destination))) {
       if (!provisioner.reconcile(entry.first) ||
-          !repo.ack_changed(entry.first, entry.second)) return false;
+          !repo.ack_changed(entry.first, entry.second)) {
+        repo.rollback();
+        success = false;
+      }
     }
-    // Failed work must remain ahead of the cursor for the next recovery pass.
-    // Offline pairs retain their marker but must not starve later live pairs.
-    changes_cursor = entry.first;
   }
   if (changed.size() < 64) changes_cursor = 0;
-  return true;
+  return success;
 }
 bool supla_suplan_server_peers::channel_deleted(int user_id, int channel) {
   if (channel) {

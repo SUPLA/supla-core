@@ -4029,6 +4029,67 @@ TEST_F(SupLanCloudGrantIntegrationTest,
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
+       DirtyMarkerFailureCannotStarveUnrelatedRevocation) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  auto peers = supla_user::find(99126, false)->get_suplan_peers();
+  peer_dao repo(99126);
+  // A is a persistent, per-pair failure, not a database-wide outage.
+  cloud_grant(99126, channel_config_origin(hvac, 1), source, destination,
+              resource, 1);
+  ASSERT_TRUE(repo.accept_identity(source, {123, {}}));
+  association_t broken;
+  ASSERT_TRUE(repo.find(source, destination, &broken));
+
+  auto consumer = add_channel(destination, 239, SUPLA_CHANNELTYPE_HVAC,
+                              SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+        std::to_string(consumer));
+  const auto origin = channel_config_origin(consumer, 1);
+  cloud_grant(99126, origin, other_source, destination, other_resource, 1);
+  association_t revoked;
+  ASSERT_TRUE(repo.find(other_source, destination, &revoked));
+  ASSERT_LT(broken.id, revoked.id);
+  ASSERT_TRUE(service.provisioned(revoked, 456));
+  cloud_grant(99126, origin, other_source, destination, other_resource, 0);
+  ASSERT_TRUE(repo.load(revoked.id, &revoked));
+  ASSERT_EQ(lifecycle_t::draining, revoked.lifecycle);
+  ASSERT_TRUE(revoked.acl.empty());
+
+  // Even while reporting A's failure, deliver B's current empty replacement.
+  EXPECT_FALSE(peers->drain_changes());
+  TSuplaDataPacket packet{};
+  ASSERT_TRUE(receive_packet(&packet, 5000));
+  ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, packet.call_id);
+  TSDS_SuplaSetSuplanDestinationAssociation replacement{};
+  memcpy(&replacement, packet.data, packet.data_size);
+  EXPECT_EQ(other_source, replacement.PeerContext.SourceNodeId);
+  EXPECT_EQ(destination, replacement.PeerContext.DestinationNodeId);
+  EXPECT_EQ(revoked.revision, replacement.AclRevision);
+  EXPECT_EQ(0, replacement.ResourceCount);
+  EXPECT_EQ(0, replacement.PeerKeySize);
+  std::vector<std::pair<uint64_t, uint64_t>> markers;
+  ASSERT_TRUE(repo.changed_pairs(0, 64, &markers));
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(broken.id, markers.front().first);
+  const auto retained = markers;
+  EXPECT_FALSE(peers->drain_changes());
+  ASSERT_TRUE(repo.changed_pairs(0, 64, &markers));
+  EXPECT_EQ(retained, markers);
+  ASSERT_TRUE(repo.load(revoked.id, &revoked));
+  EXPECT_EQ(lifecycle_t::draining, revoked.lifecycle);
+  EXPECT_FALSE(revoked.source_acked);
+  EXPECT_FALSE(revoked.destination_acked);
+  EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_grant"));
+
+  // Repairing A needs neither a reconnect nor a new business Grant.
+  ASSERT_TRUE(repo.accept_identity(source, {123, {resource}}));
+  ASSERT_TRUE(peers->drain_changes());
+  ASSERT_TRUE(repo.changed_pairs(0, 64, &markers));
+  EXPECT_TRUE(markers.empty());
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
        DirtyMarkerSqlFailureRetriesSameEntryOnNextPass) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
@@ -4039,9 +4100,15 @@ TEST_F(SupLanHvacWireIntegrationTest,
   for (unsigned failure = 0; failure < 3; ++failure) {
     cloud_grant(99126, origin, source, destination, resource, 1);
     cloud_grant(99126, origin, source, destination, resource, 0);
+    const auto other_origin = channel_config_origin(hvac, 2);
+    cloud_grant(99126, other_origin, other_source, destination,
+                other_resource, 1);
+    cloud_grant(99126, other_origin, other_source, destination,
+                other_resource, 0);
     std::vector<std::pair<uint64_t, uint64_t>> markers;
     ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
-    ASSERT_EQ(1u, markers.size());
+    ASSERT_EQ(2u, markers.size());
+    const auto failed_id = markers.front().first;
     unsigned loads = 0;
     bool injected = false;
     {
@@ -4061,6 +4128,8 @@ TEST_F(SupLanHvacWireIntegrationTest,
     ASSERT_TRUE(injected);
     ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
     ASSERT_EQ(1u, markers.size());
+    EXPECT_EQ(failed_id, markers.front().first);
+    // The unrelated marker was committed even after this row's SQL failure.
     // No empty cursor-wrap pass, reconnect, IPC or timer is needed to retry.
     ASSERT_TRUE(peers->drain_changes());
     ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
