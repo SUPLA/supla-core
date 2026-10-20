@@ -383,6 +383,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_IDENTIFY_REQUESTED 43                    // ver. >= 25
 #define SUPLA_RESULTCODE_MALFORMED_EMAIL 44                       // ver. >= ?
 #define SUPLA_RESULTCODE_RESET_TO_FACTORY_SETTINGS 45             // ver. >= 28
+#define SUPLA_RESULTCODE_TLS_REQUIRED 46                         // ver. >= 29
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10

@@ -28,6 +28,7 @@
 #include "conn/connection.h"
 #include "db/database.h"
 #include "device/device_dao.h"
+#include "device/call_handler/register_device.h"
 #include "device/devicechannels.h"
 #include "doubles/SrpcAdapterMock.h"
 #include "google/google_home_sync_search_condition.h"
@@ -974,6 +975,45 @@ TEST_F(SupLanHvacIntegrationTest,
 }
 
 TEST_F(SupLanHvacIntegrationTest,
+       Adr016PlainRegistrationHasNoDatabaseSideEffects) {
+  query("UPDATE supla_iodevice SET guid=UNHEX(REPEAT('ab',16)) WHERE id=" +
+        std::to_string(destination));
+  for (unsigned char guid_byte : {0xab, 0xcd}) {
+    supla_connection_test_access protocol;
+    ASSERT_TRUE(protocol.open());
+    ASSERT_FALSE(protocol.get()->is_secure());
+    auto device = std::make_shared<testing::DeviceStub>(protocol.get());
+    testing::SrpcAdapterMock adapter;
+    EXPECT_CALL(adapter, sd_async_registerdevice_result(testing::_))
+        .WillOnce([](TSD_SuplaRegisterDeviceResult *result) {
+          EXPECT_EQ(SUPLA_RESULTCODE_TLS_REQUIRED, result->result_code);
+          EXPECT_EQ(20, result->activity_timeout);
+          EXPECT_EQ(SUPLA_PROTO_VERSION, result->version);
+          EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result->version_min);
+          return 1;
+        });
+    TDS_SuplaRegisterDevice_G registration{};
+    memset(registration.GUID, guid_byte, sizeof(registration.GUID));
+    registration.AuthKey[0] = 1;
+    registration.Flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED;
+    snprintf(registration.Email, sizeof(registration.Email), "%s",
+             "suplan-hvac@test.invalid");
+    // Existing and unknown GUIDs must be rejected before even opening SQL.
+    Sql004Probe probe;
+    supla_register_device registrar;
+    registrar.register_device(device, nullptr, &registration, &adapter,
+                               0, 0, 20);
+    EXPECT_EQ(0u, probe.connections);
+    EXPECT_EQ(0u, probe.executions);
+    EXPECT_FALSE(device->is_registered());
+    EXPECT_EQ(nullptr, device->get_user());
+    EXPECT_EQ(0u, device->get_suplan_root_epoch());
+    EXPECT_EQ(nullptr, device->get_stream(false));
+    probe.finish("adr016-plain-registration");
+  }
+}
+
+TEST_F(SupLanHvacIntegrationTest,
        LocalBinaryUploadCompatibilityRemainsTypeBasedForAllConsumers) {
   query("UPDATE supla_dev_channel SET type=" +
         std::to_string(SUPLA_CHANNELTYPE_BINARYSENSOR) + " WHERE id=" +
@@ -1825,10 +1865,23 @@ TEST_F(SupLanHvacWireIntegrationTest, PeerCredentialsNeverUsePlainConnection) {
   secure = false;
   start_connection();
   ASSERT_FALSE(HasFatalFailure());
-  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
-  ASSERT_FALSE(HasFatalFailure());
+  begin_registration(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  TSuplaDataPacket packet{};
+  ASSERT_TRUE(receive_packet(&packet));
+  ASSERT_EQ(SUPLA_SD_CALL_REGISTER_DEVICE_RESULT, packet.call_id);
+  ASSERT_EQ(sizeof(TSD_SuplaRegisterDeviceResult), packet.data_size);
+  TSD_SuplaRegisterDeviceResult result{};
+  memcpy(&result, packet.data, sizeof(result));
+  EXPECT_EQ(SUPLA_RESULTCODE_TLS_REQUIRED, result.result_code);
+  auto rejected =
+      std::dynamic_pointer_cast<supla_device>(connection->get_object());
+  ASSERT_NE(nullptr, rejected);
+  EXPECT_FALSE(rejected->is_registered());
+  EXPECT_FALSE(rejected->is_server_stream_ready());
+  EXPECT_EQ(0u, rejected->get_suplan_root_epoch());
+  EXPECT_EQ(nullptr, rejected->get_stream(false));
   ASSERT_FALSE(connection->is_secure());
-  auto peers = supla_user::find(99126, false)->get_suplan_peers();
+  auto peers = supla_user::find(99126, true)->get_suplan_peers();
   EXPECT_FALSE(peers->ready(destination));
   TSDS_SuplaSetSuplanSourceAssociation source_request = {};
   source_request.Flags = SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY;
@@ -1840,6 +1893,95 @@ TEST_F(SupLanHvacWireIntegrationTest, PeerCredentialsNeverUsePlainConnection) {
          sizeof(destination_request.PeerKey));
   EXPECT_EQ(peer_transport::send_code::not_ready,
             peers->send(destination, &destination_request).code);
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       Adr016AllFlaggedRegistrationVariantsRequireTls) {
+  close_connection();
+  secure = false;
+  for (unsigned int call : {SUPLA_DS_CALL_REGISTER_DEVICE_E,
+                            SUPLA_DS_CALL_REGISTER_DEVICE_F,
+                            SUPLA_DS_CALL_REGISTER_DEVICE_G}) {
+    start_connection();
+    ASSERT_FALSE(HasFatalFailure());
+    TDS_SuplaRegisterDeviceHeader registration{};
+    memset(registration.GUID, 0xab, sizeof(registration.GUID));
+    registration.AuthKey[0] = 1;
+    registration.Flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED;
+    snprintf(registration.Email, sizeof(registration.Email), "%s",
+             "hvac-wire@test.invalid");
+    // E/F/G use this same header. Channel count zero deliberately requires
+    // the transport rejection to precede normal registration validation.
+    send_packet(call, &registration, sizeof(registration));
+    TSuplaDataPacket packet{};
+    ASSERT_TRUE(receive_packet(&packet));
+    ASSERT_EQ(SUPLA_SD_CALL_REGISTER_DEVICE_RESULT, packet.call_id);
+    ASSERT_EQ(sizeof(TSD_SuplaRegisterDeviceResult), packet.data_size);
+    TSD_SuplaRegisterDeviceResult result{};
+    memcpy(&result, packet.data, sizeof(result));
+    EXPECT_EQ(SUPLA_RESULTCODE_TLS_REQUIRED, result.result_code);
+    EXPECT_EQ(SUPLA_PROTO_VERSION, result.version);
+    EXPECT_EQ(SUPLA_PROTO_VERSION_MIN, result.version_min);
+    auto rejected = connection->get_object();
+    ASSERT_NE(nullptr, rejected);
+    EXPECT_FALSE(rejected->is_registered());
+    rejected.reset();
+    close_connection();
+  }
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       Adr016PlainLegacyRegistrationCannotUpgradeToSupLan) {
+  close_connection();
+  secure = false;
+  start_connection();
+  ASSERT_FALSE(HasFatalFailure());
+  register_existing_family(SUPLA_CHANNELTYPE_HVAC,
+                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT, false, false);
+  ASSERT_FALSE(HasFatalFailure());
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  EXPECT_TRUE(target->is_registered());
+  EXPECT_FALSE(target->get_flags() & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+  auto flags = scalar("SELECT flags FROM supla_iodevice WHERE id=" +
+                      std::to_string(destination));
+  begin_registration(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  TSuplaDataPacket packet{};
+  ASSERT_TRUE(receive_packet(&packet));
+  ASSERT_EQ(SUPLA_SD_CALL_REGISTER_DEVICE_RESULT, packet.call_id);
+  TSD_SuplaRegisterDeviceResult result{};
+  memcpy(&result, packet.data, sizeof(result));
+  EXPECT_EQ(SUPLA_RESULTCODE_TLS_REQUIRED, result.result_code);
+  EXPECT_FALSE(target->is_suplan_peer_ready());
+  EXPECT_FALSE(target->is_server_stream_ready());
+  EXPECT_EQ(flags, scalar("SELECT flags FROM supla_iodevice WHERE id=" +
+                         std::to_string(destination)));
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       Adr016FlagClearOnReregistrationClosesExistingStream) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  cloud_grant(99126, channel_config_origin(hvac, 1), source, destination,
+              resource, 1);
+  expect_access(resource, SUPLA_SUPLAN_RESULT_OK,
+                SUPLA_SUPLAN_ACCESS_STATUS_GRANTED, 0, 1, 2);
+  TSuplaDataPacket packet{};
+  ASSERT_TRUE(receive_packet(&packet));
+  ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  auto stream = target->get_stream(false);
+  ASSERT_NE(nullptr, stream);
+  ASSERT_EQ(1u, stream->size());
+  target.reset();
+  begin_registration(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                      false, false);
+  EXPECT_FALSE(receive_packet(&packet, 5000));
+  EXPECT_EQ(0u, stream->size());
+  stream->dirty(resource);
+  stream->iterate();
+  EXPECT_EQ(0u, stream->size());
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,

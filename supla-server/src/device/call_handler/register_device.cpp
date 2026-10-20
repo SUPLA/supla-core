@@ -125,6 +125,19 @@ void supla_register_device::register_device(
     if (_device) {
       _device->reset_suplan_identity_bootstrap();
     }
+    if (register_device_g &&
+        (register_device_g->Flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+        (!_device || !_device->get_connection() ||
+         !_device->get_connection()->is_secure())) {
+      TSD_SuplaRegisterDeviceResult result = {};
+      result.result_code = SUPLA_RESULTCODE_TLS_REQUIRED;
+      result.activity_timeout = activity_timeout;
+      result.version_min = SUPLA_PROTO_VERSION_MIN;
+      result.version = SUPLA_PROTO_VERSION;
+      srpc_adapter->sd_async_registerdevice_result(&result);
+      if (_device && _device->is_registered()) _device->terminate();
+      return;
+    }
     if (_device && _device->is_registered()) {
       _device->terminate();
       return;
