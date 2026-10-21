@@ -8,7 +8,6 @@
 #include <string>
 
 #include "db/mariadb_access_provider.h"
-#include "device/device_dao.h"
 #include "log.h"
 
 supla_ocpp_dao::supla_ocpp_dao(supla_mariadb_access_provider *dba) : dba(dba) {}
@@ -119,6 +118,10 @@ bool supla_ocpp_dao::get_devices(
       target_config = &device.power_switch;
       target_values = &device.power_switch_persisted_values;
     }
+    if (channel.type == SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT &&
+        channel.func == SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT) {
+      target_config = &device.soc;
+    }
     if (target_config) {
       if (target_config->id) {
         supla_log(LOG_WARNING, "Ambiguous OCPP channel mapping at device %i",
@@ -127,7 +130,7 @@ bool supla_ocpp_dao::get_devices(
         break;
       }
       *target_config = channel;
-      *target_values = persisted_values;
+      if (target_values) *target_values = persisted_values;
     }
   }
   success = success && status == MYSQL_NO_DATA;
@@ -195,7 +198,23 @@ bool supla_ocpp_dao::save_extended_value(int user_id,
 }
 
 bool supla_ocpp_dao::renew_validity(int user_id, int device_id,
-                                    unsigned int seconds) {
-  supla_device_dao dao(dba);
-  return dao.touch_channel_values(device_id, user_id, seconds);
+                                    unsigned int seconds,
+                                    bool new_connection) {
+  MYSQL_BIND params[4] = {};
+  params[0].buffer_type = MYSQL_TYPE_LONG;
+  params[0].buffer = &device_id;
+  params[1].buffer_type = MYSQL_TYPE_LONG;
+  params[1].buffer = &user_id;
+  params[2].buffer_type = MYSQL_TYPE_LONG;
+  params[2].buffer = &seconds;
+  params[2].is_unsigned = true;
+  signed char connected = new_connection ? 1 : 0;
+  params[3].buffer_type = MYSQL_TYPE_TINY;
+  params[3].buffer = &connected;
+  MYSQL_STMT *stmt = nullptr;
+  bool result = dba->stmt_execute(reinterpret_cast<void **>(&stmt),
+                                  "CALL supla_touch_ocpp_channel_values(?,?,?,?)",
+                                  params, 4, true);
+  if (stmt) mysql_stmt_close(stmt);
+  return result;
 }

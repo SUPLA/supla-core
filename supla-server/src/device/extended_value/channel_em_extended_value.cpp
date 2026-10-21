@@ -456,6 +456,19 @@ bool supla_channel_em_extended_value::set_current(int phase, double value) {
   return true;
 }
 
+bool supla_channel_em_extended_value::set_frequency(double value) {
+  if (!std::isfinite(value) || value < 0 || value > 655.35) return false;
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  em_ev.m[0].freq =
+      static_cast<unsigned _supla_int16_t>(std::round(value * 100));
+  em_ev.measured_values |= EM_VAR_FREQ;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
 bool supla_channel_em_extended_value::set_power_active(int phase,
                                                        double value) {
   if (phase < 1 || phase > 3 || !std::isfinite(value)) {
@@ -481,6 +494,51 @@ bool supla_channel_em_extended_value::set_power_active(int phase,
   }
 
   em_ev.measured_values |= EM_VAR_POWER_ACTIVE | EM_VAR_POWER_ACTIVE_KW;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
+bool supla_channel_em_extended_value::set_power_reactive(int phase,
+                                                         double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value)) return false;
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  bool previous_kvar = em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR;
+  long double power[3] = {};
+  for (int a = 0; a < 3; a++) {
+    power[a] = em_ev.m[0].power_reactive[a] *
+               (previous_kvar ? 0.01L : 0.00001L);
+  }
+  power[phase - 1] = value;
+
+  for (int a = 0; a < 3; a++) {
+    long double raw = std::round(power[a] * 100.0L);
+    raw = std::max(raw, static_cast<long double>(
+                            std::numeric_limits<_supla_int_t>::min()));
+    raw = std::min(raw, static_cast<long double>(
+                            std::numeric_limits<_supla_int_t>::max()));
+    em_ev.m[0].power_reactive[a] = static_cast<_supla_int_t>(raw);
+  }
+
+  em_ev.measured_values |= EM_VAR_POWER_REACTIVE | EM_VAR_POWER_REACTIVE_KVAR;
+  em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
+  set_raw_value(&em_ev);
+  return true;
+}
+
+bool supla_channel_em_extended_value::set_power_factor(int phase,
+                                                       double value) {
+  if (phase < 1 || phase > 3 || !std::isfinite(value) || value < -1 ||
+      value > 1)
+    return false;
+
+  TElectricityMeter_ExtendedValue_V3 em_ev = {};
+  get_raw_value(&em_ev);
+  em_ev.m[0].power_factor[phase - 1] =
+      static_cast<_supla_int16_t>(std::round(value * 1000));
+  em_ev.measured_values |= EM_VAR_POWER_FACTOR;
   em_ev.m_count = std::max<_supla_int_t>(1, em_ev.m_count);
   set_raw_value(&em_ev);
   return true;

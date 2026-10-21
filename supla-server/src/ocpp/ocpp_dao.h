@@ -21,7 +21,8 @@ class supla_ocpp_dao {
                    std::vector<supla_ocpp_device_config> *devices);
   bool save_value(int user_id, const supla_ocpp_channel &channel);
   bool save_extended_value(int user_id, const supla_ocpp_channel &channel);
-  bool renew_validity(int user_id, int device_id, unsigned int seconds);
+  bool renew_validity(int user_id, int device_id, unsigned int seconds,
+                      bool new_connection = false);
 };
 
 #endif  // SUPLA_OCPP_DAO_H_

@@ -88,7 +88,7 @@ bool valid_optional_integer(const json &message, const char *name,
 }
 
 bool valid_phase_array(const json &message, const char *name,
-                       long long maximum) {
+                       long long minimum, long long maximum) {
   auto item = message.find(name);
   if (item == message.end()) {
     return true;
@@ -105,7 +105,7 @@ bool valid_phase_array(const json &message, const char *name,
     }
     try {
       long long integer = value.get<long long>();
-      if (integer < 0 || integer > maximum) {
+      if (integer < minimum || integer > maximum) {
         return false;
       }
     } catch (...) {
@@ -389,7 +389,15 @@ void supla_ocpp_gateway::on_result(unsigned long long id, bool ok,
 void supla_ocpp_gateway::on_connected(const std::string &user_suid,
                                       int device_id,
                                       supla_ocpp_value_validity validity) {
-  workers.post(device_id, [this, user_suid, device_id, validity]() {
+  on_activity(user_suid, device_id, validity, true);
+}
+
+void supla_ocpp_gateway::on_activity(const std::string &user_suid,
+                                     int device_id,
+                                     supla_ocpp_value_validity validity,
+                                     bool new_connection) {
+  workers.post(device_id, [this, user_suid, device_id, validity,
+                           new_connection]() {
     auto device = find_device(user_suid, device_id);
     if (!device) {
       supla_log(LOG_WARNING, "Unknown or incomplete OCPP device %i", device_id);
@@ -399,7 +407,7 @@ void supla_ocpp_gateway::on_connected(const std::string &user_suid,
       std::lock_guard<std::mutex> lock(mutex);
       connected_devices[device_id] = device;
     }
-    device->renew_validity(validity);
+    device->renew_validity(validity, new_connection);
   });
 }
 
@@ -419,7 +427,7 @@ void supla_ocpp_gateway::on_disconnected(const std::string &user_suid,
 
 void supla_ocpp_gateway::on_alive(const std::string &user_suid, int device_id,
                                   supla_ocpp_value_validity validity) {
-  on_connected(user_suid, device_id, validity);
+  on_activity(user_suid, device_id, validity, false);
 }
 
 void supla_ocpp_gateway::on_state(const std::string &user_suid, int device_id,
@@ -451,6 +459,8 @@ void supla_ocpp_gateway::on_meter(const std::string &user_suid, int device_id,
     report.snapshot = message.value("snapshot", false);
     if (message.contains("energy"))
       report.energy = message.at("energy").get<long long>();
+    if (message.contains("frequency"))
+      report.frequency = message.at("frequency").get<long long>();
     // Phase arrays contain only actual OCPP phase readings. Never invent
     // a phase split from an aggregate power or energy value.
     auto read_phases = [&](const char *name, auto &target) {
@@ -465,12 +475,25 @@ void supla_ocpp_gateway::on_meter(const std::string &user_suid, int device_id,
     read_phases("voltage", report.voltage);
     read_phases("current", report.current);
     read_phases("power_phases", report.power);
+    read_phases("reactive_power_phases", report.reactive_power);
+    read_phases("power_factor_phases", report.power_factor);
     read_phases("energy_phases", report.energy_phases);
     {
       std::lock_guard<std::mutex> lock(mutex);
       connected_devices[device_id] = device;
     }
-    device->update_meter(report, validity);
+    // A SoC-only OCPP sample is not an electricity-meter reading. Keep it
+    // separate so it cannot synthesize an empty extended meter value.
+    bool has_meter_readings =
+        message.contains("energy") || message.contains("energy_phases") ||
+        message.contains("frequency") || message.contains("voltage") ||
+        message.contains("current") || message.contains("power") ||
+        message.contains("power_phases") ||
+        message.contains("reactive_power_phases") ||
+        message.contains("power_factor_phases");
+    if (has_meter_readings) device->update_meter(report, validity);
+    if (message.contains("soc"))
+      device->update_soc(message.at("soc").get<int>(), validity);
   });
 }
 
@@ -630,12 +653,17 @@ bool supla_ocpp_connection::process_message(const json &message) {
         !json_int(message, "connector", 0, INT_MAX, &connector) ||
         !valid_optional_integer(message, "time", 0,
                                 std::numeric_limits<long long>::max()) ||
-        !valid_phase_array(message, "voltage", 655350) ||
-        !valid_phase_array(message, "current", 655350) ||
-        !valid_phase_array(message, "power_phases", INT_MAX / 100) ||
-        !valid_phase_array(message, "energy_phases",
+        !valid_phase_array(message, "voltage", 0, 655350) ||
+        !valid_phase_array(message, "current", 0, 655350) ||
+        !valid_phase_array(message, "power_phases", 0, INT_MAX / 100) ||
+        !valid_phase_array(message, "reactive_power_phases", 0,
+                           INT_MAX / 100) ||
+        !valid_phase_array(message, "power_factor_phases", -1000, 1000) ||
+        !valid_phase_array(message, "energy_phases", 0,
                            std::numeric_limits<long long>::max() / 100) ||
         !valid_optional_integer(message, "power", 0, INT_MAX / 100) ||
+        !valid_optional_integer(message, "soc", 0, 100) ||
+        !valid_optional_integer(message, "frequency", 0, 65535) ||
         (message.contains("snapshot") &&
          !message.at("snapshot").is_boolean()) ||
         !valid_optional_integer(message, "energy", 0,
@@ -646,8 +674,12 @@ bool supla_ocpp_connection::process_message(const json &message) {
         message.find("current") == message.end() &&
         message.find("power") == message.end() &&
         message.find("power_phases") == message.end() &&
+        message.find("reactive_power_phases") == message.end() &&
+        message.find("power_factor_phases") == message.end() &&
+        message.find("frequency") == message.end() &&
         message.find("energy") == message.end() &&
-        message.find("energy_phases") == message.end()) {
+        message.find("energy_phases") == message.end() &&
+        message.find("soc") == message.end()) {
       return false;
     }
     supla_ocpp_gateway::global_instance()->on_meter(
