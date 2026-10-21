@@ -38,6 +38,11 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char *s_autodiscover = "AUTODISCOVER";
   // Start with the highest index
   // This ensures that realloc will only be called once
+  char *s_ocpp = "OCPP";
+  scfg_add_str_param(CFG_OCPP_SOCKET_GROUP, s_ocpp, "socket_group",
+                     "supla-ocpp");
+  scfg_add_int_param(CFG_OCPP_MAX_MESSAGE_BYTES, s_ocpp, "max_message_bytes",
+                     64 * 1024);
   scfg_add_int_param(CFG_HTTP_MAX_RESPONSE_BODY_SIZE, s_http,
                      "max_response_body_size", 16 * 1024 * 1024);
   scfg_add_int_param(CFG_AUTODISCOVER_STATISTICS_EXPORT_INTERVAL_SEC,
@@ -94,6 +99,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   char *s_ipc = "IPC";
   scfg_add_str_param(CFG_IPC_SOCKET_PATH, s_ipc, "socket_path",
                      "/var/run/supla/supla-server-ctrl.sock");
+
+  scfg_add_bool_param(CFG_OCPP_ENABLED, s_ocpp, "enabled", 0);
+  scfg_add_str_param(CFG_OCPP_SOCKET_PATH, s_ocpp, "socket_path",
+                     "/run/supla/supla-server-ocpp.sock");
 
   char *s_oauth = "OAUTH";
   char hostname[CFG_OAUTH_URL_MAXSIZE - 10];

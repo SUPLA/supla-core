@@ -19,11 +19,20 @@
 #include "DeviceDaoIntegrationTest.h"
 
 #include <cstdio>
+#include <memory>
 #include <string>
+#include <thread>
 
+#include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_extended_value.h"
 #include "device/extended_value/channel_state_extended_value.h"
+#include "device/value/channel_em_value.h"
 #include "jsonconfig/channel/hvac_config.h"
+#include "ocpp/ocpp_dao.h"
+#include "ocpp/ocpp_device.h"
+#include "ocpp/ocpp_gateway.h"
+#include "user/user.h"
+#include "user/userdevices.h"
 
 using std::string;
 
@@ -291,6 +300,186 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateChanneValue) {
   EXPECT_EQ(result, "v\n0211223323240025\n");
 }
 
+TEST_F(DeviceDaoIntegrationTest,
+       touchOcppValuesPreservesDataAndScopesOwner) {
+  ASSERT_TRUE(dba->connect());
+  ASSERT_EQ(
+      0,
+      dba->query("UPDATE supla_dev_channel SET is_virtual=1 WHERE id=2", true));
+  int device_id = dba->get_int(
+      2, 0,
+      "SELECT iodevice_id FROM supla_dev_channel WHERE id=? AND user_id=2");
+  ASSERT_GT(device_id, 0);
+  string insert_station =
+      "INSERT INTO supla_ocpp_charging_station (id, user_id, iodevice_id) "
+      "VALUES (1, 2, " +
+      std::to_string(device_id) + ")";
+  ASSERT_EQ(0, dba->query(insert_station.c_str(), true));
+  supla_ocpp_dao ocpp_dao(dba);
+  ASSERT_EQ(0,
+            dba->query("DELETE FROM supla_dev_channel_value WHERE channel_id=2",
+                       true));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 90));
+  string result;
+  sqlQuery("SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id=2",
+           &result);
+  EXPECT_EQ("n\n0\n", result);
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
+  result.clear();
+  sqlQuery("SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id=2",
+           &result);
+  EXPECT_EQ("n\n0\n", result);
+
+  const char value[SUPLA_CHANNELVALUE_SIZE] = {1, 2, 3, 4, 5, 6, 7, 8};
+  dao->update_channel_value(2, 2, value, 90);
+  EXPECT_TRUE(ocpp_dao.renew_validity(1, device_id, 0));
+  result.clear();
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value "
+      "WHERE channel_id=2 AND user_id=2 AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("v\n0102030405060708\n", result);
+
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
+  result.clear();
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value "
+      "WHERE channel_id=2 AND user_id=2 AND valid_to<=UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("v\n0102030405060708\n", result);
+
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 90));
+  result.clear();
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value "
+      "WHERE channel_id=2 AND user_id=2 AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("v\n0102030405060708\n", result);
+
+  ASSERT_EQ(0, dba->query("DELETE FROM supla_ocpp_charging_station WHERE id=1",
+                          true));
+  EXPECT_TRUE(ocpp_dao.renew_validity(2, device_id, 0));
+  result.clear();
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value "
+      "WHERE channel_id=2 AND user_id=2 AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("v\n0102030405060708\n", result);
+}
+
+TEST_F(DeviceDaoIntegrationTest, ocppMissingValuesRequireFirstMeasurement) {
+  ASSERT_TRUE(dba->connect());
+  ASSERT_EQ(
+      0, dba->query("INSERT INTO supla_ocpp_charging_station VALUES (1,2,73)",
+                    true));
+  string sql = "UPDATE supla_dev_channel SET is_virtual=1,type=" +
+               std::to_string(SUPLA_CHANNELTYPE_RELAY) +
+               ",func=" + std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) +
+               " WHERE id=140";
+  ASSERT_EQ(0, dba->query(sql.c_str(), true));
+  sql = "UPDATE supla_dev_channel SET is_virtual=1,type=" +
+        std::to_string(SUPLA_CHANNELTYPE_ELECTRICITY_METER) +
+        ",func=" + std::to_string(SUPLA_CHANNELFNC_ELECTRICITY_METER) +
+        " WHERE id=141";
+  ASSERT_EQ(0, dba->query(sql.c_str(), true));
+  ASSERT_EQ(
+      0,
+      dba->query(
+          "DELETE FROM supla_dev_channel_value WHERE channel_id IN (140,141)",
+          true));
+  ASSERT_EQ(0, dba->query("DELETE FROM supla_dev_channel_extended_value WHERE "
+                          "channel_id IN (140,141)",
+                          true));
+
+  supla_user::user_free();
+  supla_user::init();
+  const char *suid = "ocpp-touch-test";
+  supla_user user(2, suid, nullptr);
+  supla_ocpp_gateway gateway;
+  gateway.on_connected(suid, 73, 90);
+  gateway.on_alive(suid, 73, 90);
+  gateway.wait_until_idle();
+  for (int channel_id : {140, 141}) {
+    auto channel = user.get_devices()->get_ocpp_channel(channel_id);
+    EXPECT_EQ(
+        0,
+        user.get_devices()->get_virtual_channel(channel_id).get_channel_id());
+    EXPECT_EQ(channel_id, channel.get_channel_id());
+    EXPECT_EQ(nullptr, channel.get_value());
+    EXPECT_TRUE(channel.get_availability_status().is_offline());
+  }
+  string result;
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value "
+      "WHERE channel_id IN (140,141)",
+      &result);
+  EXPECT_EQ("n\n0\n", result);
+
+  // A real OFF initializes only the switch, not the meter.
+  gateway.on_state(suid, 73, 1, false, 90);
+  gateway.wait_until_idle();
+  auto power_switch = user.get_devices()->get_ocpp_channel(140);
+  char raw[SUPLA_CHANNELVALUE_SIZE] = {};
+  ASSERT_TRUE(power_switch.get_value(raw));
+  EXPECT_EQ(0, raw[0]);
+  EXPECT_TRUE(power_switch.get_availability_status().is_online());
+  EXPECT_EQ(nullptr, user.get_devices()->get_ocpp_channel(141).get_value());
+
+  // A voltage sample is stored, but cannot invent an energy counter of zero.
+  gateway.on_meter(suid, 73, 1, nlohmann::json{{"voltage", {230000}}}, 90);
+  gateway.on_alive(suid, 73, 90);
+  gateway.wait_until_idle();
+  user.get_devices()->reload_ocpp_devices(73);
+  auto meter = user.get_devices()->get_ocpp_channel(141);
+  EXPECT_EQ(nullptr, meter.get_value());
+  EXPECT_TRUE(meter.get_availability_status().is_offline());
+  std::unique_ptr<supla_abstract_channel_extended_value> extended(
+      meter.get_extended_value());
+  auto em = dynamic_cast<supla_channel_em_extended_value *>(extended.get());
+  ASSERT_NE(nullptr, em);
+  EXPECT_DOUBLE_EQ(230, em->get_voltage(1));
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id=141",
+      &result);
+  EXPECT_EQ("n\n0\n", result);
+
+  // A reported zero is valid, unlike the previously absent reading.
+  gateway.on_meter(suid, 73, 1, nlohmann::json{{"energy", 0}}, 90);
+  gateway.wait_until_idle();
+  meter = user.get_devices()->get_ocpp_channel(141);
+  ASSERT_TRUE(meter.get_raw_value(raw));
+  EXPECT_EQ(
+      0U,
+      supla_channel_em_value(raw).get_em_value()->total_forward_active_energy);
+  EXPECT_TRUE(meter.get_availability_status().is_online());
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value "
+      "WHERE channel_id IN (140,141) AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("n\n2\n", result);
+
+  gateway.on_meter(suid, 73, 1, nlohmann::json{{"energy", 12000}}, 90);
+  gateway.on_disconnected(suid, 73);
+  gateway.wait_until_idle();
+  user.get_devices()->reload_ocpp_devices(73);
+  meter = user.get_devices()->get_ocpp_channel(141);
+  ASSERT_TRUE(meter.get_raw_value(raw));
+  EXPECT_EQ(
+      1200U,
+      supla_channel_em_value(raw).get_em_value()->total_forward_active_energy);
+  EXPECT_TRUE(meter.get_availability_status().is_offline());
+  gateway.on_connected(suid, 73, 90);
+  gateway.wait_until_idle();
+  meter = user.get_devices()->get_ocpp_channel(141);
+  EXPECT_TRUE(meter.get_availability_status().is_online());
+  ASSERT_TRUE(meter.get_raw_value(raw));
+  EXPECT_EQ(
+      1200U,
+      supla_channel_em_value(raw).get_em_value()->total_forward_active_energy);
+}
+
 TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
   TSuplaChannelExtendedValue ev_struct = {};
 
@@ -372,6 +561,145 @@ TEST_F(DeviceDaoIntegrationTest, setAndUpdateExtendedValue) {
 TEST_F(DeviceDaoIntegrationTest, deviceLimit) {
   ASSERT_TRUE(dba->connect());
   EXPECT_EQ(dao->get_device_limit_left(2), 89);
+}
+
+TEST_F(DeviceDaoIntegrationTest, virtualDevicesCannotRegisterOverSrpc) {
+  ASSERT_TRUE(dba->connect());
+  // NULL auth keys remain valid for legacy physical devices. Eligibility is
+  // checked separately, including after a cached email/key authentication.
+  for (int is_virtual : {0, 1}) {
+    string sql =
+        "UPDATE supla_iodevice SET enabled=1,auth_key=NULL,is_virtual=" +
+        std::to_string(is_virtual) + " WHERE id=73";
+    ASSERT_EQ(0, dba->query(sql.c_str(), true));
+    bool enabled = true, location_enabled = false, addition_blocked = false;
+    int original_location = 0, location = 0, flags = 0;
+    EXPECT_TRUE(dao->get_device_variables(
+        73, &enabled, &original_location, &location, &location_enabled, &flags,
+        &addition_blocked));
+    EXPECT_EQ(is_virtual == 0, enabled);
+    string result;
+    sqlQuery("SELECT CAST(enabled AS unsigned integer) enabled "
+             "FROM supla_iodevice WHERE id=73",
+             &result);
+    EXPECT_EQ("enabled\n1\n", result);  // Only SRPC eligibility is disabled.
+  }
+}
+
+TEST_F(DeviceDaoIntegrationTest, ocppCoalescesPersistenceAndRetriesFailures) {
+  ASSERT_TRUE(dba->connect());
+  ASSERT_EQ(
+      0, dba->query("INSERT INTO supla_ocpp_charging_station VALUES (1,2,73)",
+                    true));
+  ASSERT_EQ(
+      0, dba->query(
+             "UPDATE supla_dev_channel SET is_virtual=1 WHERE id IN (140,141)",
+             true));
+  ASSERT_EQ(
+      0,
+      dba->query(
+          "DELETE FROM supla_dev_channel_value WHERE channel_id IN (140,141)",
+          true));
+  ASSERT_EQ(0, dba->query("DELETE FROM supla_dev_channel_extended_value WHERE "
+                          "channel_id IN (140,141)",
+                          true));
+  supla_ocpp_device_config config;
+  config.device_id = 73;
+  config.meter.id = 141;
+  config.meter.type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  config.meter.func = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  config.power_switch.id = 140;
+  config.power_switch.type = SUPLA_CHANNELTYPE_RELAY;
+  config.power_switch.func = SUPLA_CHANNELFNC_POWERSWITCH;
+  supla_user::user_free();
+  supla_user::init();
+  supla_user user(2, "ocpp-persistence-test", nullptr);
+  auto device = std::make_shared<supla_ocpp_device>(&user, config);
+  auto stored_voltage = [&]() {
+    std::unique_ptr<supla_abstract_channel_extended_value> value(
+        dao->get_channel_extended_value(2, 141));
+    auto em = dynamic_cast<supla_channel_em_extended_value *>(value.get());
+    EXPECT_NE(nullptr, em);
+    return em ? em->get_voltage(1) : -1;
+  };
+  supla_ocpp_meter_report report;
+  report.energy = 1000;
+  report.voltage[0] = 230000;
+  device->update_meter(report, 90);
+  EXPECT_DOUBLE_EQ(230, stored_voltage());
+  report.energy.reset();  // Extended-only changes must also be retained.
+  for (int i = 0; i < 100; i++) {
+    report.voltage[0] = 240000 + i;
+    device->update_meter(report, 90);
+    device->renew_validity(90);
+  }
+  EXPECT_DOUBLE_EQ(230, stored_voltage());
+  std::this_thread::sleep_for(std::chrono::milliseconds(5100));
+  device->renew_validity(90);  // Flushes without another meter report.
+  EXPECT_NEAR(240.09, stored_voltage(), 0.01);
+
+  report.voltage[0] = 250000;
+  device->update_meter(report, 90);
+  device->update_state(true, 90);  // A switch change is never delayed.
+  EXPECT_DOUBLE_EQ(250, stored_voltage());
+  string result;
+  sqlQuery(
+      "SELECT HEX(value) v FROM supla_dev_channel_value WHERE channel_id=140",
+      &result);
+  EXPECT_EQ("v\n0100000000000000\n", result);
+
+  // A partial SQL failure must keep the latest data, without retrying on
+  // every incoming heartbeat. MyISAM records attempts even on SIGNAL rollback.
+  ASSERT_EQ(0,
+            dba->query("CREATE TABLE ocpp_write_attempts (n INT) ENGINE=MyISAM",
+                       true));
+  ASSERT_EQ(0,
+            dba->query("CREATE TRIGGER ocpp_fail_write BEFORE UPDATE ON "
+                       "supla_dev_channel_extended_value FOR EACH ROW BEGIN "
+                       "INSERT INTO ocpp_write_attempts VALUES (1); SIGNAL "
+                       "SQLSTATE '45000' SET MESSAGE_TEXT='test failure'; END",
+                       true));
+  report.voltage[0] = 260000;
+  device->update_meter(report, 90);
+  device->update_state(false, 90);  // Immediate attempt, extended save fails.
+  EXPECT_DOUBLE_EQ(250, stored_voltage());
+  for (int i = 0; i < 100; i++) device->renew_validity(90);
+  result.clear();
+  sqlQuery("SELECT COUNT(*) n FROM ocpp_write_attempts", &result);
+  EXPECT_EQ("n\n1\n", result);
+  ASSERT_EQ(0, dba->query("DROP TRIGGER ocpp_fail_write", true));
+  std::this_thread::sleep_for(std::chrono::milliseconds(5100));
+  device->renew_validity(90);
+  EXPECT_DOUBLE_EQ(260, stored_voltage());
+
+  report.voltage[0] = 270000;
+  device->update_meter(report, 90);
+  device->disconnect();  // Includes deferred measurements and zero validity.
+  EXPECT_DOUBLE_EQ(270, stored_voltage());
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id IN "
+      "(140,141) AND valid_to<=UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("n\n2\n", result);
+  report.voltage[0] = 280000;
+  device->update_state(true, 2);
+  ASSERT_EQ(0,
+            dba->query("UPDATE supla_dev_channel_value SET "
+                       "valid_to=UTC_TIMESTAMP() WHERE channel_id IN (140,141)",
+                       true));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+  device->renew_validity(2);
+  result.clear();
+  sqlQuery(
+      "SELECT COUNT(*) n FROM supla_dev_channel_value WHERE channel_id IN "
+      "(140,141) AND valid_to>UTC_TIMESTAMP()",
+      &result);
+  EXPECT_EQ("n\n2\n", result);  // Short validity overrides normal coalescing.
+  device->deactivate();
+  device->update_meter(report, 90);
+  device->disconnect();
+  EXPECT_DOUBLE_EQ(270, stored_voltage());
 }
 
 TEST_F(DeviceDaoIntegrationTest, updateChannelConflictDetails) {

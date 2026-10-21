@@ -28,9 +28,11 @@
 #include "conn/connection_objects.h"
 #include "device/channel_fragment.h"
 #include "device/device.h"
+#include "ocpp/ocpp_devices.h"
 #include "user/virtualchannel.h"
 
 class supla_user;
+class supla_electricity_analyzer;
 class supla_user_devices : public supla_connection_objects {
  private:
   supla_user *user;
@@ -41,6 +43,9 @@ class supla_user_devices : public supla_connection_objects {
   std::vector<supla_virtual_channel> virtual_channels;
   struct timeval virtual_channels_update_time;
   void update_virtual_channels_if_never_updated(void);
+  // OCPP stations also use virtual devices and channels in the database, but
+  // have a separate runtime for connection state, validity and commands.
+  supla_ocpp_devices ocpp_devices;
 
  public:
   explicit supla_user_devices(supla_user *user);
@@ -62,6 +67,15 @@ class supla_user_devices : public supla_connection_objects {
                                    bool *will_continue)>
                     on_device);
   void update_virtual_channels(void);
+  std::shared_ptr<supla_ocpp_device> get_ocpp_device(int device_id,
+                                                     int channel_id = 0);
+  supla_ocpp_channel get_ocpp_channel(int channel_id);
+  void reload_ocpp_devices(int device_id = 0);
+  void access_ocpp_data_analyzers(
+      std::function<void(supla_electricity_analyzer *)> callback);
+  void get_ocpp_meter_values(
+      std::vector<supla_abstract_channel_extended_value_envelope *> *values);
+  void on_channel_config_changed(int device_id, int channel_id);
   supla_channel_availability_status get_channel_availability_status(
       int device_id, int channel_id);
 

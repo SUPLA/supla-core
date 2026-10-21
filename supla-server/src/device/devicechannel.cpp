@@ -200,10 +200,12 @@ void supla_device_channel::trim_alt_icon_index(int func,
     case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
       max = 5;
       break;
-    case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       max = 7;
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      max = 8;
       break;
     case SUPLA_CHANNELFNC_BINARY_SENSOR:
       max = 9;
@@ -211,9 +213,11 @@ void supla_device_channel::trim_alt_icon_index(int func,
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER:
       max = 14;
       break;
-    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       max = 45;
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      max = 46;
       break;
   }
 

@@ -18,9 +18,11 @@
 
 #include "ipc/get_relay_value_command.h"
 
+#include <cstring>
 #include <memory>
 
 #include "device.h"
+#include "ocpp/ocpp_device.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -35,6 +37,22 @@ bool supla_get_relay_value_command::get_channel_relay_value(
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
     return device->get_channels()->get_relay_value(channel_id, value);
+  }
+
+  supla_user *user = supla_user::get_user(user_id);
+  if (user && value) {
+    auto ocpp = user->get_devices()->get_ocpp_device(device_id, channel_id);
+    if (ocpp) {
+      auto channel = ocpp->get_channel(channel_id);
+      if (channel.get_channel_id() == channel_id &&
+          supla_weekly_schedule_is_relay_function(channel.get_func())) {
+        char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+        if (channel.get_value(raw_value)) {
+          std::memcpy(value, raw_value, sizeof(*value));
+          return true;
+        }
+      }
+    }
   }
   return false;
 }

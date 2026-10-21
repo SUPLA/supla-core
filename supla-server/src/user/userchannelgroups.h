@@ -34,6 +34,9 @@ class supla_user_channelgroup;
 class supla_user_channelgroups : public supla_objcontainer {
  private:
   supla_user *user;
+  bool for_each_channel_pair(
+      int GroupID, bool break_on_success,
+      std::function<bool(supla_device *, int, int, char)> f);
   bool for_each_channel(int GroupID, bool break_on_success,
                         std::function<bool(supla_device *, int, char)> f);
   bool for_each_channel(int GroupID,

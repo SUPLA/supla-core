@@ -25,9 +25,11 @@
 #include "device/device.h"
 #include "ipc/abstract_action_command.h"
 
+class supla_user;
+
 class supla_action_command : public supla_abstract_action_command {
  private:
-  void call_before(std::shared_ptr<supla_device> device, int channel_id);
+  void call_before(supla_user *user, int device_id, int channel_id);
 
  protected:
   virtual bool action_open_close(int user_id, int device_id, int channel_id,

@@ -51,7 +51,9 @@ std::vector<supla_virtual_channel> supla_user_dao::get_virtual_channels(
       "time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) else NULL end AS "
       "`validity_time_sec` FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.is_virtual = 1 AND v.channel_id = "
-      "c.id AND c.user_id = ? AND UNIX_TIMESTAMP(CONVERT_TZ(update_time, "
+      "c.id AND c.user_id = ? AND NOT EXISTS (SELECT 1 FROM "
+      "supla_ocpp_charging_station s WHERE s.iodevice_id=c.iodevice_id "
+      "AND s.user_id=c.user_id) AND UNIX_TIMESTAMP(CONVERT_TZ(v.update_time, "
       "'UTC', @@session.time_zone)) > ?";
 
   MYSQL_STMT *stmt = nullptr;
@@ -193,8 +195,9 @@ vector<int> supla_user_dao::get_users_with_virtual_channels(void) {
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT user_id FROM `supla_dev_channel` WHERE is_virtual = 1 GROUP BY "
-      "user_id";
+      "SELECT c.user_id FROM supla_dev_channel c WHERE c.is_virtual=1 "
+      "AND NOT EXISTS (SELECT 1 FROM supla_ocpp_charging_station s WHERE "
+      "s.iodevice_id=c.iodevice_id AND s.user_id=c.user_id) GROUP BY c.user_id";
 
   if (dba->stmt_execute((void **)&stmt, sql, nullptr, 0, true)) {
     MYSQL_BIND rbind = {};

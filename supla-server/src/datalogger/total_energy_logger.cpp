@@ -55,6 +55,7 @@ void supla_total_energy_logger::run(const vector<supla_user *> *users,
               },
               true);
         });
+    (*uit)->get_devices()->get_ocpp_meter_values(&env);
   }
 
   supla_total_energy_logger_dao dao(dba);

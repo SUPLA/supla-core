@@ -22,6 +22,9 @@
 #include <memory>
 
 #include "db/database.h"
+#include "device/value/channel_onoff_value.h"
+#include "ocpp/ocpp_device.h"
+#include "ocpp/ocpp_gateway.h"
 #include "safearray.h"
 #include "user.h"
 
@@ -69,9 +72,9 @@ int supla_user_channelgroups::available_data_types_for_remote(
   return 0;
 }
 
-bool supla_user_channelgroups::for_each_channel(
+bool supla_user_channelgroups::for_each_channel_pair(
     int GroupID, bool break_on_success,
-    function<bool(supla_device *, int, char)> f) {
+    function<bool(supla_device *, int, int, char)> f) {
   bool result = false;
 
   list<dcpair> pairs = find_channels(GroupID);
@@ -81,8 +84,8 @@ bool supla_user_channelgroups::for_each_channel(
   for (auto it = pairs.begin(); it != pairs.end(); it++) {
     shared_ptr<supla_device> device =
         user->get_devices()->get(it->getDeviceId());
-    if (device &&
-        f(device.get(), it->getChannelId(), dcpair::last_one(&pairs, it))) {
+    if (f(device.get(), it->getDeviceId(), it->getChannelId(),
+          dcpair::last_one(&pairs, it))) {
       result = true;
     }
 
@@ -92,6 +95,16 @@ bool supla_user_channelgroups::for_each_channel(
   }
 
   return result;
+}
+
+bool supla_user_channelgroups::for_each_channel(
+    int GroupID, bool break_on_success,
+    function<bool(supla_device *, int, char)> f) {
+  return for_each_channel_pair(
+      GroupID, break_on_success,
+      [f](supla_device *device, int, int channel_id, char eol) {
+        return device && f(device, channel_id, eol);
+      });
 }
 
 bool supla_user_channelgroups::for_each_channel(
@@ -105,35 +118,54 @@ bool supla_user_channelgroups::set_new_value(const supla_caller &caller,
     return false;
   }
 
-  return for_each_channel(
-      new_value->Id,
-      [new_value, this, caller](supla_device *device, int channelId,
-                                char EOL) -> bool {
-        return user->set_device_channel_value(caller, device->get_id(),
-                                              channelId, new_value->Id, EOL,
-                                              new_value->value);
+  return for_each_channel_pair(
+      new_value->Id, false,
+      [new_value, this, caller](supla_device *device, int device_id,
+                                int channel_id, char eol) -> bool {
+        if (device) {
+          return user->set_device_channel_value(caller, device_id, channel_id,
+                                                new_value->Id, eol,
+                                                new_value->value);
+        }
+
+        supla_channel_onoff_value value(new_value->value);
+        auto ocpp = supla_ocpp_gateway::global_instance()->try_set_charging(
+            user, channel_id, value.is_on());
+        return ocpp == supla_ocpp_action_result::accepted;
       });
 }
 
 bool supla_user_channelgroups::set_char_value(const supla_caller &caller,
                                               int GroupID, const char value) {
-  return for_each_channel(
-      GroupID,
-      [caller, GroupID, value](supla_device *device, int channelId,
-                               char EOL) -> bool {
-        return device->get_channels()->set_device_channel_char_value(
-            caller, channelId, GroupID, EOL, value);
+  return for_each_channel_pair(
+      GroupID, false,
+      [this, caller, GroupID, value](supla_device *device, int, int channel_id,
+                                     char eol) -> bool {
+        if (device) {
+          return device->get_channels()->set_device_channel_char_value(
+              caller, channel_id, GroupID, eol, value);
+        }
+
+        auto ocpp = supla_ocpp_gateway::global_instance()->try_set_charging(
+            user, channel_id, value != 0);
+        return ocpp == supla_ocpp_action_result::accepted;
       });
 }
 
 bool supla_user_channelgroups::set_on(const supla_caller &caller, int GroupID,
                                       bool on) {
-  return for_each_channel(
-      GroupID,
-      [caller, GroupID, on](supla_device *device, int channelId,
-                            char EOL) -> bool {
-        return device->get_channels()->set_on(caller, channelId, GroupID, EOL,
-                                              on);
+  return for_each_channel_pair(
+      GroupID, false,
+      [this, caller, GroupID, on](supla_device *device, int, int channel_id,
+                                  char eol) -> bool {
+        if (device) {
+          return device->get_channels()->set_on(caller, channel_id, GroupID,
+                                                eol, on);
+        }
+
+        auto ocpp = supla_ocpp_gateway::global_instance()->try_set_charging(
+            user, channel_id, on);
+        return ocpp == supla_ocpp_action_result::accepted;
       });
 }
 
@@ -209,18 +241,27 @@ bool supla_user_channelgroups::calcfg_request(
 
 bool supla_user_channelgroups::action_toggle(const supla_caller &caller,
                                              int GroupID) {
-  bool any_on = for_each_channel(
-      GroupID, true, [](supla_device *device, int channelId, char EOL) -> bool {
-        return device->get_channels()->is_on(channelId);
+  bool any_on = for_each_channel_pair(
+      GroupID, true,
+      [this](supla_device *device, int, int channel_id, char) -> bool {
+        if (device) {
+          return device->get_channels()->is_on(channel_id);
+        }
+
+        auto ocpp = user->get_devices()->get_ocpp_device(0, channel_id);
+        if (ocpp) {
+          auto channel = ocpp->get_channel(channel_id);
+          char value[SUPLA_CHANNELVALUE_SIZE] = {};
+          return ocpp->can_set_charging(channel_id) &&
+                 channel.get_value(value) &&
+                 supla_channel_onoff_value(value).is_on();
+        }
+        return false;
       });
 
-  return for_each_channel(
-      GroupID,
-      [caller, any_on, GroupID](supla_device *device, int channelId,
-                                char EOL) -> bool {
-        return device->get_channels()->set_on(caller, channelId, GroupID, EOL,
-                                              !any_on);
-      });
+  // Group toggle has always selected one target state for all members. Do not
+  // send an independent OCPP toggle, which could leave a mixed group inverted.
+  return set_on(caller, GroupID, !any_on);
 }
 
 bool supla_user_channelgroups::action_shut(

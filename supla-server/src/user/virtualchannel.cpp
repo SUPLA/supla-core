@@ -164,6 +164,11 @@ bool supla_virtual_channel::get_value(char raw_value[SUPLA_CHANNELVALUE_SIZE]) {
 
 supla_virtual_channel &supla_virtual_channel::operator=(
     const supla_virtual_channel &channel) {
+  if (this == &channel) {
+    return *this;
+  }
+
+  auto *copied_value = channel.value ? channel.value->copy() : nullptr;
   device_id = channel.device_id;
   channel_id = channel.channel_id;
   type = channel.type;
@@ -174,9 +179,7 @@ supla_virtual_channel &supla_virtual_channel::operator=(
     delete value;
   }
 
-  if (channel.value) {
-    value = channel.value->copy();
-  }
+  value = copied_value;
 
   return *this;
 }

@@ -30,6 +30,7 @@
 class supla_client;
 class supla_client_channels;
 class supla_device;
+class supla_user;
 class supla_client_channel : public supla_client_objcontainer_item,
                              public supla_abstract_common_channel_properties {
  private:
@@ -73,6 +74,9 @@ class supla_client_channel : public supla_client_objcontainer_item,
   bool get_cs_extended_value(std::shared_ptr<supla_device> device,
                              int channel_id, TSC_SuplaChannelExtendedValue *cev,
                              unsigned char protocol_version);
+  bool get_ocpp_extended_value(supla_user *user, int device_id, int channel_id,
+                               TSC_SuplaChannelExtendedValue *cev,
+                               unsigned char protocol_version);
   virtual void for_each(
       bool any_device,
       std::function<void(supla_abstract_common_channel_properties *, bool *)>

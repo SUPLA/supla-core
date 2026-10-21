@@ -20,6 +20,10 @@
 
 #include <string.h>
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
 #include "jsonconfig/channel/electricity_meter_config.h"
 
 supla_channel_em_value::supla_channel_em_value(
@@ -39,6 +43,36 @@ supla_abstract_channel_value *supla_channel_em_value::copy(  // NOLINT
 
 const TElectricityMeter_Value *supla_channel_em_value::get_em_value(void) {
   return (TElectricityMeter_Value *)raw_value;
+}
+
+bool supla_channel_em_value::set_phase_on(int phase, bool on) {
+  if (phase < 1 || phase > 3) {
+    return false;
+  }
+
+  TElectricityMeter_Value *value =
+      reinterpret_cast<TElectricityMeter_Value *>(raw_value);
+  unsigned char flag = 1 << (phase - 1);
+  if (on) {
+    value->flags |= flag;
+  } else {
+    value->flags &= ~flag;
+  }
+  return true;
+}
+
+bool supla_channel_em_value::set_total_forward_active_energy(double value) {
+  if (!std::isfinite(value) || value < 0) {
+    return false;
+  }
+
+  long double raw = std::round(static_cast<long double>(value) * 100.0L);
+  raw = std::min(
+      raw, static_cast<long double>(
+               std::numeric_limits<unsigned _supla_int_t>::max()));
+  reinterpret_cast<TElectricityMeter_Value *>(raw_value)
+      ->total_forward_active_energy = static_cast<unsigned _supla_int_t>(raw);
+  return true;
 }
 
 void supla_channel_em_value::apply_channel_properties(

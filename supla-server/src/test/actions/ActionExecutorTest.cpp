@@ -97,8 +97,10 @@ void ActionExecutorTest::SetUp() {
 }
 
 void ActionExecutorTest::TearDown() {
-  delete supla_user::find(12345, false);
   delete aexec;
+  // A device notifies its user from its destructor; the user must outlive it.
+  device.reset();
+  delete supla_user::find(12345, false);
 }
 
 TEST_F(ActionExecutorTest, getDeviceWithAndWithoutId) {
