@@ -701,7 +701,7 @@ unsigned char supla_client_channel::get_real_config_type(
     TChannelConfig_HVAC native_cfg = {};
     lock();
     hvac_config hvac_cfg(json_config);
-    hvac_cfg.get_config(&native_cfg, get_channel_number());
+    hvac_cfg.get_config(&native_cfg);
     unlock();
 
     if (native_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
@@ -722,7 +722,8 @@ void supla_client_channel::get_config(TSCS_ChannelConfig *config,
     rct = get_real_config_type(config_type);
 
     supla_abstract_common_channel_properties::get_config(
-        config->Config, &config->ConfigSize, rct, flags, true);
+        config->Config, &config->ConfigSize, rct, flags,
+        channel_reference_encoding::server_channel_id);
 
     config->ChannelId = get_id();
     config->ConfigType = config_type;

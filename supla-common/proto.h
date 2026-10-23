@@ -4,6 +4,19 @@
 #ifndef supla_proto_H_
 #define supla_proto_H_
 
+// Controls compilation of detailed SRPC packet logging.  SUPLA_DISABLE_LOGS
+// always takes precedence over an explicit enable.
+#ifndef SUPLA_SRPC_PACKET_LOG_ENABLED
+#if defined(SUPLA_DISABLE_LOGS)
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 0
+#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP8266) || \
+    defined(__AVR__) || defined(ARDUINO_ARCH_AVR)
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 0
+#else
+#define SUPLA_SRPC_PACKET_LOG_ENABLED 1
+#endif
+#endif
+
 #ifdef _WIN32
 // *** WINDOWS ***
 
@@ -288,6 +301,30 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_SET_SUBDEVICE_DETAILS 1260              // ver. >= 25
 #define SUPLA_SD_CALL_DEVICE_SYNC_DONE 1270                   // ver. >= 29
 
+// Assign server-managed device and channel identities used by SupLAN.
+#define SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES 1280           // ver. >= 29
+#define SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT 1290    // ver. >= 29
+
+// Configure the Source association and its resource access permissions.
+#define SUPLA_SD_CALL_SET_SUPLAN_SOURCE_ASSOCIATION 1300      // ver. >= 29
+#define SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT 1310  // ver. >= 29
+
+// Configure the Destination association with its peer key and resources.
+#define SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION 1320    // ver. >= 29
+#define SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT \
+  1330                                                           // ver. >= 29
+
+// Request server authorization for access to a SupLAN resource.
+#define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS 1340         // ver. >= 29
+#define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_ACCESS_RESULT 1350  // ver. >= 29
+
+// Request a Source resource share with the owner of a Destination resource.
+#define SUPLA_DS_CALL_ENSURE_SUPLAN_RESOURCE_SHARE 1360         // ver. >= 29
+#define SUPLA_SD_CALL_ENSURE_SUPLAN_RESOURCE_SHARE_RESULT 1370  // ver. >= 29
+
+// Deliver a full remote Channel snapshot over the Device-to-Server connection.
+#define SUPLA_SD_CALL_REMOTE_CHANNEL_STATE 1380  // ver. >= 29
+
 #define SUPLA_RESULT_RESPONSE_TIMEOUT -8
 #define SUPLA_RESULT_CANT_CONNECT_TO_HOST -7
 #define SUPLA_RESULT_HOST_NOT_FOUND -6
@@ -346,6 +383,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_IDENTIFY_REQUESTED 43                    // ver. >= 25
 #define SUPLA_RESULTCODE_MALFORMED_EMAIL 44                       // ver. >= ?
 #define SUPLA_RESULTCODE_RESET_TO_FACTORY_SETTINGS 45             // ver. >= 28
+#define SUPLA_RESULTCODE_TLS_REQUIRED 46                         // ver. >= 29
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -610,6 +648,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_FLAG_CALCFG_SET_CFG_MODE_PASSWORD_SUPPORTED \
   0x10000  // ver. >= 28
 #define SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED 0x20000           // ver. >= 29
+#define SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED 0x80000              // ver. >= 29
 
 // BIT map definition for TDS_SuplaRegisterDevice_F::ConfigFields (64 bit)
 // type: TDeviceConfig_StatusLed
@@ -694,7 +733,164 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x1000000000  // ver. >= 29; weekly schedule no-op program
 #define SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED \
   0x2000000000  // ver. >= 29
+
+// SupLAN public v1 control-plane constants.
+
+// Authority managing peer identities and authorization: server or local.
+#define SUPLA_SUPLAN_AUTHORITY_TYPE_INVALID 0
+#define SUPLA_SUPLAN_AUTHORITY_TYPE_SERVER 1
+#define SUPLA_SUPLAN_AUTHORITY_TYPE_LOCAL 2
+
+// Namespace identifying a device, client or locally managed node.
+#define SUPLA_SUPLAN_NODE_ID_NAMESPACE_INVALID 0
+#define SUPLA_SUPLAN_NODE_ID_NAMESPACE_DEVICE_ID 1
+#define SUPLA_SUPLAN_NODE_ID_NAMESPACE_CLIENT_ID 2
+#define SUPLA_SUPLAN_NODE_ID_NAMESPACE_LOCAL_ID 3
+
+// Size in bytes of the key shared by an authorized Source/Destination pair.
+#define SUPLA_SUPLAN_PEER_KEY_SIZE 32
+
+// Kind of resource referenced by an access request or ACL entry.
+#define SUPLA_SUPLAN_RESOURCE_TYPE_INVALID 0
+#define SUPLA_SUPLAN_RESOURCE_TYPE_CHANNEL 1
+#define SUPLA_SUPLAN_RESOURCE_TYPE_DEVICE 2
+// FDEV: enable only after SERVER SubDeviceId has a globally unique identity.
+// #define SUPLA_SUPLAN_RESOURCE_TYPE_SUBDEVICE 3
+
+// ACL permission bits for reading, controlling and receiving actions.
+#define SUPLA_SUPLAN_PERMISSION_READ 0x01
+#define SUPLA_SUPLAN_PERMISSION_CONTROL 0x02
+#define SUPLA_SUPLAN_PERMISSION_ACTION 0x04
+
+// Maximum number of resource entries in an association payload.
+#define SUPLA_SUPLAN_MAX_ACL_ENTRIES 89
+
+// Ask the Source to include the peer key in its association result.
+#define SUPLA_SUPLAN_SOURCE_FLAG_RETURN_PEER_KEY 0x01
+
+// Optional approval request; does not authorize access. Zero is reconcile-only.
+#define SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL 0x01
+
+// Explicit delivery mode requested by ENSURE_RESOURCE_ACCESS.
+#define SUPLA_RESOURCE_DELIVERY_INVALID 0
+#define SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER 1
+#define SUPLA_RESOURCE_DELIVERY_SERVER_STREAM 2
+
+// Result codes returned by SupLAN control-plane operations.
+#define SUPLA_SUPLAN_RESULT_OK 0
+#define SUPLA_SUPLAN_RESULT_INVALID_ARGUMENT 1
+#define SUPLA_SUPLAN_RESULT_UNSUPPORTED 2
+#define SUPLA_SUPLAN_RESULT_CAPACITY_EXCEEDED 3
+#define SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR 4
+#define SUPLA_SUPLAN_RESULT_STALE_REVISION 5
+#define SUPLA_SUPLAN_RESULT_REVISION_CONFLICT 6
+#define SUPLA_SUPLAN_RESULT_STALE_GENERATION 7
+#define SUPLA_SUPLAN_RESULT_ROOT_EPOCH_MISMATCH 8
+#define SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED 9
+#define SUPLA_SUPLAN_RESULT_NOT_FOUND 10
+#define SUPLA_SUPLAN_RESULT_PEER_KEY_REQUIRED 11
+
+// Authorization outcome returned for a resource access request.
+#define SUPLA_SUPLAN_ACCESS_STATUS_INVALID 0
+#define SUPLA_SUPLAN_ACCESS_STATUS_GRANTED 1
+#define SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL 2
+#define SUPLA_SUPLAN_ACCESS_STATUS_REJECTED 3
+
 #pragma pack(push, 1)
+
+typedef struct {
+  unsigned char AuthorityType;
+  unsigned _supla_int64_t AuthorityId;
+
+  unsigned char SourceNodeIdNamespace;
+  unsigned _supla_int_t SourceNodeId;
+
+  unsigned char DestinationNodeIdNamespace;
+  unsigned _supla_int_t DestinationNodeId;
+
+  unsigned _supla_int_t RootEpoch;
+  unsigned _supla_int_t PeerGeneration;
+} TSuplaSuplanPeerContext;
+
+typedef struct {
+  unsigned char ResourceType;
+  unsigned _supla_int_t ResourceId;
+} TSuplaSuplanResource;
+
+typedef struct {
+  unsigned char ResourceType;
+  unsigned _supla_int_t ResourceId;
+  unsigned char Permissions;
+} TSuplaSuplanAclEntry;
+
+typedef struct {
+  _supla_int_t DeviceId;
+  _supla_int_t ChannelCount;
+  _supla_int_t ChannelId[SUPLA_CHANNELMAXCOUNT];  // last variable in struct
+} TSD_SuplaDeviceIdentities;
+
+typedef struct {
+  unsigned char
+      Result;  // common SupLAN control-plane result enum, frozen later
+  unsigned _supla_int_t RootEpoch;
+} TDS_SuplaDeviceIdentitiesResult;
+
+typedef struct {
+  TSuplaSuplanPeerContext PeerContext;
+  unsigned _supla_int_t AclRevision;
+  unsigned char Flags;
+  unsigned _supla_int16_t AclEntryCount;
+  TSuplaSuplanAclEntry
+      Acl[SUPLA_SUPLAN_MAX_ACL_ENTRIES];  // last variable in struct
+} TSDS_SuplaSetSuplanSourceAssociation;
+
+typedef struct {
+  TSuplaSuplanPeerContext PeerContext;
+  unsigned _supla_int_t AclRevision;
+  unsigned char Result;
+  unsigned char PeerKeySize;
+  unsigned char PeerKey[SUPLA_SUPLAN_PEER_KEY_SIZE];
+} TDS_SuplaSetSuplanSourceAssociationResult;
+
+typedef struct {
+  TSuplaSuplanPeerContext PeerContext;
+  unsigned _supla_int_t AclRevision;
+  unsigned char PeerKeySize;
+  unsigned char PeerKey[SUPLA_SUPLAN_PEER_KEY_SIZE];
+  unsigned _supla_int16_t ResourceCount;
+  TSuplaSuplanAclEntry
+      Resources[SUPLA_SUPLAN_MAX_ACL_ENTRIES];  // last variable in struct
+} TSDS_SuplaSetSuplanDestinationAssociation;
+
+typedef struct {
+  TSuplaSuplanPeerContext PeerContext;
+  unsigned _supla_int_t AclRevision;
+  unsigned char Result;
+} TDS_SuplaSetSuplanDestinationAssociationResult;
+
+typedef struct {
+  TSuplaSuplanResource Resource;
+  unsigned char Permissions;
+  unsigned char DeliveryMode;  // SUPLA_RESOURCE_DELIVERY_
+  unsigned char Flags;         // Undefined bits are invalid.
+} TDS_SuplaEnsureResourceAccess;
+
+typedef struct {
+  unsigned char Result;
+  unsigned char AccessStatus;
+  unsigned char DeliveryMode;  // SUPLA_RESOURCE_DELIVERY_
+} TSD_SuplaEnsureResourceAccessResult;
+
+typedef struct {
+  TSuplaSuplanResource SourceResource;
+  TSuplaSuplanResource DestinationResource;
+  unsigned char Permissions;
+} TDS_SuplaEnsureResourceShare;
+
+typedef struct {
+  unsigned char Result;
+  _supla_int_t DestinationDeviceId;  // meaningful only when Result == OK
+} TSD_SuplaEnsureResourceShareResult;
 
 typedef struct {
   char tag[SUPLA_TAG_SIZE];
@@ -1049,6 +1245,12 @@ typedef struct {
   unsigned char DefaultIcon;
   unsigned char SubDeviceId;  // 0 - no subdevice, 1..255 - subdevice id
 } TDS_SuplaDeviceChannel_E;   // ver. >= 25
+
+typedef struct {
+  // server -> device; SERVER_STREAM delivery
+  _supla_int_t ChannelId;
+  TDS_SuplaDeviceChannel_E Channel;
+} TSD_SuplaRemoteChannelState;  // ver. >= 29
 
 typedef struct {
   // device -> server

@@ -32,15 +32,15 @@ HvacConfigTest::~HvacConfigTest(void) {}
 
 TEST_F(HvacConfigTest, setAndGetConfig) {
   TChannelConfig_HVAC ds_hvac1 = {};
-  ds_hvac1.MainThermometerChannelNo = 1;
-  ds_hvac1.AuxThermometerChannelNo = 2;
-  ds_hvac1.BinarySensorChannelNo = 3;
-  ds_hvac1.MasterThermostatIsSet = 1;
-  ds_hvac1.MasterThermostatChannelNo = 4;
-  ds_hvac1.HeatOrColdSourceSwitchIsSet = 1;
-  ds_hvac1.HeatOrColdSourceSwitchChannelNo = 5;
-  ds_hvac1.PumpSwitchIsSet = 1;
-  ds_hvac1.PumpSwitchChannelNo = 6;
+  ds_hvac1.MainThermometerChannelId = 1;
+  ds_hvac1.AuxThermometerChannelId = 2;
+  ds_hvac1.BinarySensorChannelId = 3;
+
+  ds_hvac1.MasterThermostatChannelId = 4;
+
+  ds_hvac1.HeatOrColdSourceSwitchChannelId = 5;
+
+  ds_hvac1.PumpSwitchChannelId = 6;
   ds_hvac1.TemperatureControlType =
       SUPLA_HVAC_TEMPERATURE_CONTROL_TYPE_ROOM_TEMPERATURE;
   ds_hvac1.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_HEATER;
@@ -61,21 +61,21 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   }
 
   hvac_config config1;
-  config1.set_config(&ds_hvac1, 0);
+  config1.set_config(&ds_hvac1);
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
+      "{\"mainThermometerChannelId\":1,\"auxThermometerChannelId\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\",\"auxMinMaxSetpointEnabled\":"
-      "false,\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":3,"
+      "false,\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelId\":3,"
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
       "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
       "\"outputValueOnError\":55,\"subfunction\":\"COOL\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":true,"
-      "\"masterThermostatChannelNo\":4,\"heatOrColdSourceSwitchChannelNo\":5,"
-      "\"pumpSwitchChannelNo\":6,\"temperatureControlType\":\"ROOM_"
+      "\"masterThermostatChannelId\":4,\"heatOrColdSourceSwitchChannelId\":5,"
+      "\"pumpSwitchChannelId\":6,\"temperatureControlType\":\"ROOM_"
       "TEMPERATURE\",\"temperatures\":{\"freezeProtection\":1,\"eco\":2,"
       "\"comfort\":3,\"boost\":4,\"heatProtection\":5,\"histeresis\":6,"
       "\"belowAlarm\":7,\"aboveAlarm\":8,\"auxMinSetpoint\":9,"
@@ -103,7 +103,7 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
   free(str);
 
   TChannelConfig_HVAC ds_hvac2 = {};
-  config2.get_config(&ds_hvac2, 0);
+  config2.get_config(&ds_hvac2);
 
   // Set unused to zero
   ds_hvac1.Temperatures.Index = ds_hvac2.Temperatures.Index;
@@ -125,28 +125,28 @@ TEST_F(HvacConfigTest, setAndGetConfig) {
 TEST_F(HvacConfigTest, getConfigResult) {
   hvac_config config;
   TChannelConfig_HVAC ds_hvac = {};
-  EXPECT_FALSE(config.get_config(&ds_hvac, 0));
+  EXPECT_FALSE(config.get_config(&ds_hvac));
 
   config.set_user_config("{}");
 
-  EXPECT_FALSE(config.get_config(&ds_hvac, 0));
+  EXPECT_FALSE(config.get_config(&ds_hvac));
 
   config.set_user_config("{\"minOffTimeS\":600}");
 
-  EXPECT_TRUE(config.get_config(&ds_hvac, 0));
+  EXPECT_TRUE(config.get_config(&ds_hvac));
 }
 
-TEST_F(HvacConfigTest, getUnsetChannelNumber) {
+TEST_F(HvacConfigTest, getUnsetChannelId) {
   hvac_config config;
   TChannelConfig_HVAC ds_hvac = {};
 
-  EXPECT_FALSE(config.get_config(&ds_hvac, 10));
-  EXPECT_EQ(ds_hvac.BinarySensorChannelNo, 10);
+  EXPECT_FALSE(config.get_config(&ds_hvac));
+  EXPECT_EQ(ds_hvac.BinarySensorChannelId, 0u);
 
-  config.set_user_config("{\"binarySensorChannelNo\":null}");
+  config.set_user_config("{\"binarySensorChannelId\":null}");
 
-  EXPECT_TRUE(config.get_config(&ds_hvac, 15));
-  EXPECT_EQ(ds_hvac.BinarySensorChannelNo, 15);
+  EXPECT_TRUE(config.get_config(&ds_hvac));
+  EXPECT_EQ(ds_hvac.BinarySensorChannelId, 0u);
 }
 
 TEST_F(HvacConfigTest, selectedTemperatures) {
@@ -165,21 +165,21 @@ TEST_F(HvacConfigTest, selectedTemperatures) {
   ds_hvac.Temperatures.Temperature[15] = -28910;
 
   hvac_config config;
-  config.set_config(&ds_hvac, 0);
+  config.set_config(&ds_hvac);
 
   char *str = config.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "{\"mainThermometerChannelId\":null,\"auxThermometerChannelId\":null,"
       "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
-      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelId\":null,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
       "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "\"masterThermostatChannelId\":null,\"heatOrColdSourceSwitchChannelId\":"
+      "null,\"pumpSwitchChannelId\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"temperatures\":{\"freezeProtection\":12345,\"eco\":0,"
       "\"auxMinSetpoint\":-723},\"localUILock\":[],"
       "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
@@ -203,7 +203,7 @@ TEST_F(HvacConfigTest, merge) {
   hvac_config config1;
   config1.set_user_config(
       "{\"a\":\"b\", \"x\": true, \"c\": true, "
-      "\"mainThermometerChannelNo\":1,\"auxThermometerChannelNo\":2,"
+      "\"mainThermometerChannelId\":1,\"auxThermometerChannelId\":2,"
       "\"auxThermometerType\":\"GENERIC_HEATER\","
       "\"antiFreezeAndOverheatProtectionEnabled\":true,\"usedAlgorithm\":\"ON_"
       "OFF_SETPOINT_MIDDLE\",\"minOffTimeS\":600,\"minOnTimeS\":10,"
@@ -230,23 +230,23 @@ TEST_F(HvacConfigTest, merge) {
   ds_hvac.ParameterFlags.AntiFreezeAndOverheatProtectionEnabledHidden = 1;
 
   hvac_config config2;
-  config2.set_config(&ds_hvac, 0);
+  config2.set_config(&ds_hvac);
   config2.merge(&config1);
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"a\":\"b\",\"x\":true,\"c\":true,\"mainThermometerChannelNo\":null,"
-      "\"auxThermometerChannelNo\":null,\"auxThermometerType\":\"NOT_SET\","
+      "{\"a\":\"b\",\"x\":true,\"c\":true,\"mainThermometerChannelId\":null,"
+      "\"auxThermometerChannelId\":null,\"auxThermometerType\":\"NOT_SET\","
       "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
-      "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelNo\":"
+      "\"temperatures\":{\"eco\":10,\"comfort\":0},\"binarySensorChannelId\":"
       "null,\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
       "\"auxMinMaxSetpointEnabled\":false,\"useSeparateHeatCoolOutputs\":false,"
-      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "\"masterThermostatChannelId\":null,\"heatOrColdSourceSwitchChannelId\":"
+      "null,\"pumpSwitchChannelId\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"localUILock\":[],"
       "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
       "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
@@ -274,7 +274,7 @@ TEST_F(HvacConfigTest, setAndGetParameterFlags) {
                           sizeof(sizeof(HvacParameterFlags)));
 
     hvac_config config1;
-    config1.set_config(&ds_hvac1, 0);
+    config1.set_config(&ds_hvac1);
 
     char *str = config1.get_user_config();
     ASSERT_NE(str, nullptr);
@@ -288,7 +288,7 @@ TEST_F(HvacConfigTest, setAndGetParameterFlags) {
     free(str);
 
     TChannelConfig_HVAC ds_hvac2 = {};
-    config2.get_config(&ds_hvac2, 0);
+    config2.get_config(&ds_hvac2);
 
     ds_hvac1.ParameterFlags.Reserved = 0;
 
@@ -359,28 +359,28 @@ TEST_F(HvacConfigTest, allParameterFlagsSet) {
   ds_hvac.ParameterFlags.PumpSwitchHidden = 1;
 
   hvac_config config;
-  config.set_config(&ds_hvac, 0);
+  config.set_config(&ds_hvac);
 
   char *str = config.get_properties();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
       "{\"availableAlgorithms\":[],\"temperatures\":{},"
-      "\"readOnlyConfigFields\":[\"mainThermometerChannelNo\","
-      "\"auxThermometerChannelNo\",\"binarySensorChannelNo\","
+      "\"readOnlyConfigFields\":[\"mainThermometerChannelId\","
+      "\"auxThermometerChannelId\",\"binarySensorChannelId\","
       "\"auxThermometerType\",\"antiFreezeAndOverheatProtectionEnabled\","
       "\"usedAlgorithm\",\"minOnTimeS\",\"minOffTimeS\",\"outputValueOnError\","
       "\"subfunction\",\"auxMinMaxSetpointEnabled\","
-      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelNo\","
-      "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
+      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelId\","
+      "\"heatOrColdSourceSwitchChannelId\",\"pumpSwitchChannelId\","
       "\"temperatureSetpointChangeSwitchesToManualMode\"],"
-      "\"hiddenConfigFields\":[\"mainThermometerChannelNo\","
-      "\"auxThermometerChannelNo\",\"binarySensorChannelNo\","
+      "\"hiddenConfigFields\":[\"mainThermometerChannelId\","
+      "\"auxThermometerChannelId\",\"binarySensorChannelId\","
       "\"auxThermometerType\",\"antiFreezeAndOverheatProtectionEnabled\","
       "\"usedAlgorithm\",\"minOnTimeS\",\"minOffTimeS\",\"outputValueOnError\","
       "\"subfunction\",\"auxMinMaxSetpointEnabled\","
-      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelNo\","
-      "\"heatOrColdSourceSwitchChannelNo\",\"pumpSwitchChannelNo\","
+      "\"useSeparateHeatCoolOutputs\",\"masterThermostatChannelId\","
+      "\"heatOrColdSourceSwitchChannelId\",\"pumpSwitchChannelId\","
       "\"temperatureSetpointChangeSwitchesToManualMode\"],"
       "\"readOnlyTemperatureConfigFields\":[\"freezeProtection\",\"eco\","
       "\"comfort\",\"boost\",\"heatProtection\",\"histeresis\","
@@ -401,21 +401,21 @@ TEST_F(HvacConfigTest, uiLock_FULL) {
   ds_hvac1.LocalUILock = LOCAL_UI_LOCK_FULL;
 
   hvac_config config1;
-  config1.set_config(&ds_hvac1, 0);
+  config1.set_config(&ds_hvac1);
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "{\"mainThermometerChannelId\":null,\"auxThermometerChannelId\":null,"
       "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
-      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelId\":null,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
       "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "\"masterThermostatChannelId\":null,\"heatOrColdSourceSwitchChannelId\":"
+      "null,\"pumpSwitchChannelId\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"temperatures\":{},\"localUILock\":[\"FULL\"],"
       "\"minAllowedTemperatureSetpointFromLocalUI\":0,"
       "\"maxAllowedTemperatureSetpointFromLocalUI\":0}");
@@ -437,7 +437,7 @@ TEST_F(HvacConfigTest, uiLock_FULL) {
   free(str);
 
   TChannelConfig_HVAC ds_hvac2 = {};
-  config2.get_config(&ds_hvac2, 0);
+  config2.get_config(&ds_hvac2);
 
   EXPECT_EQ(ds_hvac1.LocalUILockingCapabilities,
             ds_hvac2.LocalUILockingCapabilities);
@@ -458,21 +458,21 @@ TEST_F(HvacConfigTest, uiLock_TEMPERATURE) {
   ds_hvac1.MaxAllowedTemperatureSetpointFromLocalUI = 22;
 
   hvac_config config1;
-  config1.set_config(&ds_hvac1, 0);
+  config1.set_config(&ds_hvac1);
 
   char *str = config1.get_user_config();
   ASSERT_NE(str, nullptr);
   EXPECT_STREQ(
       str,
-      "{\"mainThermometerChannelNo\":null,\"auxThermometerChannelNo\":null,"
+      "{\"mainThermometerChannelId\":null,\"auxThermometerChannelId\":null,"
       "\"auxThermometerType\":\"NOT_SET\",\"auxMinMaxSetpointEnabled\":false,"
-      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelNo\":null,"
+      "\"useSeparateHeatCoolOutputs\":false,\"binarySensorChannelId\":null,"
       "\"antiFreezeAndOverheatProtectionEnabled\":false,\"usedAlgorithm\":\"\","
       "\"minOffTimeS\":0,\"minOnTimeS\":0,\"outputValueOnError\":0,"
       "\"subfunction\":\"NOT_SET\","
       "\"temperatureSetpointChangeSwitchesToManualMode\":false,"
-      "\"masterThermostatChannelNo\":null,\"heatOrColdSourceSwitchChannelNo\":"
-      "null,\"pumpSwitchChannelNo\":null,\"temperatureControlType\":\"NOT_"
+      "\"masterThermostatChannelId\":null,\"heatOrColdSourceSwitchChannelId\":"
+      "null,\"pumpSwitchChannelId\":null,\"temperatureControlType\":\"NOT_"
       "SUPPORTED\",\"temperatures\":{},\"localUILock\":[\"TEMPERATURE\"],"
       "\"minAllowedTemperatureSetpointFromLocalUI\":20,"
       "\"maxAllowedTemperatureSetpointFromLocalUI\":22}");
@@ -494,7 +494,7 @@ TEST_F(HvacConfigTest, uiLock_TEMPERATURE) {
   free(str);
 
   TChannelConfig_HVAC ds_hvac2 = {};
-  config2.get_config(&ds_hvac2, 0);
+  config2.get_config(&ds_hvac2);
 
   EXPECT_EQ(ds_hvac1.LocalUILockingCapabilities,
             ds_hvac2.LocalUILockingCapabilities);
@@ -508,3 +508,47 @@ TEST_F(HvacConfigTest, uiLock_TEMPERATURE) {
 }
 
 } /* namespace testing */
+
+namespace testing {
+TEST_F(HvacConfigTest, canonicalIdsAreNotTruncatedToChannelNumbers) {
+  hvac_config config;
+  TChannelConfig_HVAC wire = {};
+  wire.MainThermometerChannelId = 0xFFFFFFFEu;
+  wire.AuxThermometerChannelId = 70001;
+  wire.BinarySensorChannelId = 70002;
+  wire.MasterThermostatChannelId = 70003;
+
+  wire.PumpSwitchChannelId = 70004;
+
+  wire.HeatOrColdSourceSwitchChannelId = 70005;
+
+  config.set_config(&wire);
+  TChannelConfig_HVAC roundtrip = {};
+  ASSERT_TRUE(config.get_config(&roundtrip));
+  EXPECT_EQ(0, memcmp(&wire, &roundtrip, sizeof(wire)));
+  for (size_t i = 0; i < 6; ++i) EXPECT_GT(config.reference(i), 255u);
+}
+
+TEST_F(HvacConfigTest, protectedDeviceMergeMatrix) {
+  for (unsigned int current : {0u, 101u, 900u}) {
+    for (unsigned int incoming : {0u, 101u, 102u, 900u, 901u}) {
+      hvac_config authoritative, request;
+      authoritative.set_reference(0, current);
+      TChannelConfig_HVAC wire = {};
+      wire.MainThermometerChannelId = incoming;
+      wire.MinOnTimeS = 17;
+      request.set_config(&wire);
+      request.protect_device_references([](size_t, unsigned int id) {
+        return id == 0 || id == 101 || id == 102;
+      });
+      request.merge(&authoritative);
+      unsigned int expected =
+          current == 900 || incoming >= 900 ? current : incoming;
+      EXPECT_EQ(expected, authoritative.reference(0));
+      TChannelConfig_HVAC merged = {};
+      ASSERT_TRUE(authoritative.get_config(&merged));
+      EXPECT_EQ(17, merged.MinOnTimeS);
+    }
+  }
+}
+}  // namespace testing

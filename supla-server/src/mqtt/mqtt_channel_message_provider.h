@@ -132,7 +132,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                 size_t *message_size);
 
   virtual supla_channel_fragment get_channel_fragment(int device_id,
-                                                      int channel_number);
+                                                      int channel_id);
 
  public:
   supla_mqtt_channel_message_provider(void);

@@ -816,4 +816,58 @@ TEST(ChannelConfigSyncCoordinatorTest,
   EXPECT_EQ(sizeof(TChannelConfig_PowerSwitch), configs[2].ConfigSize);
 }
 
+TEST(ChannelConfigSyncCoordinatorTest,
+     relayAndActionTriggerAbsentWeeklyIsNotFault) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  for (int function : {SUPLA_CHANNELFNC_POWERSWITCH,
+                       SUPLA_CHANNELFNC_ACTIONTRIGGER}) {
+    SCOPED_TRACE(function);
+    int type = function == SUPLA_CHANNELFNC_ACTIONTRIGGER
+                   ? SUPLA_CHANNELTYPE_ACTIONTRIGGER
+                   : SUPLA_CHANNELTYPE_RELAY;
+    DeviceChannelWithProtocolVersion channel(&device, type, function, flags,
+                                            "{}");
+    bool failed = true;
+    EXPECT_FALSE(channel.send_config_to_device(
+        SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, &failed));
+    EXPECT_FALSE(failed);
+    std::vector<TSDS_SetChannelConfig> configs;
+    EXPECT_TRUE(channel.prepare_config_for_device(&configs, &failed));
+    EXPECT_FALSE(failed);
+    ASSERT_EQ(1U, configs.size());
+    EXPECT_EQ(SUPLA_CONFIG_TYPE_DEFAULT, configs[0].ConfigType);
+  }
+}
+
+TEST(ChannelConfigSyncCoordinatorTest,
+     relayAndActionTriggerZeroWeeklyIsPresent) {
+  DeviceStub device(nullptr);
+  const unsigned _supla_int64_t flags =
+      SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE |
+      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE;
+  for (int function : {SUPLA_CHANNELFNC_POWERSWITCH,
+                       SUPLA_CHANNELFNC_ACTIONTRIGGER}) {
+    SCOPED_TRACE(function);
+    int type = function == SUPLA_CHANNELFNC_ACTIONTRIGGER
+                   ? SUPLA_CHANNELTYPE_ACTIONTRIGGER
+                   : SUPLA_CHANNELTYPE_RELAY;
+    DeviceChannelWithProtocolVersion channel(
+        &device, type, function, flags,
+        "{\"weeklySchedule\":{\"programSettings\":{\"1\":{"
+        "\"mode\":\"NOT_SET\"}},"
+        "\"quarters\":[0]}}");
+    bool failed = true;
+    std::vector<TSDS_SetChannelConfig> configs;
+    ASSERT_TRUE(channel.prepare_config_for_device(&configs, &failed));
+    EXPECT_FALSE(failed);
+    ASSERT_EQ(2U, configs.size());
+    EXPECT_EQ(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE, configs[1].ConfigType);
+    ASSERT_EQ(sizeof(TChannelConfig_WeeklySchedule), configs[1].ConfigSize);
+    TChannelConfig_WeeklySchedule zero = {};
+    EXPECT_EQ(0, memcmp(&zero, configs[1].Config, sizeof(zero)));
+  }
+}
 }  // namespace testing

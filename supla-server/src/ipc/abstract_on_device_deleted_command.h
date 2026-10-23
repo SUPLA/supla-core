@@ -28,7 +28,7 @@ class supla_abstract_on_device_deleted_command
  protected:
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual void on_device_deleted(int user_id, int device_id) = 0;
+  virtual bool on_device_deleted(int user_id, int device_id) = 0;
 
  public:
   explicit supla_abstract_on_device_deleted_command(

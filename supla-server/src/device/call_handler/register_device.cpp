@@ -110,16 +110,8 @@ void supla_register_device::on_registration_success(void) {
 void supla_register_device::after_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
-  device->send_config_to_device();
-
-  // The channel configuration is sent in fragments. Any new message sent to
-  // the device during registration must be added here, after channel config
-  // sending is finished and before SUPLA_SD_CALL_DEVICE_SYNC_DONE.
-  device->get_channels()->send_configs_to_device(
-      [](supla_device *device) -> void {
-        device->send_queued_calcfg_requests();
-        device->send_sync_done_to_device();
-      });
+  device->start_registration_sync(
+      get_srpc_adapter(), get_device_identities());
 }
 
 void supla_register_device::register_device(
@@ -130,6 +122,22 @@ void supla_register_device::register_device(
     unsigned char activity_timeout) {
   {
     shared_ptr<supla_device> _device = device.lock();
+    if (_device) {
+      _device->reset_suplan_identity_bootstrap();
+    }
+    if (register_device_g &&
+        (register_device_g->Flags & SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) &&
+        (!_device || !_device->get_connection() ||
+         !_device->get_connection()->is_secure())) {
+      TSD_SuplaRegisterDeviceResult result = {};
+      result.result_code = SUPLA_RESULTCODE_TLS_REQUIRED;
+      result.activity_timeout = activity_timeout;
+      result.version_min = SUPLA_PROTO_VERSION_MIN;
+      result.version = SUPLA_PROTO_VERSION;
+      srpc_adapter->sd_async_registerdevice_result(&result);
+      if (_device && _device->is_registered()) _device->terminate();
+      return;
+    }
     if (_device && _device->is_registered()) {
       _device->terminate();
       return;

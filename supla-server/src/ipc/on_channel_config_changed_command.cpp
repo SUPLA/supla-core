@@ -19,11 +19,13 @@
 #include "on_channel_config_changed_command.h"
 
 #include <memory>
+#include <mutex>
 
 #include "amazon/alexa_delete_request.h"
 #include "device/device_dao.h"
 #include "http/http_event_hub.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "suplan/server_peer_transport.h"
 #include "user.h"
 
 using std::shared_ptr;
@@ -33,12 +35,18 @@ supla_on_channel_config_changed_command::
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_on_channel_config_changed_command(socket_adapter) {}
 
-void supla_on_channel_config_changed_command::on_channel_config_changed(
+bool supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
+  auto stream_user = supla_user::find(user_id, false);
+  if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
+  // Cloud committed config and desired authorization. An unrelated peer failure
+  // retains its marker, but must not suppress this config's publication.
+  bool reconciled = !stream_user ||
+      stream_user->get_suplan_peers()->drain_changes();
   supla_user *user = supla_user::find(user_id, false);
   if (!user) {
-    return;
+    return reconciled;
   }
 
   if (!user->get_devices()->get(device_id)) {
@@ -61,6 +69,8 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
     case SUPLA_CHANNELTYPE_CONTAINER:
+    case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELTYPE_VALVE_PERCENTAGE:
       break;
     case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
     case SUPLA_CHANNELTYPE_SENSORNO:
@@ -76,60 +86,88 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
                                     // we only react to changes in the OCR area.
       break;
     default:
+      // A weekly edit must refresh the cache even for Relay/ActionTrigger.
+      if ((scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) &&
+          supla_weekly_schedule_is_function_supported(func)) break;
       switch (func) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
           if (!(scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
-            return;
+            return reconciled;
           }
           break;
         default:
-          return;
+          return reconciled;
       }
+  }
+
+  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
+  supla_device_channel *channel = nullptr;
+  std::unique_lock<std::mutex> config_lock;
+  if (device) {
+    device->get_channels()->access_channel(
+        channel_id, [&](supla_device_channel *current) {
+          channel = current;
+          config_lock =
+              std::unique_lock<std::mutex>(current->get_config_mutex());
+        });
   }
 
   supla_mariadb_access_provider dba;
   supla_device_dao dao(&dba);
-
   if (scope & CONFIG_CHANGE_SCOPE_FUNCTION) {
     dao.erase_channel_properties(user_id, channel_id);
   }
 
+  int selected_function = 0;
   supla_json_config *json_config =
-      dao.get_channel_config(channel_id, nullptr, nullptr);
+      dao.get_channel_config(channel_id, nullptr, nullptr, &selected_function);
 
-  shared_ptr<supla_device> device = user->get_devices()->get(device_id);
+  bool reconnect_device =
+      (scope & CONFIG_CHANGE_SCOPE_FUNCTION) ||
+      (force_device_reconnect && scope != CONFIG_CHANGE_SCOPE_RELATIONS);
+  bool update_config = scope & (CONFIG_CHANGE_SCOPE_JSON_DEFAULT |
+                                CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE |
+                                CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE |
+                                CONFIG_CHANGE_SCOPE_OCR);
+  if (channel && json_config && update_config && !reconnect_device) {
+    // Read after acquiring the producer lock, then install one coherent root.
+    std::lock_guard<supla_device_channel> guard(*channel);
+    channel->set_json_config(new supla_json_config(json_config, true));
+    channel->set_func(selected_function);
+  }
+  if (config_lock.owns_lock()) config_lock.unlock();
 
   if (device) {
-    if ((scope & CONFIG_CHANGE_SCOPE_FUNCTION) || force_device_reconnect) {
+    // A pure RELATIONS hint (manual consent) changes authorization, not the
+    // Source's configuration. In particular a legacy thermometer must stay
+    // connected while its new STREAM interest is activated.
+    if (reconnect_device) {
       device->reconnect();
-    } else if (json_config &&
-               ((scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) ||
-                (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) ||
-                (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) ||
-                (scope & CONFIG_CHANGE_SCOPE_OCR))) {
-      device->get_channels()->access_channel(
-          channel_id, [&](supla_device_channel *channel) -> void {
-            channel->set_json_config(new supla_json_config(json_config, true));
+    } else if (channel && json_config && update_config) {
+      auto publish = [&](unsigned char type) {
+        channel->request_config_publication(type);
+      };
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_DEFAULT);
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT) {
+        publish(SUPLA_CONFIG_TYPE_DEFAULT);
+        if (channel->get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
+          publish(SUPLA_CONFIG_TYPE_EXTENDED);
+        }
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_WEEKLY_SCHEDULE) {
+        publish(SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE);
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
-              channel->send_config_to_device(
-                  SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
-            }
+      if (scope & CONFIG_CHANGE_SCOPE_JSON_ALT_WEEKLY_SCHEDULE) {
+        publish(SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE);
+      }
 
-            if (scope & CONFIG_CHANGE_SCOPE_OCR) {
-              channel->send_config_to_device(SUPLA_CONFIG_TYPE_OCR);
-            }
-          });
+      if (scope & CONFIG_CHANGE_SCOPE_OCR) {
+        publish(SUPLA_CONFIG_TYPE_OCR);
+      }
     }
   }
 
@@ -156,4 +194,5 @@ void supla_on_channel_config_changed_command::on_channel_config_changed(
   if (json_config) {
     delete json_config;
   }
+  return reconciled;
 }

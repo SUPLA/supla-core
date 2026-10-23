@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "asynctask/asynctask_queue.h"
 #include "db/database.h"
 #include "gtest/gtest.h"
 #include "svrcfg.h"
@@ -36,6 +37,8 @@ int main(int argc, char **argv) {
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
   int result = RUN_ALL_TESTS();
+
+  supla_asynctask_queue::global_instance_release();
 
   svrcfg_free();
 

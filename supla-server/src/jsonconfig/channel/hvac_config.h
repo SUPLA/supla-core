@@ -19,6 +19,7 @@
 #ifndef HVAC_CONFIG_H_
 #define HVAC_CONFIG_H_
 
+#include <functional>
 #include <map>
 #include <string>
 
@@ -27,6 +28,7 @@
 
 class hvac_config : public supla_json_config {
  private:
+  std::function<bool(size_t, unsigned int)> device_local_reference;
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned int, std::string> temperatures_map;
   static const unsigned int readonly_temperatures;
@@ -43,11 +45,9 @@ class hvac_config : public supla_json_config {
   void add_algorithm_to_array(cJSON *root, cJSON *algs,
                               TChannelConfig_HVAC *config,
                               unsigned _supla_int16_t alg);
-  void set_channel_number(cJSON *root, int field,
-                          unsigned char cfg_channel_number,
-                          unsigned char channel_number);
-  bool get_channel_number(cJSON *root, int field, unsigned char channel_number,
-                          unsigned char *result, bool *is_null);
+  void set_channel_id(cJSON *root, int field, unsigned _supla_int_t id);
+  bool get_channel_id(cJSON *root, int field, _supla_int_t *result,
+                      bool *is_null);
   void set_temperatures(TChannelConfig_HVAC *config, cJSON *root,
                         unsigned int filter);
   bool get_temperatures(TChannelConfig_HVAC *config, cJSON *root,
@@ -62,11 +62,18 @@ class hvac_config : public supla_json_config {
                                            cJSON *root);
 
  public:
+  static const char *reference_keys[6];
+  void protect_device_references(
+      std::function<bool(size_t, unsigned int)> local_reference) {
+    device_local_reference = local_reference;
+  }
+  unsigned int reference(size_t field);
+  void set_reference(size_t field, unsigned int id);
   explicit hvac_config(supla_json_config *root);
   hvac_config(void);
   virtual void merge(supla_json_config *dst);
-  void set_config(TChannelConfig_HVAC *config, unsigned char channel_number);
-  bool get_config(TChannelConfig_HVAC *config, unsigned char channel_number);
+  void set_config(TChannelConfig_HVAC *config);
+  bool get_config(TChannelConfig_HVAC *config);
 };
 
 #endif /* HVAC_CONFIG_H_ */

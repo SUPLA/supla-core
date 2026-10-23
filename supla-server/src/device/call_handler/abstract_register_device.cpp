@@ -72,6 +72,11 @@ bool supla_abstract_register_device::is_channel_added(void) {
   return channel_added;
 }
 
+TSD_SuplaDeviceIdentities *
+supla_abstract_register_device::get_device_identities(void) {
+  return &identities;
+}
+
 int supla_abstract_register_device::get_device_id() { return device_id; }
 
 int supla_abstract_register_device::get_device_flags(void) {
@@ -382,6 +387,8 @@ bool supla_abstract_register_device::add_channels(void) {
                                              db_func_list | func_list);
       }
     }
+    // Capture the actual DB ID while the registration sequence is available.
+    identities.ChannelId[a] = channel_id;
   }
 
   if (processed_count == -1 ||
@@ -402,6 +409,7 @@ void supla_abstract_register_device::register_device(
     supla_mariadb_access_provider *dba, supla_abstract_connection_dao *conn_dao,
     supla_abstract_device_dao *device_dao, int client_sd, int client_ipv4,
     unsigned char activity_timeout) {
+  identities = {};
   this->device = device;
   this->register_device_c = register_device_c;
   this->register_device_g = register_device_g;
@@ -549,6 +557,9 @@ void supla_abstract_register_device::register_device(
     send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
     return;
   }
+
+  identities.DeviceId = device_id;
+  identities.ChannelCount = channel_count;
 
   on_registration_success();
 

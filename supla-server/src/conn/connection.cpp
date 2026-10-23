@@ -27,6 +27,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <memory>
 
 #include "client/client.h"
@@ -38,6 +39,7 @@
 #include "srpc/srpc.h"
 #include "srpc/srpc_adapter.h"
 #include "sthread.h"
+#include "suplan/peer_provisioner.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
 #include "tools.h"
@@ -230,8 +232,8 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   this->remote_call_received = false;
   this->security_event_logged = false;
 
-  eh = eh_init();
-  eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
+  eh = std::shared_ptr<TEventHandler>(eh_init(), eh_free);
+  eh_add_fd(eh.get(), ssocket_supla_socket_getsfd(supla_socket));
 
   TsrpcParams srpc_params;
   srpc_params_init(&srpc_params);
@@ -240,7 +242,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   srpc_params.data_write = &socket_write;
   srpc_params.on_remote_call_received = &on_remote_call_received;
   srpc_params.on_version_error = &on_version_error;
-  srpc_params.eh = eh;
+  srpc_params.eh = eh.get();
   _srpc = srpc_init(&srpc_params);
   srpc_adapter = new supla_srpc_adapter(_srpc);
 
@@ -250,7 +252,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
 supla_connection::~supla_connection() {
   srpc_free(_srpc);
   delete srpc_adapter;
-  eh_free(eh);
+  eh.reset();
   ssocket_supla_socket_free(supla_socket);
 
   safe_array_remove(supla_connection::reg_pending_arr, this);
@@ -345,7 +347,21 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       catch_unhandled_call(call_id);
     }
 
+    if (call_id == SUPLA_DS_CALL_SET_SUPLAN_SOURCE_ASSOCIATION_RESULT &&
+        rd.data.ds_set_suplan_source_association_result) {
+      supla_suplan::wipe_key(
+          rd.data.ds_set_suplan_source_association_result->PeerKey,
+          sizeof(rd.data.ds_set_suplan_source_association_result->PeerKey));
+    }
     srpc_rd_free(&rd);
+  } else if (call_id == SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT &&
+             object && object->is_registered()) {
+    auto device = std::dynamic_pointer_cast<supla_device>(object);
+    // The decoder rejected this result before normal dispatch. Complete the
+    // pending barrier as a failure, using the existing ordinary-sync policy.
+    log_security_event_with_uint(LOG_WARNING, "invalid_call_payload", 0,
+                                 "call_id", call_id);
+    if (device) device->on_suplan_device_identities_result(nullptr);
   } else if (object == nullptr || !object->is_registered()) {
     log_security_event_with_uint(LOG_WARNING, "invalid_call_payload", 1,
                                  "call_id", call_id);
@@ -424,7 +440,7 @@ void supla_connection::execute(void *sthread) {
   int wait_usec = WAIT_USEC_MIN;
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, wait_usec);
+    eh_wait(eh.get(), wait_usec);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       if (object == nullptr || !object->is_registered()) {
@@ -561,7 +577,7 @@ void supla_connection::execute(void *sthread) {
 
 void supla_connection::terminate(void) {
   sthread_terminate(sthread, false);
-  eh_raise_event(eh);
+  eh_raise_event(eh.get());
 }
 
 unsigned int supla_connection::get_client_ipv4(void) { return client_ipv4; }
@@ -586,4 +602,19 @@ unsigned char supla_connection::get_protocol_version(void) {
   return srpc_get_proto_version(_srpc);
 }
 
-void supla_connection::raise_event(void) { eh_raise_event(eh); }
+void supla_connection::raise_event(void) { eh_raise_event(eh.get()); }
+
+std::function<void()> supla_connection::event_notifier() const {
+  return [event = std::weak_ptr<TEventHandler>(eh)] {
+    if (auto current = event.lock()) eh_raise_event(current.get());
+  };
+}
+
+uint64_t supla_connection::next_session() {
+  static std::atomic<uint64_t> next{0};
+  return ++next;
+}
+
+bool supla_connection::is_secure() const {
+  return ssd && ssocket_is_secure(ssd);
+}

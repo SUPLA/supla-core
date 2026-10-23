@@ -40,10 +40,18 @@ TEST_F(OnChannelConfigChangedCommandTest, noData) {
 }
 
 TEST_F(OnChannelConfigChangedCommandTest, channelConfigChanged) {
-  EXPECT_CALL(*cmd, on_channel_config_changed(10, 20, 30, 1, 2, 3));
+  EXPECT_CALL(*cmd, on_channel_config_changed(10, 20, 30, 1, 2, 3))
+      .WillOnce(Return(true));
 
   commandProcessingTest("USER-ON-CHANNEL-CONFIG-CHANGED:10,20,30,1,2,3\n",
                         "OK:10\n");
+}
+
+TEST_F(OnChannelConfigChangedCommandTest, failedTechnicalReconciliation) {
+  EXPECT_CALL(*cmd, on_channel_config_changed(10, 20, 30, 1, 2, 3))
+      .WillOnce(Return(false));
+  commandProcessingTest("USER-ON-CHANNEL-CONFIG-CHANGED:10,20,30,1,2,3\n",
+                        "ERROR:10\n");
 }
 
 TEST_F(OnChannelConfigChangedCommandTest, noParams) {

@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <list>
 #include <memory>
 
@@ -40,6 +41,7 @@
 #include "safearray.h"
 #include "srpc/srpc.h"
 #include "user.h"
+#include "suplan/server_peer_transport.h"
 #include "vbt/value_based_triggers.h"
 
 using std::dynamic_pointer_cast;
@@ -58,6 +60,7 @@ supla_device::supla_device(supla_connection *connection)
 
 supla_device::~supla_device() {
   if (get_user()) {  // 1st line!
+    if (stream_connection) stream_connection->close();
     supla_channel_availability_status offline(true);
 
     auto statuses = channels->get_all_statuses();
@@ -90,6 +93,134 @@ shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
       supla_abstract_connection_object::get_shared_ptr());
 }
 
+void supla_device::reset_suplan_identity_bootstrap(void) {
+  auto stream = get_stream(false);
+  if (stream) stream->close();
+  lock();
+  stream_connection.reset();
+  stream_sync_done = false;
+  identity_bootstrap.reset();
+  registration_sync_pending = false;
+  suplan_peer_ready = false;
+  suplan_registration_channels.clear();
+  unlock();
+}
+
+void supla_device::connection_will_close(void) {
+  reset_suplan_identity_bootstrap();
+  if (get_user()) {
+    get_user()->get_suplan_peers()->peers()->disconnected(
+        get_id(), get_connection() ? get_connection()->get_session_id() : 0);
+  }
+  supla_abstract_connection_object::connection_will_close();
+}
+
+void supla_device::start_registration_sync(
+    supla_abstract_srpc_adapter *srpc, TSD_SuplaDeviceIdentities *identities) {
+  lock();
+  suplan_peer_ready = false;
+  suplan_registration_channels.clear();
+  auto started = identity_bootstrap.start(srpc, flags, identities);
+  if (identity_bootstrap.is_pending()) {
+    for (int i = 0; i < identities->ChannelCount; ++i)
+      suplan_registration_channels.push_back(identities->ChannelId[i]);
+    std::sort(suplan_registration_channels.begin(),
+              suplan_registration_channels.end());
+  }
+  registration_sync_pending = identity_bootstrap.is_pending();
+  if (registration_sync_pending && channels) {
+    for (int i = 0; i < identities->ChannelCount; ++i) {
+      if (!channels->channel_exists(identities->ChannelId[i])) {
+        // A failed/partial DAO load must not become an empty successful sync.
+        identity_bootstrap.reset();
+        registration_sync_pending = false;
+        started = supla_suplan_identity_bootstrap::start_result::failed;
+        break;
+      }
+    }
+  }
+  bool defer_sync = registration_sync_pending;
+  unlock();
+  if (started == supla_suplan_identity_bootstrap::start_result::failed) {
+    supla_log(LOG_WARNING, "SupLAN identity bootstrap start failed: device=%d",
+              get_id());
+    terminate();
+    return;
+  }
+  if (defer_sync) {
+    supla_log(LOG_INFO,
+              "SupLAN identity bootstrap sent: device=%d, channels=%d",
+              get_id(), identities->ChannelCount);
+  } else {
+    send_registration_config();
+  }
+}
+
+void supla_device::send_registration_config(void) {
+  if (!send_config_to_device() && get_suplan_root_epoch()) {
+    reset_suplan_identity_bootstrap();
+    terminate();
+    return;
+  }
+  // Keep the existing fragment coordinator and sync-done ordering.
+  get_channels()->send_configs_to_device([](supla_device *device) -> void {
+    device->send_queued_calcfg_requests();
+    device->reconcile_suplan_peers();
+    device->send_sync_done_to_device();
+  });
+}
+
+void supla_device::on_suplan_device_identities_result(
+    const TDS_SuplaDeviceIdentitiesResult *result) {
+  lock();
+  bool expired = identity_bootstrap.expire();
+  bool resume_sync = registration_sync_pending && !expired;
+  registration_sync_pending = false;
+  identity_bootstrap.on_result(result);
+  auto root_epoch = identity_bootstrap.get_root_epoch();
+  unlock();
+  if (expired) {
+    reset_suplan_identity_bootstrap();
+    terminate();
+    return;
+  }
+  if (root_epoch) {
+    supla_log(LOG_INFO,
+              "SupLAN identity bootstrap accepted: device=%d, rootEpoch=%u",
+              get_id(), root_epoch);
+  }
+  // A rejected snapshot leaves SupLAN disabled, but ordinary SUPLA sync
+  // remains available. Future SupLAN-dependent config must check RootEpoch.
+  if (resume_sync) send_registration_config();
+}
+
+void supla_device::reconcile_suplan_peers(void) {
+  if (!get_user() || !get_connection()) return;
+  lock();
+  supla_suplan::identity_t identity;
+  identity.root = identity_bootstrap.get_root_epoch();
+  identity.channels = suplan_registration_channels;
+  unlock();
+  if (!identity.root) return;
+  auto peers = get_user()->get_suplan_peers()->peers();
+  if (!peers->accepted(get_id(), identity)) {
+    supla_log(LOG_WARNING, "SupLAN peer identity persistence failed: device=%d",
+              get_id());
+    return;
+  }
+  lock();
+  suplan_peer_ready = true;
+  unlock();
+  peers->reconnect(get_id());
+}
+
+unsigned _supla_int_t supla_device::get_suplan_root_epoch(void) {
+  lock();
+  unsigned _supla_int_t result = identity_bootstrap.get_root_epoch();
+  unlock();
+  return result;
+}
+
 bool supla_device::is_sleeping_object(void) {
   return (flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
          channels->get_value_validity_time_left_msec() > 0;
@@ -105,14 +236,35 @@ bool supla_device::can_reconnect(void) {
 }
 
 void supla_device::iterate(void) {
+  lock();
+  bool expired = identity_bootstrap.expire();
+  if (expired) registration_sync_pending = false;
+  unlock();
+  if (expired) {
+    supla_log(LOG_WARNING, "SupLAN identity bootstrap timed out: device=%d",
+              get_id());
+    reset_suplan_identity_bootstrap();
+    terminate();
+    return;
+  }
   if (channels) {
     channels->iterate();
+  }
+  if (get_user() && is_suplan_peer_ready()) {
+    get_user()->get_suplan_peers()->peers()->iterate(get_id());
+    auto stream = get_stream(false);
+    if (stream) stream->iterate();
   }
 }
 
 unsigned _supla_int64_t supla_device::wait_time_usec(void) {
   unsigned _supla_int64_t result =
       supla_abstract_connection_object::wait_time_usec();
+
+  lock();
+  auto identity_due = identity_bootstrap.time_left_usec();
+  unlock();
+  if (identity_due && identity_due < result) result = identity_due;
 
   if (channels) {
     unsigned _supla_int64_t config_batch_time_left =
@@ -121,6 +273,18 @@ unsigned _supla_int64_t supla_device::wait_time_usec(void) {
     if (config_batch_time_left > 0 && config_batch_time_left < result) {
       result = config_batch_time_left;
     }
+  }
+
+  if (auto stream = get_stream(false)) {
+    auto stream_time_left = stream->time_left_usec();
+    if (stream_time_left && stream_time_left < result)
+      result = stream_time_left;
+  }
+
+  if (get_user() && is_suplan_peer_ready()) {
+    auto peers = get_user()->get_suplan_peers()->peers();
+    auto due = peers->time_left_usec(get_id());
+    if (due && due < result) result = due;
   }
 
   return result;
@@ -221,7 +385,7 @@ bool supla_device::enter_cfg_mode(unsigned _supla_int64_t *queued_at,
   return false;
 }
 
-void supla_device::send_config_to_device(void) {
+bool supla_device::send_config_to_device(void) {
   if (get_protocol_version() >= 21 &&
       (get_flags() & SUPLA_DEVICE_FLAG_DEVICE_CONFIG_SUPPORTED)) {
     supla_mariadb_access_provider dba;
@@ -237,20 +401,34 @@ void supla_device::send_config_to_device(void) {
         config->get_config(&sds_config, fields, &fields);
         sds_config.AvailableFields = available_fields;
         sds_config.EndOfDataFlag = fields == 0 ? 1 : 0;
-        get_connection()
-            ->get_srpc_adapter()
-            ->sd_async_set_device_config_request(&sds_config);
+        if (get_connection()->get_srpc_adapter()
+                ->sd_async_set_device_config_request(&sds_config) <= 0) {
+          delete config;
+          return false;
+        }
       }
 
       delete config;
+    } else {
+      // Empty JSON is a successful DAO object; nullptr means missing row/error.
+      return false;
     }
   }
+  return true;
 }
 
 void supla_device::send_sync_done_to_device(void) {
   if (get_protocol_version() >= 29 &&
       (get_flags() & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED)) {
-    get_connection()->get_srpc_adapter()->sd_async_device_sync_done();
+    if (get_connection()->get_srpc_adapter()->sd_async_device_sync_done() > 0 &&
+        get_suplan_root_epoch()) {
+      supla_log(LOG_INFO,
+                "SupLAN registration sync done: device=%d, rootEpoch=%u",
+                get_id(), get_suplan_root_epoch());
+      lock();
+      stream_sync_done = true;
+      unlock();
+    }
   }
 }
 
@@ -292,10 +470,6 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
 
 int supla_device::take_latest_calcfg_command(void) {
   return calcfg_queue.take_latest_calcfg_command();
-}
-
-size_t supla_device::get_calcfg_queue_size(void) {
-  return calcfg_queue.get_calcfg_queue_size();
 }
 
 bool supla_device::pair_subdevice(const supla_caller &caller,
@@ -413,4 +587,29 @@ bool supla_device::set_cfg_mode_password(const char *password,
   }
 
   return false;
+}
+
+bool supla_device::is_suplan_peer_ready(void) {
+  lock();
+  bool result = suplan_peer_ready && identity_bootstrap.is_ready();
+  unlock();
+  return result;
+}
+
+std::shared_ptr<supla_suplan::stream_connection> supla_device::get_stream(
+    bool create) {
+  lock();
+  if (!stream_connection && create && get_user())
+    stream_connection = get_user()->get_suplan_peers()->new_stream(this);
+  auto result = stream_connection;
+  unlock();
+  return result;
+}
+
+bool supla_device::is_server_stream_ready() {
+  lock();
+  bool result = stream_sync_done && suplan_peer_ready &&
+                identity_bootstrap.is_ready();
+  unlock();
+  return result;
 }

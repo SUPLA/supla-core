@@ -539,17 +539,14 @@ void AlexaChangeReportRequestTest::hvacThermostatTest(
                   _get_detached_json_config(Eq(1), Eq(2), Eq(3)))
           .WillOnce([](int user_id, int device_id, int channel_id) {
             TChannelConfig_HVAC native_config = {};
-            native_config.MainThermometerChannelNo = 2;
+            native_config.MainThermometerChannelId = 789;
             hvac_config *cfg = new hvac_config();
-            cfg->set_config(&native_config, 1);
+            cfg->set_config(&native_config);
             return cfg;
           });
 
-      EXPECT_CALL(*propertyGetter, _get_channel_id(Eq(1), Eq(2), Eq(2)))
-          .WillOnce(Return(789));
-
       EXPECT_CALL(*propertyGetter,
-                  _get_value(Eq(1), Eq(2), Eq(789), IsNull(), IsNull()))
+                  _get_value(Eq(1), Eq(0), Eq(789), IsNull(), IsNull()))
           .WillOnce(Return(tempHumValue));
     } else {
       EXPECT_CALL(*propertyGetter, _get_extended_value(Eq(1), Eq(2), Eq(3)))

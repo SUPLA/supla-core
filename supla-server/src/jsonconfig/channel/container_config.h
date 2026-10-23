@@ -19,6 +19,7 @@
 #ifndef CONTAINER_CONFIG_H_
 #define CONTAINER_CONFIG_H_
 
+#include <functional>
 #include <map>
 #include <string>
 
@@ -27,11 +28,16 @@
 
 class container_config : public supla_json_config {
  private:
+  std::function<bool(unsigned int)> device_local_reference;
   static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<unsigned _supla_int16_t, std::string> sensor_field_map;
 
  protected:
  public:
+  // Applied against freshly read authority on every DAO CAS retry.
+  void protect_device_references(std::function<bool(unsigned int)> local) {
+    device_local_reference = local;
+  }
   explicit container_config(supla_json_config *root);
   container_config(void);
   virtual void merge(supla_json_config *dst);
