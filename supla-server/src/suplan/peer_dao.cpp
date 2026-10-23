@@ -512,6 +512,14 @@ bool peer_dao::project_peer(int destination, uint32_t resource) {
                  to_string(destination) + "," + to_string(resource) + ")") &&
          commit();
 }
+bool peer_dao::last_changed_pair(uint64_t *out) {
+  std::vector<std::vector<uint64_t>> rows;
+  if (!select("SELECT COALESCE(MAX(association_id),0) FROM "
+              "supla_suplan_changed_pair WHERE " + scope(), &rows, 1) ||
+      rows.size() != 1) return false;
+  *out = rows[0][0];
+  return true;
+}
 bool peer_dao::changed_pairs(uint64_t after, size_t limit,
                              std::vector<std::pair<uint64_t, uint64_t>> *out) {
   out->clear();

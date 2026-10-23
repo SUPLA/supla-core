@@ -45,7 +45,6 @@
 #include "supla-socket.h"
 #include "suplan/peer_dao.h"
 #include "suplan/server_peer_transport.h"
-#include "suplan/grant_changes_cyclictask.h"
 #include "test/doubles/device/DeviceStub.h"
 #include "test/doubles/ipc/IpcSocketAdapterMock.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
@@ -1341,7 +1340,6 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     ASSERT_FALSE(HasFatalFailure());
     auto user = supla_user::find(99126, false);
     ASSERT_NE(nullptr, user);
-    // DB recreation resets association IDs; discard the previous test cursor.
     ASSERT_TRUE(user->get_suplan_peers()->drain_changes());
     // Another consumer's committed grant has a dirty peer whose Source map
     // no longer contains its resource. Config reads/writes remain healthy.
@@ -2309,6 +2307,100 @@ TEST_F(SupLanHvacWireIntegrationTest,
   for (unsigned i = 0; i < 16; ++i) {
     ASSERT_GT(queued.size(), i);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    auto q = queued[i];
+    TDS_SuplaSetSuplanDestinationAssociationResult ok = {
+        q.PeerContext, q.AclRevision, SUPLA_SUPLAN_RESULT_OK};
+    send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT, &ok,
+                sizeof(ok));
+  }
+  auto until = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (PeerProvisionerTestAccess::count(*peers) &&
+         std::chrono::steady_clock::now() < until)
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  EXPECT_EQ(0u, PeerProvisionerTestAccess::count(*peers));
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  EXPECT_EQ(120000000u, target->wait_time_usec());
+  EXPECT_GT(first_channel, 0u);
+  EXPECT_FALSE(receive_packet(&extra, 100));
+}
+
+TEST_F(SupLanHvacWireIntegrationTest,
+       SingleRelationsIpcDrainsMoreThanOneMarkerBatch) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  peer_dao repo(99126);
+  peer_service previous([] { return std::make_unique<peer_dao>(99126); },
+                        nullptr);
+  uint32_t first_channel = 0;
+  for (unsigned i = 0; i < 65; ++i) {
+    // Historical registered, currently offline Sources in the isolated Core DB.
+    query(
+        "INSERT INTO supla_iodevice "
+        "(location_id,user_id,guid,enabled,reg_date,protocol_version,flags) "
+        "SELECT location_id,99126,UNHEX(MD5('ipc-batch-" +
+        std::to_string(i) + "')),1,reg_date,29," +
+        std::to_string(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED) +
+        " FROM supla_iodevice WHERE id=" + std::to_string(source));
+    int owner =
+        scalar("SELECT MAX(id) FROM supla_iodevice WHERE user_id=99126");
+    auto channel = add_channel(owner, 1, SUPLA_CHANNELTYPE_THERMOMETER,
+                               SUPLA_CHANNELFNC_THERMOMETER);
+    query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+          std::to_string(channel));
+    if (!i) first_channel = channel;
+    ASSERT_TRUE(repo.accept_identity(owner, {123 + i, {channel}}));
+    auto consumer = add_channel(destination, 100 + i, SUPLA_CHANNELTYPE_HVAC,
+                                SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+    query("UPDATE supla_dev_channel SET user_id=99126 WHERE id=" +
+          std::to_string(consumer));
+    cloud_grant(99126, channel_config_origin(consumer, 1), owner, destination,
+                channel, 1);
+    association_t a;
+    ASSERT_TRUE(repo.find(owner, destination, &a));
+    ASSERT_TRUE(previous.provisioned(a, 123 + i));
+  }
+  auto peers = supla_user::find(99126, false)->get_suplan_peers()->peers();
+  {
+    unsigned pages = 0, bounds = 0;
+    Sql004Probe probe;
+    probe.fail_execute = [&](const std::string &sql) {
+      if (sql.find("SELECT association_id,revision FROM ") == 0) ++pages;
+      if (sql.find("SELECT COALESCE(MAX(association_id),0)") == 0) {
+        ++bounds;
+        // A different thread must fail explicitly while the gate is held.
+        auto other = std::async(std::launch::async, [] {
+          return supla_user::find(99126, false)->get_suplan_peers()
+              ->drain_changes();
+        });
+        EXPECT_FALSE(other.get());
+      }
+      return false;
+    };
+    notify(CONFIG_CHANGE_SCOPE_RELATIONS);
+    EXPECT_EQ(2u, pages);
+    EXPECT_EQ(1u, bounds);
+    EXPECT_EQ(0u, probe.dml);
+    probe.finish("ipc-only-65-markers");
+  }
+  std::vector<TSDS_SuplaSetSuplanDestinationAssociation> queued;
+  auto receive_association = [&] {
+    TSuplaDataPacket packet{};
+    ASSERT_TRUE(receive_packet(&packet));
+    ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, packet.call_id);
+    ASSERT_LE(packet.data_size,
+              sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+    TSDS_SuplaSetSuplanDestinationAssociation q{};
+    memcpy(&q, packet.data, packet.data_size);
+    EXPECT_EQ(0, q.PeerKeySize);
+    queued.push_back(q);
+  };
+  for (unsigned i = 0; i < 65; ++i) receive_association();
+  ASSERT_FALSE(HasFatalFailure());
+  TSuplaDataPacket extra{};
+  EXPECT_FALSE(receive_packet(&extra, 100));  // One request per association.
+  for (unsigned i = 0; i < 65; ++i) {
+    ASSERT_GT(queued.size(), i);
     auto q = queued[i];
     TDS_SuplaSetSuplanDestinationAssociationResult ok = {
         q.PeerContext, q.AclRevision, SUPLA_SUPLAN_RESULT_OK};
@@ -4047,6 +4139,58 @@ TEST_F(SupLanCloudGrantIntegrationTest,
 }
 
 TEST_F(SupLanCloudGrantIntegrationTest,
+       LostIpcSourceReconnectKeepsIndependentReadThenSendsEmptyAcl) {
+  const auto config_origin = channel_config_origin(consumer, 1);
+  replace(CHANNEL_CONFIG_ORIGIN, config_origin, 1);
+  replace(USER_APPROVAL_ORIGIN, 90005, 1);
+  ASSERT_TRUE(service.provisioned(state(), 123));
+  const auto initial = state();
+  replace(CHANNEL_CONFIG_ORIGIN, config_origin, 0);
+  EXPECT_EQ(initial.revision, state().revision);
+  class SourceOnlyTransport : public DeleteTransport {
+   public:
+    int online = 0;
+    bool ready(int device) override { return device == online; }
+  } transport;
+  transport.online = source;
+  peer_provisioner peers(factory, &transport);
+  for (unsigned count : {1u, 0u}) {
+    if (!count) {
+      peers.disconnected(source, transport.session(source));
+      replace(USER_APPROVAL_ORIGIN, 90005, 0);
+    }
+    const auto desired = state();
+    Sql004Probe probe;
+    probe.restricted = true;
+    // Natural registration's actual provisioner entry, no IPC or marker drain.
+    peers.reconnect(source);
+    ASSERT_EQ(2u - count, transport.sources.size());
+    EXPECT_TRUE(transport.destinations.empty());
+    const auto &request = transport.sources.back();
+    EXPECT_EQ(count, request.AclEntryCount);
+    EXPECT_EQ(0, request.Flags);
+    EXPECT_EQ(123u, request.PeerContext.RootEpoch);
+    EXPECT_EQ(initial.generation, request.PeerContext.PeerGeneration);
+    EXPECT_EQ(desired.revision, request.AclRevision);
+    if (count) {
+      EXPECT_EQ(resource, request.Acl[0].ResourceId);
+    }
+    TDS_SuplaSetSuplanSourceAssociationResult reply{};
+    reply.PeerContext = request.PeerContext;
+    reply.AclRevision = request.AclRevision;
+    reply.Result = SUPLA_SUPLAN_RESULT_OK;
+    peers.on_source(source, &reply, transport.session(source));
+    if (!count) {
+      EXPECT_EQ(lifecycle_t::draining, state().lifecycle);
+      EXPECT_TRUE(state().source_acked);
+      EXPECT_FALSE(state().destination_acked);
+    }
+    EXPECT_EQ(0u, probe.dml);
+    probe.finish("ipc-only-source-reconnect");
+  }
+}
+
+TEST_F(SupLanCloudGrantIntegrationTest,
        FailedSourceCommitRollsBackAndRecoveryDerivesFreshKeyWithoutReconnect) {
   replace(1, channel_config_origin(consumer, 1), 1);
   class RecoveryTransport : public DeleteTransport {
@@ -4238,8 +4382,8 @@ TEST_F(SupLanHvacWireIntegrationTest,
   auto peers = supla_user::find(99126, false)->get_suplan_peers();
   peer_dao trusted(99126);
   const auto origin = channel_config_origin(hvac, 1);
-  // Fail the initial load, the provisioner's authoritative reload, then ACK.
-  for (unsigned failure = 0; failure < 3; ++failure) {
+  // Fail the range read, initial load, authoritative reload, then ACK.
+  for (unsigned failure = 0; failure < 4; ++failure) {
     cloud_grant(99126, origin, source, destination, resource, 1);
     cloud_grant(99126, origin, source, destination, resource, 0);
     const auto other_origin = channel_config_origin(hvac, 2);
@@ -4259,9 +4403,11 @@ TEST_F(SupLanHvacWireIntegrationTest,
         if (sql.find("canonical_acl FROM supla_suplan_peer_association") !=
             std::string::npos) ++loads;
         bool fail = !injected &&
-            ((failure < 2 && loads == failure + 1 &&
+            ((failure == 0 &&
+              sql.find("SELECT COALESCE(MAX(association_id),0)") == 0) ||
+             (failure > 0 && failure < 3 && loads == failure &&
               sql.find("canonical_acl FROM") != std::string::npos) ||
-             (failure == 2 && sql.find("CALL supla_suplan_changed_ack(") == 0));
+             (failure == 3 && sql.find("CALL supla_suplan_changed_ack(") == 0));
         if (fail) injected = true;
         return fail;
       };
@@ -4269,7 +4415,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
     }
     ASSERT_TRUE(injected);
     ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
-    ASSERT_EQ(1u, markers.size());
+    ASSERT_EQ(failure ? 1u : 2u, markers.size());
     EXPECT_EQ(failed_id, markers.front().first);
     // The unrelated marker was committed even after this row's SQL failure.
     // No empty cursor-wrap pass, reconnect, IPC or timer is needed to retry.
@@ -4280,54 +4426,80 @@ TEST_F(SupLanHvacWireIntegrationTest,
 }
 
 TEST_F(SupLanHvacWireIntegrationTest,
-       DurableMarkerTaskWakesRegisteredDestinationWithoutIpcOrPeriodicTick) {
+       LostIpcDestinationRegistrationReplaysCurrentGrantAndRevocation) {
   register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
   ASSERT_FALSE(HasFatalFailure());
-  auto user = supla_user::find(99126, false);
-  ASSERT_NE(nullptr, user);
   peer_dao trusted(99126);
-  auto origin = channel_config_origin(hvac, 1);
-  query("UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
-        "'mainThermometerChannelId'," + std::to_string(resource) +
-        ") WHERE id=" + std::to_string(hvac));
-  cloud_grant(99126, origin, source, destination, resource, 1);
-  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
-        std::to_string(hvac));
-  cloud_grant(99126, origin, source, destination, resource, 0);
-  association_t desired;
-  ASSERT_TRUE(trusted.find(source, destination, &desired));
-  ASSERT_EQ(lifecycle_t::draining, desired.lifecycle);
-  std::vector<std::pair<uint64_t, uint64_t>> markers;
-  ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
-  ASSERT_EQ(1u, markers.size());
-  TSuplaDataPacket packet{};
-  EXPECT_FALSE(receive_packet(&packet, 100));
-  // Exercise the actual existing cyclic-task timer contract with a supplied
-  // timestamp; no sleep, IPC, ping, per-Device tick or fabricated Device ACK.
-  supla_suplan_grant_changes_cyclictask concrete;
-  supla_abstract_cyclictask &task = concrete;
-  timeval now{};
-  gettimeofday(&now, nullptr);
-  EXPECT_FALSE(task.is_it_time(&now));
-  now.tv_sec += 5;
-  ASSERT_TRUE(task.is_it_time(&now));
-  std::vector<supla_user *> users{user};
-  task.run(&now, &users, nullptr);
-  EXPECT_FALSE(task.is_it_time(&now));
-  ASSERT_TRUE(receive_packet(&packet, 5000));
-  ASSERT_EQ(SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION, packet.call_id);
-  TSDS_SuplaSetSuplanDestinationAssociation replacement{};
-  memcpy(&replacement, packet.data, packet.data_size);
-  EXPECT_EQ(0, replacement.ResourceCount);
-  EXPECT_EQ(0, replacement.PeerKeySize);
-  EXPECT_EQ(desired.revision, replacement.AclRevision);
-  EXPECT_EQ(source, replacement.PeerContext.SourceNodeId);
-  EXPECT_EQ(destination, replacement.PeerContext.DestinationNodeId);
-  ASSERT_TRUE(trusted.changed_pairs(0, 64, &markers));
-  EXPECT_TRUE(markers.empty());
-  ASSERT_TRUE(trusted.load(desired.id, &desired));
-  EXPECT_FALSE(desired.source_acked);
-  EXPECT_FALSE(desired.destination_acked);
-  EXPECT_EQ(lifecycle_t::draining, desired.lifecycle);
+  const auto origin = channel_config_origin(hvac, 1);
+  for (unsigned permissions : {1u, 0u}) {
+    // Trusted Cloud commit, deliberately without its IPC notification.
+    cloud_grant(99126, origin, source, destination, resource, permissions);
+    association_t desired;
+    ASSERT_TRUE(trusted.find(source, destination, &desired));
+    if (permissions) {
+      ASSERT_TRUE(service.provisioned(desired, 123));
+    }
+    ASSERT_TRUE(trusted.load(desired.id, &desired));
+    EXPECT_EQ(permissions ? lifecycle_t::active : lifecycle_t::draining,
+              desired.lifecycle);
+    TSuplaDataPacket packet{};
+    EXPECT_FALSE(receive_packet(&packet, 100));
+    close_connection();
+    start_connection();
+    unsigned replacements = 0;
+    register_existing_family(SUPLA_CHANNELTYPE_HVAC,
+        SUPLA_CHANNELFNC_HVAC_THERMOSTAT, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+        false, true, [&](const TSuplaDataPacket &incoming) {
+          if (incoming.call_id !=
+              SUPLA_SD_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION) return;
+          TSDS_SuplaSetSuplanDestinationAssociation replacement{};
+          ASSERT_LE(incoming.data_size, sizeof(replacement));
+          memcpy(&replacement, incoming.data, incoming.data_size);
+          ++replacements;
+          EXPECT_EQ(source, replacement.PeerContext.SourceNodeId);
+          EXPECT_EQ(destination, replacement.PeerContext.DestinationNodeId);
+          EXPECT_EQ(123u, replacement.PeerContext.RootEpoch);
+          EXPECT_EQ(desired.generation,
+                    replacement.PeerContext.PeerGeneration);
+          EXPECT_EQ(desired.revision, replacement.AclRevision);
+          EXPECT_EQ(permissions, replacement.ResourceCount);
+          EXPECT_EQ(0, replacement.PeerKeySize);
+          if (permissions) {
+            EXPECT_EQ(resource, replacement.Resources[0].ResourceId);
+          }
+          TDS_SuplaSetSuplanDestinationAssociationResult reply = {
+              replacement.PeerContext, replacement.AclRevision,
+              SUPLA_SUPLAN_RESULT_OK};
+          send_packet(SUPLA_DS_CALL_SET_SUPLAN_DESTINATION_ASSOCIATION_RESULT,
+                      &reply, sizeof(reply));
+        });
+    ASSERT_FALSE(HasFatalFailure());
+    EXPECT_EQ(1u, replacements);
+    // Source is offline; a Destination ACK cannot claim Source revocation.
+    if (!permissions) {
+      expect_access(resource, SUPLA_SUPLAN_RESULT_NOT_AUTHORIZED,
+                    SUPLA_SUPLAN_ACCESS_STATUS_INVALID);
+      ASSERT_TRUE(trusted.load(desired.id, &desired));
+      EXPECT_EQ(lifecycle_t::draining, desired.lifecycle);
+      EXPECT_FALSE(desired.source_acked);
+      EXPECT_TRUE(desired.destination_acked);
+    }
+  }
 }
+
+TEST_F(SupLanHvacWireIntegrationTest, IdleDeviceDoesNotPollGrantMarkers) {
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  ASSERT_FALSE(HasFatalFailure());
+  auto target = supla_user::find(99126, false)->get_devices()->get(destination);
+  ASSERT_NE(nullptr, target);
+  Sql004Probe probe;
+  for (unsigned i = 0; i < 100; ++i) {
+    target->iterate();
+    EXPECT_EQ(120000000u, target->wait_time_usec());
+  }
+  EXPECT_EQ(0u, probe.executions);
+  EXPECT_EQ(0u, probe.connections);
+  probe.finish("ipc-only-idle-device");
+}
+
 }  // namespace

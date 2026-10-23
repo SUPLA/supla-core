@@ -40,7 +40,6 @@
 #include "tsdb/tsdb_access_provider.h"
 #include "user/virtual_channel_updater_cyclictask.h"
 
-#include "suplan/grant_changes_cyclictask.h"
 
 using std::vector;
 
@@ -57,7 +56,6 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_general_purpose_measurement_logger());
   add(new supla_general_purpose_meter_logger());
   add(new supla_virtual_channel_updater_cyclictask());
-  add(new supla_suplan_grant_changes_cyclictask());
   add(new supla_autodiscover_statistics());
 
   // Refreshing tokens at the end

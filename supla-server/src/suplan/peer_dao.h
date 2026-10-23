@@ -58,6 +58,7 @@ class peer_dao : public repository {
   bool cleanup_device(int device) override;
   bool cleanup_resource(uint32_t resource) override;
   bool observe_root(uint64_t id) override;
+  bool last_changed_pair(uint64_t *out);
   bool changed_pairs(uint64_t after, size_t limit,
                      std::vector<std::pair<uint64_t, uint64_t>> *out) override;
   bool ack_changed(uint64_t id, uint64_t revision) override;

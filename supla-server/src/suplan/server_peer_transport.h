@@ -16,7 +16,6 @@ class supla_suplan_server_peers : public supla_suplan::peer_transport {
   std::mutex stream_mutex;
   std::vector<std::weak_ptr<supla_suplan::stream_connection>> streams;
   std::mutex changes_mutex;
-  uint64_t changes_cursor = 0;
   supla_suplan::peer_provisioner provisioner;
 
  public:

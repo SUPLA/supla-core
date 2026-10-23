@@ -14,26 +14,9 @@
 #include "log.h"
 #include "srpc/srpc.h"
 #include "suplan/peer_dao.h"
-#include "suplan/grant_changes_cyclictask.h"
 #include "user.h"
 #include "svrcfg.h"
 #include "user/user_dao.h"
-void supla_suplan_grant_changes_cyclictask::run(
-    const std::vector<supla_user *> *users,
-    supla_abstract_db_access_provider *) {
-  for (auto user : *users) {
-    bool active = false;
-    user->get_devices()->for_each(
-        [&](std::shared_ptr<supla_device> device, bool *more) {
-          if (device->is_suplan_peer_ready()) {
-            active = true;
-            *more = false;
-          }
-        });
-    if (active) user->get_suplan_peers()->drain_changes();
-  }
-}
-
 supla_suplan_server_peers::supla_suplan_server_peers(supla_user *user)
     : user(user),
       provisioner(
@@ -130,32 +113,37 @@ void supla_suplan_server_peers::transient_diagnostic(uint64_t id, int device,
 }
 
 bool supla_suplan_server_peers::drain_changes() {
-  // IPC is a latency hint. The existing cyclic task recovers lost hints.
+  // Best-effort IPC only. Registration replays current DB state if IPC is lost.
   std::unique_lock<std::mutex> lock(changes_mutex, std::try_to_lock);
-  if (!lock.owns_lock()) return true;
+  if (!lock.owns_lock()) return false;
   supla_suplan::peer_dao repo(user->getUserID());
-  std::vector<std::pair<uint64_t, uint64_t>> changed;
-  if (!repo.changed_pairs(changes_cursor, 64, &changed)) return false;
+  uint64_t last = 0, cursor = 0;
+  if (!repo.last_changed_pair(&last)) return false;
   bool success = true;
-  for (const auto &entry : changed) {
-    // Pagination is not an ACK: failed/offline markers remain in SQL and
-    // are revisited after this bounded sweep, without starving other pairs.
-    changes_cursor = entry.first;
-    supla_suplan::association_t association;
-    if (!repo.load(entry.first, &association)) {
-      success = false;
-      continue;
-    }
-    if (association.id && (ready(association.source) ||
-                           ready(association.destination))) {
-      if (!provisioner.reconcile(entry.first) ||
-          !repo.ack_changed(entry.first, entry.second)) {
-        repo.rollback();
+  while (cursor < last) {
+    std::vector<std::pair<uint64_t, uint64_t>> changed;
+    if (!repo.changed_pairs(cursor, 64, &changed)) return false;
+    if (changed.empty()) break;
+    for (const auto &entry : changed) {
+      // Bound this handoff to the IDs present at entry, even during churn.
+      if (entry.first > last) return success;
+      cursor = entry.first;
+      supla_suplan::association_t association;
+      if (!repo.load(entry.first, &association)) {
         success = false;
+        continue;
+      }
+      if (association.id && (ready(association.source) ||
+                             ready(association.destination))) {
+        if (!provisioner.reconcile(entry.first) ||
+            !repo.ack_changed(entry.first, entry.second)) {
+          repo.rollback();
+          success = false;
+        }
       }
     }
+    if (changed.size() < 64) break;
   }
-  if (changed.size() < 64) changes_cursor = 0;
   return success;
 }
 bool supla_suplan_server_peers::channel_deleted(int user_id, int channel) {
