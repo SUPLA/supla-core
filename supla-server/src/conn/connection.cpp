@@ -374,7 +374,7 @@ int supla_connection::get_server_port(void) {
 
 void supla_connection::log_security_event(int level, const char *reason,
                                           int ban) {
-  if (security_event_logged) {
+  if (security_event_logged || client_ipv4 == INADDR_LOOPBACK) {
     return;
   }
 
@@ -394,7 +394,7 @@ void supla_connection::log_security_event_with_uint(int level,
                                                     const char *reason, int ban,
                                                     const char *value_name,
                                                     unsigned int value) {
-  if (security_event_logged) {
+  if (security_event_logged || client_ipv4 == INADDR_LOOPBACK) {
     return;
   }
 
