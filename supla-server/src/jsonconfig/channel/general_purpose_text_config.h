@@ -35,7 +35,6 @@ class general_purpose_text_config : public supla_json_config {
   virtual void merge(supla_json_config *dst);
   void set_config(TChannelConfig_GeneralPurposeText *config);
   bool get_config(TChannelConfig_GeneralPurposeText *config);
-  bool keep_history(void);
 };
 
 #endif /* GENERAL_PURPOSE_TEXT_CONFIG_H_ */
