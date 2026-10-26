@@ -720,15 +720,6 @@ void supla_device_channel::set_extended_value(
       delete config;
     }
 
-    supla_channel_general_purpose_text_extended_value *gpt =
-        dynamic_cast<supla_channel_general_purpose_text_extended_value *>(
-            new_value);
-    if (gpt) {
-      if (logger_purpose_extended_value) {
-        delete logger_purpose_extended_value;
-      }
-      logger_purpose_extended_value = gpt->copy();
-    }
   }
 
   extended_value = new_value;

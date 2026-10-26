@@ -33,7 +33,7 @@ jobject supla_cc_gp_text_to_jobject(JNIEnv *env, _supla_int_t channel_id,
 
   jobject result = env->NewObject(
       config_cls, method_init, channel_id, supla_NewInt(env, func), crc32,
-      config->KeepHistory ? JNI_TRUE : JNI_FALSE,
+      JNI_FALSE,
       (jint)config->RefreshIntervalMs);
 
   env->DeleteLocalRef(config_cls);

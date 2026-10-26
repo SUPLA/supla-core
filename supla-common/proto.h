@@ -3655,9 +3655,7 @@ typedef struct {
 typedef struct {
   // Refresh interval in milliseconds. 1 - 65535, 0 = default
   unsigned _supla_int16_t RefreshIntervalMs;
-  // Keep history: 0 = no (default), 1 = yes
-  unsigned char KeepHistory;
-  unsigned char Reserved[13];
+  unsigned char Reserved[14];
 } TChannelConfig_GeneralPurposeText;  // v. >= 29
 
 #define EM_CT_TYPE_100A_33mA (1ULL << 0)

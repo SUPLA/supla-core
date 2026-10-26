@@ -24,12 +24,10 @@
 using std::map;
 using std::string;
 
-#define FIELD_KEEP_HISTORY 1
 #define FIELD_REFRESH_INTERVAL_MS 2
 
 const map<unsigned _supla_int16_t, string>
     general_purpose_text_config::field_map = {
-        {FIELD_KEEP_HISTORY, "keepHistory"},
         {FIELD_REFRESH_INTERVAL_MS, "refreshIntervalMs"}};
 
 general_purpose_text_config::general_purpose_text_config(
@@ -59,11 +57,6 @@ void general_purpose_text_config::set_config(
   }
 
   set_item_value(user_root,
-                 field_map.at(FIELD_KEEP_HISTORY).c_str(),
-                 cJSON_Number, true, nullptr, nullptr,
-                 config->KeepHistory ? 1 : 0);
-
-  set_item_value(user_root,
                  field_map.at(FIELD_REFRESH_INTERVAL_MS).c_str(),
                  cJSON_Number, true, nullptr, nullptr,
                  config->RefreshIntervalMs);
@@ -84,11 +77,6 @@ bool general_purpose_text_config::get_config(
 
   double dbl = 0;
 
-  if (get_double(user_root, field_map.at(FIELD_KEEP_HISTORY).c_str(), &dbl)) {
-    config->KeepHistory = dbl >= 1 ? 1 : 0;
-    result = true;
-  }
-
   if (get_double(user_root,
                  field_map.at(FIELD_REFRESH_INTERVAL_MS).c_str(), &dbl)) {
     config->RefreshIntervalMs =
@@ -97,10 +85,4 @@ bool general_purpose_text_config::get_config(
   }
 
   return result;
-}
-
-bool general_purpose_text_config::keep_history(void) {
-  TChannelConfig_GeneralPurposeText config = {};
-  get_config(&config);
-  return config.KeepHistory == 1;
 }
