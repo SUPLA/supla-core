@@ -209,7 +209,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   EXPECT_LE(sizeof(TChannelConfig_RollerShutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 4);
+  EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 16);
   EXPECT_LE(sizeof(TChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 

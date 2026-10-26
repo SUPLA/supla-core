@@ -438,12 +438,14 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
         level = LOG_NOTICE;
       }
 
-      supla_log(level,
-                "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
-                "secure=1 client_port=%i client_sd=%i ssl_error=%i errno=%i",
-                ban, reason, supla_socket->client_ip, ssd->port,
-                supla_socket->client_port, supla_socket->sfd, ssl_error,
-                saved_errno);
+      if (strcmp(supla_socket->client_ip, "127.0.0.1") != 0) {
+        supla_log(level,
+                  "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+                  "secure=1 client_port=%i client_sd=%i ssl_error=%i errno=%i",
+                  ban, reason, supla_socket->client_ip, ssd->port,
+                  supla_socket->client_port, supla_socket->sfd, ssl_error,
+                  saved_errno);
+      }
 
       ssocket_supla_socket_close(supla_socket);
 

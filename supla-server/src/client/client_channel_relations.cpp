@@ -37,6 +37,13 @@ void supla_client_channel_reactions::load(supla_client_channels *channels) {
   channels->for_each(
       [&](supla_client_channel *channel, bool *will_continue) -> void {
         channel->get_channel_relations(&relations, relation_any);
+
+        if (channel->get_func() == SUPLA_CHANNELFNC_ACTIONTRIGGER &&
+            channel->remote_update_is_possible() && channel->get_param1()) {
+          relations.push_back(
+              supla_channel_relation(channel->get_id(), channel->get_param1(),
+                                     CHANNEL_RELATION_TYPE_DEFAULT));
+        }
       });
 
   // A temporary solution to the problem of clearing the list on the application

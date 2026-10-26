@@ -692,6 +692,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x800000000  // ver. >= 29
 #define SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED \
   0x1000000000  // ver. >= 29; weekly schedule no-op program
+#define SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED \
+  0x2000000000  // ver. >= 29
 #pragma pack(push, 1)
 
 typedef struct {
@@ -853,9 +855,26 @@ typedef struct {
 #define SUPLA_BUTTON_MODE_CMD_SWITCH_TO_MANUAL \
   5  // Command to switch to
      // manual mode
+// Locked, but can be temporarily unlocked by the configured sensor edge
+// (TChannelConfig_ActionTrigger) or by SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK.
+// While unlocked, ButtonMode still reports this mode and
+// SUPLA_ACTION_TRIGGER_FLAG_TEMPORARY_UNLOCK_ACTIVE is set. Requires
+// SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED.
+#define SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED 6  // v. >= 29
+// One-shot command (not a mode, not allowed in weekly schedule): (re)starts
+// temporary unlock timer from the beginning. Rejected unless current mode is
+// SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED. Doesn't change mode
+// nor config. Duration is passed in DurationSec.
+#define SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK 7  // v. >= 29
+// Temporary unlock duration (default, program and command) is limited to
+// 18 h = 64800 s. Greater values are invalid and rejected (not truncated).
+// Device restart or leaving SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED
+// cancels the timer.
 
 // Action Trigger Flags definitions (bit positions):
 #define SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED (1 << 0)
+// Temporary unlock timer is currently active, v. >= 29
+#define SUPLA_ACTION_TRIGGER_FLAG_TEMPORARY_UNLOCK_ACTIVE (1 << 1)
 
 typedef struct {
   unsigned char relatedChannelNumber;  // ChannelNumber + 1.
@@ -1234,6 +1253,9 @@ typedef struct {
   union {
     unsigned _supla_int_t DurationMS;
     unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+                                        // ver. >= 29. Applies to AT with
+                                        // SUPLA_BUTTON_MODE_CMD_TEMPORARY_
+                                        // UNLOCK (see TAction_AT_Parameters)
   };
 
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -1690,7 +1712,11 @@ typedef struct {
 
 typedef struct {
   unsigned char Mode;  // SUPLA_BUTTON_MODE_
-  char Reserved[15];
+  // v. >= 29, only for SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK.
+  // 0 - use current effective duration (active weekly schedule program if
+  // nonzero, otherwise TChannelConfig_ActionTrigger). Max 64800.
+  unsigned _supla_int_t DurationSec;
+  char Reserved[11];
 } TAction_AT_Parameters;
 
 typedef struct {
@@ -3244,8 +3270,36 @@ typedef struct {
 
 typedef TChannelConfig_FacadeBlind TChannelConfig_VerticalBlind;
 
+// Sensor edge (logical 0/1 state change) which triggers AT temporary unlock.
+// Only real state changes are edges: first reading (after boot/reconnect) and
+// unknown/offline -> 0/1 transitions don't trigger.
+#define SUPLA_AT_SENSOR_EDGE_NONE 0     // automatic trigger disabled
+#define SUPLA_AT_SENSOR_EDGE_RISING 1   // 0 -> 1
+#define SUPLA_AT_SENSOR_EDGE_FALLING 2  // 1 -> 0
+#define SUPLA_AT_SENSOR_EDGE_BOTH 3     // 0 <-> 1
+
 typedef struct {
   unsigned _supla_int_t ActiveActions;
+  // Fields below: v. >= 29. Config size is always 16 B for v. >= 29
+  // (4 B for v. <= 28). Used only if channel Flag
+  // SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED is set, otherwise
+  // zeroed and ignored.
+  // Default temporary unlock duration (0..64800). Used in manual mode and in
+  // weekly schedule programs with ButtonTemporaryUnlockDurationS == 0.
+  unsigned _supla_int_t TemporaryUnlockDurationSec;
+  // SUPLA_AT_SENSOR_EDGE_. NONE disables only automatic trigger, not
+  // SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK. Edge triggers unlock only when
+  // timer is not active (it doesn't restart nor extend the timer).
+  unsigned char TemporaryUnlockSensorEdge;
+  // Any channel with binary state
+  union {
+    _supla_int_t TemporaryUnlockSensorChannelId;
+    struct {
+      unsigned char TemporaryUnlockSensorIsSet;  // 0 - no; 1 - yes
+      unsigned char TemporaryUnlockSensorChannelNo;
+    };
+  };
+  unsigned char Reserved[3];
 } TChannelConfig_ActionTrigger;  // v. >= 16
 
 // Weekly schedule definition for HVAC, Relay, AT channels
@@ -3264,6 +3318,11 @@ typedef struct {
     // Relay: duration of the state selected by START_ON/START_OFF, in seconds.
     // Zero in both duration fields preserves the untimed program behavior.
     unsigned _supla_int16_t RelayModeDurationS;
+    // AT, Mode == SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED: unlock
+    // duration in seconds (max 64800). 0 - use
+    // TChannelConfig_ActionTrigger.TemporaryUnlockDurationSec.
+    // Value2 is not used for AT (0).
+    unsigned _supla_int16_t ButtonTemporaryUnlockDurationS;
   };
   union {
     _supla_int16_t SetpointTemperatureCool;  // * 0.01 - used for cooling

@@ -361,6 +361,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
   if (protocol_version >= 29) {
     switch (Func) {
+      case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+        return Flags & (SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE |
+                        SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED);
       case SUPLA_CHANNELFNC_HVAC_HRV:
       case SUPLA_CHANNELFNC_SMOKE_SENSOR:
       case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
