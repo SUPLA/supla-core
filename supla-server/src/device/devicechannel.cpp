@@ -841,7 +841,7 @@ void supla_device_channel::for_each(
     get_user()->get_devices()->for_each(
         [this, on_channel_properties](shared_ptr<supla_device> device,
                                       bool *will_continue) -> void {
-          if (device->get_id() != get_id()) {
+          if (device->get_id() != get_device_id()) {
             device->get_channels()->for_each(
                 [on_channel_properties](supla_device_channel *channel,
                                         bool *will_continue) -> void {

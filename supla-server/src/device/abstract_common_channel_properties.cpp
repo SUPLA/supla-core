@@ -90,7 +90,7 @@ void supla_abstract_common_channel_properties::get_sensor_relations(
         for (size_t a = 0;
              a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T); a++) {
           if (raw_cfg.SensorInfo[a].ChannelId > 0) {
-            for_each(false,
+            for_each(true,
                      [&](supla_abstract_common_channel_properties *props,
                          bool *will_continue) -> void {
                        if (raw_cfg.SensorInfo[a].ChannelId == props->get_id() &&
@@ -110,7 +110,7 @@ void supla_abstract_common_channel_properties::get_sensor_relations(
   if (func == related_channel_func &&
       (kind == relation_any || kind == relation_with_parent_channel)) {
     for_each(
-        false,
+        true,
         [&](supla_abstract_common_channel_properties *props,
             bool *will_continue) -> void {
           if ((parent_channel_func &&
@@ -204,7 +204,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         }
 
         for_each(
-            false,
+            true,
             [&](supla_abstract_common_channel_properties *props,
                 bool *will_continue) -> void {
               if (hvac_config_get_success) {
@@ -346,7 +346,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         hvac_config config(json_config);
         if (config.get_config(&hvac) && (hvac.MasterThermostatChannelId != 0)) {
           for_each(
-              false,
+              true,
               [&](supla_abstract_common_channel_properties *props,
                   bool *will_continue) -> void {
                 switch (func) {
@@ -375,7 +375,7 @@ void supla_abstract_common_channel_properties::get_channel_relations(
         func == SUPLA_CHANNELFNC_PUMPSWITCH ||
         func == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
       for_each(
-          false,
+          true,
           [&](supla_abstract_common_channel_properties *props,
               bool *will_continue) -> void {
             switch (props->get_func()) {

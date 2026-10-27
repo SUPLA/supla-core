@@ -18,9 +18,16 @@
 
 #include "CommonChannelPropertiesTest.h"
 
+#include <chrono>
+#include <iostream>
 #include <string>
 #include <vector>
 
+#include "client/client_channel_relation_remote_updater.h"
+#include "client/client_channel_relations.h"
+#include "client/clientchannel.h"
+#include "client/clientchannels.h"
+#include "doubles/SrpcAdapterMock.h"
 #include "doubles/device/CommonChannelPropertiesMock.h"
 #include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/hvac_config.h"
@@ -31,6 +38,221 @@ namespace testing {
 
 using std::string;
 using std::vector;
+
+// Exercise the real Client-visible channel collection and relation pack
+// builder. Only protocol negotiation is fixed; no mocked iteration or relation
+// algorithm.
+class RelationClientChannel : public supla_client_channel {
+ protected:
+  unsigned char get_protocol_version() override { return 29; }
+
+ public:
+  using supla_client_channel::supla_client_channel;
+  bool remote_update_is_possible() override { return true; }
+};
+
+static supla_client_channel *relation_channel(
+    supla_client_channels *channels, int id, int device, int function,
+    const char *json = "{}", int type = SUPLA_CHANNELTYPE_THERMOMETER) {
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  auto channel = new RelationClientChannel(
+      channels, id, 1, device, device, type, function, 0, 0, 0, 0, nullptr,
+      nullptr, nullptr, "", 0, 0, 0, 0, 29, 0, value, 0, json, "{}", false);
+  EXPECT_TRUE(channels->add(channel));
+  return channel;
+}
+
+TEST_F(CommonChannelPropertiesTest, RemoteHvacThermometersFromBothEnds) {
+  for (int function : {SUPLA_CHANNELFNC_THERMOMETER,
+                       SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE}) {
+    supla_client_channels channels(nullptr);
+    auto thermostat = relation_channel(
+        &channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+        "{\"mainThermometerChannelId\":102,"
+        "\"auxThermometerChannelId\":103,\"auxThermometerType\":\"FLOOR\"}",
+        SUPLA_CHANNELTYPE_HVAC);
+    auto main = relation_channel(&channels, 102, 20, function);
+    auto aux = relation_channel(&channels, 103, 30, function);
+    auto children =
+        thermostat->get_channel_relations(relation_with_sub_channel);
+    ASSERT_EQ(2u, children.size());
+    EXPECT_EQ(102, children[0].get_id());
+    EXPECT_EQ(100, children[0].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER,
+              children[0].get_relation_type());
+    EXPECT_EQ(103, children[1].get_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+              children[1].get_relation_type());
+    for (auto sensor : {main, aux}) {
+      auto parents =
+          sensor->get_channel_relations(relation_with_parent_channel);
+      ASSERT_EQ(1u, parents.size());
+      EXPECT_EQ(sensor->get_id(), parents[0].get_id());
+      EXPECT_EQ(100, parents[0].get_parent_id());
+      EXPECT_EQ(sensor == main ? CHANNEL_RELATION_TYPE_MAIN_TERMOMETER
+                               : CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+                parents[0].get_relation_type());
+    }
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest,
+       RemoteHvacThermometerRequiresCompatibleFunction) {
+  supla_client_channels channels(nullptr);
+  relation_channel(&channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+      "{\"mainThermometerChannelId\":102,\"auxThermometerChannelId\":102,"
+      "\"auxThermometerType\":\"FLOOR\"}", SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&channels, 102, 20, SUPLA_CHANNELFNC_POWERSWITCH,
+                   "{}", SUPLA_CHANNELTYPE_RELAY);
+  channels.for_each([](supla_client_channel *channel, bool *) {
+    EXPECT_TRUE(channel->get_channel_relations(relation_any).empty());
+  });
+}
+
+TEST_F(CommonChannelPropertiesTest, ConfigRelationsHaveSameScopeAcrossDevices) {
+  struct Case {
+    int type, function;
+    const char *json;
+    int related_type, related_function, relation_type;
+    bool master = false;
+  };
+  const Case cases[] = {
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"binarySensorChannelId\":102}", SUPLA_CHANNELTYPE_BINARYSENSOR,
+       SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW, CHANNEL_RELATION_TYPE_DEFAULT},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"pumpSwitchChannelId\":102}", SUPLA_CHANNELTYPE_RELAY,
+       SUPLA_CHANNELFNC_PUMPSWITCH, CHANNEL_RELATION_TYPE_PUMP_SWITCH},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"heatOrColdSourceSwitchChannelId\":102}", SUPLA_CHANNELTYPE_RELAY,
+       SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH,
+       CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"masterThermostatChannelId\":102}", SUPLA_CHANNELTYPE_HVAC,
+       SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT, true},
+      {SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, SUPLA_CHANNELFNC_VALVE_OPENCLOSE,
+       "{\"floodSensorChannelIds\":[102]}", SUPLA_CHANNELTYPE_BINARYSENSOR,
+       SUPLA_CHANNELFNC_FLOOD_SENSOR, CHANNEL_RELATION_TYPE_DEFAULT},
+      {SUPLA_CHANNELTYPE_CONTAINER, SUPLA_CHANNELFNC_CONTAINER,
+       "{\"sensors\":[{\"channelId\":102,\"fillLevel\":50}]}",
+       SUPLA_CHANNELTYPE_BINARYSENSOR, SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR,
+       CHANNEL_RELATION_TYPE_DEFAULT}};
+  for (const auto &test : cases) {
+    for (int related_device : {10, 20}) {
+      SCOPED_TRACE(std::to_string(test.related_function) + ":device=" +
+                   std::to_string(related_device));
+      supla_client_channels channels(nullptr);
+      auto consumer = relation_channel(&channels, 100, 10, test.function,
+                                      test.json, test.type);
+      NiceMock<SrpcAdapterMock> adapter;
+      ON_CALL(adapter, get_proto_version).WillByDefault(Return(29));
+      supla_client_channel_relation_remote_updater updater(&adapter);
+      supla_client_channel_reactions relations(&updater);
+      std::vector<TSC_SuplaChannelRelation> sent;
+      EXPECT_CALL(adapter, sc_async_channel_relation_pack_update)
+          .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+            sent.assign(pack->items, pack->items + pack->count);
+            return 1;
+          });
+      // A configured but invisible endpoint must not enter the Client pack.
+      relations.load(&channels);
+      EXPECT_TRUE(relations.update_remote());
+      ASSERT_EQ(1u, sent.size());
+      EXPECT_EQ(0, sent[0].Id);
+      auto related = relation_channel(&channels, 102, related_device,
+          test.related_function, "{}", test.related_type);
+      const int child = test.master ? 100 : 102;
+      const int parent = test.master ? 102 : 100;
+      auto from_consumer = consumer->get_channel_relations(
+          test.master ? relation_with_parent_channel
+                      : relation_with_sub_channel);
+      auto from_related = related->get_channel_relations(
+          test.master ? relation_with_sub_channel
+                      : relation_with_parent_channel);
+      for (auto *edges : {&from_consumer, &from_related}) {
+        EXPECT_EQ(1u, edges->size());
+        if (edges->size() == 1) {
+          EXPECT_EQ(child, edges->at(0).get_id());
+          EXPECT_EQ(parent, edges->at(0).get_parent_id());
+          EXPECT_EQ(test.relation_type, edges->at(0).get_relation_type());
+        }
+      }
+      relations.load(&channels);
+      EXPECT_TRUE(relations.update_remote());
+      EXPECT_EQ(2u, sent.size());
+      if (sent.size() == 2) {
+        EXPECT_EQ(child, sent[0].Id);
+        EXPECT_EQ(parent, sent[0].ParentId);
+        EXPECT_EQ(test.relation_type, sent[0].Type);
+      }
+    }
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest,
+       RemoteThermometerPackContainsOnlyVisibleChannels) {
+  NiceMock<SrpcAdapterMock> adapter;
+  ON_CALL(adapter, get_proto_version).WillByDefault(Return(29));
+  supla_client_channel_relation_remote_updater updater(&adapter);
+  supla_client_channel_reactions relations(&updater);
+  supla_client_channels visible(nullptr), hidden(nullptr);
+  relation_channel(&visible, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                   "{\"mainThermometerChannelId\":102}",
+                   SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&hidden, 102, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  std::vector<TSC_SuplaChannelRelation> sent;
+  EXPECT_CALL(adapter, sc_async_channel_relation_pack_update)
+      .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+        sent.assign(pack->items, pack->items + pack->count);
+        return 1;
+      });
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_EQ(0, sent[0].Id);  // Existing list-clear sentinel, no hidden ID.
+  auto thermometer =
+      relation_channel(&visible, 102, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(2u, sent.size());
+  EXPECT_EQ(102, sent[0].Id);
+  EXPECT_EQ(100, sent[0].ParentId);
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER, sent[0].Type);
+  // Rebuilding after a function change removes the now-invalid relation.
+  thermometer->set_func(SUPLA_CHANNELFNC_POWERSWITCH);
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_EQ(0, sent[0].Id);
+}
+
+TEST_F(CommonChannelPropertiesTest, RemoteThermometerRelationsAtAccountScale) {
+  supla_client_channels channels(nullptr);
+  for (int i = 0; i < 100; ++i) {
+    const auto json = "{\"mainThermometerChannelId\":" +
+                      std::to_string(20000 + i) + "}";
+    relation_channel(&channels, 10000 + i, i + 1,
+        SUPLA_CHANNELFNC_HVAC_THERMOSTAT, json.c_str(), SUPLA_CHANNELTYPE_HVAC);
+    relation_channel(&channels, 20000 + i, 1000 + i,
+                     SUPLA_CHANNELFNC_THERMOMETER);
+  }
+  for (int i = 0; i < 800; ++i) {
+    relation_channel(&channels, 30000 + i, 2000 + i,
+                     SUPLA_CHANNELFNC_POWERSWITCH, "{}",
+                     SUPLA_CHANNELTYPE_RELAY);
+  }
+  std::vector<supla_channel_relation> relations;
+  const auto started = std::chrono::steady_clock::now();
+  channels.for_each([&](supla_client_channel *channel, bool *) {
+    channel->get_channel_relations(&relations, relation_any);
+  });
+  EXPECT_EQ(100u, relations.size());
+  std::cout << "HVAC relations: channels=1000 hvac=100 thermometers=100 us="
+            << std::chrono::duration_cast<std::chrono::microseconds>(
+                   std::chrono::steady_clock::now() - started).count()
+            << std::endl;
+}
 
 TEST_F(CommonChannelPropertiesTest, appendRelationList) {
   vector<supla_channel_relation> rel;
@@ -178,7 +400,7 @@ TEST_F(CommonChannelPropertiesTest,
                       on_channel_properties) {
                 bool will_continue = true;
                 on_channel_properties(&related_props_mock, &will_continue);
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel1, rel2;
@@ -243,7 +465,7 @@ TEST_F(CommonChannelPropertiesTest,
                       on_channel_properties) {
                 bool will_continue = true;
                 on_channel_properties(&related_props_mock, &will_continue);
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel1, rel2;
@@ -305,7 +527,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -368,7 +590,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -429,7 +651,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -492,7 +714,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -726,7 +948,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_MainThermometer) {
 
                 on_channel_properties(&related_props_mock, &will_continue);
 
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel;
@@ -787,7 +1009,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_MainThermometer) {
 
                 on_channel_properties(&related_props_mock, &will_continue);
 
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel;
@@ -849,7 +1071,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_AuxThermometer) {
 
                   on_channel_properties(&related_props_mock, &will_continue);
 
-                  EXPECT_FALSE(any_device);
+                  EXPECT_TRUE(any_device);
                 });
 
         vector<supla_channel_relation> rel;
@@ -914,7 +1136,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_AuxThermometer) {
 
                   on_channel_properties(&related_props_mock, &will_continue);
 
-                  EXPECT_FALSE(any_device);
+                  EXPECT_TRUE(any_device);
                 });
 
         vector<supla_channel_relation> rel;
@@ -970,7 +1192,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_BinarySensor) {
 
               on_channel_properties(&related_props_mock, &will_continue);
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;
@@ -1023,7 +1245,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_BinarySensor) {
 
           on_channel_properties(&related_props_mock, &will_continue);
 
-          EXPECT_FALSE(any_device);
+          EXPECT_TRUE(any_device);
         });
 
     vector<supla_channel_relation> rel;
@@ -1089,7 +1311,7 @@ void CommonChannelPropertiesTest::relationWithSubchannel_Sensor(
                 channel_number++;
               }
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;
@@ -1167,7 +1389,7 @@ void CommonChannelPropertiesTest::relationWithParentChannel_Sensor(
 
               on_channel_properties(&related_props_mock, &will_continue);
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;

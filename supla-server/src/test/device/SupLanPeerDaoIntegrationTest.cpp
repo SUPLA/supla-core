@@ -602,6 +602,61 @@ class SupLanHvacIntegrationTest : public SupLanPeerDaoIntegrationTest {
   }
 };
 
+TEST_F(SupLanHvacIntegrationTest,
+       RemoteThermometerDeviceRelationsFromBothEnds) {
+  // DeviceId and ChannelId are separate namespaces: deliberately equal here.
+  query("INSERT INTO supla_iodevice "
+        "(id,location_id,user_id,guid,enabled,reg_date,protocol_version,flags) "
+        "SELECT " + std::to_string(hvac) + ",location_id,user_id,"
+        "UNHEX(MD5('hvac-relation-source')),enabled,reg_date,protocol_version,"
+        "flags FROM supla_iodevice WHERE id=" + std::to_string(source));
+  source = hvac;
+  query("UPDATE supla_dev_channel SET iodevice_id=" + std::to_string(source) +
+        " WHERE id=" + std::to_string(resource));
+  auto aux = add_channel(source, 242, SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR,
+                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+  query("UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
+        "'mainThermometerChannelId'," + std::to_string(resource) +
+        ",'auxThermometerChannelId'," + std::to_string(aux) +
+        ",'auxThermometerType','FLOOR') WHERE id=" + std::to_string(hvac));
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto user = supla_user::find(99124, true);
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  supla_device_dao dao(&db);
+  auto make_device = [&](int id, supla_connection *connection) {
+    auto device = std::make_shared<testing::DeviceStub>(connection);
+    device->set_id(id);
+    device->set_user(user);
+    char guid[SUPLA_GUID_SIZE] = {};
+    memcpy(guid, &id, sizeof(id));
+    device->set_guid(guid);
+    device->set_channels(new supla_device_channels(
+        &dao, device.get(), nullptr, nullptr, 0));
+    EXPECT_TRUE(user->get_devices()->add(device, nullptr));
+    return device;
+  };
+  auto thermostat = make_device(destination, protocol.get());
+  auto thermometer = make_device(source, protocol.get());
+  auto children = thermostat->get_channels()->get_channel_relations(
+      hvac, relation_with_sub_channel);
+  ASSERT_EQ(2u, children.size());
+  EXPECT_EQ(resource, children[0].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER,
+            children[0].get_relation_type());
+  EXPECT_EQ(aux, children[1].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+            children[1].get_relation_type());
+  for (auto id : {resource, aux}) {
+    auto parents = thermometer->get_channels()->get_channel_relations(
+        id, relation_with_parent_channel);
+    ASSERT_EQ(1u, parents.size());
+    EXPECT_EQ(id, parents[0].get_id());
+    EXPECT_EQ(hvac, parents[0].get_parent_id());
+  }
+}
+
 TEST_F(SupLanHvacIntegrationTest, DeviceFlagSelectsAllSixIdsOrNumbers) {
   uint32_t binary =
       add_channel(destination, 242, SUPLA_CHANNELTYPE_BINARYSENSOR,
