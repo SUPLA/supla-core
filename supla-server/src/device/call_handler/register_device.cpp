@@ -27,6 +27,7 @@
 #include "device/device.h"
 #include "device/device_dao.h"
 #include "log.h"
+#include "user/channel_relation_index.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -91,6 +92,12 @@ void supla_register_device::on_registration_success(void) {
   std::map<int, supla_channel_availability_status> previous_statuses;
 
   supla_user::add_device(device, get_user_id(), &previous_statuses);
+  // Reconnect is the accepted recovery boundary for a lost Cloud IPC hint.
+  device->get_user()->get_relation_index()->invalidate();
+  // Initialize once before value fan-out; otherwise it would fall back to
+  // reparsing the runtime channels. Existing snapshots reload after the reply.
+  if (!device->get_user()->get_relation_index()->snapshot())
+    device->get_user()->refresh_channel_relations();
   device->get_user()->get_clients()->update_device_channels(
       get_location_id(), get_device_id(), is_new_device());
 
@@ -110,8 +117,7 @@ void supla_register_device::on_registration_success(void) {
 void supla_register_device::after_registration_success(void) {
   shared_ptr<supla_device> device = get_device().lock();
 
-  device->start_registration_sync(
-      get_srpc_adapter(), get_device_identities());
+  device->start_registration_sync(get_srpc_adapter(), get_device_identities());
 }
 
 void supla_register_device::register_device(

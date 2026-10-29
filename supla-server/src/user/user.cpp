@@ -43,6 +43,7 @@
 #include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "suplan/server_peer_transport.h"
+#include "user/channel_relation_index.h"
 #include "userchannelgroups.h"
 #include "vbt/value_based_triggers.h"
 
@@ -76,6 +77,7 @@ char supla_user::find_user_by_suid(void *ptr, void *suid) {
 void supla_user::user_init(int UserID, const char *short_unique_id,
                            const char *long_unique_id) {
   this->UserID = UserID;
+  relation_index.reset(new supla_channel_relation_index(UserID));
   this->suplan_peers = new supla_suplan_server_peers(this);
 
   this->latitude = 0;
@@ -391,6 +393,11 @@ bool supla_user::get_channel_value(
       channel_id, relation_with_sub_channel);
 
   for (auto it = relations.begin(); it != relations.end(); ++it) {
+    auto relation_type = it->get_relation_type();
+    if (relation_type != CHANNEL_RELATION_TYPE_OPENING_SENSOR &&
+        relation_type != CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR &&
+        relation_type != CHANNEL_RELATION_TYPE_METER)
+      continue;
     shared_ptr<supla_device> related_device = devices->get(0, it->get_id());
     if (related_device == nullptr) {
       continue;
@@ -489,6 +496,8 @@ void supla_user::on_channel_added(int user_id, int device_id, int channel_id,
                                   const supla_caller &caller) {
   supla_user *user = supla_user::find(user_id, true);
 
+  user->get_relation_index()->invalidate();
+  user->refresh_channel_relations();
   user->get_devices()->on_channel_added(device_id, channel_id);
   user->get_clients()->on_channel_added(channel_id);
   supla_mqtt_client_suite::globalInstance()->onChannelAdded(user_id, device_id,
@@ -518,6 +527,8 @@ bool supla_user::on_device_deleted(int UserID, int DeviceID,
               "SupLAN device delete cleanup failed: user=%d device=%d", UserID,
               DeviceID);
   if (user) {
+    user->get_relation_index()->invalidate();
+    user->refresh_channel_relations();
     user->get_devices()->on_device_deleted(DeviceID);
     user->get_clients()->on_device_deleted(DeviceID);
 
@@ -540,6 +551,8 @@ bool supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
               "SupLAN channel delete cleanup failed: user=%d channel=%d",
               user_id, channel_id);
   if (user) {
+    user->get_relation_index()->invalidate();
+    user->refresh_channel_relations();
     user->get_suplan_peers()->stream_dirty(channel_id);
     user->get_devices()->on_channel_deleted(device_id, channel_id);
     user->get_clients()->on_channel_deleted(channel_id);
@@ -752,6 +765,8 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
     return;
   }
 
+  relation_index->invalidate();
+  refresh_channel_relations();
   cgroups->load();  // load == reload
 
   if (all_devices) {
@@ -1012,4 +1027,25 @@ std::string supla_user::get_timezone(double *latitude, double *longitude) {
 
 supla_suplan_server_peers *supla_user::get_suplan_peers(void) {
   return suplan_peers;
+}
+
+supla_channel_relation_index *supla_user::get_relation_index() {
+  return relation_index.get();
+}
+void supla_user::refresh_channel_relations() {
+  if (relation_index->refresh()) {
+    clients->for_each([](std::shared_ptr<supla_client> client, bool *) {
+      client->refresh_channel_relations();
+    });
+  }
+  if (relation_index->time_left_usec()) wake_relation_retry();
+}
+void supla_user::wake_relation_retry() {
+  // Synchronous event signals only, after SQL/index/producer locks are gone.
+  devices->for_each([](std::shared_ptr<supla_device> device, bool *) {
+    if (auto connection = device->get_connection()) connection->raise_event();
+  });
+  clients->for_each([](std::shared_ptr<supla_client> client, bool *) {
+    if (auto connection = client->get_connection()) connection->raise_event();
+  });
 }

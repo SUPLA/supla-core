@@ -37,18 +37,14 @@ enum e_relation_kind {
 
 class supla_json_config;
 class supla_abstract_common_channel_properties {
- private:
+ protected:
   void add_relation(std::vector<supla_channel_relation> *relations,
                     int channel_id, int parent_id, short relation_type);
-  template <typename config_class_T, typename raw_config_T,
-            typename sensor_class_T>
-  void get_sensor_relations(std::vector<supla_channel_relation> *relations,
-                            e_relation_kind kind,
-                            unsigned char protocol_version, int type,
-                            int parent_channel_type, int func,
-                            int parent_channel_func, int related_channel_func);
 
- protected:
+  virtual bool indexed_relations(std::vector<supla_channel_relation> *,
+                                 e_relation_kind) {
+    return false;
+  }
   virtual channel_reference_encoding device_reference_encoding() {
     return channel_reference_encoding::device_channel_number;
   }
@@ -71,6 +67,9 @@ class supla_abstract_common_channel_properties {
                   channel_reference_encoding encoding);
 
  public:
+  unsigned char get_relation_protocol_version() {
+    return get_protocol_version();
+  }
   supla_abstract_common_channel_properties(void);
   virtual ~supla_abstract_common_channel_properties(void);
 

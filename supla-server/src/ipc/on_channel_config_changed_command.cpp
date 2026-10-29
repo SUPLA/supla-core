@@ -27,6 +27,7 @@
 #include "mqtt/mqtt_client_suite.h"
 #include "suplan/server_peer_transport.h"
 #include "user.h"
+#include "user/channel_relation_index.h"
 
 using std::shared_ptr;
 
@@ -62,6 +63,14 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
   supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(user_id,
                                                                      device_id);
 
+  const bool metadata_change =
+      scope & (CONFIG_CHANGE_SCOPE_FUNCTION | CONFIG_CHANGE_SCOPE_RELATIONS);
+  auto refresh_structure = [&] {
+    if (metadata_change || (scope & CONFIG_CHANGE_SCOPE_JSON_DEFAULT)) {
+      user->get_relation_index()->invalidate();
+      user->refresh_channel_relations();
+    }
+  };
   bool force_device_reconnect = false;
 
   switch (type) {
@@ -94,10 +103,12 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_STAIRCASETIMER:
           if (!(scope & CONFIG_CHANGE_SCOPE_FUNCTION)) {
+            refresh_structure();
             return reconciled;
           }
           break;
         default:
+          refresh_structure();
           return reconciled;
       }
   }
@@ -120,6 +131,7 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
     dao.erase_channel_properties(user_id, channel_id);
   }
 
+  auto relation_ticket = user->get_relation_index()->begin(channel_id);
   int selected_function = 0;
   supla_json_config *json_config =
       dao.get_channel_config(channel_id, nullptr, nullptr, &selected_function);
@@ -138,7 +150,18 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
     channel->set_func(selected_function);
   }
   if (config_lock.owns_lock()) config_lock.unlock();
+  if (json_config) {
+    user->get_relation_index()->complete(channel_id, relation_ticket,
+                                         json_config, selected_function);
+  } else {
+    user->get_relation_index()->failed(channel_id, relation_ticket);
+  }
+  if (metadata_change) {
+    user->get_relation_index()->invalidate();
+    user->refresh_channel_relations();
+  }
 
+  if (user->get_relation_index()->time_left_usec()) user->wake_relation_retry();
   if (device) {
     // A pure RELATIONS hint (manual consent) changes authorization, not the
     // Source's configuration. In particular a legacy thermometer must stay

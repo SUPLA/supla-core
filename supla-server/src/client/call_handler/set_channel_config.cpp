@@ -25,6 +25,7 @@
 #include "client/clientchannels.h"
 #include "device/device.h"
 #include "device/device_dao.h"
+#include "user/channel_relation_index.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -55,6 +56,7 @@ void supla_client_ch_set_channel_config::handle_call(
   shared_ptr<supla_device> device;
   supla_device_channel* device_channel = nullptr;
   std::unique_lock<std::mutex> config_lock;
+  uint64_t relation_ticket = 0;
 
   if (rd->data.scs_channel_config != nullptr) {
     config = rd->data.scs_channel_config;
@@ -73,6 +75,8 @@ void supla_client_ch_set_channel_config::handle_call(
       client->get_channels()->channel_access(
           config->ChannelId, [&](supla_client_channel* channel) -> void {
             if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
+              relation_ticket = client->get_user()->get_relation_index()->begin(
+                  config->ChannelId);
               cfg_result.Result = channel->set_user_config(
                   config->ConfigType, config->ConfigSize, config->Config);
             } else {
@@ -95,6 +99,22 @@ void supla_client_ch_set_channel_config::handle_call(
 
   // No config-producer lock while notifying clients or queueing SRPC work.
   if (config_lock.owns_lock()) config_lock.unlock();
+
+  if (relation_ticket) {
+    auto index = client->get_user()->get_relation_index();
+    if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE && json_config) {
+      if (index->complete(config->ChannelId, relation_ticket, json_config,
+                          -1)) {
+        client->get_user()->get_clients()->for_each(
+            [](std::shared_ptr<supla_client> current, bool*) {
+              current->refresh_channel_relations();
+            });
+      }
+    } else {
+      index->cancel(config->ChannelId, relation_ticket);
+    }
+    if (index->time_left_usec()) client->get_user()->wake_relation_retry();
+  }
 
   if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE) {
     // A registration may have replaced/created the Device during the DB write.

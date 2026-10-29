@@ -24,6 +24,7 @@
 #include "client/client.h"
 #include "device/device.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "user/channel_relation_index.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -55,10 +56,13 @@ void supla_ch_set_channel_config::handle_call(
       device->get_channels()->get_channel_id(request->ChannelNumber);
 
   supla_json_config* json_config = nullptr;
+  uint64_t relation_ticket = 0;
 
   device->get_channels()->access_channel(
       channel_id, [&](supla_device_channel* channel) -> void {
         std::lock_guard<std::mutex> config_lock(channel->get_config_mutex());
+        relation_ticket =
+            device->get_user()->get_relation_index()->begin(channel_id);
         result.Result = channel->set_user_config(
             request->ConfigType, request->ConfigSize, request->Config);
 
@@ -66,6 +70,15 @@ void supla_ch_set_channel_config::handle_call(
           json_config = channel->get_json_config();
         }
       });
+
+  if (json_config)
+    device->get_user()->get_relation_index()->complete(
+        channel_id, relation_ticket, json_config, -1);
+  else if (relation_ticket)
+    device->get_user()->get_relation_index()->cancel(channel_id,
+                                                     relation_ticket);
+  if (device->get_user()->get_relation_index()->time_left_usec())
+    device->get_user()->wake_relation_retry();
 
   if (srpc_adapter->sd_async_set_channel_config_result(&result) <= 0 &&
       device->get_suplan_root_epoch()) {

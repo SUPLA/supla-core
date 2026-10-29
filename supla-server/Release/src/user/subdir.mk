@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/user/abstract_user_dao.cpp \
+../src/user/channel_relation_index.cpp \
 ../src/user/user.cpp \
 ../src/user/user_dao.cpp \
 ../src/user/userchannelgroup.cpp \
@@ -16,6 +17,7 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/user/abstract_user_dao.d \
+./src/user/channel_relation_index.d \
 ./src/user/user.d \
 ./src/user/user_dao.d \
 ./src/user/userchannelgroup.d \
@@ -27,6 +29,7 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/user/abstract_user_dao.o \
+./src/user/channel_relation_index.o \
 ./src/user/user.o \
 ./src/user/user_dao.o \
 ./src/user/userchannelgroup.o \

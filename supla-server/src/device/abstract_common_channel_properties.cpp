@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "db/mariadb_access_provider.h"
@@ -42,6 +44,7 @@
 #include "log.h"
 #include "proto.h"
 #include "suplan/peer_dao.h"
+#include "user/channel_relation_index.h"
 using std::vector;
 
 supla_abstract_common_channel_properties::
@@ -69,377 +72,56 @@ void supla_abstract_common_channel_properties::add_relation(
       supla_channel_relation(channel_id, parent_id, relation_type));
 }
 
-template <typename config_class_T, typename raw_config_T,
-          typename sensor_class_T>
-void supla_abstract_common_channel_properties::get_sensor_relations(
-    vector<supla_channel_relation> *relations, e_relation_kind kind,
-    unsigned char protocol_version, int type, int parent_channel_type, int func,
-    int parent_channel_func, int related_channel_func) {
-  if (protocol_version < 27) {
-    return;
-  }
-
-  if (((parent_channel_func && parent_channel_func == func) ||
-       (parent_channel_type && parent_channel_type == type)) &&
-      (kind == relation_any || kind == relation_with_sub_channel)) {
-    supla_json_config *json_config = get_json_config();
-    if (json_config) {
-      config_class_T config(json_config);
-      raw_config_T raw_cfg = {};
-      if (config.get_config(&raw_cfg)) {
-        for (size_t a = 0;
-             a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T); a++) {
-          if (raw_cfg.SensorInfo[a].ChannelId > 0) {
-            for_each(true,
-                     [&](supla_abstract_common_channel_properties *props,
-                         bool *will_continue) -> void {
-                       if (raw_cfg.SensorInfo[a].ChannelId == props->get_id() &&
-                           props->get_func() == related_channel_func) {
-                         add_relation(relations, props->get_id(), get_id(),
-                                      CHANNEL_RELATION_TYPE_DEFAULT);
-                         *will_continue = false;
-                       }
-                     });
-          }
-        }
-      }
-      delete json_config;
-    }
-  }
-
-  if (func == related_channel_func &&
-      (kind == relation_any || kind == relation_with_parent_channel)) {
-    for_each(
-        true,
-        [&](supla_abstract_common_channel_properties *props,
-            bool *will_continue) -> void {
-          if ((parent_channel_func &&
-               parent_channel_func == props->get_func()) ||
-              (parent_channel_type &&
-               parent_channel_type == props->get_type())) {
-            supla_json_config *json_config = props->get_json_config();
-            if (json_config) {
-              config_class_T config(json_config);
-              raw_config_T raw_cfg = {};
-              if (config.get_config(&raw_cfg)) {
-                for (size_t a = 0;
-                     a < sizeof(raw_cfg.SensorInfo) / sizeof(sensor_class_T);
-                     a++) {
-                  if (raw_cfg.SensorInfo[a].ChannelId > 0 &&
-                      raw_cfg.SensorInfo[a].ChannelId == get_id()) {
-                    add_relation(relations, get_id(), props->get_id(),
-                                 CHANNEL_RELATION_TYPE_DEFAULT);
-                    *will_continue = false;
-                    break;
-                  }
-                }
-              }
-              delete json_config;
-            }
-          }
-        });
-  }
-}
-
 void supla_abstract_common_channel_properties::get_channel_relations(
     vector<supla_channel_relation> *relations, e_relation_kind kind) {
-  if (!relations) {
-    return;
+  if (!relations || indexed_relations(relations, kind)) return;
+  // Startup/test fallback: parse each available channel once, using exactly
+  // the same relation builder. No SQL and no second relation policy.
+  supla_relation_snapshot snapshot;
+  auto self = supla_relation_node::read(this);
+  self.device = 0;
+  self.number = 0;
+  snapshot.nodes[self.id] = self;
+  int order = 1;
+  const int f = self.function;
+  bool direct = supla_relation_node::opening_control(f) ||
+                supla_relation_node::opening_sensor(f);
+  if (!direct || (self.type == SUPLA_CHANNELTYPE_BINARYSENSOR &&
+                  kind != relation_with_sub_channel)) {
+    for_each(true, [&](supla_abstract_common_channel_properties *p, bool *) {
+      if (snapshot.nodes.count(p->get_id())) return;
+      auto node = supla_relation_node::read(p);
+      // Preserve the original iterator's first-parent order, including Devices.
+      node.device = 0;
+      node.number = order++;
+      snapshot.nodes[node.id] = std::move(node);
+    });
   }
-
-  unsigned char protocol_version = get_protocol_version();
-  int func = get_func();
-  int type = get_type();
-
-  get_sensor_relations<valve_config, TChannelConfig_Valve, TValve_SensorInfo>(
-      relations, kind, protocol_version, 0, 0, func,
-      SUPLA_CHANNELFNC_VALVE_OPENCLOSE, SUPLA_CHANNELFNC_FLOOD_SENSOR);
-
-  get_sensor_relations<container_config, TChannelConfig_Container,
-                       TContainer_SensorInfo>(
-      relations, kind, protocol_version, type, SUPLA_CHANNELTYPE_CONTAINER,
-      func, 0, SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR);
-
-  if (kind == relation_any || kind == relation_with_sub_channel) {
-    switch (func) {
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        add_relation(relations, get_param2(), get_id(),
-                     CHANNEL_RELATION_TYPE_OPENING_SENSOR);
-
-        add_relation(relations, get_param3(), get_id(),
+  snapshot.build();
+  // Legacy param/meter accessors also report an ID whose endpoint was not
+  // supplied by a partial metadata collection. Client wire projections still
+  // filter BOTH endpoints against their visible collection below.
+  if (kind != relation_with_parent_channel) {
+    if (direct && (supla_relation_node::opening_control(f))) {
+      add_relation(relations, self.param2, self.id,
+                   CHANNEL_RELATION_TYPE_OPENING_SENSOR);
+      if (supla_relation_node::partial_opening_control(f))
+        add_relation(relations, self.param3, self.id,
                      CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-        add_relation(relations, get_param2(), get_id(),
-                     CHANNEL_RELATION_TYPE_OPENING_SENSOR);
-        break;
-
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-        supla_json_config *json_config = get_json_config();
-        if (json_config) {
-          power_switch_config config(json_config);
-          add_relation(relations, config.get_related_meter_channel_id(),
-                       get_id(), CHANNEL_RELATION_TYPE_METER);
-          delete json_config;
-        }
-      } break;
-
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-      case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-      case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
-        TChannelConfig_HVAC hvac = {};
-        bool hvac_config_get_success = false;
-        supla_json_config *json_config = get_json_config();
-        if (json_config) {
-          hvac_config config(json_config);
-          hvac_config_get_success = config.get_config(&hvac);
-          delete json_config;
-        }
-
-        for_each(
-            true,
-            [&](supla_abstract_common_channel_properties *props,
-                bool *will_continue) -> void {
-              if (hvac_config_get_success) {
-                if (hvac.MainThermometerChannelId != get_id() &&
-                    hvac.MainThermometerChannelId == props->get_id() &&
-                    (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
-                     props->get_func() ==
-                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-                  add_relation(relations, props->get_id(), get_id(),
-                               CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
-                }
-
-                if (hvac.AuxThermometerType >=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                    hvac.AuxThermometerType <=
-                        SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&
-                    hvac.AuxThermometerChannelId != get_id() &&
-                    hvac.AuxThermometerChannelId == props->get_id() &&
-                    (props->get_func() == SUPLA_CHANNELFNC_THERMOMETER ||
-                     props->get_func() ==
-                         SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-                  add_relation(relations, props->get_id(), get_id(),
-                               hvac.AuxThermometerType + 3);
-                }
-
-                if (hvac.BinarySensorChannelId != get_id() &&
-                    hvac.BinarySensorChannelId == props->get_id() &&
-                    props->get_type() == SUPLA_CHANNELTYPE_BINARYSENSOR) {
-                  add_relation(relations, props->get_id(), get_id(),
-                               CHANNEL_RELATION_TYPE_DEFAULT);
-                }
-
-                if (protocol_version >= 25) {
-                  if ((hvac.HeatOrColdSourceSwitchChannelId != 0) &&
-                      hvac.HeatOrColdSourceSwitchChannelId == props->get_id() &&
-                      props->get_func() ==
-                          SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
-                    add_relation(
-                        relations, props->get_id(), get_id(),
-                        CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);
-                  }
-
-                  if ((hvac.PumpSwitchChannelId != 0) &&
-                      hvac.PumpSwitchChannelId == props->get_id() &&
-                      props->get_func() == SUPLA_CHANNELFNC_PUMPSWITCH) {
-                    add_relation(relations, props->get_id(), get_id(),
-                                 CHANNEL_RELATION_TYPE_PUMP_SWITCH);
-                  }
-                }
-              }
-
-              if (protocol_version >= 25) {
-                switch (props->get_func()) {
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-                  case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER: {
-                    supla_json_config *props_json_config =
-                        props->get_json_config();
-                    if (props_json_config) {
-                      hvac_config props_config(props_json_config);
-                      TChannelConfig_HVAC props_hvac = {};
-
-                      if (props_config.get_config(&props_hvac)) {
-                        if ((props_hvac.MasterThermostatChannelId != 0) &&
-                            props_hvac.MasterThermostatChannelId == get_id()) {
-                          add_relation(relations, props->get_id(), get_id(),
-                                       CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
-                        }
-                      }
-
-                      delete props_json_config;
-                    }
-                  }
-
-                  break;
-                }
-              }
-            });
-      } break;
     }
+    if (self.meter)
+      add_relation(relations, self.meter, self.id, CHANNEL_RELATION_TYPE_METER);
   }
-
-  if (kind == relation_any || kind == relation_with_parent_channel) {
-    switch (func) {
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-        add_relation(relations, get_id(), get_param1(),
-                     CHANNEL_RELATION_TYPE_OPENING_SENSOR);
-
-        add_relation(relations, get_id(), get_param2(),
-                     CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
-        break;
-      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-      case SUPLA_CHANNELFNC_IC_GAS_METER:
-      case SUPLA_CHANNELFNC_IC_WATER_METER:
-      case SUPLA_CHANNELFNC_IC_HEAT_METER:
-
-        for_each(
-            true,
-            [&](supla_abstract_common_channel_properties *props,
-                bool *will_continue) -> void {
-              switch (props->get_func()) {
-                case SUPLA_CHANNELFNC_POWERSWITCH:
-                case SUPLA_CHANNELFNC_LIGHTSWITCH:
-                case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-                  supla_json_config *json_config = props->get_json_config();
-                  if (json_config) {
-                    power_switch_config config(json_config);
-
-                    if (config.get_related_meter_channel_id() == get_id()) {
-                      add_relation(relations, get_id(), props->get_id(),
-                                   CHANNEL_RELATION_TYPE_METER);
-                    }
-
-                    delete json_config;
-                  }
-                }
-
-                break;
-              }
-            });
-        break;
-    }
-
-    if (protocol_version >= 25 &&
-        (func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT ||
-         func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL ||
-         func == SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL ||
-         func == SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER)) {
-      TChannelConfig_HVAC hvac = {};
-      supla_json_config *json_config = get_json_config();
-      if (json_config) {
-        hvac_config config(json_config);
-        if (config.get_config(&hvac) && (hvac.MasterThermostatChannelId != 0)) {
-          for_each(
-              true,
-              [&](supla_abstract_common_channel_properties *props,
-                  bool *will_continue) -> void {
-                switch (func) {
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-                  case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-                  case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-
-                    if (hvac.MasterThermostatChannelId == props->get_id()) {
-                      add_relation(relations, get_id(), props->get_id(),
-                                   CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT);
-                      *will_continue = false;
-                    }
-
-                         break;
-                     }
-                   });
-        }
-        delete json_config;
-      }
-    }
-
-    if (type == SUPLA_CHANNELTYPE_BINARYSENSOR ||
-        func == SUPLA_CHANNELFNC_THERMOMETER ||
-        func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE ||
-        func == SUPLA_CHANNELFNC_PUMPSWITCH ||
-        func == SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH) {
-      for_each(
-          true,
-          [&](supla_abstract_common_channel_properties *props,
-              bool *will_continue) -> void {
-            switch (props->get_func()) {
-              case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
-              case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
-              case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
-              case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
-
-                supla_json_config *props_json_config = props->get_json_config();
-                if (props_json_config) {
-                  hvac_config props_config(props_json_config);
-                  TChannelConfig_HVAC hvac = {};
-                  if (props_config.get_config(&hvac)) {
-                    if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
-                      if (hvac.BinarySensorChannelId == get_id()) {
-                        add_relation(relations, get_id(), props->get_id(),
-                                     CHANNEL_RELATION_TYPE_DEFAULT);
-                      }
-                    } else {
-                      switch (func) {
-                        case SUPLA_CHANNELFNC_THERMOMETER:
-                        case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-                          if (hvac.MainThermometerChannelId == get_id()) {
-                            add_relation(relations, get_id(), props->get_id(),
-                                         CHANNEL_RELATION_TYPE_MAIN_TERMOMETER);
-                          }
-
-                          if (hvac.AuxThermometerType >=
-                                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR &&
-                              hvac.AuxThermometerType <=
-                                  SUPLA_HVAC_AUX_THERMOMETER_TYPE_GENERIC_COOLER &&  // NOLINT
-                              hvac.AuxThermometerChannelId == get_id()) {
-                            add_relation(relations, get_id(), props->get_id(),
-                                         hvac.AuxThermometerType + 3);
-                          }
-                          break;
-                        case SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH:
-                          if (protocol_version >= 25 &&
-                              (hvac.HeatOrColdSourceSwitchChannelId != 0) &&
-                              hvac.HeatOrColdSourceSwitchChannelId ==
-                                  get_id()) {
-                            add_relation(
-                                relations, get_id(), props->get_id(),
-                                CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH);  // NOLINT
-                          }
-                          break;
-                        case SUPLA_CHANNELFNC_PUMPSWITCH:
-                          if (protocol_version >= 25 &&
-                              (hvac.PumpSwitchChannelId != 0) &&
-                              hvac.PumpSwitchChannelId == get_id()) {
-                            add_relation(relations, get_id(), props->get_id(),
-                                         CHANNEL_RELATION_TYPE_PUMP_SWITCH);
-                          }
-                          break;
-                      }
-                    }
-                  }
-                  delete props_json_config;
-                }
-                break;
-            }
-          });
-    }
+  if (kind != relation_with_sub_channel && direct &&
+      (supla_relation_node::opening_sensor(f))) {
+    add_relation(relations, self.id, self.param1,
+                 CHANNEL_RELATION_TYPE_OPENING_SENSOR);
+    add_relation(relations, self.id, self.param2,
+                 CHANNEL_RELATION_TYPE_PARTIAL_OPENING_SENSOR);
   }
+  for (auto &r : snapshot.get(self.id, kind, get_protocol_version()))
+    add_relation(relations, r.get_id(), r.get_parent_id(),
+                 r.get_relation_type());
 }
 
 vector<supla_channel_relation>
@@ -751,12 +433,17 @@ int supla_abstract_common_channel_properties::set_user_config(
     hvac->set_config(&incoming);
     {
       int user = get_user_id(), device = get_device_id(), consumer = get_id();
-      hvac->protect_device_references([user, device, consumer](
-                                          size_t field, unsigned int id) {
-        supla_suplan::peer_dao repo(user);
-        supla_suplan::channel_info_t info;
-        if (!repo.channel(id, &info)) return false;
+      // Lazy: an all-unset upload creates no reference DAO/connection.
+      hvac->protect_device_references([user, device, consumer,
+                                       repo = std::shared_ptr<
+                                           supla_suplan::peer_dao>()](
+                                          size_t field,
+                                          unsigned int id) mutable {
         if (!id) return true;
+        if (!repo) repo = std::make_shared<supla_suplan::peer_dao>(user);
+        auto &repository = *repo;
+        supla_suplan::channel_info_t info;
+        if (!repository.channel(id, &info)) return false;
         if (info.device != device ||
             id == static_cast<unsigned int>(consumer)) {
           return false;
@@ -774,8 +461,9 @@ int supla_abstract_common_channel_properties::set_user_config(
             uint32_t master = 0;
             bool slaves = false;
             return info.type == SUPLA_CHANNELTYPE_HVAC && info.function != 0 &&
-                   repo.reference(id, 4, &master) && !master &&
-                   repo.has_master_dependents(consumer, &slaves) && !slaves;
+                   repository.reference(id, 4, &master) && !master &&
+                   repository.has_master_dependents(consumer, &slaves) &&
+                   !slaves;
           }
           case 4:
           case 5:
@@ -893,14 +581,19 @@ int supla_abstract_common_channel_properties::set_user_config(
       }
     };
     int user = get_user_id(), device = get_device_id(), consumer = get_id();
-    auto legal_local = [user, device, consumer](unsigned int id) {
+    auto legal_local = [user, device, consumer,
+                        reference_dao =
+                            std::shared_ptr<supla_suplan::peer_dao>()](
+                           unsigned int id) mutable {
       if (!id) {
         return true;
       }
       if (id == static_cast<unsigned int>(consumer)) {
         return false;
       }
-      supla_suplan::peer_dao repo(user);
+      if (!reference_dao)
+        reference_dao = std::make_shared<supla_suplan::peer_dao>(user);
+      auto &repo = *reference_dao;
       supla_suplan::channel_info_t info;
       return repo.channel(id, &info) && info.device == device &&
              info.type == SUPLA_CHANNELTYPE_BINARYSENSOR;

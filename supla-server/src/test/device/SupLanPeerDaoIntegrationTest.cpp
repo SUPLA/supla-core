@@ -3,8 +3,10 @@
 #include <arpa/inet.h>
 #include <dlfcn.h>
 #include <gtest/gtest.h>
+#include <netinet/tcp.h>
 #include <openssl/ssl.h>
 #include <poll.h>
+#include <sys/resource.h>
 #include <unistd.h>
 
 #include <atomic>
@@ -12,9 +14,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <future>
 #include <iostream>
+#include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
@@ -23,12 +28,13 @@
 #include "amazon/alexa_discover_request_search_condition.h"
 #include "asynctask/asynctask_queue.h"
 #include "cfg.h"
-#include "svrcfg.h"
 #include "client/client.h"
+#include "client/clientchannel.h"
 #include "conn/connection.h"
 #include "db/database.h"
-#include "device/device_dao.h"
 #include "device/call_handler/register_device.h"
+#include "device/call_handler/set_channel_config.h"
+#include "device/device_dao.h"
 #include "device/devicechannels.h"
 #include "doubles/SrpcAdapterMock.h"
 #include "google/google_home_sync_search_condition.h"
@@ -45,13 +51,37 @@
 #include "supla-socket.h"
 #include "suplan/peer_dao.h"
 #include "suplan/server_peer_transport.h"
+#include "svrcfg.h"
 #include "test/doubles/device/DeviceStub.h"
 #include "test/doubles/ipc/IpcSocketAdapterMock.h"
 #include "test/doubles/suplan/PeerProvisionerTestAccess.h"
 #include "test/integration/IntegrationTest.h"
 #include "test/integration/MySqlShell.h"
 #include "user.h"
+#include "user/channel_relation_index.h"
 #include "user/user_dao.h"
+// Optional all-thread driver counters for actual TLS registration workers.
+std::atomic<bool> hvac_perf_tracking{false};
+std::atomic<uint64_t> hvac_perf_sql[7]{};
+std::atomic<uint64_t> hvac_perf_relation_reads{0};
+thread_local MYSQL_STMT *hvac_perf_last = nullptr;
+thread_local std::string hvac_perf_statement;
+void hvac_perf_sql_count(const std::string &sql) {
+  ++hvac_perf_sql[0];
+  if (sql.compare(0, 6, "SELECT") == 0) ++hvac_perf_sql[1];
+  if (sql.compare(0, 5, "CALL ") == 0) ++hvac_perf_sql[2];
+}
+std::atomic<uint64_t> hvac_perf_counts[5]{};
+void hvac_perf_count(unsigned kind) { ++hvac_perf_counts[kind]; }
+void hvac_perf_reset() {
+  for (auto &value : hvac_perf_counts) value = 0;
+}
+void hvac_perf_dump(const char *label) {
+  std::cout << "PERF_COUNTS label=" << label;
+  for (unsigned i = 0; i < 5; ++i)
+    std::cout << " c" << i << "=" << hvac_perf_counts[i].load();
+  std::cout << std::endl;
+}
 // Test-only driver boundary probe: always execute real MariaDB operations.
 // No SQL text/payload logging, production hook, schema change or provider mock.
 namespace {
@@ -65,9 +95,34 @@ struct Sql004Probe {
   MYSQL_STMT *permissions_statement = nullptr;
   std::string statement;
   std::function<bool(unsigned)> after_config;
-  std::function<void()> after_permissions;
+  std::function<void()> after_permissions, after_relation_read;
+  MYSQL_STMT *relation_statement = nullptr;
   std::function<bool(const std::string &)> fail_execute;
   unsigned stream_metadata_reads = 0;
+  uint64_t sql_usec = 0, connect_usec = 0;
+  std::map<std::string, std::pair<unsigned, uint64_t>> timings;
+  static uint64_t clock_usec() {
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+               std::chrono::steady_clock::now().time_since_epoch())
+        .count();
+  }
+  void elapsed(const std::string &query, uint64_t start) {
+    auto us = clock_usec() - start;
+    sql_usec += us;
+    // Parameter values and credentials are never emitted.
+    std::string label = "other";
+    if (query.find("SELECT user_config, properties, MD5(") == 0)
+      label = "config_select";
+    else if (query.find("supla_set_channel_json_config") != std::string::npos)
+      label = "config_call";
+    else if (query.find("SELECT c.iodevice_id,c.type") != std::string::npos)
+      label = "channel_validation";
+    else if (query.find("FOR UPDATE") != std::string::npos)
+      label = "row_lock";
+    auto &value = timings[label];
+    ++value.first;
+    value.second += us;
+  }
   std::chrono::steady_clock::time_point started =
       std::chrono::steady_clock::now();
   Sql004Probe() { sql004 = this; }
@@ -88,8 +143,14 @@ struct Sql004Probe {
               << " prepares=" << prepares << " executions=" << executions
               << " connect_attempts=" << connections << " us="
               << std::chrono::duration_cast<std::chrono::microseconds>(
-                     std::chrono::steady_clock::now() - started).count()
+                     std::chrono::steady_clock::now() - started)
+                     .count()
+              << " sql_us=" << sql_usec << " connect_us=" << connect_usec
               << std::endl;
+    for (const auto &entry : timings)
+      std::cout << "PERF_SQL " << label << " " << entry.first
+                << " count=" << entry.second.first
+                << " us=" << entry.second.second << std::endl;
   }
 };
 template <typename T> T sql004_native(const char *name) {
@@ -98,32 +159,54 @@ template <typename T> T sql004_native(const char *name) {
   return function;
 }
 }  // namespace
-extern "C" MYSQL *STDCALL mysql_real_connect(
-    MYSQL *mysql, const char *host, const char *user, const char *password,
-    const char *database, unsigned int port, const char *socket,
-    unsigned long flags) {
-  static auto native = sql004_native<decltype(&mysql_real_connect)>(
-      "mysql_real_connect");
+extern "C" MYSQL *STDCALL
+mysql_real_connect(MYSQL *mysql, const char *host, const char *user,
+                   const char *password, const char *database,
+                   unsigned int port, const char *socket, unsigned long flags) {
+  static auto native =
+      sql004_native<decltype(&mysql_real_connect)>("mysql_real_connect");
+  bool perf = hvac_perf_tracking;
+  if (perf) ++hvac_perf_sql[3];
   if (sql004) ++sql004->connections;
   if (sql004 && sql004->restricted) {
     user = "suplan_core_test";
     password = "";
   }
-  return native(mysql, host, user, password, database, port, socket, flags);
+  auto start = Sql004Probe::clock_usec();
+  auto result =
+      native(mysql, host, user, password, database, port, socket, flags);
+  if (sql004) sql004->connect_usec += Sql004Probe::clock_usec() - start;
+  if (perf) hvac_perf_sql[4] += Sql004Probe::clock_usec() - start;
+  return result;
 }
 extern "C" int STDCALL mysql_query(MYSQL *mysql, const char *query) {
   static auto native = sql004_native<decltype(&mysql_query)>("mysql_query");
+  bool perf = hvac_perf_tracking;
+  if (perf) hvac_perf_sql_count(query);
   if (sql004) sql004->count(query);
-  return native(mysql, query);
+  auto start = Sql004Probe::clock_usec();
+  auto result = native(mysql, query);
+  if (sql004) sql004->elapsed(query, start);
+  if (perf) hvac_perf_sql[5] += Sql004Probe::clock_usec() - start;
+  return result;
 }
 extern "C" int STDCALL mysql_stmt_prepare(MYSQL_STMT *stmt, const char *query,
                                            unsigned long length) {
   static auto native = sql004_native<decltype(&mysql_stmt_prepare)>(
       "mysql_stmt_prepare");
+  if (hvac_perf_tracking) {
+    ++hvac_perf_sql[6];
+    hvac_perf_last = stmt;
+    hvac_perf_statement.assign(query, length);
+    if (hvac_perf_statement.find("SELECT c.id,c.iodevice_id") == 0)
+      ++hvac_perf_relation_reads;
+  }
   if (sql004) {
     ++sql004->prepares;
     sql004->last = stmt;
     sql004->statement.assign(query, length);
+    if (sql004->statement.find("SELECT c.id,c.iodevice_id") == 0)
+      sql004->relation_statement = stmt;
     if (sql004->statement.find("SELECT user_config, properties, MD5(") == 0)
       sql004->config_statement = stmt;
     if (sql004->statement.find("SELECT COALESCE(BIT_OR(permissions),0) FROM "
@@ -144,11 +227,19 @@ extern "C" int STDCALL mysql_stmt_execute(MYSQL_STMT *stmt) {
         "CALL `supla_set_channel_json_config`(?,?,?,?,?,?)")
       ++sql004->config_cas;
   }
-  return native(stmt);
+  bool perf = hvac_perf_tracking;
+  if (perf)
+    hvac_perf_sql_count(stmt == hvac_perf_last ? hvac_perf_statement : "");
+  auto start = Sql004Probe::clock_usec();
+  auto result = native(stmt);
+  if (sql004)
+    sql004->elapsed(stmt == sql004->last ? sql004->statement : "", start);
+  if (perf) hvac_perf_sql[5] += Sql004Probe::clock_usec() - start;
+  return result;
 }
 extern "C" int STDCALL mysql_stmt_fetch(MYSQL_STMT *stmt) {
-  static auto native = sql004_native<decltype(&mysql_stmt_fetch)>(
-      "mysql_stmt_fetch");
+  static auto native =
+      sql004_native<decltype(&mysql_stmt_fetch)>("mysql_stmt_fetch");
   int result = native(stmt);
   if (!result && sql004 && stmt == sql004->config_statement) {
     auto probe = sql004;
@@ -157,6 +248,14 @@ extern "C" int STDCALL mysql_stmt_fetch(MYSQL_STMT *stmt) {
     bool fail = probe->after_config && probe->after_config(probe->config_reads);
     sql004 = probe;
     if (fail) return 1;
+  }
+  if (!result && sql004 && stmt == sql004->relation_statement) {
+    auto probe = sql004;
+    probe->relation_statement = nullptr;
+    sql004 = nullptr;
+    auto callback = std::move(probe->after_relation_read);
+    if (callback) callback();
+    sql004 = probe;
   }
   if (!result && sql004 && stmt == sql004->permissions_statement) {
     auto probe = sql004;
@@ -168,11 +267,35 @@ extern "C" int STDCALL mysql_stmt_fetch(MYSQL_STMT *stmt) {
   }
   return result;
 }
+extern "C" cJSON *cJSON_Parse(const char *text) {
+  static auto native = sql004_native<decltype(&cJSON_Parse)>("cJSON_Parse");
+  if (getenv("SUPLA_HVAC_PERF")) hvac_perf_count(3);
+  return native(text);
+}
+extern "C" cJSON *cJSON_Duplicate(const cJSON *item, cJSON_bool recurse) {
+  static auto native =
+      sql004_native<decltype(&cJSON_Duplicate)>("cJSON_Duplicate");
+  if (getenv("SUPLA_HVAC_PERF")) hvac_perf_count(2);
+  return native(item, recurse);
+}
 using namespace supla_suplan;  // NOLINT
 // Inject only at the transport-adapter boundary. Serialization, queueing,
 // framing, registration and the connection thread remain production code.
 class PublicationPauseAdapter : public supla_srpc_adapter {
  public:
+  std::function<void()> before_registration_reply;
+  std::atomic<bool> registration_probe_ready{false};
+  _supla_int_t sd_async_registerdevice_result(
+      TSD_SuplaRegisterDeviceResult *result) override {
+    if (registration_probe_ready) before_registration_reply();
+    return supla_srpc_adapter::sd_async_registerdevice_result(result);
+  }
+  _supla_int_t sd_async_registerdevice_result_b(
+      TSD_SuplaRegisterDeviceResult_B *result) override {
+    if (registration_probe_ready) before_registration_reply();
+    return supla_srpc_adapter::sd_async_registerdevice_result_b(result);
+  }
+
   std::atomic<bool> pause_get{false};
   std::atomic<bool> fail_device_config{false};
   _supla_int_t sd_async_set_device_config_request(
@@ -230,6 +353,12 @@ class supla_connection_test_access {
   supla_connection *get() { return connection.get(); }
   static std::weak_ptr<TEventHandler> event(supla_connection *connection) {
     return connection->eh;
+  }
+  static supla_abstract_srpc_adapter *swap_adapter(
+      supla_connection *connection, supla_abstract_srpc_adapter *adapter) {
+    auto old = connection->srpc_adapter;
+    connection->srpc_adapter = adapter;
+    return old;
   }
   static PublicationPauseAdapter *install(supla_connection *connection) {
     auto adapter = new PublicationPauseAdapter(connection->_srpc);
@@ -593,6 +722,10 @@ class SupLanHvacIntegrationTest : public SupLanPeerDaoIntegrationTest {
     device.set_id(destination);
     device.set_flags(flags);
     device.set_user(supla_user::find(99124, true));
+    // Simulate the normal registration boundary after this fixture's trusted
+    // SQL edits (the fixture intentionally resets DB while Users stay alive).
+    device.get_user()->get_relation_index()->invalidate();
+    device.get_user()->get_relation_index()->refresh();
     supla_mariadb_access_provider db;
     ASSERT_TRUE(db.connect());
     supla_device_dao dao(&db);
@@ -639,6 +772,8 @@ TEST_F(SupLanHvacIntegrationTest,
   };
   auto thermostat = make_device(destination, protocol.get());
   auto thermometer = make_device(source, protocol.get());
+  user->get_relation_index()->invalidate();
+  user->get_relation_index()->refresh();
   auto children = thermostat->get_channels()->get_channel_relations(
       hvac, relation_with_sub_channel);
   ASSERT_EQ(2u, children.size());
@@ -1211,6 +1346,11 @@ class SupLanHvacWireIntegrationTest : public SupLanHvacIntegrationTest {
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     client = socket(AF_INET, SOCK_STREAM, 0);
     ASSERT_GE(client, 0);
+    if (getenv("SUPLA_HVAC_PERF")) {
+      int enabled = 1;
+      ASSERT_EQ(0, setsockopt(client, IPPROTO_TCP, TCP_NODELAY,
+                              &enabled, sizeof(enabled)));
+    }
     ASSERT_EQ(0, connect(client, reinterpret_cast<sockaddr *>(&address), size));
     timeval timeout = {2, 0};
     ASSERT_EQ(0, setsockopt(client, SOL_SOCKET, SO_SNDTIMEO, &timeout,
@@ -4558,3 +4698,1469 @@ TEST_F(SupLanHvacWireIntegrationTest, IdleDeviceDoesNotPollGrantMarkers) {
 }
 
 }  // namespace
+
+// Opt-in native benchmark. No sleeps in DAO measurements; real MariaDB and
+// existing production Device/Client paths. Setup is outside timed regions.
+namespace {
+class HvacPerfHandler : public supla_ch_set_channel_config {
+ public:
+  using supla_ch_set_channel_config::handle_call;
+};
+class HvacPerfClient : public supla_client {
+ public:
+  explicit HvacPerfClient(supla_connection *connection, supla_user *user,
+                          int id = 1)
+      : supla_client(connection) {
+    set_id(id);
+    char guid[SUPLA_GUID_SIZE]{};
+    memcpy(guid, &id, sizeof(id));
+    set_guid(guid);
+    set_user(user);
+  }
+  void load() { load_config(); }
+};
+void perf_cloud_sql() {
+  auto directory = getenv("SUPLA_HVAC_PERF_CLOUD_PROCEDURES");
+  ASSERT_NE(nullptr, directory);
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  for (const char *name : {"supla_set_channel_json_config",
+                           "supla_update_iodevice", "supla_add_iodevice",
+                           "supla_add_channel", "supla_update_channel_value"}) {
+    std::ifstream input(std::string(directory) + "/" + name + ".sql");
+    ASSERT_TRUE(input.good()) << name;
+    std::string sql((std::istreambuf_iterator<char>(input)),
+                    std::istreambuf_iterator<char>());
+    auto start = sql.find("CREATE PROCEDURE");
+    ASSERT_NE(std::string::npos, start);
+    ASSERT_EQ(
+        0, db.query((std::string("DROP PROCEDURE IF EXISTS ") + name).c_str(),
+                    true));
+    ASSERT_EQ(0, db.query(sql.substr(start).c_str(), true));
+  }
+  ASSERT_EQ(0, db.query("SET GLOBAL userstat=1", true));
+}
+
+uint64_t perf_cpu_usec() {
+  rusage usage{};
+  getrusage(RUSAGE_SELF, &usage);
+  return usage.ru_utime.tv_sec * 1000000ULL + usage.ru_utime.tv_usec +
+         usage.ru_stime.tv_sec * 1000000ULL + usage.ru_stime.tv_usec;
+}
+}  // namespace
+
+TEST_F(SupLanHvacIntegrationTest, RegistrationPerformanceSqlAndClient) {
+  if (!getenv("SUPLA_HVAC_PERF")) GTEST_SKIP() << "opt-in native benchmark";
+  perf_cloud_sql();
+  ASSERT_FALSE(HasFatalFailure());
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto user = supla_user::find(99124, true);
+  // Remove unrelated fixture channels from the visible Location, not schema.
+  query("UPDATE supla_dev_channel SET hidden=1 WHERE user_id=99124");
+  std::vector<int> devices;
+  std::vector<std::vector<uint32_t>> channels;
+  std::vector<uint32_t> thermometers;
+  for (int d = 0; d < 12; ++d) {
+    int id = 400000 + d;
+    query(
+        "INSERT INTO supla_iodevice "
+        "(id,location_id,user_id,guid,enabled,reg_date,protocol_version,flags) "
+        "SELECT " +
+        std::to_string(id) + ",location_id,user_id,UNHEX(MD5('perf" +
+        std::to_string(d) +
+        "')),1,reg_date,29,flags FROM supla_iodevice "
+        "WHERE id=" +
+        std::to_string(destination));
+    devices.push_back(id);
+    channels.emplace_back();
+    for (int c = 0; c < 15; ++c)
+      channels.back().push_back(add_channel(id, c, SUPLA_CHANNELTYPE_HVAC,
+                                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+    thermometers.push_back(add_channel(id, 15, SUPLA_CHANNELTYPE_THERMOMETER,
+                                       SUPLA_CHANNELFNC_THERMOMETER));
+  }
+  query("UPDATE supla_client SET user_id=99124 WHERE id=1");
+  query("UPDATE supla_dev_channel SET flags=" +
+        std::to_string(SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) +
+        " WHERE user_id=99124");
+  for (int count : {1, 3, 12}) {
+    if (getenv("SUPLA_HVAC_PERF_DEVICES") &&
+        atoi(getenv("SUPLA_HVAC_PERF_DEVICES")) > 0 &&
+        atoi(getenv("SUPLA_HVAC_PERF_DEVICES")) != count)
+      continue;
+    // View visibility is Location based. Hide later devices in a fixture-only
+    // disabled Function so the actual client SQL sees exactly N*16 channels.
+    query("UPDATE supla_dev_channel SET hidden=1 WHERE user_id=99124");
+    for (int d = 0; d < count; ++d)
+      query("UPDATE supla_dev_channel SET hidden=0 WHERE iodevice_id=" +
+            std::to_string(devices[d]));
+    for (int mode : {0, 1, 2}) {
+      if (getenv("SUPLA_HVAC_PERF_MODE") &&
+          atoi(getenv("SUPLA_HVAC_PERF_MODE")) >= 0 &&
+          atoi(getenv("SUPLA_HVAC_PERF_MODE")) != mode)
+        continue;
+      for (int d = 0; d < count; ++d) {
+        auto ref =
+            mode == 0
+                ? 0
+                : thermometers[mode == 1 ? d
+                                         : (count == 1 ? 1 : (d + 1) % count)];
+        query(
+            "UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
+            "'mainThermometerChannelId'," +
+            std::to_string(ref) + ",'minOnTimeS',17) WHERE iodevice_id=" +
+            std::to_string(devices[d]) + " AND channel_number<15");
+      }
+      user->get_relation_index()->invalidate();
+      for (int sample = -1; sample < 3; ++sample) {
+        std::vector<std::future<std::string>> workers;
+        auto start = Sql004Probe::clock_usec(), cpu = perf_cpu_usec();
+        for (int d = 0; d < count; ++d) {
+          workers.push_back(std::async(std::launch::async, [&, d] {
+            Sql004Probe probe;
+            auto worker_started = Sql004Probe::clock_usec();
+            testing::DeviceStub device(protocol.get());
+            device.set_id(devices[d]);
+            device.set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+            device.set_user(user);
+            supla_mariadb_access_provider db;
+            EXPECT_TRUE(db.connect());
+            supla_device_dao dao(&db);
+            device.set_channels(
+                new supla_device_channels(&dao, &device, nullptr, nullptr, 0));
+            auto loaded = Sql004Probe::clock_usec();
+            uint64_t upload_us = 0, prepare_us = 0;
+            for (int c = 0; c < 15; ++c) {
+              device.get_channels()->access_channel(
+                  channels[d][c], [&](supla_device_channel *channel) {
+                    TChannelConfig_HVAC incoming{};
+                    // Remote business relationship is Cloud-owned. Device sends
+                    // unset; protected merge preserves the current remote ref.
+                    incoming.MainThermometerChannelId =
+                        mode == 1 ? thermometers[d] : 0;
+                    incoming.MinOnTimeS = 17;
+                    auto upload_started = Sql004Probe::clock_usec();
+                    EXPECT_EQ(SUPLA_CONFIG_RESULT_TRUE,
+                              channel->set_user_config(
+                                  SUPLA_CONFIG_TYPE_DEFAULT, sizeof(incoming),
+                                  reinterpret_cast<char *>(&incoming)));
+                    upload_us += Sql004Probe::clock_usec() - upload_started;
+                    auto prepare_started = Sql004Probe::clock_usec();
+                    TSDS_SetChannelConfig config{};
+                    EXPECT_TRUE(channel->get_config(
+                        &config, SUPLA_CONFIG_TYPE_DEFAULT, 0));
+                    prepare_us += Sql004Probe::clock_usec() - prepare_started;
+                  });
+            }
+            auto done = Sql004Probe::clock_usec();
+            sql004 = nullptr;
+            std::ostringstream out;
+            out << "PERF_WORK devices=" << count << " mode=" << mode
+                << " sample=" << sample << " d=" << d
+                << " load_us=" << loaded - worker_started
+                << " upload_us=" << upload_us << " prepare_us=" << prepare_us
+                << " total_us=" << done - start << " selects=" << probe.selects
+                << " calls=" << probe.calls
+                << " config_reads=" << probe.config_reads
+                << " connections=" << probe.connections
+                << " sql_us=" << probe.sql_usec
+                << " connect_us=" << probe.connect_usec;
+            for (const auto &entry : probe.timings)
+              out << " " << entry.first << "_n=" << entry.second.first << " "
+                  << entry.first << "_us=" << entry.second.second;
+            return out.str();
+          }));
+        }
+        for (auto &worker : workers) std::cout << worker.get() << std::endl;
+        std::cout << "PERF_BATCH devices=" << count << " mode=" << mode
+                  << " sample=" << sample
+                  << " wall_us=" << Sql004Probe::clock_usec() - start
+                  << " cpu_us=" << perf_cpu_usec() - cpu << std::endl;
+      }
+      for (int clients : {1, 3}) {
+        if (count != 12 && clients != 1) continue;
+        for (int sample = -1; sample < 3; ++sample) {
+          Sql004Probe probe;
+          auto start = Sql004Probe::clock_usec(), cpu = perf_cpu_usec();
+          uint64_t loads = 0, relations = 0, flags = 0, packs = 0, updates = 0;
+          hvac_perf_reset();
+          for (int i = 0; i < clients; ++i) {
+            HvacPerfClient client(protocol.get(), user);
+            auto t = Sql004Probe::clock_usec();
+            client.load();
+            loads += Sql004Probe::clock_usec() - t;
+            auto collection = client.get_channels();
+            t = Sql004Probe::clock_usec();
+            supla_client_channel_reactions graph(nullptr);
+            graph.load(collection);
+            relations += Sql004Probe::clock_usec() - t;
+            for (int d = 0; d < count; ++d) {
+              auto ids = channels[d];
+              ids.push_back(thermometers[d]);
+              for (auto id : ids) {
+                collection->channel_access(id, [&](supla_client_channel *ch) {
+                  auto t = Sql004Probe::clock_usec();
+                  ch->get_flags();
+                  flags += Sql004Probe::clock_usec() - t;
+                  TSC_SuplaChannel_E packet{};
+                  t = Sql004Probe::clock_usec();
+                  ch->proto_get(&packet, &client);
+                  packs += Sql004Probe::clock_usec() - t;
+                });
+              }
+            }
+            hvac_config config;
+            TChannelConfig_HVAC value{};
+            value.MinOnTimeS = 18;
+            config.set_config(&value);
+            t = Sql004Probe::clock_usec();
+            client.update_json_config(channels[0][0], SUPLA_CONFIG_TYPE_DEFAULT,
+                                      &config);
+            updates += Sql004Probe::clock_usec() - t;
+          }
+          std::cout << "PERF_CLIENT devices=" << count << " mode=" << mode
+                    << " clients=" << clients << " sample=" << sample
+                    << " load_us=" << loads << " relation_us=" << relations
+                    << " flags_us=" << flags << " pack_us=" << packs
+                    << " update_us=" << updates
+                    << " wall_us=" << Sql004Probe::clock_usec() - start
+                    << " cpu_us=" << perf_cpu_usec() - cpu << std::endl;
+          hvac_perf_dump("client");
+          probe.finish("client");
+        }
+      }
+
+      if (count == 12) {
+        testing::NiceMock<testing::SrpcAdapterMock> adapter;
+        ON_CALL(adapter, get_proto_version())
+            .WillByDefault(testing::Return(29));
+        ON_CALL(adapter, sd_async_set_channel_config_result(testing::_))
+            .WillByDefault(testing::Return(1));
+        auto previous = supla_connection_test_access::swap_adapter(
+            protocol.get(), &adapter);
+        for (int clients : {0, 1, 3}) {
+          std::vector<std::shared_ptr<HvacPerfClient>> active;
+          for (int i = 0; i < clients; ++i) {
+            int id = 500000 + i;
+            query(
+                "INSERT IGNORE INTO supla_client "
+                "(id,access_id,guid,enabled,reg_date,software_version,"
+                "protocol_version,user_id) SELECT " +
+                std::to_string(id) + ",access_id,UNHEX(MD5('perf-client" +
+                std::to_string(i) +
+                "')),1,reg_date,'perf',29,user_id FROM supla_client WHERE "
+                "id=1");
+            auto client =
+                std::make_shared<HvacPerfClient>(protocol.get(), user, id);
+            client->load();
+            ASSERT_TRUE(user->get_clients()->add(client));
+            active.push_back(client);
+          }
+          auto device = std::make_shared<testing::DeviceStub>(protocol.get());
+          device->set_id(devices[0]);
+          device->set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+          device->set_user(user);
+          supla_mariadb_access_provider db;
+          ASSERT_TRUE(db.connect());
+          supla_device_dao dao(&db);
+          device->set_channels(new supla_device_channels(&dao, device.get(),
+                                                         nullptr, nullptr, 0));
+          for (int sample = -1; sample < 3; ++sample) {
+            Sql004Probe probe;
+            hvac_perf_reset();
+            auto start = Sql004Probe::clock_usec(), cpu = perf_cpu_usec();
+            for (int c = 0; c < 15; ++c) {
+              TSDS_SetChannelConfig request{};
+              request.ChannelNumber = c;
+              request.ConfigType = SUPLA_CONFIG_TYPE_DEFAULT;
+              request.ConfigSize = sizeof(TChannelConfig_HVAC);
+              auto value =
+                  reinterpret_cast<TChannelConfig_HVAC *>(request.Config);
+              value->MinOnTimeS = 17;
+              value->MainThermometerChannelId = mode == 1 ? thermometers[0] : 0;
+              TsrpcReceivedData rd{};
+              rd.data.sds_set_channel_config_request = &request;
+              HvacPerfHandler handler;
+              handler.handle_call(device, &adapter, &rd,
+                                  SUPLA_DS_CALL_SET_CHANNEL_CONFIG, 29);
+            }
+            std::cout << "PERF_HANDLER devices=12 mode=" << mode
+                      << " clients=" << clients << " sample=" << sample
+                      << " uploads=15 wall_us="
+                      << Sql004Probe::clock_usec() - start
+                      << " cpu_us=" << perf_cpu_usec() - cpu << std::endl;
+            hvac_perf_dump("handler");
+            probe.finish("handler");
+          }
+          active.clear();
+        }
+        supla_connection_test_access::swap_adapter(protocol.get(), previous);
+      }
+    }
+  }
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, RegistrationPerformanceWire) {
+  if (!getenv("SUPLA_HVAC_PERF")) GTEST_SKIP() << "opt-in native benchmark";
+  perf_cloud_sql();
+  ASSERT_FALSE(HasFatalFailure());
+  // One real TLS/SRPC session, full production registration + identity + sync.
+  query("UPDATE supla_dev_channel SET channel_number=0 WHERE id=" +
+        std::to_string(hvac));
+  for (int profile : {0, 20, -1, -3}) {
+    for (int sample = -1; sample < 3; ++sample) {
+      if (profile != 0 || sample != -1) {
+        close_connection();
+        start_connection();
+      }
+      TDS_SuplaRegisterDevice_G registration{};
+      snprintf(registration.Email, sizeof(registration.Email), "%s",
+               "hvac-wire@test.invalid");
+      memset(registration.GUID, 0xab, sizeof(registration.GUID));
+      registration.AuthKey[0] = 1;
+      registration.Flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED |
+                           SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
+      registration.channel_count = 16;
+      for (int i = 0; i < 16; ++i) {
+        auto &ch = registration.channels[i];
+        ch.Number = i;
+        ch.Type =
+            i == 15 ? SUPLA_CHANNELTYPE_THERMOMETER : SUPLA_CHANNELTYPE_HVAC;
+        ch.Default = i == 15 ? SUPLA_CHANNELFNC_THERMOMETER
+                             : SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+        ch.Flags = SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE;
+      }
+      uint64_t start = Sql004Probe::clock_usec(), accepted = 0, identity = 0;
+      uint64_t cpu = perf_cpu_usec(), waited = 0;
+      unsigned configs = 0, identities = 0;
+      bool done = false;
+      send_packet(SUPLA_DS_CALL_REGISTER_DEVICE_G, &registration,
+                  sizeof(TDS_SuplaRegisterDeviceHeader) +
+                      16 * sizeof(TDS_SuplaDeviceChannel_E));
+      for (int n = 0; n < 100 && !done; ++n) {
+        TSuplaDataPacket packet{};
+        ASSERT_TRUE(receive_packet(&packet, 4000))
+            << "profile=" << profile << " configs=" << configs;
+        if (packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT ||
+            packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B) {
+          TSD_SuplaRegisterDeviceResult result{};
+          memcpy(&result, packet.data, sizeof(result));
+          ASSERT_EQ(SUPLA_RESULTCODE_TRUE, result.result_code);
+          accepted = Sql004Probe::clock_usec();
+        } else if (packet.call_id == SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES) {
+          ++identities;
+          TDS_SuplaDeviceIdentitiesResult result{SUPLA_SUPLAN_RESULT_OK, 789u};
+          send_packet(SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT, &result,
+                      sizeof(result));
+          identity = Sql004Probe::clock_usec();
+        } else if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG) {
+          TSDS_SetChannelConfig config{};
+          memcpy(&config, packet.data, packet.data_size);
+          ++configs;
+          if (profile == -1 && configs == 1) continue;
+          if (profile == -2) continue;
+          if (profile > 0) {
+            auto before = Sql004Probe::clock_usec();
+            std::this_thread::sleep_for(std::chrono::milliseconds(profile));
+            waited += Sql004Probe::clock_usec() - before;
+          }
+          TSDS_SetChannelConfigResult result{};
+          result.ChannelNumber = config.ChannelNumber;
+          result.ConfigType = config.ConfigType;
+          result.Result = profile == -3 ? SUPLA_CONFIG_RESULT_FALSE
+                                        : SUPLA_CONFIG_RESULT_TRUE;
+          send_packet(SUPLA_DS_CALL_SET_CHANNEL_CONFIG_RESULT, &result,
+                      sizeof(result));
+        } else if (packet.call_id == SUPLA_SD_CALL_DEVICE_SYNC_DONE) {
+          done = true;
+        }
+      }
+      ASSERT_TRUE(done);
+      if (profile == 0) {
+        std::cout << "PERF_WIRE profile=" << profile << " sample=" << sample
+                  << " registration_us=" << accepted - start
+                  << " bootstrap_us=" << identity - accepted
+                  << " sync_us=" << Sql004Probe::clock_usec() - identity
+                  << " cpu_us=" << perf_cpu_usec() - cpu
+                  << " injected_wait_us=" << waited << " configs=" << configs
+                  << " identities=" << identities << " done=" << done
+                  << std::endl;
+        auto upload_start = Sql004Probe::clock_usec(),
+             upload_cpu = perf_cpu_usec();
+        unsigned results = 0, publications = 0;
+        for (auto &value : hvac_perf_sql) value = 0;
+        hvac_perf_relation_reads = 0;
+        hvac_perf_tracking = true;
+        for (int c = 0; c < 15; ++c) {
+          TSDS_SetChannelConfig request{};
+          request.ChannelNumber = c;
+          request.ConfigType = SUPLA_CONFIG_TYPE_DEFAULT;
+          request.ConfigSize = sizeof(TChannelConfig_HVAC);
+          auto value = reinterpret_cast<TChannelConfig_HVAC *>(request.Config);
+          value->MinOnTimeS = 17;
+          send_packet(
+              SUPLA_DS_CALL_SET_CHANNEL_CONFIG, &request,
+              sizeof(request) - sizeof(request.Config) + request.ConfigSize);
+          bool got_result = false, got_publication = false;
+          while (!got_result || !got_publication) {
+            TSuplaDataPacket packet{};
+            ASSERT_TRUE(receive_packet(&packet));
+            if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG_RESULT) {
+              auto reply =
+                  reinterpret_cast<TSDS_SetChannelConfigResult *>(packet.data);
+              ASSERT_EQ(SUPLA_CONFIG_RESULT_TRUE, reply->Result);
+              ASSERT_EQ(c, reply->ChannelNumber);
+              ++results;
+              got_result = true;
+            } else if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG) {
+              auto reply =
+                  reinterpret_cast<TSDS_SetChannelConfig *>(packet.data);
+              ASSERT_EQ(c, reply->ChannelNumber);
+              ++publications;
+              acknowledge(*reply);
+              got_publication = true;
+            }
+          }
+        }
+        hvac_perf_tracking = false;
+        std::cout << "PERF_UPLOAD_WIRE sample=" << sample << " uploads=15"
+                  << " results=" << results << " publications=" << publications
+                  << " wall_us=" << Sql004Probe::clock_usec() - upload_start
+                  << " cpu_us=" << perf_cpu_usec() - upload_cpu
+                  << " executions=" << hvac_perf_sql[0]
+                  << " connections=" << hvac_perf_sql[3]
+                  << " connect_us=" << hvac_perf_sql[4]
+                  << " sql_us=" << hvac_perf_sql[5] << std::endl;
+        // Preserve registration/sync timing before the upload measurement.
+        continue;
+      }
+      std::cout << "PERF_WIRE profile=" << profile << " sample=" << sample
+                << " registration_us=" << accepted - start
+                << " bootstrap_us=" << identity - accepted
+                << " sync_us=" << Sql004Probe::clock_usec() - identity
+                << " cpu_us=" << perf_cpu_usec() - cpu
+                << " injected_wait_us=" << waited << " configs=" << configs
+                << " identities=" << identities << " done=" << done
+                << std::endl;
+    }
+  }
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, RegistrationPerformanceConcurrentWire) {
+  if (!getenv("SUPLA_HVAC_PERF")) GTEST_SKIP() << "opt-in native benchmark";
+  perf_cloud_sql();
+  ASSERT_FALSE(HasFatalFailure());
+  // Twelve distinct authenticated Device sessions; production connection
+  // threads run in parallel. The test peers only register, accept identities
+  // and ACK configuration, with no flash delay or real MCU stack claim.
+  query("UPDATE supla_location SET user_id=99126 WHERE id=2");
+  query("CALL supla_set_registration_enabled(99126,3600,3600)");
+  query("UPDATE supla_user SET limit_iodev=200 WHERE id=99126");
+  query(
+      "UPDATE performance_schema.setup_instruments SET ENABLED='YES',"
+      "TIMED='YES' WHERE NAME LIKE 'statement/%'");
+  std::map<int, std::vector<std::vector<int>>> ids;
+  for (int phase : {0, 1, 2, 3, 4, 5}) {
+    for (int count : {1, 3, 12}) {
+      if (phase >= 4 && count != 12) continue;
+      for (int sample = -1; sample < 3; ++sample) {
+        std::vector<std::unique_ptr<OtherConnection>> peers;
+        for (int d = 0; d < count; ++d) {
+          peers.emplace_back(new OtherConnection(this));
+          peers.back()->select(false);
+        }
+        if (phase == 0) ids[count].emplace_back(count, 0);
+        auto &group = ids[count][sample + 1];
+        if (phase >= 2) {
+          for (int d = 0; d < count; ++d) {
+            int selected = group[phase == 2 ? d : (d + 1) % count];
+            int thermometer =
+                (phase >= 3 && count == 1)
+                    ? resource
+                    : scalar(
+                          "SELECT id FROM supla_dev_channel WHERE "
+                          "iodevice_id=" +
+                          std::to_string(selected) + " AND channel_number=15");
+            query(
+                "UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
+                "'mainThermometerChannelId'," +
+                std::to_string(thermometer) +
+                ",'minOnTimeS',17) WHERE iodevice_id=" +
+                std::to_string(group[d]) + " AND channel_number<15");
+          }
+        }
+        std::vector<std::shared_ptr<HvacPerfClient>> active_clients;
+        if (phase >= 4) {
+          query("UPDATE supla_dev_channel SET hidden=1 WHERE user_id=99126");
+          for (int id : group)
+            query("UPDATE supla_dev_channel SET hidden=0 WHERE iodevice_id=" +
+                  std::to_string(id));
+          query("UPDATE supla_client SET user_id=99126 WHERE id=1");
+          auto user = supla_user::find(99126, true);
+          connection->get_srpc_adapter()->set_proto_version(29);
+          for (int i = 0; i < (phase == 4 ? 1 : 3); ++i) {
+            int id = 600000 + i;
+            query(
+                "INSERT IGNORE INTO supla_client "
+                "(id,access_id,guid,enabled,reg_date,software_version,"
+                "protocol_version,user_id) SELECT " +
+                std::to_string(id) + ",access_id,UNHEX(MD5('perf-live-client" +
+                std::to_string(i) +
+                "')),1,reg_date,'perf',29,user_id FROM supla_client WHERE "
+                "id=1");
+            auto client =
+                std::make_shared<HvacPerfClient>(connection, user, id);
+            client->load();
+            ASSERT_TRUE(user->get_clients()->add(client));
+            active_clients.push_back(client);
+          }
+        }
+        int sql_before = scalar(
+            "SELECT CAST(COALESCE(SUM(COUNT_STAR),0) AS UNSIGNED) FROM "
+            "performance_schema.events_statements_summary_by_digest "
+            "WHERE SCHEMA_NAME='supla_test'");
+        int time_before = scalar(
+            "SELECT CAST(COALESCE(SUM(SUM_TIMER_WAIT)/1000000,0) AS UNSIGNED) "
+            "FROM performance_schema.events_statements_summary_by_digest "
+            "WHERE SCHEMA_NAME='supla_test'");
+        int db_cpu_before = scalar(
+            "SELECT CAST(COALESCE(SUM(CPU_TIME),0)*1000000 AS UNSIGNED) FROM "
+            "information_schema.USER_STATISTICS WHERE USER='supla'");
+        for (auto &value : hvac_perf_sql) value = 0;
+        hvac_perf_relation_reads = 0;
+        hvac_perf_tracking = true;
+        auto start = Sql004Probe::clock_usec(), cpu = perf_cpu_usec();
+        std::vector<uint64_t> accepted(count), identity(count), done(count);
+        std::vector<unsigned> configs(count);
+        for (int d = 0; d < count; ++d) {
+          peers[d]->select(true);
+          TDS_SuplaRegisterDevice_G registration{};
+          snprintf(registration.Email, sizeof(registration.Email), "%s",
+                   "hvac-wire@test.invalid");
+          memset(registration.GUID, 0x73, sizeof(registration.GUID));
+          registration.GUID[0] = count;
+          registration.GUID[1] = sample + 1;
+          registration.GUID[2] = d + 1;
+          registration.AuthKey[0] = 1;
+          registration.Flags = SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED |
+                               SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED;
+          registration.channel_count = 16;
+          for (int c = 0; c < 16; ++c) {
+            auto &ch = registration.channels[c];
+            ch.Number = c;
+            ch.Type = c == 15 ? SUPLA_CHANNELTYPE_THERMOMETER
+                              : SUPLA_CHANNELTYPE_HVAC;
+            ch.Default = c == 15 ? SUPLA_CHANNELFNC_THERMOMETER
+                                 : SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+            ch.Flags = SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE;
+          }
+          send_packet(SUPLA_DS_CALL_REGISTER_DEVICE_G, &registration,
+                      sizeof(TDS_SuplaRegisterDeviceHeader) +
+                          16 * sizeof(TDS_SuplaDeviceChannel_E));
+          peers[d]->select(false);
+        }
+        int remaining = count;
+        while (remaining) {
+          for (int d = 0; d < count; ++d) {
+            if (done[d]) continue;
+            peers[d]->select(true);
+            TSuplaDataPacket packet{};
+            ASSERT_TRUE(receive_packet(&packet, 3000)) << "device=" << d;
+            if (packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT ||
+                packet.call_id == SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B) {
+              TSD_SuplaRegisterDeviceResult result{};
+              memcpy(&result, packet.data, sizeof(result));
+              ASSERT_EQ(SUPLA_RESULTCODE_TRUE, result.result_code);
+              accepted[d] = Sql004Probe::clock_usec();
+            } else if (packet.call_id ==
+                       SUPLA_SD_CALL_SUPLAN_DEVICE_IDENTITIES) {
+              if (phase == 0) {
+                auto map =
+                    reinterpret_cast<TSD_SuplaDeviceIdentities *>(packet.data);
+                group[d] = map->DeviceId;
+              }
+              TDS_SuplaDeviceIdentitiesResult result{SUPLA_SUPLAN_RESULT_OK,
+                                                     789u};
+              send_packet(SUPLA_DS_CALL_SUPLAN_DEVICE_IDENTITIES_RESULT,
+                          &result, sizeof(result));
+              identity[d] = Sql004Probe::clock_usec();
+            } else if (packet.call_id == SUPLA_SD_CALL_SET_CHANNEL_CONFIG) {
+              TSDS_SetChannelConfig config{};
+              memcpy(&config, packet.data, packet.data_size);
+              ++configs[d];
+              acknowledge(config);
+            } else if (packet.call_id == SUPLA_SD_CALL_DEVICE_SYNC_DONE) {
+              done[d] = Sql004Probe::clock_usec();
+              --remaining;
+            }
+            peers[d]->select(false);
+          }
+        }
+        for (int d = 0; d < count; ++d)
+          std::cout << "PERF_MULTI phase=" << phase << " devices=" << count
+                    << " sample=" << sample << " d=" << d
+                    << " registration_us=" << accepted[d] - start
+                    << " sync_us=" << done[d] - identity[d]
+                    << " total_us=" << done[d] - start
+                    << " configs=" << configs[d] << std::endl;
+        hvac_perf_tracking = false;
+        auto elapsed = Sql004Probe::clock_usec() - start;
+        auto cpu_used = perf_cpu_usec() - cpu;
+        int sql_after = scalar(
+            "SELECT CAST(COALESCE(SUM(COUNT_STAR),0) AS UNSIGNED) FROM "
+            "performance_schema.events_statements_summary_by_digest "
+            "WHERE SCHEMA_NAME='supla_test'");
+        int time_after = scalar(
+            "SELECT CAST(COALESCE(SUM(SUM_TIMER_WAIT)/1000000,0) AS UNSIGNED) "
+            "FROM performance_schema.events_statements_summary_by_digest "
+            "WHERE SCHEMA_NAME='supla_test'");
+        int db_cpu_after = scalar(
+            "SELECT CAST(COALESCE(SUM(CPU_TIME),0)*1000000 AS UNSIGNED) FROM "
+            "information_schema.USER_STATISTICS WHERE USER='supla'");
+        std::cout << "PERF_MULTI_BATCH phase=" << phase << " devices=" << count
+                  << " sample=" << sample << " wall_us=" << elapsed
+                  << " cpu_us=" << cpu_used
+                  << " ps_statements=" << sql_after - sql_before
+                  << " ps_sql_us=" << time_after - time_before
+                  << " db_cpu_us=" << db_cpu_after - db_cpu_before
+                  << " executions=" << hvac_perf_sql[0]
+                  << " selects=" << hvac_perf_sql[1]
+                  << " calls=" << hvac_perf_sql[2]
+                  << " relation_reads=" << hvac_perf_relation_reads.load()
+                  << " connections=" << hvac_perf_sql[3]
+                  << " connect_us=" << hvac_perf_sql[4]
+                  << " sql_us=" << hvac_perf_sql[5] << std::endl;
+        for (auto &peer : peers) peer->close();
+      }
+    }
+  }
+}
+
+#include <malloc.h>
+
+TEST_F(SupLanHvacIntegrationTest,
+       RelationIndexCommittedMergeAndConcurrentWriters) {
+  config(resource);
+  auto user = supla_user::find(99124, true);
+  auto cache = user->get_relation_index();
+  cache->invalidate();
+  ASSERT_TRUE(cache->refresh() || cache->snapshot());
+  auto initial = cache->snapshot();
+  ASSERT_TRUE(initial);
+  EXPECT_EQ(1u, initial->get(hvac, relation_with_sub_channel, 29).size());
+  auto stale = cache->begin(hvac);
+  auto newer = cache->begin(hvac);
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  supla_json_config unset;
+  unset.set_user_config("{}");
+  EXPECT_TRUE(
+      cache->complete(hvac, newer, &unset, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  supla_json_config old;
+  old.set_user_config(
+      ("{\"mainThermometerChannelId\":" + std::to_string(resource) + "}")
+          .c_str());
+  EXPECT_FALSE(
+      cache->complete(hvac, stale, &old, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_TRUE(
+      cache->snapshot()->get(hvac, relation_with_sub_channel, 29).empty());
+  EXPECT_EQ(1u, initial->get(hvac, relation_with_sub_channel, 29).size());
+
+  auto second = add_channel(destination, 239, SUPLA_CHANNELTYPE_HVAC,
+                            SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  cache->invalidate();
+  cache->refresh();
+  std::promise<void> start;
+  auto ready = start.get_future().share();
+  std::promise<void> a_started, b_started;
+  auto write = [&](uint32_t id, std::promise<void> &begun) {
+    auto ticket = cache->begin(id);
+    query(
+        "UPDATE supla_dev_channel SET "
+        "user_config=JSON_OBJECT('mainThermometerChannelId'," +
+        std::to_string(resource) + ") WHERE id=" + std::to_string(id));
+    begun.set_value();
+    ready.wait();
+    return cache->complete(id, ticket, &old, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  };
+  auto a = std::async(std::launch::async, write, hvac, std::ref(a_started));
+  auto b = std::async(std::launch::async, write, second, std::ref(b_started));
+  a_started.get_future().wait();
+  b_started.get_future().wait();
+  start.set_value();
+  EXPECT_TRUE(a.get());
+  EXPECT_TRUE(b.get());
+  auto current = cache->snapshot();
+  EXPECT_EQ(1u, current->get(hvac, relation_with_sub_channel, 29).size());
+  EXPECT_EQ(1u, current->get(second, relation_with_sub_channel, 29).size());
+  auto builds = cache->build_count();
+  old.set_user_config(
+      ("{\"mainThermometerChannelId\":" + std::to_string(resource) +
+       ",\"minOnTimeS\":23,\"weeklySchedule\":{}}")
+          .c_str());
+  EXPECT_FALSE(cache->complete(hvac, cache->begin(hvac), &old,
+                               SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_EQ(builds, cache->build_count());
+  {
+    Sql004Probe probe;
+    for (int i = 0; i < 100; ++i)
+      cache->snapshot()->get(hvac, relation_any, 29);
+    EXPECT_EQ(0u, probe.executions);
+    EXPECT_EQ(0u, probe.connections);
+  }
+}
+TEST_F(SupLanHvacIntegrationTest, RelationIndexSqlFailureKeepsSnapshot) {
+  config(resource);
+  auto cache = supla_user::find(99124, true)->get_relation_index();
+  cache->invalidate();
+  cache->refresh();
+  auto initial = cache->snapshot();
+  ASSERT_TRUE(initial);
+  {
+    Sql004Probe probe;
+    probe.fail_execute = [](const std::string &sql) {
+      return sql.find("SELECT c.id,c.iodevice_id") == 0;
+    };
+    cache->invalidate();
+    EXPECT_FALSE(cache->refresh());
+  }
+  EXPECT_EQ(initial, cache->snapshot());
+  EXPECT_GT(cache->time_left_usec(), 4000000u);
+  cache->cancel(hvac, cache->begin(hvac));
+  EXPECT_GT(cache->time_left_usec(), 4000000u);
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  cache->invalidate();
+  EXPECT_TRUE(cache->refresh());
+  EXPECT_TRUE(
+      cache->snapshot()->get(hvac, relation_with_sub_channel, 29).empty());
+  EXPECT_EQ(0u, cache->time_left_usec());
+}
+
+TEST_F(SupLanHvacIntegrationTest, EmptyReferencesNeverOpenReferenceDao) {
+  config(0);
+  with_destination([&](supla_device_channel *channel) {
+    TChannelConfig_HVAC value{};
+    value.MinOnTimeS = 17;
+    Sql004Probe probe;
+    EXPECT_EQ(SUPLA_CONFIG_RESULT_TRUE,
+              channel->set_user_config(SUPLA_CONFIG_TYPE_DEFAULT, sizeof(value),
+                                       reinterpret_cast<char *>(&value)));
+    EXPECT_EQ(2u, probe.config_reads);
+    EXPECT_EQ(2u, probe.selects);
+    EXPECT_EQ(2u, probe.connections);
+    EXPECT_EQ(1u, probe.calls);
+    EXPECT_EQ(0u, probe.timings["channel_validation"].first);
+  });
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelationIndexPerformanceLargest) {
+  if (!getenv("SUPLA_HVAC_PERF")) GTEST_SKIP() << "opt-in native benchmark";
+  perf_cloud_sql();
+  ASSERT_FALSE(HasFatalFailure());
+  query(
+      "INSERT INTO supla_user "
+      "(id,short_unique_id,long_unique_id,salt,email,enabled,"
+      "reg_date,timezone,home_latitude,home_longitude) SELECT "
+      "99234,REPEAT('7',32),"
+      "'relation-perf',salt,'relation-perf@test.invalid',enabled,reg_date,"
+      "timezone,"
+      "home_latitude,home_longitude FROM supla_user WHERE id=99124");
+  query(
+      "INSERT INTO supla_location(id,user_id,password,enabled) "
+      "VALUES(99234,99234,'test',1)");
+  query(
+      "INSERT INTO supla_accessid(id,user_id,password,enabled) "
+      "VALUES(99234,99234,'test',1)");
+  query(
+      "INSERT INTO supla_rel_aidloc(access_id,location_id) "
+      "VALUES(99234,99234)");
+  std::vector<int> devices;
+  std::vector<uint32_t> thermostats, thermometers;
+  for (int d = 0; d < 12; ++d) {
+    int id = 410000 + d;
+    devices.push_back(id);
+    query(
+        "INSERT INTO "
+        "supla_iodevice(id,location_id,user_id,guid,enabled,reg_date,protocol_"
+        "version,flags) "
+        "SELECT " +
+        std::to_string(id) + ",99234,99234,UNHEX(MD5('relation-perf" +
+        std::to_string(d) +
+        "')),1,reg_date,29,flags FROM supla_iodevice WHERE id=" +
+        std::to_string(destination));
+    for (int c = 0; c < 15; ++c)
+      thermostats.push_back(add_channel(id, c, SUPLA_CHANNELTYPE_HVAC,
+                                        SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+    thermometers.push_back(add_channel(id, 15, SUPLA_CHANNELTYPE_THERMOMETER,
+                                       SUPLA_CHANNELFNC_THERMOMETER));
+  }
+  query("UPDATE supla_dev_channel SET user_id=99234,flags=" +
+        std::to_string(SUPLA_CHANNEL_FLAG_RUNTIME_CHANNEL_CONFIG_UPDATE) +
+        " WHERE iodevice_id BETWEEN 410000 AND 410011");
+  // Canonical, trusted Cloud-like reference writes, not Device remote upload.
+  for (int d = 0; d < 12; ++d)
+    query(
+        "UPDATE supla_dev_channel SET "
+        "user_config=JSON_OBJECT('mainThermometerChannelId'," +
+        std::to_string(thermometers[(d + 1) % 12]) +
+        ",'minOnTimeS',17) WHERE iodevice_id=" + std::to_string(devices[d]) +
+        " AND channel_number<15");
+  query("UPDATE supla_client SET access_id=99234,user_id=99234 WHERE id=1");
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto user = supla_user::find(99234, true);
+  auto cache = user->get_relation_index();
+  for (int sample = -1; sample < 3; ++sample) {
+    supla_channel_relation_index cold(99234);
+    Sql004Probe probe;
+    hvac_perf_reset();
+    auto start = Sql004Probe::clock_usec();
+    ASSERT_TRUE(cold.refresh() || cold.snapshot());
+    auto elapsed = Sql004Probe::clock_usec() - start;
+    auto snap = cold.snapshot();
+    ASSERT_EQ(192u, snap->nodes.size());
+    std::cout << "PERF_INDEX_FIRST sample=" << sample << " wall_us=" << elapsed
+              << " selects=" << probe.selects
+              << " connections=" << probe.connections
+              << " payload_bytes=" << snap->memory_bytes()
+              << " nodes=" << snap->nodes.size()
+              << " edges=" << snap->edges.size() << std::endl;
+  }
+  cache->invalidate();
+  cache->refresh();
+  {
+    auto before = mallinfo2().uordblks;
+    auto snap = cache->snapshot();
+    auto copy = std::make_shared<supla_relation_snapshot>();
+    copy->nodes = snap->nodes;
+    copy->build();
+    auto allocated = mallinfo2().uordblks;
+    std::cout << "PERF_INDEX_RAM node_size=" << sizeof(supla_relation_node)
+              << " edge_size=" << sizeof(supla_relation_edge)
+              << " owner_size=" << sizeof(supla_channel_relation_index)
+              << " snapshot_live_delta=" << allocated - before
+              << " payload_bytes=" << copy->memory_bytes() << std::endl;
+  }
+  for (int clients : {1, 3}) {
+    std::vector<std::shared_ptr<HvacPerfClient>> active;
+    for (int i = 0; i < clients; ++i) {
+      int id = 610000 + i;
+      query(
+          "INSERT IGNORE INTO "
+          "supla_client(id,access_id,user_id,guid,enabled,reg_date,"
+          "software_version,protocol_version) SELECT " +
+          std::to_string(id) + ",99234,99234,UNHEX(MD5('index-perf-client" +
+          std::to_string(i) +
+          "')),1,reg_date,'perf',29 FROM supla_client WHERE id=1");
+      auto client = std::make_shared<HvacPerfClient>(protocol.get(), user, id);
+      ASSERT_TRUE(user->get_clients()->add(client));
+      active.push_back(client);
+    }
+    for (int sample = -1; sample < 3; ++sample) {
+      Sql004Probe probe;
+      auto start = Sql004Probe::clock_usec();
+      for (auto &client : active) client->load();
+      std::cout << "PERF_INDEX_CLIENT clients=" << clients
+                << " sample=" << sample
+                << " wall_us=" << Sql004Probe::clock_usec() - start
+                << " selects=" << probe.selects << std::endl;
+      hvac_perf_reset();
+      auto builds = cache->build_count();
+      {
+        Sql004Probe reads;
+        auto t = Sql004Probe::clock_usec();
+        for (auto &client : active) {
+          supla_client_channel_reactions projection(nullptr);
+          projection.load(client->get_channels());
+          client->get_channels()->for_each(
+              [](supla_client_channel *c, bool *) { c->get_flags(); });
+        }
+        std::cout << "PERF_INDEX_READ clients=" << clients
+                  << " sample=" << sample
+                  << " wall_us=" << Sql004Probe::clock_usec() - t
+                  << " selects=" << reads.selects
+                  << " copies=" << hvac_perf_counts[2]
+                  << " parses=" << hvac_perf_counts[3] << std::endl;
+        EXPECT_EQ(0u, reads.executions);
+        EXPECT_EQ(0u, hvac_perf_counts[2].load());
+        EXPECT_EQ(0u, hvac_perf_counts[3].load());
+      }
+      // Use the production handler for 15 identical Device uploads.
+      auto device = std::make_shared<testing::DeviceStub>(protocol.get());
+      device->set_id(devices[0]);
+      device->set_user(user);
+      device->set_flags(SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+      supla_mariadb_access_provider db;
+      ASSERT_TRUE(db.connect());
+      supla_device_dao dao(&db);
+      device->set_channels(
+          new supla_device_channels(&dao, device.get(), nullptr, nullptr, 0));
+      testing::NiceMock<testing::SrpcAdapterMock> adapter;
+      ON_CALL(adapter, sd_async_set_channel_config_result(testing::_))
+          .WillByDefault(testing::Return(1));
+      auto t = Sql004Probe::clock_usec();
+      Sql004Probe writes;
+      for (int c = 0; c < 15; ++c) {
+        TSDS_SetChannelConfig request{};
+        request.ChannelNumber = c;
+        request.ConfigType = SUPLA_CONFIG_TYPE_DEFAULT;
+        request.ConfigSize = sizeof(TChannelConfig_HVAC);
+        reinterpret_cast<TChannelConfig_HVAC *>(request.Config)->MinOnTimeS =
+            17;
+        TsrpcReceivedData rd{};
+        rd.data.sds_set_channel_config_request = &request;
+        HvacPerfHandler handler;
+        handler.handle_call(device, &adapter, &rd,
+                            SUPLA_DS_CALL_SET_CHANNEL_CONFIG, 29);
+      }
+      std::cout << "PERF_INDEX_IDENTICAL clients=" << clients
+                << " sample=" << sample
+                << " wall_us=" << Sql004Probe::clock_usec() - t
+                << " selects=" << writes.selects << " calls=" << writes.calls
+                << " connections=" << writes.connections
+                << " builds=" << cache->build_count() - builds << std::endl;
+      EXPECT_EQ(builds, cache->build_count());
+      sql004 = nullptr;
+      // Trusted replace and remove, then only the existing Client projection.
+      for (bool remove : {false, true}) {
+        auto id = thermostats[0];
+        auto ticket = cache->begin(id);
+        int ref = remove ? 0 : thermometers[2];
+        auto json = "{\"mainThermometerChannelId\":" + std::to_string(ref) +
+                    ",\"minOnTimeS\":17}";
+        query("UPDATE supla_dev_channel SET user_config='" + json +
+              "' WHERE id=" + std::to_string(id));
+        supla_json_config config;
+        config.set_user_config(json.c_str());
+        auto start = Sql004Probe::clock_usec();
+        auto old_builds = cache->build_count();
+        ASSERT_TRUE(cache->complete(id, ticket, &config,
+                                    SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+        user->get_clients()->update_json_config(id, SUPLA_CONFIG_TYPE_DEFAULT,
+                                                &config);
+        std::cout << "PERF_INDEX_CHANGE clients=" << clients
+                  << " sample=" << sample << " remove=" << remove
+                  << " wall_us=" << Sql004Probe::clock_usec() - start
+                  << " builds=" << cache->build_count() - old_builds
+                  << std::endl;
+      }
+      // Restore the trusted remote reference for the next identical replay.
+      auto json =
+          "{\"mainThermometerChannelId\":" + std::to_string(thermometers[1]) +
+          ",\"minOnTimeS\":17}";
+      query("UPDATE supla_dev_channel SET user_config='" + json +
+            "' WHERE id=" + std::to_string(thermostats[0]));
+      supla_json_config restore;
+      restore.set_user_config(json.c_str());
+      cache->complete(thermostats[0], cache->begin(thermostats[0]), &restore,
+                      SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+    }
+  }
+}
+
+TEST_F(SupLanHvacIntegrationTest, FullRelationRefreshCannotLoseInFlightCommit) {
+  config(resource);
+  auto cache = supla_user::find(99124, true)->get_relation_index();
+  cache->invalidate();
+  cache->refresh();
+  auto before = cache->snapshot();
+  auto ticket = cache->begin(hvac);
+  cache->invalidate();
+  // DB SELECT may complete before an already-started writer commits.
+  EXPECT_FALSE(cache->refresh());
+  EXPECT_EQ(before, cache->snapshot());
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  supla_json_config empty;
+  empty.set_user_config("{}");
+  EXPECT_TRUE(
+      cache->complete(hvac, ticket, &empty, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_TRUE(
+      cache->snapshot()->get(hvac, relation_with_sub_channel, 29).empty());
+  EXPECT_EQ(1u, cache->time_left_usec());
+  cache->refresh();
+  EXPECT_TRUE(
+      cache->snapshot()->get(hvac, relation_with_sub_channel, 29).empty());
+  EXPECT_EQ(0u, cache->time_left_usec());
+}
+
+TEST_F(SupLanHvacIntegrationTest,
+       IndexedClientProjectionPreservesVisibilityAndRemoval) {
+  config(resource);
+  query(
+      "UPDATE supla_dev_channel SET hidden=1 WHERE user_id=99124 AND id NOT "
+      "IN(" +
+      std::to_string(hvac) + "," + std::to_string(resource) + ")");
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto user = supla_user::find(99124, true);
+  auto cache = user->get_relation_index();
+  cache->invalidate();
+  cache->refresh();
+  HvacPerfClient client(protocol.get(), user);
+  client.load();
+  testing::NiceMock<testing::SrpcAdapterMock> adapter;
+  ON_CALL(adapter, get_proto_version()).WillByDefault(testing::Return(29));
+  TSC_SuplaChannelRelationPack captured{};
+  EXPECT_CALL(adapter, sc_async_channel_relation_pack_update(testing::_))
+      .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+        captured = *pack;
+        return 1;
+      });
+  supla_client_channel_relation_remote_updater updater(&adapter);
+  supla_client_channel_reactions graph(&updater);
+  ASSERT_TRUE(graph.load(client.get_channels()));
+  ASSERT_TRUE(graph.update_remote());
+  ASSERT_EQ(2, captured.count);
+  EXPECT_EQ(resource, captured.items[0].Id);
+  EXPECT_EQ(hvac, captured.items[0].ParentId);
+  EXPECT_TRUE(captured.items[0].EOL & START_OF_LIST_BIT);
+  auto revision = cache->build_count();
+  supla_json_config scalar;
+  scalar.set_user_config(("{\"mainThermometerChannelId\":" +
+                          std::to_string(resource) + ",\"minOnTimeS\":22}")
+                             .c_str());
+  EXPECT_FALSE(cache->complete(hvac, cache->begin(hvac), &scalar,
+                               SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  EXPECT_EQ(revision, cache->build_count());
+  EXPECT_FALSE(graph.load(client.get_channels(), false));
+  query("UPDATE supla_dev_channel SET hidden=1 WHERE id=" +
+        std::to_string(resource));
+  client.load();
+  ASSERT_TRUE(graph.load(client.get_channels()));
+  ASSERT_TRUE(graph.update_remote());
+  ASSERT_EQ(1, captured.count);
+  EXPECT_EQ(0, captured.items[0].Id);
+  EXPECT_TRUE(captured.items[0].EOL & START_OF_LIST_BIT);
+  EXPECT_TRUE(captured.items[0].EOL & END_OF_LIST_BIT);
+  auto ticket = cache->begin(hvac);
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  supla_json_config empty;
+  empty.set_user_config("{}");
+  ASSERT_TRUE(
+      cache->complete(hvac, ticket, &empty, SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  // Hidden-source removal is not sent to a Client whose graph was already
+  // empty.
+  EXPECT_FALSE(graph.load(client.get_channels(), false));
+  query("UPDATE supla_dev_channel SET hidden=0 WHERE id=" +
+        std::to_string(resource));
+  client.load();
+  EXPECT_FALSE(graph.load(client.get_channels()));
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelationIndexSourceMetadataAndAuxType) {
+  auto user = supla_user::find(99124, true);
+  auto cache = user->get_relation_index();
+  auto json = "{\"auxThermometerChannelId\":" + std::to_string(resource) +
+              ",\"auxThermometerType\":\"FLOOR\"}";
+  query("UPDATE supla_dev_channel SET user_config='" + json + "' WHERE id=" +
+        std::to_string(hvac));
+  cache->invalidate();
+  cache->refresh();
+  auto before = cache->snapshot();
+  auto relations = before->get(hvac, relation_with_sub_channel, 29);
+  ASSERT_EQ(1u, relations.size());
+  auto first_type = relations.front().get_relation_type();
+  supla_json_config changed;
+  json = "{\"auxThermometerChannelId\":" + std::to_string(resource) +
+         ",\"auxThermometerType\":\"GENERIC_HEATER\"}";
+  query("UPDATE supla_dev_channel SET user_config='" + json + "' WHERE id=" +
+        std::to_string(hvac));
+  changed.set_user_config(json.c_str());
+  ASSERT_TRUE(cache->complete(hvac, cache->begin(hvac), &changed,
+                             SUPLA_CHANNELFNC_HVAC_THERMOSTAT));
+  relations = cache->snapshot()->get(hvac, relation_with_sub_channel, 29);
+  ASSERT_EQ(1u, relations.size());
+  EXPECT_NE(first_type, relations.front().get_relation_type());
+  // Consumer JSON stays unchanged when the remote Source changes function.
+  query("UPDATE supla_dev_channel SET func=0 WHERE id=" +
+        std::to_string(resource));
+  cache->invalidate();
+  ASSERT_TRUE(cache->refresh());
+  EXPECT_TRUE(cache->snapshot()->get(hvac, relation_any, 29).empty());
+  query("UPDATE supla_dev_channel SET func=" +
+        std::to_string(SUPLA_CHANNELFNC_THERMOMETER) + " WHERE id=" +
+        std::to_string(resource));
+  cache->invalidate();
+  ASSERT_TRUE(cache->refresh());
+  EXPECT_EQ(1u, cache->snapshot()->get(hvac, relation_any, 29).size());
+  query("DELETE FROM supla_dev_channel WHERE id=" + std::to_string(resource));
+  cache->invalidate();
+  ASSERT_TRUE(cache->refresh());
+  EXPECT_TRUE(cache->snapshot()->get(hvac, relation_any, 29).empty());
+  // Readers of the old immutable snapshot remain valid after replacement.
+  EXPECT_EQ(1u, before->get(hvac, relation_any, 29).size());
+}
+
+TEST_F(SupLanCloudGrantIntegrationTest,
+       ReconnectSharesOneRepositoryAcrossPeers) {
+  for (int i = 0; i < 12; ++i) {
+    int id = 710000 + i;
+    execute(
+        "INSERT INTO supla_iodevice "
+        "(id,user_id,location_id,guid,enabled,reg_date,protocol_version,flags) "
+        "SELECT " +
+        std::to_string(id) + ",user_id,location_id,UNHEX(MD5('reconnect-peer-" +
+        std::to_string(i) +
+        "')),1,reg_date,29,flags FROM supla_iodevice "
+        "WHERE id=" +
+        std::to_string(destination));
+    ASSERT_TRUE(factory()->accept_identity(id, {456, {}}));
+  }
+  int original_destination = destination;
+  for (int i = 0; i < 12; ++i) {
+    destination = 710000 + i;
+    replace(USER_APPROVAL_ORIGIN, 810000 + i, 1);
+  }
+  destination = original_destination;
+  unsigned repositories = 0;
+  auto counted_factory = [&]() -> std::unique_ptr<repository> {
+    ++repositories;
+    return factory();
+  };
+  DeleteTransport transport;
+  peer_provisioner peers(counted_factory, &transport);
+  Sql004Probe probe;
+  probe.restricted = true;
+  auto started = Sql004Probe::clock_usec();
+  peers.reconnect(source);
+  auto elapsed = Sql004Probe::clock_usec() - started;
+  EXPECT_EQ(12u, transport.sources.size());
+  EXPECT_TRUE(transport.destinations.empty());
+  for (const auto &request : transport.sources) {
+    EXPECT_EQ(source, request.PeerContext.SourceNodeId);
+    EXPECT_EQ(123u, request.PeerContext.RootEpoch);
+    ASSERT_EQ(1, request.AclEntryCount);
+    EXPECT_EQ(resource, request.Acl[0].ResourceId);
+    EXPECT_EQ(SUPLA_SUPLAN_PERMISSION_READ, request.Acl[0].Permissions);
+    EXPECT_NE(0, request.Flags);
+  }
+  std::cout << "RECONNECT_SQL repositories=" << repositories
+            << " connections=" << probe.connections
+            << " selects=" << probe.selects << " calls=" << probe.calls
+            << " dml=" << probe.dml << " elapsed_us=" << elapsed << std::endl;
+  EXPECT_EQ(1u, repositories);
+  EXPECT_EQ(1u, probe.connections);
+  EXPECT_EQ(0u, probe.dml);
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelationLoginRecoversLostCloudHint) {
+  config(resource);
+  auto user = supla_user::find(99124, true);
+  auto index = user->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  ASSERT_EQ(1u, index->snapshot()->get(hvac, relation_any, 29).size());
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  HvacPerfClient client(protocol.get(), user);
+  client
+      .load();  // Production login path, with no Cloud IPC or Device reconnect.
+  EXPECT_TRUE(index->snapshot()->get(hvac, relation_any, 29).empty());
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelationWriterWaitIsNotSqlFailure) {
+  config(resource);
+  auto index = supla_user::find(99124, true)->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  auto before = index->snapshot();
+  auto ticket = index->begin(hvac);
+  index->invalidate();
+  EXPECT_EQ(0u, index->time_left_usec());
+  {
+    Sql004Probe probe;
+    EXPECT_FALSE(index->refresh());
+    EXPECT_EQ(0u, probe.executions);
+    EXPECT_EQ(0u, probe.connections);
+  }
+  index->cancel(hvac, ticket);
+  EXPECT_EQ(1u, index->time_left_usec());
+  index->refresh();
+  EXPECT_EQ(0u, index->time_left_usec());
+  auto clean = index->snapshot();
+  index->cancel(hvac, index->begin(hvac));  // Rejected input, not a SQL fault.
+  EXPECT_EQ(clean, index->snapshot());
+  EXPECT_EQ(0u, index->time_left_usec());
+  supla_json_config empty;
+  empty.set_user_config("{}");
+  EXPECT_FALSE(index->complete(999999, index->begin(999999), &empty, -1));
+  EXPECT_EQ(1u, index->time_left_usec());
+  EXPECT_EQ(clean, index->snapshot());
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelationReloadAcceptsMaximumTextColumns) {
+  // Match Cloud Version20240906073433; the old Core base fixture uses VARCHAR.
+  query(
+      "ALTER TABLE supla_dev_channel MODIFY user_config TEXT "
+      "CHARACTER SET utf8mb4 DEFAULT NULL, MODIFY properties TEXT "
+      "CHARACTER SET utf8mb4 DEFAULT NULL");
+  auto id = std::to_string(resource);
+  query(
+      "UPDATE supla_dev_channel SET user_config=JSON_OBJECT("
+      "'mainThermometerChannelId'," +
+      id +
+      ", 'ignored',REPEAT('x',65535-"
+      "OCTET_LENGTH(JSON_OBJECT('mainThermometerChannelId'," +
+      id +
+      ",'ignored','')))), properties=JSON_OBJECT('ignored',REPEAT('y',65535-"
+      "OCTET_LENGTH(JSON_OBJECT('ignored','')))) WHERE id=" +
+      std::to_string(hvac));
+  EXPECT_EQ(65535, scalar("SELECT OCTET_LENGTH(user_config) FROM "
+                          "supla_dev_channel WHERE id=" +
+                          std::to_string(hvac)));
+  EXPECT_EQ(65535, scalar("SELECT OCTET_LENGTH(properties) FROM "
+                          "supla_dev_channel WHERE id=" +
+                          std::to_string(hvac)));
+  auto index = supla_user::find(99124, true)->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  ASSERT_TRUE(index->snapshot());
+  auto rows = index->snapshot()->get(hvac, relation_any, 29);
+  ASSERT_EQ(1u, rows.size());
+  EXPECT_EQ(resource, rows[0].get_id());
+  EXPECT_EQ(0u, index->time_left_usec());
+}
+
+TEST_F(SupLanHvacIntegrationTest, ClientWeeklyMergeRefreshesRelationRoot) {
+  config(resource);
+  auto user = supla_user::find(99124, true);
+  auto index = user->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto client = std::make_shared<M4ConfigClient>(protocol.get(), user);
+  char value[SUPLA_CHANNELVALUE_SIZE]{};
+  ASSERT_TRUE(client->get_channels()->add(new supla_client_channel(
+      client->get_channels(), hvac, 240, destination, 0, SUPLA_CHANNELTYPE_HVAC,
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+      "", 0, 0, 0, 0, 29, SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE, value, 0, "{}",
+      "{}", false)));
+  // A committed Cloud change is learned through the successful Client merge.
+  config(other_resource);
+  TChannelConfig_WeeklySchedule weekly{};
+  TSCS_ChannelConfig request{};
+  request.ChannelId = hvac;
+  request.ConfigType = SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE;
+  request.ConfigSize = sizeof(weekly);
+  memcpy(request.Config, &weekly, sizeof(weekly));
+  TsrpcReceivedData rd{};
+  rd.data.scs_channel_config = &request;
+  testing::SrpcAdapterMock reply;
+  EXPECT_CALL(reply, sc_async_channel_config_update_or_result(testing::_))
+      .WillOnce([](TSC_ChannelConfigUpdateOrResult *r) {
+        EXPECT_EQ(SUPLA_CONFIG_RESULT_TRUE, r->Result);
+        return 1;
+      });
+  ASSERT_TRUE(client->get_srpc_call_handler_collection()->handle_call(
+      client, &reply, &rd, SUPLA_CS_CALL_SET_CHANNEL_CONFIG, 29));
+  EXPECT_EQ(other_resource, index->snapshot()->nodes.at(hvac).hvac[0]);
+  EXPECT_EQ(0u, index->time_left_usec());
+}
+
+TEST_F(SupLanHvacIntegrationTest,
+       RelationReloadChurnRetriesWithoutFiveSecondDelay) {
+  config(resource);
+  auto index = supla_user::find(99124, true)->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  bool changed = false;
+  {
+    Sql004Probe probe;
+    probe.after_relation_read = [&] {
+      auto ticket = index->begin(hvac);
+      config(other_resource);
+      supla_json_config current;
+      current.set_user_config(("{\"mainThermometerChannelId\":" +
+                               std::to_string(other_resource) + "}")
+                                  .c_str());
+      EXPECT_TRUE(index->complete(hvac, ticket, &current, -1));
+      changed = true;
+    };
+    index->invalidate();
+    EXPECT_FALSE(index->refresh());
+    EXPECT_TRUE(changed);
+  }
+  EXPECT_EQ(other_resource, index->snapshot()->nodes.at(hvac).hvac[0]);
+  EXPECT_EQ(1u, index->time_left_usec());
+  index->refresh();
+  EXPECT_EQ(0u, index->time_left_usec());
+  EXPECT_EQ(other_resource, index->snapshot()->nodes.at(hvac).hvac[0]);
+}
+
+TEST_F(SupLanHvacIntegrationTest, StaleFallbackCannotReplacePublishedIndex) {
+  config(resource);
+  query(
+      "INSERT INTO supla_user "
+      "(id,short_unique_id,long_unique_id,salt,email,enabled,reg_date,"
+      "timezone,home_latitude,home_longitude) SELECT 99303,REPEAT('9',32),"
+      "'fallback-test',salt,'fallback@test.invalid',enabled,reg_date,"
+      "timezone,home_latitude,home_longitude FROM supla_user WHERE id=99124");
+  query("UPDATE supla_iodevice SET user_id=99303 WHERE user_id=99124");
+  query("UPDATE supla_dev_channel SET user_id=99303 WHERE user_id=99124");
+  auto user = supla_user::find(99303, true);
+  auto index = user->get_relation_index();
+  ASSERT_FALSE(index->snapshot());
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  HvacPerfClient client(protocol.get(), user);
+  class PausedChannel : public supla_client_channel {
+   public:
+    using supla_client_channel::supla_client_channel;
+    std::promise<void> reached, release;
+    supla_json_config *get_json_config() override {
+      auto copy = supla_client_channel::get_json_config();
+      reached.set_value();
+      release.get_future().wait();
+      return copy;
+    }
+  };
+  class Projection : public supla_client_channel_reactions {
+   public:
+    using supla_client_channel_reactions::supla_client_channel_reactions;
+    using supla_dobjects::lock;
+    using supla_dobjects::unlock;
+  };
+  auto channels = client.get_channels();
+  char value[SUPLA_CHANNELVALUE_SIZE]{};
+  auto json = "{\"mainThermometerChannelId\":" + std::to_string(resource) + "}";
+  auto channel = new PausedChannel(
+      channels, hvac, 240, destination, 0, SUPLA_CHANNELTYPE_HVAC,
+      SUPLA_CHANNELFNC_HVAC_THERMOSTAT, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+      "", 0, 0, 0, 0, 29, 0, value, 0, json.c_str(), "{}", false);
+  ASSERT_TRUE(channels->add(channel));
+  ASSERT_TRUE(channels->add(new supla_client_channel(
+      channels, resource, 0, source, 0, SUPLA_CHANNELTYPE_THERMOMETER,
+      SUPLA_CHANNELFNC_THERMOMETER, 0, 0, 0, 0, nullptr, nullptr, nullptr, "",
+      0, 0, 0, 0, 29, 0, value, 0, "{}", "{}", false)));
+  testing::NiceMock<testing::SrpcAdapterMock> adapter;
+  ON_CALL(adapter, get_proto_version()).WillByDefault(testing::Return(29));
+  TSC_SuplaChannelRelationPack captured{};
+  EXPECT_CALL(adapter, sc_async_channel_relation_pack_update(testing::_))
+      .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+        captured = *pack;
+        return 1;
+      });
+  supla_client_channel_relation_remote_updater updater(&adapter);
+  Projection graph(&updater);
+  auto old =
+      std::async(std::launch::async, [&] { return graph.load(channels); });
+  channel->reached.get_future().wait();
+  graph.lock();
+  channel->release.set_value();
+  // Wait for the old metadata capture to release the channel collection.
+  channels->for_each([](supla_client_channel *, bool *) {});
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(hvac));
+  EXPECT_TRUE(index->refresh());
+  EXPECT_TRUE(graph.load(channels));  // Recursive existing list mutex.
+  graph.unlock();
+  EXPECT_FALSE(old.get());
+  ASSERT_TRUE(graph.update_remote());
+  ASSERT_EQ(1, captured.count);
+  EXPECT_EQ(0, captured.items[0].Id);
+}
+
+TEST_F(SupLanHvacIntegrationTest, RejectedDeviceUploadDoesNotScheduleIndexSql) {
+  config(resource);
+  auto user = supla_user::find(99124, true);
+  auto index = user->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  supla_connection_test_access protocol;
+  ASSERT_TRUE(protocol.open());
+  auto device = std::make_shared<testing::DeviceStub>(protocol.get());
+  device->set_id(destination);
+  device->set_user(user);
+  supla_mariadb_access_provider db;
+  ASSERT_TRUE(db.connect());
+  supla_device_dao dao(&db);
+  device->set_channels(
+      new supla_device_channels(&dao, device.get(), nullptr, nullptr, 0));
+  auto previous = index->snapshot();
+  TSDS_SetChannelConfig request{};
+  request.ChannelNumber = 240;
+  request.ConfigType = 255;
+  TsrpcReceivedData rd{};
+  rd.data.sds_set_channel_config_request = &request;
+  testing::SrpcAdapterMock reply;
+  EXPECT_CALL(reply, sd_async_set_channel_config_result(testing::_))
+      .WillOnce([](TSDS_SetChannelConfigResult *r) {
+        EXPECT_EQ(SUPLA_CONFIG_RESULT_NOT_ALLOWED, r->Result);
+        return 1;
+      });
+  Sql004Probe probe;
+  HvacPerfHandler handler;
+  handler.handle_call(device, &reply, &rd, SUPLA_DS_CALL_SET_CHANNEL_CONFIG,
+                      29);
+  EXPECT_EQ(previous, index->snapshot());
+  EXPECT_EQ(0u, index->time_left_usec());
+  EXPECT_EQ(0u, probe.executions);
+}
+
+TEST_F(SupLanHvacIntegrationTest, RelayJsonIpcUpdatesOnlyChangedRelations) {
+  auto relay = add_channel(destination, 239, SUPLA_CHANNELTYPE_RELAY,
+                           SUPLA_CHANNELFNC_POWERSWITCH);
+  query("UPDATE supla_dev_channel SET type=" +
+        std::to_string(SUPLA_CHANNELTYPE_ELECTRICITY_METER) +
+        ",func=" + std::to_string(SUPLA_CHANNELFNC_ELECTRICITY_METER) +
+        " WHERE id=" + std::to_string(resource));
+  auto user = supla_user::find(99124, true);
+  auto index = user->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  auto hint = [&] {
+    testing::IpcSocketAdapterMock socket(-1);
+    EXPECT_CALL(socket, send_data(std::string("OK:99124\n"))).Times(1);
+    supla_on_channel_config_changed_command ipc(&socket);
+    auto input = std::string("USER-ON-CHANNEL-CONFIG-CHANGED:99124,") +
+                 std::to_string(destination) + "," + std::to_string(relay) +
+                 "," + std::to_string(SUPLA_CHANNELTYPE_RELAY) + "," +
+                 std::to_string(SUPLA_CHANNELFNC_POWERSWITCH) + "," +
+                 std::to_string(CONFIG_CHANGE_SCOPE_JSON_DEFAULT) + "\n";
+    std::vector<char> buffer(input.begin(), input.end());
+    buffer.push_back(0);
+    EXPECT_TRUE(
+        ipc.process_command(buffer.data(), buffer.size(), input.size()));
+  };
+  query(
+      "UPDATE supla_dev_channel SET user_config="
+      "JSON_OBJECT('relatedMeterChannelId'," +
+      std::to_string(resource) + ") WHERE id=" + std::to_string(relay));
+  hint();
+  auto rows = index->snapshot()->get(relay, relation_with_sub_channel, 29);
+  ASSERT_EQ(1u, rows.size());
+  EXPECT_EQ(resource, rows[0].get_id());
+  auto builds = index->build_count();
+  hint();
+  EXPECT_EQ(builds, index->build_count());
+  query("UPDATE supla_dev_channel SET user_config='{}' WHERE id=" +
+        std::to_string(relay));
+  hint();
+  EXPECT_TRUE(index->snapshot()->get(relay, relation_any, 29).empty());
+}
+
+TEST_F(SupLanHvacWireIntegrationTest, WarmRegistrationDefersRelationReload) {
+  auto index = supla_user::find(99126, true)->get_relation_index();
+  index->invalidate();
+  index->refresh();
+  auto previous = index->snapshot();
+  ASSERT_TRUE(previous);
+  std::atomic<bool> replied{false};
+  publication_adapter->before_registration_reply = [&] {
+    EXPECT_EQ(previous, index->snapshot());
+    EXPECT_EQ(1u, index->time_left_usec());
+    replied = true;
+  };
+  publication_adapter->registration_probe_ready = true;
+  register_family(SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT);
+  EXPECT_TRUE(replied);
+  publication_adapter->registration_probe_ready = false;
+  EXPECT_EQ(0u, index->time_left_usec());
+}

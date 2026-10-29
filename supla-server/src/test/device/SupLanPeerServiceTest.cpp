@@ -2679,3 +2679,42 @@ TEST(SupLanStreamLoadTest, SparseDirtyFanoutDoesNoUnsubscribedWork) {
               << " elapsed_us=" << elapsed << std::endl;
   }
 }
+
+TEST_F(SupLanPeerTest,
+       ReconnectSharedRepositoryRollsBackFailedRootObservation) {
+  desired_acl(peers, {entry});
+  store.additional[2] = store.a;
+  store.additional[2].id = 2;
+  store.additional[2].destination = 3;
+  class FailFirstObserve : public MemoryRepo {
+   public:
+    explicit FailFirstObserve(Store *store) : MemoryRepo(store) {}
+    bool observe_root(uint64_t id) override {
+      if (id == 1) {
+        association_t current;
+        // Model a failure after START TRANSACTION, before its commit.
+        if (!begin(id, &current)) return false;
+        return false;
+      }
+      return repository::observe_root(id);
+    }
+  };
+  unsigned repositories = 0;
+  auto shared_factory = [&]() -> std::unique_ptr<repository> {
+    ++repositories;
+    return std::make_unique<FailFirstObserve>(&store);
+  };
+  Transport wire;
+  peer_provisioner replay(shared_factory, &wire);
+  replay.reconnect(1);
+  EXPECT_EQ(1u, repositories);
+  EXPECT_EQ(2u, wire.sources.size());
+  EXPECT_TRUE(wire.destinations.empty());
+  EXPECT_TRUE(std::async(std::launch::async, [&] {
+                if (!store.mutex.try_lock()) return false;
+                store.mutex.unlock();
+                return true;
+              }).get());
+  EXPECT_EQ(0u, store.a.root);
+  EXPECT_EQ(0u, store.a.provisioned_generation);
+}

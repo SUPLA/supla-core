@@ -38,6 +38,7 @@
 #include "webhook/state_webhook_credentials.h"
 
 class supla_suplan_server_peers;
+class supla_channel_relation_index;
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
@@ -50,6 +51,7 @@ class supla_user {
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
+  std::unique_ptr<supla_channel_relation_index> relation_index;
 
   std::string timezone;
   double latitude;
@@ -89,6 +91,9 @@ class supla_user {
   static void init(void);
   static void user_free(void);
   supla_user_devices *get_devices();
+  supla_channel_relation_index *get_relation_index();
+  void refresh_channel_relations();
+  void wake_relation_retry();
   supla_user_clients *get_clients();
 
   static supla_user *add_device(

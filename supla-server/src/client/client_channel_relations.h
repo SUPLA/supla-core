@@ -19,16 +19,26 @@
 #ifndef SUPLA_CLIENT_CHANNEL_RELATIONS_H_
 #define SUPLA_CLIENT_CHANNEL_RELATIONS_H_
 
+#include <cstdint>
+#include <vector>
+
+#include "device/channel_relation.h"
 #include "distributedobjects/dobjects.h"
 #include "proto.h"
 
 class supla_client_channels;
+struct supla_relation_edge;
 class supla_client_channel_reactions : public supla_dobjects {
+ private:
+  uint64_t revision = 0;
+  bool loaded = false;
+  std::vector<supla_relation_edge> previous;
+
  public:
   explicit supla_client_channel_reactions(
       supla_abstract_dobject_remote_updater *updater);
   virtual ~supla_client_channel_reactions();
-  void load(supla_client_channels *channels);
+  bool load(supla_client_channels *channels, bool force = true);
 };
 
 #endif /* SUPLA_CLIENT_CHANNEL_RELATIONS_H_ */

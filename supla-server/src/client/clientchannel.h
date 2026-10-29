@@ -86,6 +86,8 @@ class supla_client_channel : public supla_client_objcontainer_item,
 
  protected:
   virtual unsigned char get_protocol_version(void);
+  bool indexed_relations(std::vector<supla_channel_relation> *relations,
+                         e_relation_kind kind) override;
 
  public:
   supla_client_channel(

@@ -102,7 +102,8 @@ class peer_provisioner {
   void send_source(flow_t *flow, bool key);
   void send_destination(flow_t *flow, const unsigned char *key);
   void result(flow_t *flow, bool source, uint8_t result);
-  bool reconcile_locked(uint64_t id, bool meaningful_event);
+  bool reconcile_locked(uint64_t id, bool meaningful_event,
+                        repository *repo = nullptr);
   void finish_cleanup(const association_t &sent, bool source,
                       const std::shared_ptr<flow_t> &flow);
 

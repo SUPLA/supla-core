@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -1481,5 +1482,145 @@ TEST_F(CommonChannelPropertiesTest, explicitAllSixRecipientEncoding) {
                   : ((base + 5) << 8) | 1,
               wire->HeatOrColdSourceSwitchChannelId);
   }
+}
+}  // namespace testing
+
+#include <set>
+#include <tuple>
+
+#include "user/channel_relation_index.h"
+
+namespace testing {
+namespace {
+using relation_key = std::tuple<int, int, short>;
+std::set<relation_key> relation_keys(std::vector<supla_channel_relation> rows) {
+  std::set<relation_key> result;
+  for (auto &r : rows)
+    result.emplace(r.get_id(), r.get_parent_id(), r.get_relation_type());
+  return result;
+}
+}  // namespace
+TEST_F(CommonChannelPropertiesTest, IndexedRelationFamiliesHaveExpectedEdges) {
+  supla_client_channels channels(nullptr);
+  relation_channel(
+      &channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+      "{\"mainThermometerChannelId\":101,\"auxThermometerChannelId\":102,"
+      "\"auxThermometerType\":\"FLOOR\",\"binarySensorChannelId\":103,"
+      "\"pumpSwitchChannelId\":104,\"heatOrColdSourceSwitchChannelId\":105,"
+      "\"masterThermostatChannelId\":106}",
+      SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&channels, 101, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  relation_channel(&channels, 102, 30, SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+  relation_channel(&channels, 103, 40, SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW,
+                   "{}", SUPLA_CHANNELTYPE_BINARYSENSOR);
+  relation_channel(&channels, 104, 50, SUPLA_CHANNELFNC_PUMPSWITCH, "{}",
+                   SUPLA_CHANNELTYPE_RELAY);
+  relation_channel(&channels, 105, 60, SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH,
+                   "{}", SUPLA_CHANNELTYPE_RELAY);
+  relation_channel(&channels, 106, 70, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, "{}",
+                   SUPLA_CHANNELTYPE_HVAC);
+  supla_relation_snapshot index;
+  channels.for_each([&](supla_client_channel *c, bool *) {
+    supla_relation_node n;
+    n.id = c->get_id();
+    n.device = c->get_device_id();
+    n.function = c->get_func();
+    n.type = c->get_type();
+    std::unique_ptr<supla_json_config> json(c->get_json_config());
+    n.parse(json.get());
+    index.nodes[n.id] = n;
+  });
+  index.build();
+  EXPECT_EQ((std::set<relation_key>{
+                {101, 100, CHANNEL_RELATION_TYPE_MAIN_TERMOMETER},
+                {102, 100, CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR},
+                {103, 100, CHANNEL_RELATION_TYPE_DEFAULT},
+                {104, 100, CHANNEL_RELATION_TYPE_PUMP_SWITCH},
+                {105, 100, CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH},
+                {100, 106, CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT}}),
+            relation_keys(index.get(100, relation_any, 29)));
+  EXPECT_EQ(0u, index.get(104, relation_with_parent_channel, 24).size());
+  EXPECT_EQ(1u, index.get(104, relation_with_parent_channel, 25).size());
+  EXPECT_EQ(0u, index.get(106, relation_with_sub_channel, 24).size());
+}
+TEST_F(CommonChannelPropertiesTest, IndexedSensorVisibilityAndVersion) {
+  supla_relation_snapshot index;
+  for (int id : {1, 2, 3}) {
+    supla_relation_node n;
+    n.id = id;
+    n.device = id;
+    n.type = id == 3 ? SUPLA_CHANNELTYPE_BINARYSENSOR
+                     : SUPLA_CHANNELTYPE_VALVE_OPENCLOSE;
+    n.function = id == 3 ? SUPLA_CHANNELFNC_FLOOD_SENSOR
+                         : SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
+    if (id != 3) n.sensors = {3};
+    index.nodes[id] = n;
+  }
+  index.build();
+  EXPECT_TRUE(index.get(3, relation_with_parent_channel, 26).empty());
+  auto visible = [](const supla_relation_edge &e) { return e.parent != 1; };
+  auto parents = index.get(3, relation_with_parent_channel, 27, visible);
+  ASSERT_EQ(1u, parents.size());
+  EXPECT_EQ(2, parents[0].get_parent_id());
+  EXPECT_EQ(1u, index.get(1, relation_with_sub_channel, 27).size());
+}
+
+}  // namespace testing
+
+namespace testing {
+TEST_F(CommonChannelPropertiesTest, OpeningSensorKeepsHvacParentInBothPaths) {
+  supla_client_channels channels(nullptr);
+  relation_channel(&channels, 10, 1, SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK);
+  relation_channel(&channels, 20, 2, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                   "{\"binarySensorChannelId\":30}", SUPLA_CHANNELTYPE_HVAC);
+  char value[SUPLA_CHANNELVALUE_SIZE]{};
+  auto sensor = new RelationClientChannel(
+      &channels, 30, 3, 3, 1, SUPLA_CHANNELTYPE_BINARYSENSOR,
+      SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR, 10, 0, 0, 0, nullptr, nullptr,
+      nullptr, "", 0, 0, 0, 0, 29, 0, value, 0, "{}", "{}", false);
+  ASSERT_TRUE(channels.add(sensor));
+  auto check = [&](std::vector<supla_channel_relation> rows) {
+    ASSERT_EQ(2u, rows.size());
+    EXPECT_EQ(10, rows[0].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_OPENING_SENSOR,
+              rows[0].get_relation_type());
+    EXPECT_EQ(20, rows[1].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_DEFAULT, rows[1].get_relation_type());
+  };
+  check(sensor->get_channel_relations(relation_with_parent_channel));
+  supla_relation_snapshot graph;
+  channels.for_each([&](supla_client_channel *c, bool *) {
+    auto node = supla_relation_node::read(c);
+    node.device = c->get_device_id();
+    graph.nodes[node.id] = node;
+  });
+  graph.build();
+  check(graph.get(30, relation_with_parent_channel, 29));
+}
+TEST_F(CommonChannelPropertiesTest,
+       HvacRelationOrderFollowsReferencedChannels) {
+  supla_relation_snapshot graph;
+  supla_relation_node hvac;
+  hvac.id = 100;
+  hvac.function = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+  hvac.hvac[0] = 300;
+  hvac.hvac[1] = 200;
+  hvac.aux_type = SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR;
+  graph.nodes[100] = hvac;
+  for (int id : {200, 300}) {
+    supla_relation_node sensor;
+    sensor.id = id;
+    sensor.device = id;
+    sensor.function = SUPLA_CHANNELFNC_THERMOMETER;
+    graph.nodes[id] = sensor;
+  }
+  graph.build();
+  auto rows = graph.get(100, relation_with_sub_channel, 29);
+  ASSERT_EQ(2u, rows.size());
+  EXPECT_EQ(200, rows[0].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+            rows[0].get_relation_type());
+  EXPECT_EQ(300, rows[1].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER, rows[1].get_relation_type());
 }
 }  // namespace testing

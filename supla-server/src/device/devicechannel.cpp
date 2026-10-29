@@ -44,6 +44,7 @@
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
 #include "suplan/server_peer_transport.h"
+#include "user/channel_relation_index.h"
 #include "user/user.h"
 #include "user/virtualchannel.h"
 #include "value/channel_openclosed_value.h"
@@ -1334,4 +1335,24 @@ supla_abstract_channel_value *supla_device_channel::_get_value(void) {
   unlock();
 
   return result;
+}
+
+bool supla_device_channel::indexed_relations(
+    std::vector<supla_channel_relation> *relations, e_relation_kind kind) {
+  if (kind != relation_with_sub_channel &&
+      (get_func() == SUPLA_CHANNELFNC_FLOOD_SENSOR ||
+       get_func() == SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR))
+    return false;
+  auto user = get_user();
+  auto index = user ? user->get_relation_index()->snapshot() : nullptr;
+  if (!index) return false;
+  auto visible = [&](const supla_relation_edge &edge) {
+    return !(edge.directions & 4) || kind == relation_with_sub_channel ||
+           user->get_devices()->get(0, edge.parent) != nullptr;
+  };
+  for (auto &relation :
+       index->get(get_id(), kind, get_protocol_version(), visible))
+    add_relation(relations, relation.get_id(), relation.get_parent_id(),
+                 relation.get_relation_type());
+  return true;
 }

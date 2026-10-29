@@ -40,8 +40,9 @@
 #include "log.h"
 #include "safearray.h"
 #include "srpc/srpc.h"
-#include "user.h"
 #include "suplan/server_peer_transport.h"
+#include "user.h"
+#include "user/channel_relation_index.h"
 #include "vbt/value_based_triggers.h"
 
 using std::dynamic_pointer_cast;
@@ -236,6 +237,8 @@ bool supla_device::can_reconnect(void) {
 }
 
 void supla_device::iterate(void) {
+  if (get_user() && get_user()->get_relation_index()->time_left_usec() == 1)
+    get_user()->refresh_channel_relations();
   lock();
   bool expired = identity_bootstrap.expire();
   if (expired) registration_sync_pending = false;
@@ -261,6 +264,10 @@ unsigned _supla_int64_t supla_device::wait_time_usec(void) {
   unsigned _supla_int64_t result =
       supla_abstract_connection_object::wait_time_usec();
 
+  if (get_user()) {
+    auto due = get_user()->get_relation_index()->time_left_usec();
+    if (due && due < result) result = due;
+  }
   lock();
   auto identity_due = identity_bootstrap.time_left_usec();
   unlock();

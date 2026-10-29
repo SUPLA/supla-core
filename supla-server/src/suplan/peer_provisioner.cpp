@@ -227,6 +227,8 @@ void peer_provisioner::reconnect(int device) {
     return;
   }
   for (auto id : ids) {
+    // A failed cleanup must not leave a transaction open for the next peer.
+    repo->rollback();
     association_t a;
     int owner = 0;
     if (!repo->load(id, &a)) {
@@ -254,8 +256,13 @@ void peer_provisioner::reconnect(int device) {
       defer_reconnect(device);
       continue;
     }
-    service.observe_root(id);
-    reconcile(id, true);
+    auto gate = association_gate(id);
+    std::lock_guard<std::mutex> lock(*gate);
+    repo->observe_root(id);
+    // Keep the existing per-association transaction boundary, including a
+    // failed observe_root; share the connection, never the transaction.
+    repo->rollback();
+    reconcile_locked(id, true, repo.get());
   }
 }
 peer_provisioner::current_state peer_provisioner::current(repository *repo,
@@ -374,9 +381,11 @@ bool peer_provisioner::reconcile(uint64_t id, bool meaningful_event) {
   std::lock_guard<std::mutex> lock(*gate);
   return reconcile_locked(id, meaningful_event);
 }
-bool peer_provisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
+bool peer_provisioner::reconcile_locked(uint64_t id, bool meaningful_event,
+                                       repository *repo) {
   schedule_guard update{this, id};
-  auto repo = factory();
+  auto local = repo ? nullptr : factory();
+  if (!repo) repo = local.get();
   association_t a;
   identity_t identity;
   auto defer = [&] {
@@ -418,7 +427,7 @@ bool peer_provisioner::reconcile_locked(uint64_t id, bool meaningful_event) {
     // Both current DB ownership and accepted owner identity must agree. Never
     // replay a newly allocated/stale ChannelId merely because it exists in DB.
     bool read_failed = false;
-    if (!current_topology(repo.get(), a, identity, &read_failed)) {
+    if (!current_topology(repo, a, identity, &read_failed)) {
       if (read_failed) defer();
       transport->diagnostic(id, a.source,
                             read_failed ? SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR

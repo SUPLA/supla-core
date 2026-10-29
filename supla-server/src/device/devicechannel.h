@@ -104,6 +104,8 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
           on_channel_properties);
 
   virtual unsigned char get_protocol_version(void);
+  bool indexed_relations(std::vector<supla_channel_relation> *relations,
+                         e_relation_kind kind) override;
 
  public:
   std::mutex &get_config_mutex();
