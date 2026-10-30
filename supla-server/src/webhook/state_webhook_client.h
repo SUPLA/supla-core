@@ -93,7 +93,7 @@ class supla_state_webhook_client {
   bool impulse_counter_heat_measurement_report(void);
   bool triggered_actions_report(unsigned int actions);
   bool hvac_report(const char *function);
-  bool binary_sensor_report(void);
+  bool binary_sensor_report(const char *function = "BINARY_SENSOR");
   bool motion_sensor_report(void);
 };
 

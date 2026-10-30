@@ -318,28 +318,56 @@ void supla_action_executor::hvac_set_parameters(
   });
 }
 
-void supla_action_executor::hvac_switch_to_program_mode(void) {
+void supla_action_executor::set_at_parameters(
+    supla_action_mode_parameters *params) {
   execute_action([&](supla_user_channelgroups *channel_groups,
                      supla_device_channels *channels) -> void {
     if (channel_groups) {
-      channel_groups->action_hvac_switch_to_program_mode(get_caller(),
-                                                         get_group_id());
+      channel_groups->action_set_at_parameters(get_caller(), get_group_id(),
+                                               params);
     } else {
-      channels->action_hvac_switch_to_program_mode(get_caller(),
-                                                   get_channel_id(), 0, 0);
+      channels->action_set_at_parameters(get_caller(), get_channel_id(), 0, 0,
+                                         params);
     }
   });
 }
 
-void supla_action_executor::hvac_switch_to_manual_mode(void) {
+void supla_action_executor::set_relay_parameters(
+    supla_action_mode_parameters *params) {
   execute_action([&](supla_user_channelgroups *channel_groups,
                      supla_device_channels *channels) -> void {
     if (channel_groups) {
-      channel_groups->action_hvac_switch_to_manual_mode(get_caller(),
-                                                        get_group_id());
+      channel_groups->action_set_relay_parameters(get_caller(), get_group_id(),
+                                                  params);
     } else {
-      channels->action_hvac_switch_to_manual_mode(get_caller(),
-                                                  get_channel_id(), 0, 0);
+      channels->action_set_relay_parameters(get_caller(), get_channel_id(), 0,
+                                            0, params);
+    }
+  });
+}
+
+void supla_action_executor::switch_to_program_mode(void) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_switch_to_program_mode(get_caller(),
+                                                    get_group_id());
+    } else {
+      channels->action_switch_to_program_mode(get_caller(), get_channel_id(), 0,
+                                              0);
+    }
+  });
+}
+
+void supla_action_executor::switch_to_manual_mode(void) {
+  execute_action([&](supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_switch_to_manual_mode(get_caller(),
+                                                   get_group_id());
+    } else {
+      channels->action_switch_to_manual_mode(get_caller(), get_channel_id(), 0,
+                                             0);
     }
   });
 }

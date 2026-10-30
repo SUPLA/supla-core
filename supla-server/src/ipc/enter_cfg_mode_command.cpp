@@ -29,11 +29,13 @@ supla_enter_cfg_mode_command::supla_enter_cfg_mode_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_enter_cfg_mode_command(socket_adapter) {}
 
-bool supla_enter_cfg_mode_command::enter_cfg_mode(int user_id, int device_id) {
+bool supla_enter_cfg_mode_command::enter_cfg_mode(
+    int user_id, int device_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, 0);
   if (device != nullptr) {
-    return device->enter_cfg_mode();
+    return device->enter_cfg_mode(queued_at, waiting_for_result);
   }
   return false;
 }

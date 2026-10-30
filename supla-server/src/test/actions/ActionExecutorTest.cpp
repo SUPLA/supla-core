@@ -18,10 +18,12 @@
 
 #include "ActionExecutorTest.h"
 
+#include <cstring>
 #include <memory>
 #include <vector>
 
 #include "actions/action_config.h"
+#include "actions/action_mode_parameters.h"
 #include "device/devicechannels.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/device/DeviceDaoMock.h"
@@ -30,8 +32,32 @@
 namespace testing {
 
 using std::make_shared;
+using std::make_unique;
 using std::shared_ptr;
 using std::vector;
+
+namespace {
+
+std::unique_ptr<supla_device_channels> create_channels(
+    DeviceDaoMock *dao, DeviceStub *device, int type, int func,
+    unsigned _supla_int64_t flags, const char *raw_value = nullptr) {
+  EXPECT_CALL(*dao, get_channels(device))
+      .WillOnce([type, func, flags, raw_value](supla_device *device) {
+        vector<supla_device_channel *> result;
+        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        if (raw_value) {
+          std::memcpy(value, raw_value, sizeof(value));
+        }
+        result.push_back(new supla_device_channel(
+            device, 89, 0, type, func, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+            false, flags, value, 0, nullptr, nullptr, nullptr, nullptr));
+        return result;
+      });
+
+  return make_unique<supla_device_channels>(dao, device, nullptr, nullptr, 0);
+}
+
+}  // namespace
 
 ActionExecutorTest::ActionExecutorTest(void) {
   aexec = nullptr;
@@ -44,6 +70,7 @@ void ActionExecutorTest::SetUp() {
   supla_user *user = supla_user::find(12345, true);
   device = make_shared<DeviceStub>(nullptr);
   device->set_id(567);
+  device->set_user(user);
 
   DeviceDaoMock dao;
 
@@ -232,6 +259,165 @@ TEST_F(ActionExecutorTest, sendPush) {
   EXPECT_EQ(aexec->getSentCounter(), 1);
   EXPECT_EQ(aexec->get_push_notification_id(), 155);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
+TEST(DeviceChannelsSwitchToModeTest, acceptsRelayWithWeeklySchedule) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels =
+      create_channels(&dao, &device, SUPLA_CHANNELTYPE_RELAY,
+                      SUPLA_CHANNELFNC_LIGHTSWITCH,
+                      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE);
+
+  EXPECT_TRUE(channels->action_switch_to_program_mode(supla_caller(ctIPC), 89,
+                                                      0, 0));
+  EXPECT_TRUE(channels->action_switch_to_manual_mode(supla_caller(ctIPC), 89,
+                                                     0, 0));
+}
+
+TEST(DeviceChannelsSwitchToModeTest, rejectsRelayWithoutWeeklySchedule) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device, SUPLA_CHANNELTYPE_RELAY,
+                                  SUPLA_CHANNELFNC_LIGHTSWITCH, 0);
+
+  EXPECT_FALSE(channels->action_switch_to_program_mode(supla_caller(ctIPC), 89,
+                                                       0, 0));
+  EXPECT_FALSE(channels->action_switch_to_manual_mode(supla_caller(ctIPC), 89,
+                                                      0, 0));
+}
+
+TEST(DeviceChannelsSwitchToModeTest, acceptsActionTriggerWithWeeklySchedule) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels =
+      create_channels(&dao, &device, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                      SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                      SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE);
+
+  EXPECT_TRUE(channels->action_switch_to_program_mode(supla_caller(ctIPC), 89,
+                                                      0, 0));
+  EXPECT_TRUE(channels->action_switch_to_manual_mode(supla_caller(ctIPC), 89,
+                                                     0, 0));
+}
+
+TEST(DeviceChannelsSwitchToModeTest,
+     rejectsActionTriggerWithoutWeeklySchedule) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER, 0);
+
+  EXPECT_FALSE(channels->action_switch_to_program_mode(supla_caller(ctIPC), 89,
+                                                       0, 0));
+  EXPECT_FALSE(channels->action_switch_to_manual_mode(supla_caller(ctIPC), 89,
+                                                      0, 0));
+}
+
+TEST(DeviceChannelsSwitchToModeTest, readsGateRelayValue) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  TRelayChannel_Value expected = {};
+  expected.flags = SUPLA_RELAY_FLAG_WEEKLY_SCHEDULE_ENABLED;
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  std::memcpy(raw_value, &expected, sizeof(expected));
+
+  auto channels = create_channels(&dao, &device, SUPLA_CHANNELTYPE_RELAY,
+                                  SUPLA_CHANNELFNC_CONTROLLINGTHEGATE,
+                                  SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE,
+                                  raw_value);
+  TRelayChannel_Value actual = {};
+  EXPECT_TRUE(channels->get_relay_value(89, &actual));
+  EXPECT_EQ(actual.flags, SUPLA_RELAY_FLAG_WEEKLY_SCHEDULE_ENABLED);
+}
+
+TEST(DeviceChannelsSwitchToModeTest, readsActionTriggerValue) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  TActionTriggerProperties expected = {};
+  expected.Flags = SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED;
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  std::memcpy(raw_value, &expected, sizeof(expected));
+
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                                  SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE,
+                                  raw_value);
+  TActionTriggerProperties actual = {};
+  EXPECT_TRUE(channels->get_action_trigger_value(89, &actual));
+  EXPECT_EQ(actual.Flags, SUPLA_ACTION_TRIGGER_FLAG_WEEKLY_SCHEDULE_ENABLED);
+}
+
+TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedActionTriggerModes) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                                  SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED);
+  supla_action_mode_parameters not_set(SUPLA_BUTTON_MODE_NOT_SET);
+  supla_action_mode_parameters locked(SUPLA_BUTTON_MODE_LOCKED);
+  supla_action_mode_parameters invalid(2);
+
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &not_set));
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &locked));
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &invalid));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, rejectsUnsupportedActionTrigger) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER, 0);
+  supla_action_mode_parameters locked(SUPLA_BUTTON_MODE_LOCKED);
+
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &locked));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedRelayModes) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNEL_FLAG_RELAY_MODE_NOT_SET_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_FORCED_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_RELAY_MODE_AUTOMATIC_SUPPORTED);
+  supla_action_mode_parameters not_set(SUPLA_RELAY_MODE_NOT_SET);
+  supla_action_mode_parameters start_on(SUPLA_RELAY_MODE_START_ON);
+  supla_action_mode_parameters forced_off(SUPLA_RELAY_MODE_FORCED_OFF);
+  supla_action_mode_parameters automatic(SUPLA_RELAY_MODE_AUTOMATIC);
+  supla_action_mode_parameters invalid(6);
+
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &not_set));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &start_on));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &forced_off));
+  EXPECT_TRUE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                    0, &automatic));
+  EXPECT_FALSE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                     0, &invalid));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, rejectsUnsupportedRelayMode) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_RELAY, SUPLA_CHANNELFNC_LIGHTSWITCH,
+      SUPLA_CHANNEL_FLAG_RELAY_MODE_START_SUPPORTED);
+  supla_action_mode_parameters automatic(SUPLA_RELAY_MODE_AUTOMATIC);
+
+  EXPECT_FALSE(channels->action_set_relay_parameters(supla_caller(ctIPC), 89, 0,
+                                                     0, &automatic));
 }
 
 } /* namespace testing */

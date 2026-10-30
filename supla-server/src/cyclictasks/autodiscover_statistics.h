@@ -16,15 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_hvac_switch_to_manual_mode.h"
+#ifndef AUTODISCOVER_STATISTICS_H_
+#define AUTODISCOVER_STATISTICS_H_
 
-s_worker_action_switch_to_manual_mode::s_worker_action_switch_to_manual_mode(
-    s_abstract_worker *worker)
-    : s_worker_action_switch_to(worker) {}
+#include <string>
 
-bool s_worker_action_switch_to_manual_mode::to_program_mode(void) {
-  return false;
-}
+#include "cyclictasks/abstract_autodiscover_statistics.h"
 
-REGISTER_ACTION(s_worker_action_switch_to_manual_mode,
-                ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+class supla_autodiscover_statistics
+    : public supla_abstract_autodiscover_statistics {
+ protected:
+  virtual std::string get_target_token(
+      supla_abstract_db_access_provider *dba);
+  virtual supla_abstract_curl_adapter *get_curl_adapter(void);
+  virtual void release_curl_adapter(supla_abstract_curl_adapter *adapter);
+
+ public:
+  supla_autodiscover_statistics(void);
+  virtual ~supla_autodiscover_statistics();
+};
+
+#endif /* AUTODISCOVER_STATISTICS_H_ */

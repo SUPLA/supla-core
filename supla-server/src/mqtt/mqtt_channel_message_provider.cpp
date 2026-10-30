@@ -371,6 +371,15 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
       snprintf(buf, buf_size, "FLOOD_SENSOR");
       break;
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+      snprintf(buf, buf_size, "SMOKE_SENSOR");
+      break;
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+      snprintf(buf, buf_size, "CARBON_MONOXIDE_SENSOR");
+      break;
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
+      snprintf(buf, buf_size, "GAS_SENSOR");
+      break;
     case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       snprintf(buf, buf_size, "CONTAINER_LEVEL_SENSOR");
       break;
@@ -601,6 +610,16 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
       break;
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Flood sensor");
+      break;
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Smoke sensor");
+      break;
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Carbon monoxide sensor");
+      break;
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Gas sensor");
       break;
     case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
@@ -1919,6 +1938,15 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_FLOOD_SENSOR:
     case SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR:
       return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
+                              message_size, true);
+    case SUPLA_CHANNELFNC_SMOKE_SENSOR:
+      return ha_binary_sensor("smoke", topic_prefix, topic_name, message,
+                              message_size, true);
+    case SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR:
+      return ha_binary_sensor("carbon_monoxide", topic_prefix, topic_name,
+                              message, message_size, true);
+    case SUPLA_CHANNELFNC_GAS_SENSOR:
+      return ha_binary_sensor("gas", topic_prefix, topic_name, message,
                               message_size, true);
     case SUPLA_CHANNELFNC_MOTION_SENSOR:
       return ha_binary_sensor("motion", topic_prefix, topic_name, message,

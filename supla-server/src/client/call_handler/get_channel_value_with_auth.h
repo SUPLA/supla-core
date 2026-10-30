@@ -23,13 +23,34 @@
 
 #include "client/call_handler/abstract_client_srpc_call_handler.h"
 
+class supla_mariadb_access_provider;
+class supla_connection_dao;
+class supla_client_dao;
+
 class supla_ch_get_channel_value_with_auth
     : public supla_abstract_client_srpc_call_handler {
  protected:
+  struct authentication_result {
+    int result_code;
+    int client_id;
+    int user_id;
+  };
+
   virtual void handle_call(std::shared_ptr<supla_client> client,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
                            unsigned char proto_version);
+  void handle_request(std::shared_ptr<supla_client> client,
+                      supla_abstract_srpc_adapter* srpc_adapter,
+                      TCS_GetChannelValueWithAuth* request);
+  virtual authentication_result authenticate(
+      std::shared_ptr<supla_client> client,
+      TCS_ClientAuthorizationDetails* auth,
+      supla_abstract_srpc_adapter* srpc_adapter,
+      supla_mariadb_access_provider* dba, supla_connection_dao* conn_dao,
+      supla_client_dao* client_dao);
+  virtual bool channel_exists(supla_client_dao* client_dao, int client_id,
+                              int channel_id);
 
  public:
   supla_ch_get_channel_value_with_auth(void);

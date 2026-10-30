@@ -345,25 +345,52 @@ TEST_F(ActionCgCommandTest, SetHvacParameters) {
                         "OK:30\n");
 }
 
-TEST_F(ActionCgCommandTest, HvacSwitchToManualMode) {
-  StrictMock<ActionCgCommandMock> c(socketAdapter,
-                                    ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+TEST_F(ActionCgCommandTest, SetAtParameters) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_manual_mode(user, 30))
-      .WillOnce(Return(true));
+  EXPECT_CALL(c, action_set_at_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_LOCKED);
+        return true;
+      });
 
-  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE:10,30\n",
+  commandProcessingTest("ACTION-CG-SET-AT-PARAMETERS:10,30,1\n", "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, SetRelayParameters) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_relay_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_RELAY_MODE_NOT_SET);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-SET-RELAY-PARAMETERS:10,30,0\n",
                         "OK:30\n");
 }
 
-TEST_F(ActionCgCommandTest, HvacSwitchToProgramMode) {
+TEST_F(ActionCgCommandTest, SwitchToManualMode) {
   StrictMock<ActionCgCommandMock> c(socketAdapter,
-                                    ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+                                    ACTION_SWITCH_TO_MANUAL_MODE);
   cmd = &c;
-  EXPECT_CALL(c, action_hvac_switch_to_program_mode(user, 30))
+  EXPECT_CALL(c, action_switch_to_manual_mode(user, 30))
       .WillOnce(Return(true));
 
-  commandProcessingTest("ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE:10,30\n",
+  commandProcessingTest("ACTION-CG-SWITCH-TO-MANUAL-MODE:10,30\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, SwitchToProgramMode) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter,
+                                    ACTION_SWITCH_TO_PROGRAM_MODE);
+  cmd = &c;
+  EXPECT_CALL(c, action_switch_to_program_mode(user, 30))
+      .WillOnce(Return(true));
+
+  commandProcessingTest("ACTION-CG-SWITCH-TO-PROGRAM-MODE:10,30\n",
                         "OK:30\n");
 }
 

@@ -18,6 +18,8 @@
 
 #include "client/call_handler/superuser_authorization_request.h"
 
+#include <unistd.h>
+
 #include <memory>
 
 #include "client/client.h"
@@ -30,6 +32,11 @@ supla_ch_superuser_authorization_request::
 
 supla_ch_superuser_authorization_request::
     ~supla_ch_superuser_authorization_request() {}
+
+__useconds_t
+supla_ch_superuser_authorization_request::get_hold_time_on_failure_usec(void) {
+  return 2000000;
+}
 
 bool supla_ch_superuser_authorization_request::can_handle_call(
     unsigned int call_id) {
@@ -60,6 +67,9 @@ void supla_ch_superuser_authorization_request::handle_call(
       result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
     } else {
       result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
+      // Slow down online guessing of the account password (same hold time
+      // as for a failed registration).
+      usleep(get_hold_time_on_failure_usec());
     }
 
     srpc_adapter->sc_async_superuser_authorization_result(&result);

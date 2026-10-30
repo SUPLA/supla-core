@@ -109,24 +109,25 @@ void supla_total_energy_logger_dao::tsdb_add(
     return;
   }
 
-  ntx.exec_params(
+  ntx.exec(
       "SELECT "
       "supla_add_em_log_item($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$"
       "15)",
-      channel_id, to_unsigned(em_ev->total_forward_active_energy[0]),
-      to_unsigned(em_ev->total_reverse_active_energy[0]),
-      to_unsigned(em_ev->total_forward_reactive_energy[0]),
-      to_unsigned(em_ev->total_reverse_reactive_energy[0]),
-      to_unsigned(em_ev->total_forward_active_energy[1]),
-      to_unsigned(em_ev->total_reverse_active_energy[1]),
-      to_unsigned(em_ev->total_forward_reactive_energy[1]),
-      to_unsigned(em_ev->total_reverse_reactive_energy[1]),
-      to_unsigned(em_ev->total_forward_active_energy[2]),
-      to_unsigned(em_ev->total_reverse_active_energy[2]),
-      to_unsigned(em_ev->total_forward_reactive_energy[2]),
-      to_unsigned(em_ev->total_reverse_reactive_energy[2]),
-      to_unsigned(em_ev->total_forward_active_energy_balanced),
-      to_unsigned(em_ev->total_reverse_active_energy_balanced));
+      pqxx::params{channel_id,
+                   to_unsigned(em_ev->total_forward_active_energy[0]),
+                   to_unsigned(em_ev->total_reverse_active_energy[0]),
+                   to_unsigned(em_ev->total_forward_reactive_energy[0]),
+                   to_unsigned(em_ev->total_reverse_reactive_energy[0]),
+                   to_unsigned(em_ev->total_forward_active_energy[1]),
+                   to_unsigned(em_ev->total_reverse_active_energy[1]),
+                   to_unsigned(em_ev->total_forward_reactive_energy[1]),
+                   to_unsigned(em_ev->total_reverse_reactive_energy[1]),
+                   to_unsigned(em_ev->total_forward_active_energy[2]),
+                   to_unsigned(em_ev->total_reverse_active_energy[2]),
+                   to_unsigned(em_ev->total_forward_reactive_energy[2]),
+                   to_unsigned(em_ev->total_reverse_reactive_energy[2]),
+                   to_unsigned(em_ev->total_forward_active_energy_balanced),
+                   to_unsigned(em_ev->total_reverse_active_energy_balanced)});
 }
 
 void supla_total_energy_logger_dao::add(

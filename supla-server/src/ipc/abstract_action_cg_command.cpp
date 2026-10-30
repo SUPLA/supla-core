@@ -57,10 +57,14 @@ const string supla_abstract_action_cg_command::get_command_name(void) {
       return "ACTION-CG-SHUT-PARTIALLY:";
     case ACTION_HVAC_SET_PARAMETERS:
       return "ACTION-CG-HVAC-SET-PARAMETERS:";
-    case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
-      return "ACTION-CG-HVAC-SWITCH-TO-MANUAL-MODE:";
-    case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
-      return "ACTION-CG-HVAC-SWITCH-TO-PROGRAM-MODE:";
+    case ACTION_SET_AT_PARAMETERS:
+      return "ACTION-CG-SET-AT-PARAMETERS:";
+    case ACTION_SET_RELAY_PARAMETERS:
+      return "ACTION-CG-SET-RELAY-PARAMETERS:";
+    case ACTION_SWITCH_TO_MANUAL_MODE:
+      return "ACTION-CG-SWITCH-TO-MANUAL-MODE:";
+    case ACTION_SWITCH_TO_PROGRAM_MODE:
+      return "ACTION-CG-SWITCH-TO-PROGRAM-MODE:";
     case ACTION_HVAC_SET_TEMPERATURE:
       return "ACTION-CG-HVAC-SET-TEMPERATURE:";
     case ACTION_HVAC_SET_TEMPERATURES:
@@ -156,6 +160,25 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
     return;
   }
 
+  if (action == ACTION_SET_AT_PARAMETERS ||
+      action == ACTION_SET_RELAY_PARAMETERS) {
+    int mode = -1;
+    int count = sscanf(params, "%i,%i,%i", &user_id, &group_id, &mode);
+    if (count == 3 && user_id > 0 && group_id > 0 && mode >= 0 &&
+        mode <= 255 &&
+        (user = supla_user::find(user_id, false)) != NULL) {
+      supla_action_mode_parameters mode_params(mode);
+      bool result = action == ACTION_SET_AT_PARAMETERS
+                        ? action_set_at_parameters(user, group_id, &mode_params)
+                        : action_set_relay_parameters(user, group_id,
+                                                      &mode_params);
+      _send_result(result, group_id);
+    } else {
+      send_result("UNKNOWN:", group_id);
+    }
+    return;
+  }
+
   if (action == ACTION_HVAC_SET_TEMPERATURE) {
     int temperature = 0;
 
@@ -230,11 +253,11 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
         case ACTION_STEP_BY_STEP:
           result = action_step_by_step(user, group_id);
           break;
-        case ACTION_HVAC_SWITCH_TO_MANUAL_MODE:
-          result = action_hvac_switch_to_manual_mode(user, group_id);
+        case ACTION_SWITCH_TO_MANUAL_MODE:
+          result = action_switch_to_manual_mode(user, group_id);
           break;
-        case ACTION_HVAC_SWITCH_TO_PROGRAM_MODE:
-          result = action_hvac_switch_to_program_mode(user, group_id);
+        case ACTION_SWITCH_TO_PROGRAM_MODE:
+          result = action_switch_to_program_mode(user, group_id);
           break;
       }
 

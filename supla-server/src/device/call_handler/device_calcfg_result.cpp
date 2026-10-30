@@ -49,10 +49,7 @@ void supla_ch_device_calcfg_result::handle_call(
     return;
   }
 
-  if (rd->data.ds_device_calcfg_result->Command ==
-      device->last_calcfg_command_importatnt_for_sleepers) {
-    device->last_calcfg_command_importatnt_for_sleepers = 0;
-  }
+  device->on_calcfg_result(rd->data.ds_device_calcfg_result);
 
   switch (rd->data.ds_device_calcfg_result->Command) {
     case SUPLA_CALCFG_CMD_CHECK_FIRMWARE_UPDATE:

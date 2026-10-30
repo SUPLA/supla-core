@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -457,4 +442,83 @@ void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
     *dest_size = 1;
     dest[0] = 0;
   }
+}
+
+unsigned char PROTO_ICACHE_FLASH
+supla_weekly_schedule_get_program_mode_type(_supla_int_t func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_HVAC;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON;
+  }
+
+  return SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED;
+}
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_relay_function(
+    _supla_int_t func) {
+  return supla_weekly_schedule_get_program_mode_type(func) ==
+         SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY;
+}
+
+char PROTO_ICACHE_FLASH supla_weekly_schedule_is_function_supported(
+    _supla_int_t func) {
+  return supla_weekly_schedule_get_program_mode_type(func) !=
+         SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_NOT_SUPPORTED;
+}
+
+char PROTO_ICACHE_FLASH supla_action_mode_from_text(
+    _supla_int_t action_id, const char *name, unsigned char *mode) {
+  typedef struct {
+    const char *name;
+    unsigned char mode;
+  } mode_mapping;
+
+  static const mode_mapping at_modes[] = {
+      {"NOT_SET", SUPLA_BUTTON_MODE_NOT_SET},
+      {"LOCKED", SUPLA_BUTTON_MODE_LOCKED},
+  };
+  static const mode_mapping relay_modes[] = {
+      {"NOT_SET", SUPLA_RELAY_MODE_NOT_SET},
+      {"START_ON", SUPLA_RELAY_MODE_START_ON},
+      {"START_OFF", SUPLA_RELAY_MODE_START_OFF},
+      {"FORCED_ON", SUPLA_RELAY_MODE_FORCED_ON},
+      {"FORCED_OFF", SUPLA_RELAY_MODE_FORCED_OFF},
+      {"AUTOMATIC", SUPLA_RELAY_MODE_AUTOMATIC},
+  };
+
+  const mode_mapping *mappings = NULL;
+  size_t count = 0;
+  size_t i = 0;
+  if (!name || !mode) {
+    return 0;
+  }
+
+  if (action_id == ACTION_SET_AT_PARAMETERS) {
+    mappings = at_modes;
+    count = sizeof(at_modes) / sizeof(at_modes[0]);
+  } else if (action_id == ACTION_SET_RELAY_PARAMETERS) {
+    mappings = relay_modes;
+    count = sizeof(relay_modes) / sizeof(relay_modes[0]);
+  }
+
+  for (i = 0; i < count; i++) {
+    if (strcmp(name, mappings[i].name) == 0) {
+      *mode = mappings[i].mode;
+      return 1;
+    }
+  }
+
+  return 0;
 }
