@@ -149,6 +149,7 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
   jobject relay_mode_duration_s = nullptr;
   jobject relay_opposite_mode_duration_s = nullptr;
   jobject button_mode = nullptr;
+  jobject button_temporary_unlock_duration_s = nullptr;
 
   switch (supla_weekly_schedule_get_program_mode_type(func)) {
     case SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_RELAY:
@@ -160,6 +161,8 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
       break;
     case SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON:
       button_mode = supla_cc_button_mode_to_jobject(env, program->Mode);
+      button_temporary_unlock_duration_s = 
+          supla_NewInt(env, program->ButtonTemporaryUnlockDurationS);
       break;
     default:
       hvac_mode = supla_cc_hvac_mode_to_jobject(env, program->Mode);
@@ -179,12 +182,13 @@ jobject supla_cc_ws_program_to_jobject(JNIEnv *env, unsigned char index,
       "supla/android/data/source/remote/hvac/SuplaHvacMode;Ljava/lang/"
       "Short;Ljava/lang/Short;Lorg/supla/android/data/source/remote/hvac/"
       "SuplaRelayMode;Ljava/lang/Integer;Ljava/lang/Integer;Lorg/supla/"
-      "android/data/source/remote/hvac/SuplaButtonMode;)V");
+      "android/data/source/remote/hvac/SuplaButtonMode;Ljava/lang/Integer;)V");
 
   jobject result = env->NewObject(
       program_cls, init_method, enum_program, hvac_mode,
       setpoint_temperature_heat, setpoint_temperature_cool, relay_mode,
-      relay_mode_duration_s, relay_opposite_mode_duration_s, button_mode);
+      relay_mode_duration_s, relay_opposite_mode_duration_s, button_mode,
+      button_temporary_unlock_duration_s);
 
   env->DeleteLocalRef(program_cls);
   env->DeleteLocalRef(enum_program);
@@ -418,8 +422,11 @@ static void supla_cc_ws_get_relay_program(JNIEnv *env, jclass program_cls,
       env, program_cls, item, "getRelayOppositeModeDurationS");
 }
 
-static void supla_cc_ws_get_button_program(TWeeklyScheduleProgram *program) {
-  program->Value1 = 0;
+static void supla_cc_ws_get_button_program(JNIEnv *env, jclass program_cls,
+                                          jobject item,
+                                          TWeeklyScheduleProgram *program) {
+  program->ButtonTemporaryUnlockDurationS = supla_cc_ws_get_duration_s(
+      env, program_cls, item, "getButtonTemporaryUnlockDurationS");
   program->Value2 = 0;
 }
 
@@ -455,7 +462,7 @@ void supla_cc_ws_get_programs(JNIEnv *env, jobject programs,
                      "org/supla/android/data/source/remote/hvac/"
                      "SuplaButtonMode",
                      &program->Mode)) {
-        supla_cc_ws_get_button_program(program);
+        supla_cc_ws_get_button_program(env, program_cls, item, program);
       } else {
         supla_cc_ws_get_hvac_program(env, program_cls, item, program);
       }

@@ -329,7 +329,8 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
       return;
     }
     if ((is_at && mode != SUPLA_BUTTON_MODE_NOT_SET &&
-         mode != SUPLA_BUTTON_MODE_LOCKED) ||
+         mode != SUPLA_BUTTON_MODE_LOCKED &&
+         mode != SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED) ||
         (!is_at && mode != SUPLA_RELAY_MODE_NOT_SET &&
          mode != SUPLA_RELAY_MODE_START_ON &&
          mode != SUPLA_RELAY_MODE_START_OFF &&
