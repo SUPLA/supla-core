@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include "device/extended_value/channel_em_extended_value.h"
@@ -1667,12 +1668,11 @@ bool supla_mqtt_channel_message_provider::ha_valve(const char *topic_prefix,
 
 supla_channel_fragment
 supla_mqtt_channel_message_provider::get_channel_fragment(int device_id,
-                                                          int channel_number) {
+                                                          int channel_id) {
   supla_channel_fragment result;
   supla_user *user = supla_user::find(row->user_id, false);
   if (user) {
-    result = user->get_devices()->get_channel_fragment_with_number(
-        device_id, channel_number, true);
+    result = user->get_devices()->get_channel_fragment(channel_id);
   }
   return result;
 }
@@ -1692,7 +1692,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
 
   if (row->channel_func != SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS) {
     hvac_config cfg(&row->json_config);
-    cfg.get_config(&hvac_raw_cfg, row->channel_number);
+    cfg.get_config(&hvac_raw_cfg);
   }
 
   ha_json_set_retain(root);
@@ -1707,14 +1707,14 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
     ha_json_set_short_topic(root, "curr_temp_t", "state/temperature");
     temperature_topic_is_set = true;
   } else {
-    if (hvac_raw_cfg.MainThermometerChannelId != row->channel_number) {
-      supla_channel_fragment f = get_channel_fragment(
-          row->device_id, hvac_raw_cfg.MainThermometerChannelNo);
+    if (hvac_raw_cfg.MainThermometerChannelId != 0) {
+      supla_channel_fragment f =
+          get_channel_fragment(0, hvac_raw_cfg.MainThermometerChannelId);
       if (f.get_channel_id()) {
         switch (f.get_function()) {
           case SUPLA_CHANNELFNC_THERMOMETER:
           case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+            ha_json_set_full_topic(f.get_device_id(), f.get_channel_id(), root,
                                    "curr_temp_t", topic_prefix,
                                    "state/temperature");
             temperature_topic_is_set = true;
@@ -1724,7 +1724,7 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
         switch (f.get_function()) {
           case SUPLA_CHANNELFNC_HUMIDITY:
           case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-            ha_json_set_full_topic(row->device_id, f.get_channel_id(), root,
+            ha_json_set_full_topic(f.get_device_id(), f.get_channel_id(), root,
                                    "current_humidity_topic", topic_prefix,
                                    "state/humidity");
             humidity_topic_is_set = true;

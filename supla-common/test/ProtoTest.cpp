@@ -836,4 +836,35 @@ TEST_F(ProtoTest, weeklyScheduleProgramModeTypes) {
 
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
+TEST_F(ProtoTest, suplan_frozen_wire_sizes) {
+  EXPECT_EQ(29, SUPLA_PROTO_VERSION);
+  EXPECT_EQ(0x80000, SUPLA_DEVICE_FLAG_SUPLAN_SUPPORTED);
+  EXPECT_EQ(27U, sizeof(TSuplaSuplanPeerContext));
+  EXPECT_EQ(5U, sizeof(TSuplaSuplanResource));
+  EXPECT_EQ(6U, sizeof(TSuplaSuplanAclEntry));
+  EXPECT_EQ(520U, sizeof(TSD_SuplaDeviceIdentities));
+  EXPECT_EQ(5U, sizeof(TDS_SuplaDeviceIdentitiesResult));
+  EXPECT_EQ(568U, sizeof(TSDS_SuplaSetSuplanSourceAssociation));
+  EXPECT_EQ(65U, sizeof(TDS_SuplaSetSuplanSourceAssociationResult));
+  EXPECT_EQ(600U, sizeof(TSDS_SuplaSetSuplanDestinationAssociation));
+  EXPECT_EQ(32U, sizeof(TDS_SuplaSetSuplanDestinationAssociationResult));
+  EXPECT_EQ(8U, sizeof(TDS_SuplaEnsureResourceAccess));
+  EXPECT_EQ(6U, offsetof(TDS_SuplaEnsureResourceAccess, DeliveryMode));
+  EXPECT_EQ(7U, offsetof(TDS_SuplaEnsureResourceAccess, Flags));
+  EXPECT_EQ(0x01, SUPLA_SUPLAN_ENSURE_ACCESS_FLAG_ALLOW_APPROVAL);
+  EXPECT_EQ(3U, sizeof(TSD_SuplaEnsureResourceAccessResult));
+  EXPECT_EQ(2U, offsetof(TSD_SuplaEnsureResourceAccessResult, DeliveryMode));
+  EXPECT_EQ(40U, sizeof(TSD_SuplaRemoteChannelState));
+  EXPECT_EQ(4U, offsetof(TSD_SuplaRemoteChannelState, Channel));
+  EXPECT_EQ(0, SUPLA_RESOURCE_DELIVERY_INVALID);
+  EXPECT_EQ(1, SUPLA_RESOURCE_DELIVERY_SUPLAN_PEER);
+  EXPECT_EQ(2, SUPLA_RESOURCE_DELIVERY_SERVER_STREAM);
+  EXPECT_EQ(11U, sizeof(TDS_SuplaEnsureResourceShare));
+  EXPECT_EQ(5U, sizeof(TSD_SuplaEnsureResourceShareResult));
+  EXPECT_EQ(8U, offsetof(TSD_SuplaDeviceIdentities, ChannelId));
+  EXPECT_EQ(34U, offsetof(TSDS_SuplaSetSuplanSourceAssociation, Acl));
+  EXPECT_EQ(66U,
+            offsetof(TSDS_SuplaSetSuplanDestinationAssociation, Resources));
+}
+
 }  // namespace

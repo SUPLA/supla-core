@@ -37,6 +37,8 @@
 #include "user/userdevices.h"
 #include "webhook/state_webhook_credentials.h"
 
+class supla_suplan_server_peers;
+class supla_channel_relation_index;
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
@@ -49,6 +51,7 @@ class supla_user {
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
+  std::unique_ptr<supla_channel_relation_index> relation_index;
 
   std::string timezone;
   double latitude;
@@ -75,6 +78,7 @@ class supla_user {
   supla_google_home_credentials *google_home_credentials;
   supla_state_webhook_credentials *state_webhook_credentials;
   supla_value_based_triggers *value_based_triggers;
+  supla_suplan_server_peers *suplan_peers;
   int UserID;
   bool connections_allowed;
 
@@ -87,6 +91,9 @@ class supla_user {
   static void init(void);
   static void user_free(void);
   supla_user_devices *get_devices();
+  supla_channel_relation_index *get_relation_index();
+  void refresh_channel_relations();
+  void wake_relation_retry();
   supla_user_clients *get_clients();
 
   static supla_user *add_device(
@@ -118,9 +125,9 @@ class supla_user {
                                const supla_caller &caller);
   static void before_device_delete(int UserID, int DeviceID,
                                    const supla_caller &caller);
-  static void on_device_deleted(int UserID, int DeviceID,
+  static bool on_device_deleted(int UserID, int DeviceID,
                                 const supla_caller &caller);
-  static void on_channel_deleted(int user_id, int device_id, int channel_id,
+  static bool on_channel_deleted(int user_id, int device_id, int channel_id,
                                  const supla_caller &caller);
   static void reset_timezone(int user_id);
   static unsigned int total_cd_count(bool client);
@@ -133,6 +140,7 @@ class supla_user {
   void on_channels_added(int DeviceID, const supla_caller &caller);
   void on_device_registered(int DeviceID, const supla_caller &caller);
 
+  supla_suplan_server_peers *get_suplan_peers(void);
   int getUserID(void);
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);

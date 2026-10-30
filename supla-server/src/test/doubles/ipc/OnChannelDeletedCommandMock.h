@@ -32,7 +32,7 @@ class OnChannelDeletedCommandMock
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
   MOCK_METHOD3(on_channel_deleted,
-               void(int user_id, int device_id, int channel_id));
+               bool(int user_id, int device_id, int channel_id));
 };
 
 } /* namespace testing */

@@ -40,6 +40,7 @@
 #include "tsdb/tsdb_access_provider.h"
 #include "user/virtual_channel_updater_cyclictask.h"
 
+
 using std::vector;
 
 supla_cyclictasks_agent::supla_cyclictasks_agent() {

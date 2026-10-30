@@ -24,6 +24,11 @@
 
 #include "device/channel_relation.h"
 
+enum class channel_reference_encoding {
+  server_channel_id,
+  device_channel_number
+};
+
 enum e_relation_kind {
   relation_any = 0,
   relation_with_sub_channel = 1,
@@ -32,18 +37,17 @@ enum e_relation_kind {
 
 class supla_json_config;
 class supla_abstract_common_channel_properties {
- private:
+ protected:
   void add_relation(std::vector<supla_channel_relation> *relations,
                     int channel_id, int parent_id, short relation_type);
-  template <typename config_class_T, typename raw_config_T,
-            typename sensor_class_T>
-  void get_sensor_relations(std::vector<supla_channel_relation> *relations,
-                            e_relation_kind kind,
-                            unsigned char protocol_version, int type,
-                            int parent_channel_type, int func,
-                            int parent_channel_func, int related_channel_func);
 
- protected:
+  virtual bool indexed_relations(std::vector<supla_channel_relation> *,
+                                 e_relation_kind) {
+    return false;
+  }
+  virtual channel_reference_encoding device_reference_encoding() {
+    return channel_reference_encoding::device_channel_number;
+  }
   virtual unsigned char get_protocol_version(void) = 0;
 
   virtual void for_each(
@@ -60,9 +64,12 @@ class supla_abstract_common_channel_properties {
 
   void get_config(char *config, unsigned _supla_int16_t *config_size,
                   unsigned char config_type, unsigned _supla_int_t flags,
-                  bool resolve_channel_identifiers);
+                  channel_reference_encoding encoding);
 
  public:
+  unsigned char get_relation_protocol_version() {
+    return get_protocol_version();
+  }
   supla_abstract_common_channel_properties(void);
   virtual ~supla_abstract_common_channel_properties(void);
 

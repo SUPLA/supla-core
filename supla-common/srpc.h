@@ -49,9 +49,10 @@
 extern "C" {
 #endif
 
-#if defined(SUPLA_DEVICE) || defined(ESP8266) || defined(ESP32) || \
-    defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
-    defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_AVR)
+#if SUPLA_SRPC_PACKET_LOG_ENABLED && !defined(SUPLA_DISABLE_LOGS) && \
+    (defined(SUPLA_DEVICE) || defined(ESP8266) || defined(ESP32) || \
+     defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
+     defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_AVR))
 #define SRPC_WITH_PACKET_LOG_HOOKS
 #endif
 
@@ -218,6 +219,20 @@ union TsrpcDataPacketData {
   TCS_GetDeviceConfigRequest *cs_get_device_config_request;
   TDS_SubdeviceDetails *ds_subdevice_details;
   TSC_SuplaChannelStatePack *sc_channel_state_pack;
+  TSD_SuplaDeviceIdentities *sd_suplan_device_identities;
+  TDS_SuplaDeviceIdentitiesResult *ds_suplan_device_identities_result;
+  TSDS_SuplaSetSuplanSourceAssociation *sd_set_suplan_source_association;
+  TDS_SuplaSetSuplanSourceAssociationResult
+      *ds_set_suplan_source_association_result;
+  TSDS_SuplaSetSuplanDestinationAssociation
+      *sd_set_suplan_destination_association;
+  TDS_SuplaSetSuplanDestinationAssociationResult
+      *ds_set_suplan_destination_association_result;
+  TDS_SuplaEnsureResourceAccess *ds_ensure_suplan_resource_access;
+  TSD_SuplaEnsureResourceAccessResult *sd_ensure_suplan_resource_access_result;
+  TDS_SuplaEnsureResourceShare *ds_ensure_suplan_resource_share;
+  TSD_SuplaEnsureResourceShareResult *sd_ensure_suplan_resource_share_result;
+  TSD_SuplaRemoteChannelState *sd_remote_channel_state;
 };
 
 typedef struct {
@@ -339,6 +354,33 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_sync_done(void *_srpc);
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_suplan_device_identities(
+    void *_srpc, TSD_SuplaDeviceIdentities *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_suplan_device_identities_result(
+    void *_srpc, TDS_SuplaDeviceIdentitiesResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_suplan_source_association(
+    void *_srpc, TSDS_SuplaSetSuplanSourceAssociation *data);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_suplan_source_association_result(
+    void *_srpc, TDS_SuplaSetSuplanSourceAssociationResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_suplan_destination_association(
+    void *_srpc, TSDS_SuplaSetSuplanDestinationAssociation *data);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_suplan_destination_association_result(
+    void *_srpc, TDS_SuplaSetSuplanDestinationAssociationResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_access(
+    void *_srpc, TDS_SuplaEnsureResourceAccess *data);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_ensure_suplan_resource_access_result(
+    void *_srpc, TSD_SuplaEnsureResourceAccessResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_ensure_suplan_resource_share(
+    void *_srpc, TDS_SuplaEnsureResourceShare *data);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_ensure_suplan_resource_share_result(
+    void *_srpc, TSD_SuplaEnsureResourceShareResult *data);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_remote_channel_state(
+    void *_srpc, TSD_SuplaRemoteChannelState *data);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH

@@ -47,9 +47,9 @@ void supla_abstract_on_channel_config_changed_command::on_command_match(
            &type, &func, &scope);
 
     if (user_id && device_id && channel_id) {
-      on_channel_config_changed(user_id, device_id, channel_id, type, func,
-                                scope);
-      send_result("OK:", user_id);
+      bool ok = on_channel_config_changed(user_id, device_id, channel_id,
+                                          type, func, scope);
+      send_result(ok ? "OK:" : "ERROR:", user_id);
       return;
     }
   }

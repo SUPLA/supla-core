@@ -18,9 +18,17 @@
 
 #include "CommonChannelPropertiesTest.h"
 
+#include <chrono>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "client/client_channel_relation_remote_updater.h"
+#include "client/client_channel_relations.h"
+#include "client/clientchannel.h"
+#include "client/clientchannels.h"
+#include "doubles/SrpcAdapterMock.h"
 #include "doubles/device/CommonChannelPropertiesMock.h"
 #include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/hvac_config.h"
@@ -31,6 +39,221 @@ namespace testing {
 
 using std::string;
 using std::vector;
+
+// Exercise the real Client-visible channel collection and relation pack
+// builder. Only protocol negotiation is fixed; no mocked iteration or relation
+// algorithm.
+class RelationClientChannel : public supla_client_channel {
+ protected:
+  unsigned char get_protocol_version() override { return 29; }
+
+ public:
+  using supla_client_channel::supla_client_channel;
+  bool remote_update_is_possible() override { return true; }
+};
+
+static supla_client_channel *relation_channel(
+    supla_client_channels *channels, int id, int device, int function,
+    const char *json = "{}", int type = SUPLA_CHANNELTYPE_THERMOMETER) {
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  auto channel = new RelationClientChannel(
+      channels, id, 1, device, device, type, function, 0, 0, 0, 0, nullptr,
+      nullptr, nullptr, "", 0, 0, 0, 0, 29, 0, value, 0, json, "{}", false);
+  EXPECT_TRUE(channels->add(channel));
+  return channel;
+}
+
+TEST_F(CommonChannelPropertiesTest, RemoteHvacThermometersFromBothEnds) {
+  for (int function : {SUPLA_CHANNELFNC_THERMOMETER,
+                       SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE}) {
+    supla_client_channels channels(nullptr);
+    auto thermostat = relation_channel(
+        &channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+        "{\"mainThermometerChannelId\":102,"
+        "\"auxThermometerChannelId\":103,\"auxThermometerType\":\"FLOOR\"}",
+        SUPLA_CHANNELTYPE_HVAC);
+    auto main = relation_channel(&channels, 102, 20, function);
+    auto aux = relation_channel(&channels, 103, 30, function);
+    auto children =
+        thermostat->get_channel_relations(relation_with_sub_channel);
+    ASSERT_EQ(2u, children.size());
+    EXPECT_EQ(102, children[0].get_id());
+    EXPECT_EQ(100, children[0].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER,
+              children[0].get_relation_type());
+    EXPECT_EQ(103, children[1].get_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+              children[1].get_relation_type());
+    for (auto sensor : {main, aux}) {
+      auto parents =
+          sensor->get_channel_relations(relation_with_parent_channel);
+      ASSERT_EQ(1u, parents.size());
+      EXPECT_EQ(sensor->get_id(), parents[0].get_id());
+      EXPECT_EQ(100, parents[0].get_parent_id());
+      EXPECT_EQ(sensor == main ? CHANNEL_RELATION_TYPE_MAIN_TERMOMETER
+                               : CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+                parents[0].get_relation_type());
+    }
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest,
+       RemoteHvacThermometerRequiresCompatibleFunction) {
+  supla_client_channels channels(nullptr);
+  relation_channel(&channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+      "{\"mainThermometerChannelId\":102,\"auxThermometerChannelId\":102,"
+      "\"auxThermometerType\":\"FLOOR\"}", SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&channels, 102, 20, SUPLA_CHANNELFNC_POWERSWITCH,
+                   "{}", SUPLA_CHANNELTYPE_RELAY);
+  channels.for_each([](supla_client_channel *channel, bool *) {
+    EXPECT_TRUE(channel->get_channel_relations(relation_any).empty());
+  });
+}
+
+TEST_F(CommonChannelPropertiesTest, ConfigRelationsHaveSameScopeAcrossDevices) {
+  struct Case {
+    int type, function;
+    const char *json;
+    int related_type, related_function, relation_type;
+    bool master = false;
+  };
+  const Case cases[] = {
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"binarySensorChannelId\":102}", SUPLA_CHANNELTYPE_BINARYSENSOR,
+       SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW, CHANNEL_RELATION_TYPE_DEFAULT},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"pumpSwitchChannelId\":102}", SUPLA_CHANNELTYPE_RELAY,
+       SUPLA_CHANNELFNC_PUMPSWITCH, CHANNEL_RELATION_TYPE_PUMP_SWITCH},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"heatOrColdSourceSwitchChannelId\":102}", SUPLA_CHANNELTYPE_RELAY,
+       SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH,
+       CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH},
+      {SUPLA_CHANNELTYPE_HVAC, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       "{\"masterThermostatChannelId\":102}", SUPLA_CHANNELTYPE_HVAC,
+       SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+       CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT, true},
+      {SUPLA_CHANNELTYPE_VALVE_OPENCLOSE, SUPLA_CHANNELFNC_VALVE_OPENCLOSE,
+       "{\"floodSensorChannelIds\":[102]}", SUPLA_CHANNELTYPE_BINARYSENSOR,
+       SUPLA_CHANNELFNC_FLOOD_SENSOR, CHANNEL_RELATION_TYPE_DEFAULT},
+      {SUPLA_CHANNELTYPE_CONTAINER, SUPLA_CHANNELFNC_CONTAINER,
+       "{\"sensors\":[{\"channelId\":102,\"fillLevel\":50}]}",
+       SUPLA_CHANNELTYPE_BINARYSENSOR, SUPLA_CHANNELFNC_CONTAINER_LEVEL_SENSOR,
+       CHANNEL_RELATION_TYPE_DEFAULT}};
+  for (const auto &test : cases) {
+    for (int related_device : {10, 20}) {
+      SCOPED_TRACE(std::to_string(test.related_function) + ":device=" +
+                   std::to_string(related_device));
+      supla_client_channels channels(nullptr);
+      auto consumer = relation_channel(&channels, 100, 10, test.function,
+                                      test.json, test.type);
+      NiceMock<SrpcAdapterMock> adapter;
+      ON_CALL(adapter, get_proto_version).WillByDefault(Return(29));
+      supla_client_channel_relation_remote_updater updater(&adapter);
+      supla_client_channel_reactions relations(&updater);
+      std::vector<TSC_SuplaChannelRelation> sent;
+      EXPECT_CALL(adapter, sc_async_channel_relation_pack_update)
+          .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+            sent.assign(pack->items, pack->items + pack->count);
+            return 1;
+          });
+      // A configured but invisible endpoint must not enter the Client pack.
+      relations.load(&channels);
+      EXPECT_TRUE(relations.update_remote());
+      ASSERT_EQ(1u, sent.size());
+      EXPECT_EQ(0, sent[0].Id);
+      auto related = relation_channel(&channels, 102, related_device,
+          test.related_function, "{}", test.related_type);
+      const int child = test.master ? 100 : 102;
+      const int parent = test.master ? 102 : 100;
+      auto from_consumer = consumer->get_channel_relations(
+          test.master ? relation_with_parent_channel
+                      : relation_with_sub_channel);
+      auto from_related = related->get_channel_relations(
+          test.master ? relation_with_sub_channel
+                      : relation_with_parent_channel);
+      for (auto *edges : {&from_consumer, &from_related}) {
+        EXPECT_EQ(1u, edges->size());
+        if (edges->size() == 1) {
+          EXPECT_EQ(child, edges->at(0).get_id());
+          EXPECT_EQ(parent, edges->at(0).get_parent_id());
+          EXPECT_EQ(test.relation_type, edges->at(0).get_relation_type());
+        }
+      }
+      relations.load(&channels);
+      EXPECT_TRUE(relations.update_remote());
+      EXPECT_EQ(2u, sent.size());
+      if (sent.size() == 2) {
+        EXPECT_EQ(child, sent[0].Id);
+        EXPECT_EQ(parent, sent[0].ParentId);
+        EXPECT_EQ(test.relation_type, sent[0].Type);
+      }
+    }
+  }
+}
+
+TEST_F(CommonChannelPropertiesTest,
+       RemoteThermometerPackContainsOnlyVisibleChannels) {
+  NiceMock<SrpcAdapterMock> adapter;
+  ON_CALL(adapter, get_proto_version).WillByDefault(Return(29));
+  supla_client_channel_relation_remote_updater updater(&adapter);
+  supla_client_channel_reactions relations(&updater);
+  supla_client_channels visible(nullptr), hidden(nullptr);
+  relation_channel(&visible, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                   "{\"mainThermometerChannelId\":102}",
+                   SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&hidden, 102, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  std::vector<TSC_SuplaChannelRelation> sent;
+  EXPECT_CALL(adapter, sc_async_channel_relation_pack_update)
+      .WillRepeatedly([&](TSC_SuplaChannelRelationPack *pack) {
+        sent.assign(pack->items, pack->items + pack->count);
+        return 1;
+      });
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_EQ(0, sent[0].Id);  // Existing list-clear sentinel, no hidden ID.
+  auto thermometer =
+      relation_channel(&visible, 102, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(2u, sent.size());
+  EXPECT_EQ(102, sent[0].Id);
+  EXPECT_EQ(100, sent[0].ParentId);
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER, sent[0].Type);
+  // Rebuilding after a function change removes the now-invalid relation.
+  thermometer->set_func(SUPLA_CHANNELFNC_POWERSWITCH);
+  relations.load(&visible);
+  EXPECT_TRUE(relations.update_remote());
+  ASSERT_EQ(1u, sent.size());
+  EXPECT_EQ(0, sent[0].Id);
+}
+
+TEST_F(CommonChannelPropertiesTest, RemoteThermometerRelationsAtAccountScale) {
+  supla_client_channels channels(nullptr);
+  for (int i = 0; i < 100; ++i) {
+    const auto json = "{\"mainThermometerChannelId\":" +
+                      std::to_string(20000 + i) + "}";
+    relation_channel(&channels, 10000 + i, i + 1,
+        SUPLA_CHANNELFNC_HVAC_THERMOSTAT, json.c_str(), SUPLA_CHANNELTYPE_HVAC);
+    relation_channel(&channels, 20000 + i, 1000 + i,
+                     SUPLA_CHANNELFNC_THERMOMETER);
+  }
+  for (int i = 0; i < 800; ++i) {
+    relation_channel(&channels, 30000 + i, 2000 + i,
+                     SUPLA_CHANNELFNC_POWERSWITCH, "{}",
+                     SUPLA_CHANNELTYPE_RELAY);
+  }
+  std::vector<supla_channel_relation> relations;
+  const auto started = std::chrono::steady_clock::now();
+  channels.for_each([&](supla_client_channel *channel, bool *) {
+    channel->get_channel_relations(&relations, relation_any);
+  });
+  EXPECT_EQ(100u, relations.size());
+  std::cout << "HVAC relations: channels=1000 hvac=100 thermometers=100 us="
+            << std::chrono::duration_cast<std::chrono::microseconds>(
+                   std::chrono::steady_clock::now() - started).count()
+            << std::endl;
+}
 
 TEST_F(CommonChannelPropertiesTest, appendRelationList) {
   vector<supla_channel_relation> rel;
@@ -162,11 +385,11 @@ TEST_F(CommonChannelPropertiesTest,
       EXPECT_CALL(mock, get_device_id).WillRepeatedly(Return(5));
       EXPECT_CALL(mock, get_id).WillRepeatedly(Return(5000));
 
-      EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MasterThermostatIsSet = 1;
-        config->set_config(&hvac, 5);
+        hvac.MasterThermostatChannelId = 5000;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -178,7 +401,7 @@ TEST_F(CommonChannelPropertiesTest,
                       on_channel_properties) {
                 bool will_continue = true;
                 on_channel_properties(&related_props_mock, &will_continue);
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel1, rel2;
@@ -223,12 +446,12 @@ TEST_F(CommonChannelPropertiesTest,
         return version;
       });
 
-      EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MasterThermostatIsSet = 1;
-        hvac.MasterThermostatChannelNo = 10;
-        config->set_config(&hvac, 5);
+
+        hvac.MasterThermostatChannelId = 5000;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -243,7 +466,7 @@ TEST_F(CommonChannelPropertiesTest,
                       on_channel_properties) {
                 bool will_continue = true;
                 on_channel_properties(&related_props_mock, &will_continue);
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel1, rel2;
@@ -291,8 +514,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.HeatOrColdSourceSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.HeatOrColdSourceSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -304,7 +528,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -340,8 +564,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.HeatOrColdSourceSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.HeatOrColdSourceSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -366,7 +591,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -413,8 +638,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.PumpSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.PumpSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -426,7 +652,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -462,8 +688,9 @@ TEST_F(CommonChannelPropertiesTest,
     EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.PumpSwitchIsSet = 1;
-      config->set_config(&hvac, 10);
+
+      hvac.PumpSwitchChannelId = 5001;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -488,7 +715,7 @@ TEST_F(CommonChannelPropertiesTest,
                     on_channel_properties) {
               bool will_continue = true;
               on_channel_properties(&related_props_mock, &will_continue);
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel1, rel2;
@@ -696,11 +923,11 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_MainThermometer) {
       EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(*it + 100));
       EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(*it));
 
-      EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
+      EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
         hvac_config *config = new hvac_config();
         TChannelConfig_HVAC hvac = {};
-        hvac.MainThermometerChannelNo = 5;
-        config->set_config(&hvac, 10);
+        hvac.MainThermometerChannelId = *tit + 50;
+        config->set_config(&hvac);
         return config;
       });
 
@@ -722,7 +949,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_MainThermometer) {
 
                 on_channel_properties(&related_props_mock, &will_continue);
 
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel;
@@ -773,17 +1000,17 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_MainThermometer) {
                     .WillRepeatedly(Return(*it));
 
                 EXPECT_CALL(related_props_mock, get_json_config)
-                    .WillRepeatedly([]() {
+                    .WillRepeatedly([&]() {
                       hvac_config *config = new hvac_config();
                       TChannelConfig_HVAC hvac = {};
-                      hvac.MainThermometerChannelNo = 5;
-                      config->set_config(&hvac, 10);
+                      hvac.MainThermometerChannelId = *tit + 50;
+                      config->set_config(&hvac);
                       return config;
                     });
 
                 on_channel_properties(&related_props_mock, &will_continue);
 
-                EXPECT_FALSE(any_device);
+                EXPECT_TRUE(any_device);
               });
 
       vector<supla_channel_relation> rel;
@@ -818,12 +1045,12 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_AuxThermometer) {
         EXPECT_CALL(mock, get_id()).WillRepeatedly(Return(*it + 100));
         EXPECT_CALL(mock, get_func()).WillRepeatedly(Return(*it));
 
-        EXPECT_CALL(mock, get_json_config).WillRepeatedly([a]() {
+        EXPECT_CALL(mock, get_json_config).WillRepeatedly([&]() {
           hvac_config *config = new hvac_config();
           TChannelConfig_HVAC hvac = {};
-          hvac.AuxThermometerChannelNo = 5;
+          hvac.AuxThermometerChannelId = *tit + 50;
           hvac.AuxThermometerType = SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR + a;
-          config->set_config(&hvac, 10);
+          config->set_config(&hvac);
           return config;
         });
 
@@ -845,7 +1072,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_AuxThermometer) {
 
                   on_channel_properties(&related_props_mock, &will_continue);
 
-                  EXPECT_FALSE(any_device);
+                  EXPECT_TRUE(any_device);
                 });
 
         vector<supla_channel_relation> rel;
@@ -898,19 +1125,19 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_AuxThermometer) {
                       .WillRepeatedly(Return(*it));
 
                   EXPECT_CALL(related_props_mock, get_json_config)
-                      .WillRepeatedly([a]() {
+                      .WillRepeatedly([&]() {
                         hvac_config *config = new hvac_config();
                         TChannelConfig_HVAC hvac = {};
-                        hvac.AuxThermometerChannelNo = 5;
+                        hvac.AuxThermometerChannelId = *tit + 50;
                         hvac.AuxThermometerType =
                             SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR + a;
-                        config->set_config(&hvac, 10);
+                        config->set_config(&hvac);
                         return config;
                       });
 
                   on_channel_properties(&related_props_mock, &will_continue);
 
-                  EXPECT_FALSE(any_device);
+                  EXPECT_TRUE(any_device);
                 });
 
         vector<supla_channel_relation> rel;
@@ -943,8 +1170,8 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_BinarySensor) {
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       hvac_config *config = new hvac_config();
       TChannelConfig_HVAC hvac = {};
-      hvac.BinarySensorChannelNo = 5;
-      config->set_config(&hvac, 10);
+      hvac.BinarySensorChannelId = 50;
+      config->set_config(&hvac);
       return config;
     });
 
@@ -966,7 +1193,7 @@ TEST_F(CommonChannelPropertiesTest, relationWithSubchannel_BinarySensor) {
 
               on_channel_properties(&related_props_mock, &will_continue);
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;
@@ -1012,14 +1239,14 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_BinarySensor) {
           EXPECT_CALL(related_props_mock, get_json_config).WillRepeatedly([]() {
             hvac_config *config = new hvac_config();
             TChannelConfig_HVAC hvac = {};
-            hvac.BinarySensorChannelNo = 5;
-            config->set_config(&hvac, 10);
+            hvac.BinarySensorChannelId = 50;
+            config->set_config(&hvac);
             return config;
           });
 
           on_channel_properties(&related_props_mock, &will_continue);
 
-          EXPECT_FALSE(any_device);
+          EXPECT_TRUE(any_device);
         });
 
     vector<supla_channel_relation> rel;
@@ -1056,10 +1283,8 @@ void CommonChannelPropertiesTest::relationWithSubchannel_Sensor(
     EXPECT_CALL(mock, get_json_config).WillRepeatedly([]() {
       config_classT *config = new config_classT();
       raw_config_T raw_cfg = {};
-      raw_cfg.SensorInfo[1].IsSet = 1;
-      raw_cfg.SensorInfo[1].ChannelNo = 5;
-      raw_cfg.SensorInfo[5].IsSet = 1;
-      raw_cfg.SensorInfo[5].ChannelNo = 15;
+      raw_cfg.SensorInfo[1].ChannelId = 55;
+      raw_cfg.SensorInfo[5].ChannelId = 65;
       config->set_config(&raw_cfg);
       return config;
     });
@@ -1087,7 +1312,7 @@ void CommonChannelPropertiesTest::relationWithSubchannel_Sensor(
                 channel_number++;
               }
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;
@@ -1158,15 +1383,14 @@ void CommonChannelPropertiesTest::relationWithParentChannel_Sensor(
                   .WillRepeatedly([]() {
                     config_classT *config = new config_classT();
                     raw_config_T raw_cfg = {};
-                    raw_cfg.SensorInfo[5].IsSet = 1;
-                    raw_cfg.SensorInfo[5].ChannelNo = 15;
+                    raw_cfg.SensorInfo[5].ChannelId = 65;
                     config->set_config(&raw_cfg);
                     return config;
                   });
 
               on_channel_properties(&related_props_mock, &will_continue);
 
-              EXPECT_FALSE(any_device);
+              EXPECT_TRUE(any_device);
             });
 
     vector<supla_channel_relation> rel;
@@ -1191,3 +1415,212 @@ TEST_F(CommonChannelPropertiesTest, relationWithParentChannel_Sensor) {
 }
 
 } /* namespace testing */
+
+namespace testing {
+namespace {
+class ReferenceEncodingProperties : public CommonChannelPropertiesMock {
+ public:
+  using supla_abstract_common_channel_properties::get_config;
+};
+}  // namespace
+TEST_F(CommonChannelPropertiesTest, explicitAllSixRecipientEncoding) {
+  ReferenceEncodingProperties destination;
+  ON_CALL(destination, get_type).WillByDefault(Return(SUPLA_CHANNELTYPE_HVAC));
+  ON_CALL(destination, get_id).WillByDefault(Return(5000));
+  ON_CALL(destination, get_device_id).WillByDefault(Return(50));
+  ON_CALL(destination, get_channel_number).WillByDefault(Return(9));
+  ON_CALL(destination, get_json_config).WillByDefault([] {
+    auto config = new hvac_config();
+    TChannelConfig_HVAC wire = {};
+    wire.MainThermometerChannelId = 70000;
+    wire.AuxThermometerChannelId = 70001;
+    wire.BinarySensorChannelId = 70002;
+    wire.MasterThermostatChannelId = 70003;
+
+    wire.PumpSwitchChannelId = 70004;
+
+    wire.HeatOrColdSourceSwitchChannelId = 70005;
+
+    config->set_config(&wire);
+    return config;
+  });
+  ON_CALL(destination, for_each).WillByDefault([](bool any_device, auto visit) {
+    EXPECT_FALSE(any_device);
+    for (int i = 0; i < 6; ++i) {
+      CommonChannelPropertiesMock source;
+      ON_CALL(source, get_id).WillByDefault(Return(70000 + i));
+      ON_CALL(source, get_device_id).WillByDefault(Return(50));
+      ON_CALL(source, get_channel_number).WillByDefault(Return(20 + i));
+      bool more = true;
+      visit(&source, &more);
+      if (!more) break;
+    }
+  });
+  for (auto encoding : {channel_reference_encoding::server_channel_id,
+                        channel_reference_encoding::device_channel_number}) {
+    char buffer[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+    unsigned _supla_int16_t size = 0;
+    destination.get_config(buffer, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0,
+                           encoding);
+    ASSERT_EQ(sizeof(TChannelConfig_HVAC), size);
+    auto wire = reinterpret_cast<TChannelConfig_HVAC *>(buffer);
+    unsigned int base =
+        encoding == channel_reference_encoding::server_channel_id ? 70000 : 20;
+    EXPECT_EQ(base, wire->MainThermometerChannelId);
+    EXPECT_EQ(base + 1, wire->AuxThermometerChannelId);
+    EXPECT_EQ(base + 2, wire->BinarySensorChannelId);
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
+                  ? base + 3
+                  : ((base + 3) << 8) | 1,
+              wire->MasterThermostatChannelId);
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
+                  ? base + 4
+                  : ((base + 4) << 8) | 1,
+              wire->PumpSwitchChannelId);
+    EXPECT_EQ(encoding == channel_reference_encoding::server_channel_id
+                  ? base + 5
+                  : ((base + 5) << 8) | 1,
+              wire->HeatOrColdSourceSwitchChannelId);
+  }
+}
+}  // namespace testing
+
+#include <set>
+#include <tuple>
+
+#include "user/channel_relation_index.h"
+
+namespace testing {
+namespace {
+using relation_key = std::tuple<int, int, short>;
+std::set<relation_key> relation_keys(std::vector<supla_channel_relation> rows) {
+  std::set<relation_key> result;
+  for (auto &r : rows)
+    result.emplace(r.get_id(), r.get_parent_id(), r.get_relation_type());
+  return result;
+}
+}  // namespace
+TEST_F(CommonChannelPropertiesTest, IndexedRelationFamiliesHaveExpectedEdges) {
+  supla_client_channels channels(nullptr);
+  relation_channel(
+      &channels, 100, 10, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+      "{\"mainThermometerChannelId\":101,\"auxThermometerChannelId\":102,"
+      "\"auxThermometerType\":\"FLOOR\",\"binarySensorChannelId\":103,"
+      "\"pumpSwitchChannelId\":104,\"heatOrColdSourceSwitchChannelId\":105,"
+      "\"masterThermostatChannelId\":106}",
+      SUPLA_CHANNELTYPE_HVAC);
+  relation_channel(&channels, 101, 20, SUPLA_CHANNELFNC_THERMOMETER);
+  relation_channel(&channels, 102, 30, SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE);
+  relation_channel(&channels, 103, 40, SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW,
+                   "{}", SUPLA_CHANNELTYPE_BINARYSENSOR);
+  relation_channel(&channels, 104, 50, SUPLA_CHANNELFNC_PUMPSWITCH, "{}",
+                   SUPLA_CHANNELTYPE_RELAY);
+  relation_channel(&channels, 105, 60, SUPLA_CHANNELFNC_HEATORCOLDSOURCESWITCH,
+                   "{}", SUPLA_CHANNELTYPE_RELAY);
+  relation_channel(&channels, 106, 70, SUPLA_CHANNELFNC_HVAC_THERMOSTAT, "{}",
+                   SUPLA_CHANNELTYPE_HVAC);
+  supla_relation_snapshot index;
+  channels.for_each([&](supla_client_channel *c, bool *) {
+    supla_relation_node n;
+    n.id = c->get_id();
+    n.device = c->get_device_id();
+    n.function = c->get_func();
+    n.type = c->get_type();
+    std::unique_ptr<supla_json_config> json(c->get_json_config());
+    n.parse(json.get());
+    index.nodes[n.id] = n;
+  });
+  index.build();
+  EXPECT_EQ((std::set<relation_key>{
+                {101, 100, CHANNEL_RELATION_TYPE_MAIN_TERMOMETER},
+                {102, 100, CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR},
+                {103, 100, CHANNEL_RELATION_TYPE_DEFAULT},
+                {104, 100, CHANNEL_RELATION_TYPE_PUMP_SWITCH},
+                {105, 100, CHANNEL_RELATION_TYPE_HEAT_OR_COLD_SOURCE_SWITCH},
+                {100, 106, CHANNEL_RELATION_TYPE_MASTER_THERMOSTAT}}),
+            relation_keys(index.get(100, relation_any, 29)));
+  EXPECT_EQ(0u, index.get(104, relation_with_parent_channel, 24).size());
+  EXPECT_EQ(1u, index.get(104, relation_with_parent_channel, 25).size());
+  EXPECT_EQ(0u, index.get(106, relation_with_sub_channel, 24).size());
+}
+TEST_F(CommonChannelPropertiesTest, IndexedSensorVisibilityAndVersion) {
+  supla_relation_snapshot index;
+  for (int id : {1, 2, 3}) {
+    supla_relation_node n;
+    n.id = id;
+    n.device = id;
+    n.type = id == 3 ? SUPLA_CHANNELTYPE_BINARYSENSOR
+                     : SUPLA_CHANNELTYPE_VALVE_OPENCLOSE;
+    n.function = id == 3 ? SUPLA_CHANNELFNC_FLOOD_SENSOR
+                         : SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
+    if (id != 3) n.sensors = {3};
+    index.nodes[id] = n;
+  }
+  index.build();
+  EXPECT_TRUE(index.get(3, relation_with_parent_channel, 26).empty());
+  auto visible = [](const supla_relation_edge &e) { return e.parent != 1; };
+  auto parents = index.get(3, relation_with_parent_channel, 27, visible);
+  ASSERT_EQ(1u, parents.size());
+  EXPECT_EQ(2, parents[0].get_parent_id());
+  EXPECT_EQ(1u, index.get(1, relation_with_sub_channel, 27).size());
+}
+
+}  // namespace testing
+
+namespace testing {
+TEST_F(CommonChannelPropertiesTest, OpeningSensorKeepsHvacParentInBothPaths) {
+  supla_client_channels channels(nullptr);
+  relation_channel(&channels, 10, 1, SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK);
+  relation_channel(&channels, 20, 2, SUPLA_CHANNELFNC_HVAC_THERMOSTAT,
+                   "{\"binarySensorChannelId\":30}", SUPLA_CHANNELTYPE_HVAC);
+  char value[SUPLA_CHANNELVALUE_SIZE]{};
+  auto sensor = new RelationClientChannel(
+      &channels, 30, 3, 3, 1, SUPLA_CHANNELTYPE_BINARYSENSOR,
+      SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR, 10, 0, 0, 0, nullptr, nullptr,
+      nullptr, "", 0, 0, 0, 0, 29, 0, value, 0, "{}", "{}", false);
+  ASSERT_TRUE(channels.add(sensor));
+  auto check = [&](std::vector<supla_channel_relation> rows) {
+    ASSERT_EQ(2u, rows.size());
+    EXPECT_EQ(10, rows[0].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_OPENING_SENSOR,
+              rows[0].get_relation_type());
+    EXPECT_EQ(20, rows[1].get_parent_id());
+    EXPECT_EQ(CHANNEL_RELATION_TYPE_DEFAULT, rows[1].get_relation_type());
+  };
+  check(sensor->get_channel_relations(relation_with_parent_channel));
+  supla_relation_snapshot graph;
+  channels.for_each([&](supla_client_channel *c, bool *) {
+    auto node = supla_relation_node::read(c);
+    node.device = c->get_device_id();
+    graph.nodes[node.id] = node;
+  });
+  graph.build();
+  check(graph.get(30, relation_with_parent_channel, 29));
+}
+TEST_F(CommonChannelPropertiesTest,
+       HvacRelationOrderFollowsReferencedChannels) {
+  supla_relation_snapshot graph;
+  supla_relation_node hvac;
+  hvac.id = 100;
+  hvac.function = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+  hvac.hvac[0] = 300;
+  hvac.hvac[1] = 200;
+  hvac.aux_type = SUPLA_HVAC_AUX_THERMOMETER_TYPE_FLOOR;
+  graph.nodes[100] = hvac;
+  for (int id : {200, 300}) {
+    supla_relation_node sensor;
+    sensor.id = id;
+    sensor.device = id;
+    sensor.function = SUPLA_CHANNELFNC_THERMOMETER;
+    graph.nodes[id] = sensor;
+  }
+  graph.build();
+  auto rows = graph.get(100, relation_with_sub_channel, 29);
+  ASSERT_EQ(2u, rows.size());
+  EXPECT_EQ(200, rows[0].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_AUX_THERMOMETER_FLOOR,
+            rows[0].get_relation_type());
+  EXPECT_EQ(300, rows[1].get_id());
+  EXPECT_EQ(CHANNEL_RELATION_TYPE_MAIN_TERMOMETER, rows[1].get_relation_type());
+}
+}  // namespace testing

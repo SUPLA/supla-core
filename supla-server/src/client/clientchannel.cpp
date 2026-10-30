@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include <memory>
+#include <vector>
 
 #include "client.h"
 #include "db/database.h"
@@ -36,6 +37,7 @@
 #include "safearray.h"
 #include "srpc/srpc.h"
 #include "user.h"
+#include "user/channel_relation_index.h"
 
 using std::shared_ptr;
 
@@ -217,6 +219,22 @@ short supla_client_channel::get_manufacturer_id() { return ManufacturerID; }
 short supla_client_channel::get_product_id() { return ProductID; }
 
 unsigned _supla_int64_t supla_client_channel::get_flags() {
+  auto channels = dynamic_cast<supla_client_channels *>(getContainer());
+  auto client = channels ? channels->getClient() : nullptr;
+  auto user = client ? client->get_user() : nullptr;
+  auto snapshot = user ? user->get_relation_index()->snapshot() : nullptr;
+  if (snapshot) {
+    auto parents = snapshot->by_child.find(get_id());
+    if (parents != snapshot->by_child.end()) {
+      for (auto i : parents->second) {
+        const auto &edge = snapshot->edges[i];
+        if (edge.version <= get_protocol_version() &&
+            channels->channel_exists(edge.parent))
+          return Flags | SUPLA_CHANNEL_FLAG_HAS_PARENT;
+      }
+    }
+    return Flags;
+  }
   auto relations = get_channel_relations(relation_with_parent_channel);
   return Flags | (relations.size() ? SUPLA_CHANNEL_FLAG_HAS_PARENT : 0);
 }
@@ -701,7 +719,7 @@ unsigned char supla_client_channel::get_real_config_type(
     TChannelConfig_HVAC native_cfg = {};
     lock();
     hvac_config hvac_cfg(json_config);
-    hvac_cfg.get_config(&native_cfg, get_channel_number());
+    hvac_cfg.get_config(&native_cfg);
     unlock();
 
     if (native_cfg.Subfunction == SUPLA_HVAC_SUBFUNCTION_COOL) {
@@ -722,7 +740,8 @@ void supla_client_channel::get_config(TSCS_ChannelConfig *config,
     rct = get_real_config_type(config_type);
 
     supla_abstract_common_channel_properties::get_config(
-        config->Config, &config->ConfigSize, rct, flags, true);
+        config->Config, &config->ConfigSize, rct, flags,
+        channel_reference_encoding::server_channel_id);
 
     config->ChannelId = get_id();
     config->ConfigType = config_type;
@@ -754,4 +773,22 @@ unsigned char supla_client_channel::get_protocol_version(void) {
   }
 
   return 0;
+}
+
+bool supla_client_channel::indexed_relations(
+    std::vector<supla_channel_relation> *relations, e_relation_kind kind) {
+  auto channels = dynamic_cast<supla_client_channels *>(getContainer());
+  auto client = channels ? channels->getClient() : nullptr;
+  auto user = client ? client->get_user() : nullptr;
+  auto index = user ? user->get_relation_index()->snapshot() : nullptr;
+  if (!index) return false;
+  auto visible = [&](const supla_relation_edge &edge) {
+    return channels->channel_exists(edge.child) &&
+           channels->channel_exists(edge.parent);
+  };
+  for (auto &relation :
+       index->get(get_id(), kind, get_protocol_version(), visible))
+    add_relation(relations, relation.get_id(), relation.get_parent_id(),
+                 relation.get_relation_type());
+  return true;
 }

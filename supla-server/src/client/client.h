@@ -98,6 +98,7 @@ class supla_client : public supla_abstract_connection_object {
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
                                 bool Extended = false);
   void get_next(void);
+  void refresh_channel_relations();
   int get_name(char *buffer, int size);
   std::string get_name(void);
   int getAccessID(void);

@@ -39,9 +39,14 @@ TEST_F(OnDeviceDeletedCommandTest, noData) {
 }
 
 TEST_F(OnDeviceDeletedCommandTest, deviceDeleted) {
-  EXPECT_CALL(*cmd, on_device_deleted(10, 20));
+  EXPECT_CALL(*cmd, on_device_deleted(10, 20)).WillOnce(Return(true));
 
   commandProcessingTest("USER-ON-DEVICE-DELETED:10,20\n", "OK:10\n");
+}
+
+TEST_F(OnDeviceDeletedCommandTest, failedTechnicalCleanup) {
+  EXPECT_CALL(*cmd, on_device_deleted(10, 20)).WillOnce(Return(false));
+  commandProcessingTest("USER-ON-DEVICE-DELETED:10,20\n", "ERROR:10\n");
 }
 
 TEST_F(OnDeviceDeletedCommandTest, noParams) {

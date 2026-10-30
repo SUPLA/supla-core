@@ -207,6 +207,11 @@ _supla_int_t supla_srpc_adapter::sd_async_channel_config_finished(
   return srpc_sd_async_channel_config_finished(get_srpc(), fin);
 }
 
+_supla_int_t supla_srpc_adapter::sd_async_suplan_device_identities(
+    TSD_SuplaDeviceIdentities *identities) {
+  return srpc_sd_async_suplan_device_identities(get_srpc(), identities);
+}
+
 _supla_int_t supla_srpc_adapter::sd_async_device_sync_done(void) {
   return srpc_sd_async_device_sync_done(get_srpc());
 }

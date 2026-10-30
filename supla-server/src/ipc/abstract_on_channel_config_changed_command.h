@@ -40,7 +40,7 @@ class supla_abstract_on_channel_config_changed_command
  protected:
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual void on_channel_config_changed(int user_id, int device_id,
+  virtual bool on_channel_config_changed(int user_id, int device_id,
                                          int channel_id, int type, int func,
                                          unsigned long long scope) = 0;
 

@@ -38,6 +38,7 @@
 #include "scene/scene_asynctask.h"
 #include "srpc/srpc.h"
 #include "user.h"
+#include "user/channel_relation_index.h"
 #include "user/userchannelgroups.h"
 
 using std::dynamic_pointer_cast;
@@ -183,6 +184,11 @@ void supla_client::remote_update_lists(void) {
 }
 
 void supla_client::load_config(void) {
+  if (get_user()) {
+    // Login/reconnect is an authority recovery boundary after lost Cloud IPC.
+    get_user()->get_relation_index()->invalidate();
+    get_user()->refresh_channel_relations();
+  }
   locations->load(get_id());
   channels->load();
   cgroups->load();
@@ -340,6 +346,8 @@ void supla_client::set_scene_caption(int scene_id, char *caption) {
 }
 
 void supla_client::iterate() {
+  if (get_user() && get_user()->get_relation_index()->time_left_usec() == 1)
+    get_user()->refresh_channel_relations();
   supla_abstract_connection_object::iterate();
   channels->update_expired();
 
@@ -377,6 +385,10 @@ void supla_client::connection_will_close(void) {
 unsigned _supla_int64_t supla_client::wait_time_usec() {
   unsigned _supla_int64_t result =
       supla_abstract_connection_object::wait_time_usec();
+  if (get_user()) {
+    auto due = get_user()->get_relation_index()->time_left_usec();
+    if (due && due < result) result = due;
+  }
   unsigned _supla_int64_t validity_time = channels->value_validity_time_usec();
   if (validity_time > 0) {
     validity_time += 500000;
@@ -390,22 +402,10 @@ unsigned _supla_int64_t supla_client::wait_time_usec() {
 
 void supla_client::update_json_config(int channel_id, unsigned char config_type,
                                       supla_json_config *json_config) {
-  bool relations_changed = false;
-
   channels->channel_access(
       channel_id, [&](supla_client_channel *channel) -> void {
-        std::vector<supla_channel_relation> rel_before =
-            channel->get_channel_relations(relation_any);
-
         channel->set_json_config(
             json_config ? new supla_json_config(json_config, true) : nullptr);
-
-        std::vector<supla_channel_relation> rel_after =
-            channel->get_channel_relations(relation_any);
-
-        if (!supla_channel_relation::equal(&rel_before, &rel_after)) {
-          relations_changed = true;
-        }
 
         TSC_ChannelConfigUpdateOrResult cfg_result = {};
         cfg_result.Result = SUPLA_CONFIG_RESULT_TRUE;
@@ -416,10 +416,11 @@ void supla_client::update_json_config(int channel_id, unsigned char config_type,
             ->sc_async_channel_config_update_or_result(&cfg_result);
       });
 
-  if (relations_changed) {
-    channel_relations->load(channels);
-    remote_update_lists();
-  }
+  refresh_channel_relations();
+}
+
+void supla_client::refresh_channel_relations() {
+  if (channel_relations->load(channels, false)) remote_update_lists();
 }
 
 void supla_client::on_device_deleted(int device_id) {

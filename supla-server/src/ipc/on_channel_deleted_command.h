@@ -26,7 +26,7 @@
 class supla_on_channel_deleted_command
     : public supla_abstract_on_channel_deleted_command {
  protected:
-  virtual void on_channel_deleted(int user_id, int device_id, int channel_id);
+  virtual bool on_channel_deleted(int user_id, int device_id, int channel_id);
 
  public:
   explicit supla_on_channel_deleted_command(

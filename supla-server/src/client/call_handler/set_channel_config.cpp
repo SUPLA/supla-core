@@ -19,10 +19,13 @@
 #include "client/call_handler/set_channel_config.h"
 
 #include <memory>
+#include <mutex>
 
 #include "client/client.h"
 #include "client/clientchannels.h"
 #include "device/device.h"
+#include "device/device_dao.h"
+#include "user/channel_relation_index.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -50,15 +53,30 @@ void supla_client_ch_set_channel_config::handle_call(
   // identifiers/numbers!
 
   unsigned char real_config_type = SUPLA_CONFIG_TYPE_DEFAULT;
+  shared_ptr<supla_device> device;
+  supla_device_channel* device_channel = nullptr;
+  std::unique_lock<std::mutex> config_lock;
+  uint64_t relation_ticket = 0;
 
   if (rd->data.scs_channel_config != nullptr) {
     config = rd->data.scs_channel_config;
     real_config_type = config->ConfigType;
 
     if (config->ChannelId) {
+      device = client->get_user()->get_devices()->get(0, config->ChannelId);
+      if (device) {
+        device->get_channels()->access_channel(
+            config->ChannelId, [&](supla_device_channel* channel) {
+              device_channel = channel;
+              config_lock =
+                  std::unique_lock<std::mutex>(channel->get_config_mutex());
+            });
+      }
       client->get_channels()->channel_access(
           config->ChannelId, [&](supla_client_channel* channel) -> void {
             if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
+              relation_ticket = client->get_user()->get_relation_index()->begin(
+                  config->ChannelId);
               cfg_result.Result = channel->set_user_config(
                   config->ConfigType, config->ConfigSize, config->Config);
             } else {
@@ -72,10 +90,54 @@ void supla_client_ch_set_channel_config::handle_call(
               json_config = channel->get_json_config();
             }
           });
+      if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE && device_channel) {
+        device_channel->set_json_config(
+            json_config ? new supla_json_config(json_config, true) : nullptr);
+      }
     }
   }
 
+  // No config-producer lock while notifying clients or queueing SRPC work.
+  if (config_lock.owns_lock()) config_lock.unlock();
+
+  if (relation_ticket) {
+    auto index = client->get_user()->get_relation_index();
+    if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE && json_config) {
+      if (index->complete(config->ChannelId, relation_ticket, json_config,
+                          -1)) {
+        client->get_user()->get_clients()->for_each(
+            [](std::shared_ptr<supla_client> current, bool*) {
+              current->refresh_channel_relations();
+            });
+      }
+    } else {
+      index->cancel(config->ChannelId, relation_ticket);
+    }
+    if (index->time_left_usec()) client->get_user()->wake_relation_retry();
+  }
+
   if (cfg_result.Result == SUPLA_CONFIG_RESULT_TRUE) {
+    // A registration may have replaced/created the Device during the DB write.
+    // Never copy the old connection's snapshot into the replacement cache.
+    auto current = client->get_user()->get_devices()->get(0, config->ChannelId);
+    if (current != device) {
+      device = current;
+      device_channel = nullptr;
+      if (device) {
+        device->get_channels()->access_channel(
+            config->ChannelId, [&](supla_device_channel* channel) {
+              std::lock_guard<std::mutex> guard(channel->get_config_mutex());
+              supla_mariadb_access_provider db;
+              supla_device_dao dao(&db);
+              std::unique_ptr<supla_json_config> root(
+                  dao.get_channel_config(config->ChannelId, nullptr, nullptr));
+              if (root) {
+                channel->set_json_config(root.release());
+                device_channel = channel;
+              }
+            });
+      }
+    }
     int client_id = client->get_id();
 
     client->get_user()->get_clients()->for_each(
@@ -99,18 +161,8 @@ void supla_client_ch_set_channel_config::handle_call(
     // Send a new config to the device after sending the configuration to
     // clients because the device can correct the configuration.
 
-    std::shared_ptr<supla_device> device =
-        client->get_user()->get_devices()->get(0, config->ChannelId);
-
-    if (device) {
-      device->get_channels()->access_channel(
-          config->ChannelId, [&](supla_device_channel* channel) -> void {
-            channel->set_json_config(
-                json_config ? new supla_json_config(json_config, true)
-                            : nullptr);
-            channel->send_config_to_device(real_config_type);
-          });
-    }
+    if (device_channel)
+      device_channel->request_config_publication(real_config_type);
   }
 
   if (json_config) {

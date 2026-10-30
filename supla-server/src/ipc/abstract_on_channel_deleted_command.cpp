@@ -35,8 +35,8 @@ void supla_abstract_on_channel_deleted_command::on_command_match(
     const char *params) {
   process_parameters(
       params, [this](int user_id, int device_id, int channel_id) -> bool {
-        on_channel_deleted(user_id, device_id, channel_id);
-        send_result("OK:", user_id);
+        bool ok = on_channel_deleted(user_id, device_id, channel_id);
+        send_result(ok ? "OK:" : "ERROR:", user_id);
         return true;
       });
 }
