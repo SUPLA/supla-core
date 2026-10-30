@@ -3287,19 +3287,25 @@ TEST_F(SupLanHvacWireIntegrationTest,
   EXPECT_CALL(socket, send_data(std::string("OK:99126\n"))).Times(3);
   supla_on_channel_config_changed_command ipc(&socket);
   // Same committed Cloud RELATIONS hint as M5, no second Device ENSURE.
-  auto notify = [&] {
+  auto notify = [&](bool consumer_changed = false) {
+    int device = consumer_changed ? destination : source;
+    int channel = consumer_changed ? hvac : resource;
+    int type = consumer_changed ? SUPLA_CHANNELTYPE_HVAC
+                                : SUPLA_CHANNELTYPE_THERMOMETER;
+    int function = consumer_changed ? SUPLA_CHANNELFNC_HVAC_THERMOSTAT
+                                    : SUPLA_CHANNELFNC_THERMOMETER;
     std::string input = "USER-ON-CHANNEL-CONFIG-CHANGED:99126," +
-                        std::to_string(source) + "," +
-                        std::to_string(resource) + "," +
-                        std::to_string(SUPLA_CHANNELTYPE_THERMOMETER) + "," +
-                        std::to_string(SUPLA_CHANNELFNC_THERMOMETER) + "," +
+                        std::to_string(device) + "," +
+                        std::to_string(channel) + "," + std::to_string(type) +
+                        "," + std::to_string(function) + "," +
                         std::to_string(CONFIG_CHANGE_SCOPE_RELATIONS) + "\n";
     std::vector<char> buffer(input.begin(), input.end());
     buffer.push_back(0);
     EXPECT_TRUE(
         ipc.process_command(buffer.data(), buffer.size(), input.size()));
   };
-  notify();
+  // A consumer IPC must also revalidate interests in its Source Channels.
+  notify(true);
   ASSERT_TRUE(receive_packet(&packet, 5000));
   ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
   ASSERT_EQ(sizeof(TSD_SuplaRemoteChannelState), packet.data_size);
@@ -3471,7 +3477,7 @@ TEST_F(SupLanHvacWireIntegrationTest,
         supla_user::find(99126, false)->get_devices()->get(destination);
     auto timeout = target->wait_time_usec();
     EXPECT_GT(timeout, 1000000u);
-    EXPECT_LE(timeout, 30000000u);
+    EXPECT_EQ(0u, target->get_stream(false)->time_left_usec());
   }
   {
     auto user = supla_user::find(99126, false);
@@ -3485,15 +3491,15 @@ TEST_F(SupLanHvacWireIntegrationTest,
     });
     ASSERT_TRUE(receive_packet(&packet, 5000));
     ASSERT_EQ(SUPLA_SD_CALL_REMOTE_CHANNEL_STATE, packet.call_id);
-    // Run the real production snapshot + authorization callbacks on this
-    // thread so the native SQL probe measures both, not a synthetic reader.
+    // Run the production snapshot with cached authorization on this thread;
+    // ordinary physical value updates must not open SQL connections.
     Sql004Probe probe;
     for (unsigned i = 0; i < 3; ++i) {
       stream->dirty(resource);
       stream->iterate();
     }
-    EXPECT_EQ(3u, probe.selects);
-    EXPECT_EQ(3u, probe.connections);
+    EXPECT_EQ(0u, probe.selects);
+    EXPECT_EQ(0u, probe.connections);
     EXPECT_EQ(0u, probe.stream_metadata_reads);
     EXPECT_EQ(0u, probe.calls);
     EXPECT_EQ(0u, probe.dml);
@@ -4044,7 +4050,7 @@ TEST_F(SupLanCloudGrantIntegrationTest,
   EXPECT_EQ(1, scalar("SELECT COUNT(*) FROM supla_resource_access_decision"));
 }
 TEST_F(SupLanCloudGrantIntegrationTest,
-       StreamUsesOneCurrentReadPerPublicationAndQuietCheckThenTerminalOffline) {
+       StreamReadsGrantsOnlyOnEnsureAndInvalidation) {
   replace(2, 90002, 1, false);
   auto now = stream_connection::time_point_t() + std::chrono::seconds(1);
   unsigned value = 0;
@@ -4083,14 +4089,15 @@ TEST_F(SupLanCloudGrantIntegrationTest,
     }
     now += std::chrono::seconds(30);
     stream.iterate();
-    EXPECT_EQ(101u, probe.selects);
+    EXPECT_EQ(0u, probe.selects);
+    EXPECT_EQ(0u, probe.connections);
     EXPECT_EQ(0u, probe.dml);
     EXPECT_EQ(0u, probe.calls);
-    probe.finish("adr013-stream-100-plus-quiet");
+    probe.finish("adr013-stream-100-plus-idle");
   }
   EXPECT_EQ(101u, sent.size());
   replace(2, 90002, 0);
-  stream.dirty(resource);
+  stream.invalidate_access();
   stream.iterate();
   ASSERT_EQ(102u, sent.size());
   EXPECT_EQ(1, sent.back().Channel.Offline);

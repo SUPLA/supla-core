@@ -521,6 +521,7 @@ bool supla_user::on_device_deleted(int UserID, int DeviceID,
                                    const supla_caller &caller) {
   supla_user *user = supla_user::find(UserID, false);
 
+  if (user) user->get_suplan_peers()->stream_access_changed();
   bool cleaned = supla_suplan_server_peers::device_deleted(UserID, DeviceID);
   if (!cleaned)
     supla_log(LOG_WARNING,
@@ -544,6 +545,7 @@ bool supla_user::on_channel_deleted(int user_id, int device_id, int channel_id,
                                     const supla_caller &caller) {
   supla_user *user = supla_user::find(user_id, false);
 
+  if (user) user->get_suplan_peers()->stream_access_changed();
   bool cleaned =
       supla_suplan_server_peers::channel_deleted(user_id, channel_id);
   if (!cleaned)
@@ -765,6 +767,7 @@ void supla_user::reconnect(const supla_caller &caller, bool all_devices,
     return;
   }
 
+  get_suplan_peers()->stream_access_changed();
   relation_index->invalidate();
   refresh_channel_relations();
   cgroups->load();  // load == reload

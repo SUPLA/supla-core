@@ -258,21 +258,27 @@ supla_suplan_server_peers::new_stream(supla_device *destination) {
   streams.push_back(stream);
   return stream;
 }
-void supla_suplan_server_peers::stream_dirty(uint32_t channel) {
+std::vector<std::shared_ptr<supla_suplan::stream_connection>>
+supla_suplan_server_peers::live_streams() {
   std::vector<std::shared_ptr<supla_suplan::stream_connection>> current;
-  {
-    std::lock_guard<std::mutex> lock(stream_mutex);
-    for (auto it = streams.begin(); it != streams.end();) {
-      auto stream = it->lock();
-      if (stream) {
-        current.push_back(stream);
-        ++it;
-      } else {
-        it = streams.erase(it);
-      }
+  std::lock_guard<std::mutex> lock(stream_mutex);
+  for (auto it = streams.begin(); it != streams.end();) {
+    auto stream = it->lock();
+    if (stream) {
+      current.push_back(stream);
+      ++it;
+    } else {
+      it = streams.erase(it);
     }
   }
-  for (const auto &stream : current) stream->dirty(channel);
+  return current;
+}
+void supla_suplan_server_peers::stream_dirty(uint32_t channel) {
+  if (!channel) return;
+  for (const auto &stream : live_streams()) stream->dirty(channel);
+}
+void supla_suplan_server_peers::stream_access_changed() {
+  for (const auto &stream : live_streams()) stream->invalidate_access();
 }
 
 supla_suplan_server_peers::~supla_suplan_server_peers() {

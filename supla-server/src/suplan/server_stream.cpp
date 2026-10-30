@@ -38,11 +38,25 @@ void stream_connection::dirty(uint32_t id) {
   }
   if (signal && notify) notify();
 }
+void stream_connection::invalidate_access() {
+  {
+    // Serialize invalidation with publication, outside Channel reads.
+    std::lock_guard<std::mutex> lock(access_mutex);
+    ++access_revision;
+  }
+  bool signal;
+  {
+    std::lock_guard<std::mutex> lock(dirty_mutex);
+    signal = !serials.empty() && !wake.exchange(true);
+  }
+  if (signal && notify) notify();
+}
 uint64_t stream_connection::time_left_usec() const {
+  if (wake.load()) return 1;
   auto deadline = due.load();
   if (deadline == time_point_t::max()) return 0;
   auto now = clock();
-  if (wake.load() || deadline <= now) return 1;
+  if (deadline <= now) return 1;
   return std::max<int64_t>(1, std::chrono::duration_cast<
       std::chrono::microseconds>(deadline - now).count());
 }
@@ -68,20 +82,19 @@ void stream_connection::suspend(interest_t *interest) {
   else
     closed = true;
 }
-bool stream_connection::publish(uint32_t id, interest_t *interest) {
+void stream_connection::retry(interest_t *interest) {
+  if (!closed) suspend(interest);
+  interest->access_revision = 0;
+  interest->retry_after = clock() + std::chrono::seconds(5);
+}
+bool stream_connection::publish(uint32_t id, interest_t *interest,
+                                 const TDS_SuplaDeviceChannel_E &metadata) {
   auto observed = serial(id);
   snapshot_t snapshot;
-  bool obtained = read(id, &snapshot);
-  // Revalidate AFTER snapshot construction, including races with initial read.
-  auto access = authorize(id, false, false, &snapshot.state.Channel);
-  if (access.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) return false;
-  if (access.Result != SUPLA_SUPLAN_RESULT_OK ||
-      access.AccessStatus != SUPLA_SUPLAN_ACCESS_STATUS_GRANTED) {
-    terminal(id, interest);
-    erase(id);
-    return true;
-  }
-  if (!obtained || !ready()) return false;
+  if (!read(id, &snapshot) || !ready()) return false;
+  snapshot.state.Channel.FuncList = metadata.FuncList;
+  snapshot.state.Channel.DefaultIcon = metadata.DefaultIcon;
+  snapshot.state.Channel.SubDeviceId = metadata.SubDeviceId;
   snapshot.state.ChannelId = id;
   snapshot.state.Channel.Number = 0xFF;
   if (snapshot.expires != time_point_t() && clock() >= snapshot.expires)
@@ -91,6 +104,10 @@ bool stream_connection::publish(uint32_t id, interest_t *interest) {
   // TTL renewal/countdown is scheduling, not a remote-state change.
   comparable.Channel.ValueValidityTimeSec = 0;
   previous.Channel.ValueValidityTimeSec = 0;
+  // No Channel locks or SQL under this fence. A later invalidation wakes us
+  // again; a snapshot prepared before invalidation must not pass it.
+  std::lock_guard<std::mutex> lock(access_mutex);
+  if (interest->access_revision != access_revision) return true;
   if (!interest->active || memcmp(&comparable, &previous, sizeof(previous))) {
     if (!send(snapshot.state)) {
       closed = true;
@@ -100,7 +117,6 @@ bool stream_connection::publish(uint32_t id, interest_t *interest) {
   interest->last = snapshot;
   interest->active = true;
   interest->serial = observed;
-  interest->check = clock() + std::chrono::seconds(30);
   interest->retry_after = time_point_t();
   return true;
 }
@@ -108,17 +124,19 @@ void stream_connection::schedule() {
   auto next = time_point_t::max();
   auto now = clock();
   for (const auto &item : interests) {
-    auto deadline = item.second.check;
-    auto expiry = item.second.last.expires;
-    if (item.second.active && expiry != time_point_t() &&
-        item.second.last.state.Channel.Offline !=
+    const auto &interest = item.second;
+    auto deadline = time_point_t::max();
+    auto expiry = interest.last.expires;
+    if (interest.active && expiry != time_point_t() &&
+        interest.last.state.Channel.Offline !=
             SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE)
-      deadline = std::min(deadline, expiry);
-    deadline = std::max(deadline, item.second.retry_after);
-    if (serial(item.first) != item.second.serial) {
-      deadline = std::min(deadline, std::max(now, item.second.retry_after));
-      if (item.second.retry_after <= now) wake = true;
-    }
+      deadline = expiry;
+    if (interest.retry_after != time_point_t())
+      deadline = std::min(deadline, interest.retry_after);
+    if (interest.access_revision != access_revision ||
+        (interest.granted && serial(item.first) != interest.serial))
+      deadline = std::min(deadline, now);
+    deadline = std::max(deadline, interest.retry_after);
     next = std::min(next, deadline);
   }
   due = next;
@@ -155,21 +173,18 @@ void stream_connection::ensure(const TDS_SuplaEnsureResourceAccess &q,
     reply(result);
     return;
   }
-  result = authorize(id, q.Flags != 0, true, nullptr);
+  auto revision = access_revision.load();
+  TDS_SuplaDeviceChannel_E metadata{};
+  result = authorize(id, q.Flags != 0, true, &metadata);
   if (!reply(result)) {
     shutdown();
     return;
   }
   if (result.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) {
     if (found != interests.end()) {
-      suspend(&found->second);
-      if (closed) {
-        shutdown();
-      } else {
-        found->second.check = clock() + std::chrono::seconds(5);
-        found->second.retry_after = found->second.check;
-        schedule();
-      }
+      retry(&found->second);
+      if (closed) shutdown();
+      else schedule();
     }
     return;
   }
@@ -202,16 +217,16 @@ void stream_connection::ensure(const TDS_SuplaEnsureResourceAccess &q,
     found->second = interest_t{};
     found->second.serial = serial(id);
   }
-  found->second.check = clock() + std::chrono::seconds(30);
-  if (result.AccessStatus == SUPLA_SUPLAN_ACCESS_STATUS_GRANTED) {
-    if (!publish(id, &found->second)) {
-      suspend(&found->second);
-      if (closed) {
-        shutdown();
-        return;
-      }
-      found->second.check = clock() + std::chrono::seconds(5);
-      found->second.retry_after = found->second.check;
+  auto &interest = found->second;
+  interest.access_revision = revision;
+  interest.retry_after = time_point_t();
+  interest.granted =
+      result.AccessStatus == SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+  if (interest.granted && !publish(id, &interest, metadata)) {
+    retry(&interest);
+    if (closed) {
+      shutdown();
+      return;
     }
   }
   schedule();
@@ -238,64 +253,42 @@ void stream_connection::iterate() {
                    clock() >= interest.last.expires &&
                    interest.last.state.Channel.Offline !=
                        SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
-    if (serial(id) == interest.serial && !expired && clock() < interest.check)
-      continue;
-    if (interest.active) {
-      // One current permission check at the send boundary, not two SQL
-      // authorization lookups per active recipient on the hot update path.
-      if (!publish(id, &interest)) {
-        if (closed) {
-          shutdown();
-          return;
+    bool revalidate = interest.access_revision != access_revision;
+    if (!revalidate && !expired && serial(id) == interest.serial &&
+        interest.retry_after == time_point_t()) continue;
+    auto metadata = interest.last.state.Channel;
+    if (revalidate) {
+      auto revision = access_revision.load();
+      auto access = authorize(id, false, false, &metadata);
+      if (access.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) {
+        retry(&interest);
+      } else if (access.Result != SUPLA_SUPLAN_RESULT_OK ||
+                 (access.AccessStatus != SUPLA_SUPLAN_ACCESS_STATUS_GRANTED &&
+                  access.AccessStatus !=
+                      SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL)) {
+        terminal(id, &interest);
+        erase(id);
+      } else {
+        interest.access_revision = revision;
+        interest.retry_after = time_point_t();
+        interest.granted =
+            access.AccessStatus == SUPLA_SUPLAN_ACCESS_STATUS_GRANTED;
+        if (!interest.granted) {
+          terminal(id, &interest);
+          interest.active = false;
+          interest.serial = serial(id);
         }
-        suspend(&interest);
-        if (closed) {
-          shutdown();
-          return;
-        }
-        interest.check = clock() + std::chrono::seconds(5);
-        interest.retry_after = interest.check;
-        interest.serial = serial(id);
       }
-      cursor = id;
-      if (++work == 16) break;
-      continue;
     }
-    auto access = authorize(id, false, false, nullptr);
-    if (access.Result == SUPLA_SUPLAN_RESULT_PERSISTENCE_ERROR) {
-      suspend(&interest);
-      if (closed) {
-        shutdown();
-        return;
-      }
-      interest.check = clock() + std::chrono::seconds(5);
-      interest.retry_after = interest.check;
-      // Fail closed during DB outages; dirty work is retried at the deadline.
-      interest.serial = serial(id);
-    } else if (access.Result == SUPLA_SUPLAN_RESULT_OK &&
-               access.AccessStatus == SUPLA_SUPLAN_ACCESS_STATUS_GRANTED) {
-      if (!publish(id, &interest)) {
-        if (closed) {
-          shutdown();
-          return;
-        }
-        suspend(&interest);
-        if (closed) {
-          shutdown();
-          return;
-        }
-        interest.check = clock() + std::chrono::seconds(5);
-        interest.retry_after = interest.check;
-        interest.serial = serial(id);
-      }
-    } else if (interest.active || access.Result != SUPLA_SUPLAN_RESULT_OK ||
-               access.AccessStatus !=
-                   SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL) {
-      terminal(id, &interest);
-      erase(id);
-    } else {
-      interest.serial = serial(id);
-      interest.check = clock() + std::chrono::seconds(30);
+    // erase() invalidates the reference. Failed reads retain retry-only work.
+    auto found = interests.find(id);
+    if (found != interests.end() &&
+        found->second.retry_after == time_point_t() && found->second.granted &&
+        !publish(id, &found->second, metadata))
+      retry(&found->second);
+    if (closed) {
+      shutdown();
+      return;
     }
     cursor = id;
     if (++work == 16) break;

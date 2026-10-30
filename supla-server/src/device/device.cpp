@@ -212,6 +212,7 @@ void supla_device::reconcile_suplan_peers(void) {
   lock();
   suplan_peer_ready = true;
   unlock();
+  get_user()->get_suplan_peers()->stream_access_changed();
   peers->reconnect(get_id());
 }
 

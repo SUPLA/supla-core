@@ -35,6 +35,7 @@ class stream_connection {
   void ensure(const TDS_SuplaEnsureResourceAccess &request,
               reply_callback_t reply);
   void dirty(uint32_t channel);
+  void invalidate_access();
   void iterate();
   void close();
   size_t size();
@@ -43,10 +44,10 @@ class stream_connection {
 
  private:
   struct interest_t {
-    bool active = false;
+    bool active = false, granted = false;
     snapshot_t last;
     uint64_t serial = 0;
-    time_point_t check{};
+    uint64_t access_revision = 0;
     time_point_t retry_after{};
   };
   const size_t capacity;
@@ -56,15 +57,20 @@ class stream_connection {
   std::function<bool()> ready;
   clock_t clock;
   const std::function<void()> notify;
-  std::mutex mutex, dirty_mutex;
+  // access_mutex fences invalidation against publication; dirty_mutex only
+  // guards serials and is never held while sending.
+  std::mutex mutex, dirty_mutex, access_mutex;
   std::map<uint32_t, interest_t> interests;
   std::map<uint32_t, uint64_t> serials;
+  std::atomic<uint64_t> access_revision{1};
   std::atomic<bool> wake{false};
   std::atomic<time_point_t> due{time_point_t::max()};
   bool closed = false;
   uint32_t cursor = 0;
   uint64_t serial(uint32_t id);
-  bool publish(uint32_t id, interest_t *interest);
+  bool publish(uint32_t id, interest_t *interest,
+               const TDS_SuplaDeviceChannel_E &metadata);
+  void retry(interest_t *interest);
   void terminal(uint32_t id, interest_t *interest);
   void suspend(interest_t *interest);
   void erase(uint32_t id);

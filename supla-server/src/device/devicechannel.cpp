@@ -292,7 +292,7 @@ void supla_device_channel::set_func(int func) {
   }
   unlock();
   if (changed && get_user())
-    get_user()->get_suplan_peers()->stream_dirty(get_id());
+    get_user()->get_suplan_peers()->stream_access_changed();
 }
 
 int supla_device_channel::get_type(void) { return type; }

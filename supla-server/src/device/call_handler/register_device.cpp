@@ -27,6 +27,7 @@
 #include "device/device.h"
 #include "device/device_dao.h"
 #include "log.h"
+#include "suplan/server_peer_transport.h"
 #include "user/channel_relation_index.h"
 #include "user/user.h"
 
@@ -92,6 +93,10 @@ void supla_register_device::on_registration_success(void) {
   std::map<int, supla_channel_availability_status> previous_statuses;
 
   supla_user::add_device(device, get_user_id(), &previous_statuses);
+  // The committed registration may change Source rows used by valid grants
+  // and STREAM metadata (function, flags, protocol, FuncList, SubDeviceId),
+  // also for legacy Devices without SupLAN or with zero flags.
+  device->get_user()->get_suplan_peers()->stream_access_changed();
   // Reconnect is the accepted recovery boundary for a lost Cloud IPC hint.
   device->get_user()->get_relation_index()->invalidate();
   // Initialize once before value fan-out; otherwise it would fall back to

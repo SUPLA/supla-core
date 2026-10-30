@@ -15,12 +15,15 @@ class supla_suplan_server_peers : public supla_suplan::peer_transport {
   supla_user *user;
   std::mutex stream_mutex;
   std::vector<std::weak_ptr<supla_suplan::stream_connection>> streams;
+  std::vector<std::shared_ptr<supla_suplan::stream_connection>> live_streams();
   std::mutex changes_mutex;
   supla_suplan::peer_provisioner provisioner;
 
  public:
   std::shared_ptr<supla_suplan::stream_connection> new_stream(supla_device *d);
   void stream_dirty(uint32_t channel);
+  // Authorization-relevant change: every interest revalidates once.
+  void stream_access_changed();
   bool drain_changes();
   static bool channel_deleted(int user_id, int channel_id);
   static bool device_deleted(int user_id, int device_id);

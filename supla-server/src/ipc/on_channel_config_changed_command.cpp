@@ -40,7 +40,7 @@ bool supla_on_channel_config_changed_command::on_channel_config_changed(
     int user_id, int device_id, int channel_id, int type, int func,
     unsigned long long scope) {
   auto stream_user = supla_user::find(user_id, false);
-  if (stream_user) stream_user->get_suplan_peers()->stream_dirty(channel_id);
+  if (stream_user) stream_user->get_suplan_peers()->stream_access_changed();
   // Cloud committed config and desired authorization. An unrelated peer failure
   // retains its marker, but must not suppress this config's publication.
   bool reconciled = !stream_user ||

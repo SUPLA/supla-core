@@ -2020,12 +2020,12 @@ TEST_F(SupLanStreamConnectionTest, DirtySignalsOnlySubscribedAndOutsideLock) {
   EXPECT_EQ(2u, notifications);
   EXPECT_EQ(0u, connection.time_left_usec());
 }
-TEST_F(SupLanStreamConnectionTest, QuietCheckRetryAndTtlExposeNearestDeadline) {
+TEST_F(SupLanStreamConnectionTest, EventRetryAndTtlExposeNearestDeadline) {
   EXPECT_EQ(0u, connection.time_left_usec());
   ensure();
-  EXPECT_EQ(30000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
   now += std::chrono::seconds(7);
-  EXPECT_EQ(23000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
   current.expires = now + std::chrono::seconds(3);
   connection.dirty(10);
   EXPECT_EQ(1u, connection.time_left_usec());
@@ -2035,9 +2035,9 @@ TEST_F(SupLanStreamConnectionTest, QuietCheckRetryAndTtlExposeNearestDeadline) {
   EXPECT_EQ(1u, connection.time_left_usec());
   connection.iterate();
   EXPECT_EQ(1, messages.back().Channel.Offline);
-  EXPECT_EQ(30000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
   database = false;
-  connection.dirty(10);
+  connection.invalidate_access();
   connection.iterate();
   EXPECT_EQ(5000000u, connection.time_left_usec());
   // Dirty while backing off may wake once, but cannot cause a busy loop.
@@ -2050,9 +2050,9 @@ TEST_F(SupLanStreamConnectionTest, QuietCheckRetryAndTtlExposeNearestDeadline) {
   database = true;
   now += std::chrono::seconds(5);
   connection.iterate();
-  EXPECT_EQ(30000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
   allowed = false;
-  connection.dirty(10);
+  connection.invalidate_access();
   connection.iterate();
   EXPECT_EQ(0u, connection.time_left_usec());
 }
@@ -2065,14 +2065,14 @@ TEST_F(SupLanStreamConnectionTest, EarliestInterestDeadline) {
   connection.close();
   EXPECT_EQ(0u, connection.time_left_usec());
 }
-TEST_F(SupLanStreamConnectionTest, PendingHasThirtySecondDeadline) {
+TEST_F(SupLanStreamConnectionTest, PendingHasNoPollingDeadline) {
   allowed = false;
   ensure(10, true);
   EXPECT_TRUE(messages.empty());
-  EXPECT_EQ(30000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
   now += std::chrono::seconds(30);
   connection.iterate();
-  EXPECT_EQ(30000000u, connection.time_left_usec());
+  EXPECT_EQ(0u, connection.time_left_usec());
 }
 TEST_F(SupLanStreamConnectionTest, DirtyLatchesBeforeAndDuringEventWait) {
   std::unique_ptr<TEventHandler, decltype(&eh_free)> event(eh_init(), eh_free);
@@ -2118,7 +2118,7 @@ TEST_F(SupLanStreamConnectionTest,
   EXPECT_EQ(1u, messages.size());
 }
 TEST_F(SupLanStreamConnectionTest,
-       PendingActivationAndLostHintWithoutNewEnsure) {
+       PendingActivationRequiresAccessHintOrEnsure) {
   allowed = false;
   EXPECT_EQ(SUPLA_SUPLAN_ACCESS_STATUS_PENDING_APPROVAL,
             ensure(10, true).AccessStatus);
@@ -2128,6 +2128,14 @@ TEST_F(SupLanStreamConnectionTest,
   advance(29);
   EXPECT_TRUE(messages.empty());
   advance(1);
+  EXPECT_TRUE(messages.empty());
+  EXPECT_EQ(1u, checks);
+  connection.dirty(10);
+  advance(300);
+  EXPECT_TRUE(messages.empty());
+  EXPECT_EQ(1u, checks);
+  connection.invalidate_access();
+  connection.iterate();
   ASSERT_EQ(1u, messages.size());
   EXPECT_EQ(1u, approval_requests);
 }
@@ -2160,14 +2168,14 @@ TEST_F(SupLanStreamConnectionTest,
   EXPECT_EQ(1u, connection.size());
 
   allowed = true;
-  connection.dirty(10);  // Cloud approval hint, without another ENSURE.
+  connection.invalidate_access();  // Approval IPC, without another ENSURE.
   connection.iterate();
   ASSERT_EQ(3u, messages.size());
   EXPECT_EQ(0, messages.back().Channel.Offline);
   EXPECT_EQ(99, messages.back().Channel.value[0]);
 }
 TEST_F(SupLanStreamConnectionTest,
-       GrantedToPendingRecoversApprovalWithoutHintOrNewEnsure) {
+       GrantedToPendingRecoversApprovalOnNewEnsure) {
   ensure();
   allowed = false;
   ensure(10, true);
@@ -2175,7 +2183,9 @@ TEST_F(SupLanStreamConnectionTest,
   ASSERT_EQ(2u, messages.size());
   EXPECT_EQ(1u, connection.size());
   allowed = true;
-  advance(30);
+  advance(300);
+  EXPECT_EQ(2u, messages.size());
+  ensure();
   ASSERT_EQ(3u, messages.size());
   EXPECT_EQ(0, messages.back().Channel.Offline);
 }
@@ -2208,16 +2218,18 @@ TEST_F(SupLanStreamConnectionTest, RevocationDuringInitialReadLeaksNoSnapshot) {
   during_read = [&] {
     allowed = false;
     pending = false;
+    connection.invalidate_access();
   };
   ensure();
   EXPECT_TRUE(messages.empty());
+  connection.iterate();
   EXPECT_EQ(0u, connection.size());
 }
 TEST_F(SupLanStreamConnectionTest, TerminalFencesDirtyAndCannotResurrect) {
   ensure();
   current.state.Channel.value[0] = 99;
   allowed = false;
-  connection.dirty(10);
+  connection.invalidate_access();
   advance(1);
   ASSERT_EQ(2u, messages.size());
   EXPECT_EQ(1, messages.back().Channel.Offline);
@@ -2247,6 +2259,42 @@ TEST_F(SupLanStreamConnectionTest, ExpiryRenewalNoExtraSnapshotAndRecovery) {
   connection.iterate();
   ASSERT_EQ(3u, messages.size());
   EXPECT_EQ(0, messages.back().Channel.Offline);
+}
+TEST_F(SupLanStreamConnectionTest, ValueAndExpiryUseAccessUntilInvalidated) {
+  current.expires = now + std::chrono::seconds(5);
+  ensure();
+  EXPECT_EQ(1u, checks);
+  allowed = false;  // Committed revoke, but IPC was lost.
+  for (unsigned i = 0; i < 100; ++i) {
+    ++current.state.Channel.value[0];
+    connection.dirty(10);
+    connection.iterate();
+  }
+  advance(300);
+  EXPECT_EQ(1u, checks);
+  ASSERT_EQ(102u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);  // TTL, not grant polling.
+  connection.invalidate_access();
+  connection.iterate();
+  EXPECT_EQ(2u, checks);
+  EXPECT_EQ(0u, connection.size());
+}
+TEST_F(SupLanStreamConnectionTest, InvalidationDuringReadFencesPreparedValue) {
+  ensure();
+  current.state.Channel.value[0] = 99;
+  during_read = [&] {
+    allowed = false;
+    connection.invalidate_access();
+  };
+  connection.dirty(10);
+  connection.iterate();
+  EXPECT_EQ(1u, messages.size());
+  EXPECT_EQ(1u, checks);
+  connection.iterate();
+  ASSERT_EQ(2u, messages.size());
+  EXPECT_EQ(1, messages.back().Channel.Offline);
+  EXPECT_EQ(42, messages.back().Channel.value[0]);
+  EXPECT_EQ(0u, connection.size());
 }
 TEST_F(SupLanStreamConnectionTest, MetadataChangeAndUnrelatedChannelIsolation) {
   ensure();
@@ -2284,7 +2332,7 @@ TEST_F(SupLanStreamConnectionTest, DatabaseOutageFailsClosedThenRecovers) {
   ensure();
   database = false;
   current.state.Channel.value[0] = 99;
-  connection.dirty(10);
+  connection.invalidate_access();
   advance(1);
   ASSERT_EQ(2u, messages.size());
   EXPECT_EQ(1, messages.back().Channel.Offline);
@@ -2371,7 +2419,7 @@ TEST(SupLanStreamConcurrencyTest, MutationAndRevocationFenceAllLateWork) {
   producer.join();
   reader.join();
   allowed = false;
-  stream.dirty(10);
+  stream.invalidate_access();
   stream.iterate();
   ASSERT_FALSE(messages.empty());
   EXPECT_EQ(1, messages.back().Channel.Offline);
@@ -2420,7 +2468,7 @@ TEST(SupLanStreamLoadTest, FanoutCoalescesFloodWithinConfiguredBounds) {
   for (auto &stream : destinations) stream->iterate();
   EXPECT_EQ(4096u + 64, messages);
   EXPECT_EQ(messages, reads);
-  EXPECT_EQ(baseline + 64, authorizations);
+  EXPECT_EQ(baseline, authorizations);
   for (auto &stream : destinations) EXPECT_EQ(64u, stream->size());
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
                      std::chrono::steady_clock::now() - began)
@@ -2671,7 +2719,7 @@ TEST(SupLanStreamLoadTest, SparseDirtyFanoutDoesNoUnsubscribedWork) {
     EXPECT_EQ(before_sent, sent);
     EXPECT_EQ(1u, wakes);  // Only the interested Destination is signalled.
     for (auto &stream : streams) stream->iterate();
-    EXPECT_EQ(before_auth + 1, auth);
+    EXPECT_EQ(before_auth, auth);
     EXPECT_EQ(before_reads + 1, reads);
     EXPECT_EQ(before_sent, sent);  // Unchanged snapshot is coalesced.
     std::cout << "sparse STREAM connections=" << count
