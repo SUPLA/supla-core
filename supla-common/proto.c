@@ -488,6 +488,9 @@ char PROTO_ICACHE_FLASH supla_action_mode_from_text(
   static const mode_mapping at_modes[] = {
       {"NOT_SET", SUPLA_BUTTON_MODE_NOT_SET},
       {"LOCKED", SUPLA_BUTTON_MODE_LOCKED},
+      {"LOCKED_TEMPORARY_UNLOCK_ALLOWED",
+       SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED},
+      {"CMD_TEMPORARY_UNLOCK", SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK},
   };
   static const mode_mapping relay_modes[] = {
       {"NOT_SET", SUPLA_RELAY_MODE_NOT_SET},

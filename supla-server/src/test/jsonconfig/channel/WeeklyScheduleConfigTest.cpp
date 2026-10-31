@@ -271,6 +271,38 @@ TEST_F(WeeklyScheduleConfigTest, actionTriggerProgramsUseButtonMode) {
       0);
 }
 
+TEST_F(WeeklyScheduleConfigTest, actionTriggerTemporaryUnlockProgram) {
+  TChannelConfig_WeeklySchedule expected = {};
+  TChannelConfig_WeeklySchedule actual = {};
+  expected.Program[0].Mode =
+      SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED;
+  expected.Program[0].ButtonTemporaryUnlockDurationS = 64800;
+
+  weekly_schedule_config config;
+  config.set_config(&expected, SUPLA_CHANNELFNC_ACTIONTRIGGER);
+
+  char *json = config.get_user_config();
+  ASSERT_NE(json, nullptr);
+  cJSON *root = cJSON_Parse(json);
+  ASSERT_NE(root, nullptr);
+  cJSON *program = cJSON_GetObjectItem(
+      cJSON_GetObjectItem(cJSON_GetObjectItem(root, "weeklySchedule"),
+                          "programSettings"),
+      "1");
+  ASSERT_NE(program, nullptr);
+  EXPECT_STREQ(cJSON_GetStringValue(cJSON_GetObjectItem(program, "mode")),
+               "LOCKED_TEMPORARY_UNLOCK_ALLOWED");
+  EXPECT_EQ(cJSON_GetNumberValue(cJSON_GetObjectItem(
+                program, "buttonTemporaryUnlockDurationS")),
+            64800);
+  cJSON_Delete(root);
+  free(json);
+
+  ASSERT_TRUE(config.get_config(&actual, SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_EQ(actual.Program[0].Mode, expected.Program[0].Mode);
+  EXPECT_EQ(actual.Program[0].ButtonTemporaryUnlockDurationS, 64800);
+}
+
 TEST_F(WeeklyScheduleConfigTest, merge) {
   weekly_schedule_config config1;
   weekly_schedule_config config2;

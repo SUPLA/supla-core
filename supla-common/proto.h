@@ -866,6 +866,7 @@ typedef struct {
 // SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED. Doesn't change mode
 // nor config. Duration is passed in DurationSec.
 #define SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK 7  // v. >= 29
+#define SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC 64800
 // Temporary unlock duration (default, program and command) is limited to
 // 18 h = 64800 s. Greater values are invalid and rejected (not truncated).
 // Device restart or leaving SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED
@@ -1270,6 +1271,8 @@ typedef struct {
   union {
     unsigned _supla_int_t DurationMS;
     unsigned _supla_int_t DurationSec;  // ver. >= 21. Applies to HVAC
+                                        // ver. >= 29. Applies to AT temporary
+                                        // unlock command
   };
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TSD_SuplaChannelGroupNewValue;  // v. >= 13

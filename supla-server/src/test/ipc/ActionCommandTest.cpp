@@ -397,6 +397,30 @@ TEST_F(ActionCommandTest, SetAtParameters) {
   commandProcessingTest("ACTION-SET-AT-PARAMETERS:10,20,30,0\n", "OK:30\n");
 }
 
+TEST_F(ActionCommandTest, SetAtTemporaryUnlockWithDuration) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters(10, 20, 30, NotNull()))
+      .WillOnce([](int, int, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK);
+        EXPECT_EQ(params->get_duration_sec(), 64800U);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-SET-AT-PARAMETERS:10,20,30,7,64800\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCommandTest, SetAtTemporaryUnlockRejectsExcessiveDuration) {
+  StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters).Times(0);
+
+  commandProcessingTest("ACTION-SET-AT-PARAMETERS:10,20,30,7,64801\n",
+                        "UNKNOWN:30\n");
+}
+
 TEST_F(ActionCommandTest, SetRelayParameters) {
   StrictMock<ActionCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
   cmd = &c;

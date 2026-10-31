@@ -79,13 +79,29 @@ TEST_F(ActionParamTest, setAtModeParameters) {
   unsigned char mode = 255;
   string action_param = "{\"mode\":\"NOT_SET\"}";
   EXPECT_CALL(*worker, get_action_param)
-      .WillRepeatedly(Return(action_param.c_str()));
+      .WillRepeatedly([&action_param]() { return action_param.c_str(); });
   EXPECT_TRUE(action.get_mode(&mode));
   EXPECT_EQ(mode, SUPLA_BUTTON_MODE_NOT_SET);
 
   action_param = "{\"mode\":\"LOCKED\"}";
   EXPECT_TRUE(action.get_mode(&mode));
   EXPECT_EQ(mode, SUPLA_BUTTON_MODE_LOCKED);
+
+  action_param = "{\"mode\":\"LOCKED_TEMPORARY_UNLOCK_ALLOWED\"}";
+  EXPECT_TRUE(action.get_mode(&mode));
+  EXPECT_EQ(mode, SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED);
+
+  unsigned int duration_sec = 0;
+  action_param = "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":64800}";
+  EXPECT_TRUE(action.get_mode(&mode, &duration_sec));
+  EXPECT_EQ(mode, SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK);
+  EXPECT_EQ(duration_sec, 64800U);
+
+  action_param = "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":64801}";
+  EXPECT_FALSE(action.get_mode(&mode));
+
+  action_param = "{\"mode\":\"LOCKED\",\"durationSec\":1}";
+  EXPECT_FALSE(action.get_mode(&mode));
 
   action_param = "{\"mode\":\"AUTOMATIC\"}";
   EXPECT_FALSE(action.get_mode(&mode));
@@ -99,7 +115,7 @@ TEST_F(ActionParamTest, setRelayModeParameters) {
   unsigned char mode = 255;
   string action_param = "{\"mode\":\"AUTOMATIC\"}";
   EXPECT_CALL(*worker, get_action_param)
-      .WillRepeatedly(Return(action_param.c_str()));
+      .WillRepeatedly([&action_param]() { return action_param.c_str(); });
   EXPECT_TRUE(action.get_mode(&mode));
   EXPECT_EQ(mode, SUPLA_RELAY_MODE_AUTOMATIC);
 

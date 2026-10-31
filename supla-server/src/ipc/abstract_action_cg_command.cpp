@@ -163,11 +163,19 @@ void supla_abstract_action_cg_command::on_command_match(const char *params) {
   if (action == ACTION_SET_AT_PARAMETERS ||
       action == ACTION_SET_RELAY_PARAMETERS) {
     int mode = -1;
-    int count = sscanf(params, "%i,%i,%i", &user_id, &group_id, &mode);
-    if (count == 3 && user_id > 0 && group_id > 0 && mode >= 0 &&
+    unsigned long long duration_sec = 0;
+    int mode_end = 0;
+    int duration_end = 0;
+    int count = sscanf(params, "%i,%i,%i%n,%llu%n", &user_id, &group_id,
+                       &mode, &mode_end, &duration_sec, &duration_end);
+    bool complete = (count == 3 && params[mode_end] == 0) ||
+                    (count == 4 && params[duration_end] == 0);
+    if (complete && user_id > 0 && group_id > 0 && mode >= 0 &&
         mode <= 255 &&
+        (action == ACTION_SET_AT_PARAMETERS || duration_sec == 0) &&
+        duration_sec <= SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC &&
         (user = supla_user::find(user_id, false)) != NULL) {
-      supla_action_mode_parameters mode_params(mode);
+      supla_action_mode_parameters mode_params(mode, duration_sec);
       bool result = action == ACTION_SET_AT_PARAMETERS
                         ? action_set_at_parameters(user, group_id, &mode_params)
                         : action_set_relay_parameters(user, group_id,

@@ -289,11 +289,11 @@ void ActionExecutorMock::hvac_set_parameters(
   hvac_set_parameters_counter++;
 }
 
-void ActionExecutorMock::set_at_parameters(
-    supla_action_mode_parameters *params) {}
+bool ActionExecutorMock::set_at_parameters(
+    supla_action_mode_parameters *params) { return true; }
 
-void ActionExecutorMock::set_relay_parameters(
-    supla_action_mode_parameters *params) {}
+bool ActionExecutorMock::set_relay_parameters(
+    supla_action_mode_parameters *params) { return true; }
 
 void ActionExecutorMock::switch_to_program_mode(void) {
   addTime();

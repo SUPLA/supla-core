@@ -152,7 +152,7 @@ void supla_abstract_action_executor::on_correlation_token(
   }
 }
 
-void supla_abstract_action_executor::execute_action(
+bool supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
@@ -160,7 +160,7 @@ void supla_abstract_action_executor::execute_action(
     int source_channel_id, int cap, nlohmann::json *template_data,
     const char *alexa_correlation_token, const char *google_request_id) {
   if (action_id == 0 || subject_id == 0) {
-    return;
+    return false;
   }
 
   set_caller(caller);
@@ -308,18 +308,13 @@ void supla_abstract_action_executor::execute_action(
       break;
     case ACTION_SET_AT_PARAMETERS:
     case ACTION_SET_RELAY_PARAMETERS:
-      if (params) {
-        supla_action_mode_parameters *mode =
-            dynamic_cast<supla_action_mode_parameters *>(params);
-        if (mode) {
-          if (action_id == ACTION_SET_AT_PARAMETERS) {
-            set_at_parameters(mode);
-          } else {
-            set_relay_parameters(mode);
-          }
-        }
+      if (supla_action_mode_parameters *mode =
+              dynamic_cast<supla_action_mode_parameters *>(params)) {
+        return action_id == ACTION_SET_AT_PARAMETERS
+                   ? set_at_parameters(mode)
+                   : set_relay_parameters(mode);
       }
-      break;
+      return false;
     case ACTION_SWITCH_TO_MANUAL_MODE:
       switch_to_manual_mode();
       break;
@@ -346,18 +341,22 @@ void supla_abstract_action_executor::execute_action(
         }
       }
       break;
+    default:
+      return false;
   }
+  return true;
 }
 
-void supla_abstract_action_executor::execute_action(
+bool supla_abstract_action_executor::execute_action(
     const supla_caller &caller, int user_id, int action_id,
     _subjectType_e subject_type, int subject_id,
     supla_abstract_channel_property_getter *property_getter,
     supla_abstract_action_parameters *params, int source_device_id,
     int source_channel_id, int cap, nlohmann::json *template_data) {
-  execute_action(caller, user_id, action_id, subject_type, subject_id,
-                 property_getter, params, source_device_id, source_channel_id,
-                 cap, template_data, nullptr, nullptr);
+  return execute_action(caller, user_id, action_id, subject_type, subject_id,
+                        property_getter, params, source_device_id,
+                        source_channel_id, cap, template_data, nullptr,
+                        nullptr);
 }
 
 void supla_abstract_action_executor::execute_action(
