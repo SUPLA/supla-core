@@ -105,8 +105,9 @@ void ActionExecutorTest::SetUp() {
 }
 
 void ActionExecutorTest::TearDown() {
-  delete supla_user::find(12345, false);
   delete aexec;
+  device.reset();
+  delete supla_user::find(12345, false);
 }
 
 TEST_F(ActionExecutorTest, getDeviceWithAndWithoutId) {
@@ -512,6 +513,9 @@ TEST(DeviceChannelsSetModeParametersTest, temporaryUnlockRequiresModeSix) {
 
 TEST(DeviceChannelsSetModeParametersTest, registrationPreserves64BitFlags) {
   DeviceStub device(nullptr);
+  device.set_id(567);
+  supla_user *user = supla_user::find(12345, true);
+  device.set_user(user);
   DeviceDaoMock dao;
   EXPECT_CALL(dao, get_channels(&device)).WillOnce([](supla_device *device) {
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
@@ -527,13 +531,18 @@ TEST(DeviceChannelsSetModeParametersTest, registrationPreserves64BitFlags) {
   registered.Flags = 0x2118010000LL;
   registered.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
 
-  supla_device_channels channels(&dao, &device, nullptr, &registered, 1);
-  bool found = false;
-  channels.access_channel(89, [&](supla_device_channel *channel) {
-    found = true;
-    EXPECT_EQ(channel->get_flags(), 0x2118010000ULL);
-  });
-  EXPECT_TRUE(found);
+  {
+    supla_device_channels channels(&dao, &device, nullptr, &registered, 1);
+    bool found = false;
+    channels.access_channel(89, [&](supla_device_channel *channel) {
+      found = true;
+      EXPECT_EQ(channel->get_flags(), 0x2118010000ULL);
+    });
+    EXPECT_TRUE(found);
+  }
+
+  device.set_user(nullptr);
+  delete user;
 }
 
 TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedRelayModes) {
