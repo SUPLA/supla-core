@@ -358,6 +358,30 @@ TEST_F(ActionCgCommandTest, SetAtParameters) {
   commandProcessingTest("ACTION-CG-SET-AT-PARAMETERS:10,30,1\n", "OK:30\n");
 }
 
+TEST_F(ActionCgCommandTest, SetAtTemporaryUnlockWithDuration) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters(user, 30, NotNull()))
+      .WillOnce([](supla_user *, int,
+                   const supla_action_mode_parameters *params) -> bool {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK);
+        EXPECT_EQ(params->get_duration_sec(), 10U);
+        return true;
+      });
+
+  commandProcessingTest("ACTION-CG-SET-AT-PARAMETERS:10,30,7,10\n",
+                        "OK:30\n");
+}
+
+TEST_F(ActionCgCommandTest, SetAtTemporaryUnlockRejectsExcessiveDuration) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_AT_PARAMETERS);
+  cmd = &c;
+  EXPECT_CALL(c, action_set_at_parameters).Times(0);
+
+  commandProcessingTest("ACTION-CG-SET-AT-PARAMETERS:10,30,7,64801\n",
+                        "UNKNOWN:30\n");
+}
+
 TEST_F(ActionCgCommandTest, SetRelayParameters) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_SET_RELAY_PARAMETERS);
   cmd = &c;

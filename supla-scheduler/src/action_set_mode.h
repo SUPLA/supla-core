@@ -19,7 +19,7 @@ class s_worker_action_set_mode : public s_worker_action {
 
  public:
   s_worker_action_set_mode(s_abstract_worker *worker, bool action_trigger);
-  bool get_mode(unsigned char *mode);
+  bool get_mode(unsigned char *mode, unsigned int *duration_sec = nullptr);
   virtual int try_limit(void);
   virtual int waiting_time_to_retry(void);
   virtual int waiting_time_to_check(void);

@@ -195,7 +195,8 @@ TEST_F(ActionTest, setAtParametersUsesButtonMode) {
       .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
   EXPECT_CALL(worker, get_action_param())
       .WillRepeatedly(Return("{\"mode\":\"LOCKED\"}"));
-  EXPECT_CALL(worker, ipcc_action_set_at_parameters(SUPLA_BUTTON_MODE_LOCKED))
+  EXPECT_CALL(worker,
+              ipcc_action_set_at_parameters(SUPLA_BUTTON_MODE_LOCKED, 0))
       .WillOnce(Return(true));
   EXPECT_CALL(worker, ipcc_get_action_trigger_value(_))
       .WillOnce([](TActionTriggerProperties *value) {
@@ -207,6 +208,26 @@ TEST_F(ActionTest, setAtParametersUsesButtonMode) {
   EXPECT_TRUE(action.is_allowed());
   EXPECT_TRUE(action.perform());
   EXPECT_TRUE(action.is_success());
+}
+
+TEST_F(ActionTest, temporaryUnlockIsSentOnceWithoutStateComparison) {
+  WorkerMock worker(NULL);
+  EXPECT_CALL(worker, get_channel_func())
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_CALL(worker, get_action_param())
+      .WillRepeatedly(Return(
+          "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":10}"));
+  EXPECT_CALL(worker,
+              ipcc_action_set_at_parameters(
+                  SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK, 10))
+      .WillOnce(Return(true));
+  EXPECT_CALL(worker, ipcc_get_action_trigger_value(_)).Times(0);
+
+  TestableSetAtParameters action(&worker);
+  EXPECT_TRUE(action.is_allowed());
+  EXPECT_EQ(action.try_limit(), 1);
+  EXPECT_TRUE(action.perform());
+  EXPECT_FALSE(action.is_success());
 }
 
 TEST_F(ActionTest, setRelayParametersUsesRelayMode) {

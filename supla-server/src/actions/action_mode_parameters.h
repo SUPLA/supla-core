@@ -11,15 +11,19 @@
 #define ACTION_MODE_PARAMETERS_H_
 
 #include "actions/abstract_action_parameters.h"
+#include "proto.h"
 
 class supla_action_mode_parameters : public supla_abstract_action_parameters {
  private:
   unsigned char mode;
+  unsigned _supla_int_t duration_sec;
 
  public:
-  explicit supla_action_mode_parameters(unsigned char mode);
+  explicit supla_action_mode_parameters(unsigned char mode,
+                                        unsigned _supla_int_t duration_sec = 0);
   virtual ~supla_action_mode_parameters(void);
   unsigned char get_mode(void) const;
+  unsigned _supla_int_t get_duration_sec(void) const;
   virtual bool equal(supla_abstract_action_parameters *params) const;
   virtual supla_abstract_action_parameters *copy(void) const;  // NOLINT
 };

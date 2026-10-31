@@ -103,6 +103,12 @@ TEST_F(ActionConfigTest, jsonModeParameters) {
        SUPLA_BUTTON_MODE_NOT_SET},
       {ACTION_SET_AT_PARAMETERS, "{\"mode\":\"LOCKED\"}",
        SUPLA_BUTTON_MODE_LOCKED},
+      {ACTION_SET_AT_PARAMETERS,
+       "{\"mode\":\"LOCKED_TEMPORARY_UNLOCK_ALLOWED\"}",
+       SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED},
+      {ACTION_SET_AT_PARAMETERS,
+       "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":64800}",
+       SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK},
       {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"NOT_SET\"}",
        SUPLA_RELAY_MODE_NOT_SET},
       {ACTION_SET_RELAY_PARAMETERS, "{\"mode\":\"START_ON\"}",
@@ -128,6 +134,10 @@ TEST_F(ActionConfigTest, jsonModeParameters) {
         dynamic_cast<supla_action_mode_parameters *>(params);
     ASSERT_NE(mode, nullptr);
     EXPECT_EQ(mode->get_mode(), test_case.expected_mode);
+    EXPECT_EQ(mode->get_duration_sec(),
+              test_case.expected_mode == SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK
+                  ? 64800U
+                  : 0U);
     delete params;
   }
   EXPECT_EQ(config.get_source_channel_id(), 42);
@@ -138,6 +148,10 @@ TEST_F(ActionConfigTest, rejectsInvalidJsonModeParameters) {
   const char *invalid_json[] = {
       "{\"mode\":0}",          "{\"mode\":\"locked\"}",
       "{\"mode\":\"AUTOMATIC\"}", "{\"mode\":null}",
+      "{\"mode\":\"LOCKED\",\"durationSec\":1}",
+      "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":64801}",
+      "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":1.5}",
+      "{\"mode\":\"CMD_TEMPORARY_UNLOCK\",\"durationSec\":-1}",
   };
   for (const char *json : invalid_json) {
     supla_action_config invalid;

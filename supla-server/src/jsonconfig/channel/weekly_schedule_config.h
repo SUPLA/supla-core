@@ -31,6 +31,7 @@ class weekly_schedule_config : public supla_json_config {
   static const char setpoint_temperature_cool[];
   static const char relay_mode_duration_s[];
   static const char relay_opposite_mode_duration_s[];
+  static const char button_temporary_unlock_duration_s[];
   static const char program_settings[];
   static const char quarters[];
 

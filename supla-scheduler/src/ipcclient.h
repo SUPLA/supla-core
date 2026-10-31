@@ -40,7 +40,7 @@ class ipc_client {
                  int device_id, int channel_id, int channel_group_id);
   bool action_set_mode(const char *cmd, const char *cmd_group, int user_id,
                        int device_id, int channel_id, int channel_group_id,
-                       unsigned char mode);
+                       unsigned char mode, unsigned int duration_sec);
 
  public:
   ipc_client();
@@ -90,7 +90,8 @@ class ipc_client {
   bool action_switch_to_manual_mode(int user_id, int device_id,
                                     int channel_id, int channel_group_id);
   bool action_set_at_parameters(int user_id, int device_id, int channel_id,
-                                int channel_group_id, unsigned char mode);
+                                int channel_group_id, unsigned char mode,
+                                unsigned int duration_sec);
   bool action_set_relay_parameters(int user_id, int device_id, int channel_id,
                                    int channel_group_id, unsigned char mode);
   bool action_turn_on(int user_id, int device_id, int channel_id,

@@ -329,7 +329,9 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
       return;
     }
     if ((is_at && mode != SUPLA_BUTTON_MODE_NOT_SET &&
-         mode != SUPLA_BUTTON_MODE_LOCKED) ||
+         mode != SUPLA_BUTTON_MODE_LOCKED &&
+         mode != SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED &&
+         mode != SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK) ||
         (!is_at && mode != SUPLA_RELAY_MODE_NOT_SET &&
          mode != SUPLA_RELAY_MODE_START_ON &&
          mode != SUPLA_RELAY_MODE_START_OFF &&
@@ -342,9 +344,24 @@ void getActionExecutionCallParams(JNIEnv *env, jobject action_params,
     }
 
     if (is_at) {
+      jlong duration_sec = 0;
+      supla_CallLongObjectMethod(env, mode_cls, action_params,
+                                 "getDurationSec", &duration_sec);
+      if (env->ExceptionCheck()) {
+        return;
+      }
+      if (duration_sec < 0 ||
+          duration_sec > SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC ||
+          (mode != SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK && duration_sec)) {
+        jclass exception_cls =
+            env->FindClass("java/lang/IllegalArgumentException");
+        env->ThrowNew(exception_cls, "Invalid temporary unlock duration");
+        return;
+      }
       TAction_AT_Parameters *at =
           (TAction_AT_Parameters *)calloc(1, sizeof(TAction_AT_Parameters));
       at->Mode = mode;
+      at->DurationSec = duration_sec;
       *param = at;
       *param_size = sizeof(TAction_AT_Parameters);
     } else {

@@ -24,9 +24,12 @@
 
 #include "actions/action_config.h"
 #include "actions/action_mode_parameters.h"
+#include "client/call_handler/execute_action.h"
 #include "device/devicechannels.h"
 #include "doubles/device/ChannelPropertyGetterMock.h"
 #include "doubles/device/DeviceDaoMock.h"
+#include "doubles/actions/ActionExecutorGmock.h"
+#include "doubles/SrpcAdapterMock.h"
 #include "user/user.h"
 
 namespace testing {
@@ -37,6 +40,11 @@ using std::shared_ptr;
 using std::vector;
 
 namespace {
+
+class ExposedExecuteAction : public supla_ch_execute_action {
+ public:
+  using supla_ch_abstract_execute_action::execute_action;
+};
 
 std::unique_ptr<supla_device_channels> create_channels(
     DeviceDaoMock *dao, DeviceStub *device, int type, int func,
@@ -263,6 +271,52 @@ TEST_F(ActionExecutorTest, sendPush) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
 
+TEST_F(ActionExecutorTest, modeActionReturnsDispatchResult) {
+  ActionExecutorGmock executor;
+  supla_action_mode_parameters params(SUPLA_BUTTON_MODE_LOCKED);
+
+  EXPECT_CALL(executor, set_at_parameters(_)).WillOnce(Return(false));
+  EXPECT_FALSE(executor.execute_action(
+      supla_caller(ctClient), 12345, ACTION_SET_AT_PARAMETERS, stChannel, 89,
+      nullptr, &params, 0, 0, 0, nullptr));
+
+  EXPECT_CALL(executor, set_at_parameters(_)).WillOnce(Return(true));
+  EXPECT_TRUE(executor.execute_action(
+      supla_caller(ctClient), 12345, ACTION_SET_AT_PARAMETERS, stChannel, 89,
+      nullptr, &params, 0, 0, 0, nullptr));
+}
+
+TEST_F(ActionExecutorTest, clientReceivesRejectionAndAtDuration) {
+  ExposedExecuteAction handler;
+  ActionExecutorGmock executor;
+  SrpcAdapterMock srpc;
+  TCS_Action action = {};
+  action.ActionId = ACTION_SET_AT_PARAMETERS;
+  action.SubjectType = ACTION_SUBJECT_TYPE_CHANNEL;
+  action.SubjectId = 89;
+  action.ParamSize = sizeof(TAction_AT_Parameters);
+  TAction_AT_Parameters raw = {};
+  raw.Mode = SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK;
+  raw.DurationSec = 10;
+  std::memcpy(action.Param, &raw, sizeof(raw));
+
+  EXPECT_CALL(executor, set_at_parameters(_))
+      .WillOnce([](supla_action_mode_parameters *params) {
+        EXPECT_EQ(params->get_mode(), SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK);
+        EXPECT_EQ(params->get_duration_sec(), 10U);
+        return false;
+      });
+  EXPECT_CALL(srpc, sc_async_action_execution_result(_))
+      .WillOnce([](TSC_ActionExecutionResult *result) {
+        EXPECT_EQ(result->ResultCode, SUPLA_RESULTCODE_FALSE);
+        return 1;
+      });
+
+  handler.execute_action(
+      12345, 1, "test", &executor, &action, &srpc,
+      [](int, int) { return true; }, [](int) { return true; });
+}
+
 TEST(DeviceChannelsSwitchToModeTest, acceptsRelayWithWeeklySchedule) {
   DeviceStub device(nullptr);
   DeviceDaoMock dao;
@@ -381,6 +435,115 @@ TEST(DeviceChannelsSetModeParametersTest, rejectsUnsupportedActionTrigger) {
 
   EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
                                                   &locked));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, temporaryUnlockValidation) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TActionTriggerProperties *)raw_value)->ButtonMode =
+      SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+      SUPLA_CHANNELFNC_ACTIONTRIGGER,
+      SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED,
+      raw_value);
+
+  supla_action_mode_parameters mode(
+      SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED);
+  supla_action_mode_parameters command_zero(
+      SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK, 0);
+  supla_action_mode_parameters command_max(
+      SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK,
+      SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC);
+  supla_action_mode_parameters command_too_long(
+      SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK,
+      SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC + 1);
+  supla_action_mode_parameters mode_with_duration(
+      SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED, 1);
+
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &mode));
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &command_zero));
+  EXPECT_TRUE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                 &command_max));
+  EXPECT_FALSE(channels->action_set_at_parameters(
+      supla_caller(ctIPC), 89, 0, 0, &command_too_long));
+  EXPECT_FALSE(channels->action_set_at_parameters(
+      supla_caller(ctIPC), 89, 0, 0, &mode_with_duration));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, temporaryUnlockRequiresCapability) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  auto channels = create_channels(&dao, &device,
+                                  SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+                                  SUPLA_CHANNELFNC_ACTIONTRIGGER,
+                                  SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED);
+  supla_action_mode_parameters mode(
+      SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED);
+  supla_action_mode_parameters command(
+      SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK, 10);
+
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &mode));
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &command));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, temporaryUnlockRequiresModeSix) {
+  DeviceStub device(nullptr);
+  DeviceDaoMock dao;
+  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
+  ((TActionTriggerProperties *)raw_value)->ButtonMode =
+      SUPLA_BUTTON_MODE_LOCKED;
+  auto channels = create_channels(
+      &dao, &device, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+      SUPLA_CHANNELFNC_ACTIONTRIGGER,
+      SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED |
+          SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED,
+      raw_value);
+  supla_action_mode_parameters command(
+      SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK, 10);
+
+  EXPECT_FALSE(channels->action_set_at_parameters(supla_caller(ctIPC), 89, 0, 0,
+                                                  &command));
+}
+
+TEST(DeviceChannelsSetModeParametersTest, registrationPreserves64BitFlags) {
+  DeviceStub device(nullptr);
+  device.set_id(567);
+  supla_user *user = supla_user::find(12345, true);
+  device.set_user(user);
+  DeviceDaoMock dao;
+  EXPECT_CALL(dao, get_channels(&device)).WillOnce([](supla_device *device) {
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    return vector<supla_device_channel *>{new supla_device_channel(
+        device, 89, 0, SUPLA_CHANNELTYPE_ACTIONTRIGGER,
+        SUPLA_CHANNELFNC_ACTIONTRIGGER, 0, 0, 0, 0, nullptr, nullptr, nullptr,
+        false, 0, value, 0, nullptr, nullptr, nullptr, nullptr)};
+  });
+
+  TDS_SuplaDeviceChannel_E registered = {};
+  registered.Number = 0;
+  registered.Type = SUPLA_CHANNELTYPE_ACTIONTRIGGER;
+  registered.Flags = 0x2118010000LL;
+  registered.Offline = SUPLA_CHANNEL_OFFLINE_FLAG_OFFLINE;
+
+  {
+    supla_device_channels channels(&dao, &device, nullptr, &registered, 1);
+    bool found = false;
+    channels.access_channel(89, [&](supla_device_channel *channel) {
+      found = true;
+      EXPECT_EQ(channel->get_flags(), 0x2118010000ULL);
+    });
+    EXPECT_TRUE(found);
+  }
+
+  device.set_user(nullptr);
+  delete user;
 }
 
 TEST(DeviceChannelsSetModeParametersTest, acceptsSupportedRelayModes) {

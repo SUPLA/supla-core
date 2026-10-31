@@ -34,6 +34,8 @@ const char weekly_schedule_config::relay_mode_duration_s[] =
     "relayModeDurationS";
 const char weekly_schedule_config::relay_opposite_mode_duration_s[] =
     "relayOppositeModeDurationS";
+const char weekly_schedule_config::button_temporary_unlock_duration_s[] =
+    "buttonTemporaryUnlockDurationS";
 const char weekly_schedule_config::program_settings[] = "programSettings";
 const char weekly_schedule_config::quarters[] = "quarters";
 
@@ -111,6 +113,8 @@ string weekly_schedule_config::mode_to_string(unsigned char mode,
         return "NOT_SET";
       case SUPLA_BUTTON_MODE_LOCKED:
         return "LOCKED";
+      case SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED:
+        return "LOCKED_TEMPORARY_UNLOCK_ALLOWED";
     }
 
     return "";
@@ -160,6 +164,8 @@ unsigned char weekly_schedule_config::string_to_mode(const std::string &mode,
   if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
     if (mode == "LOCKED") {
       return SUPLA_BUTTON_MODE_LOCKED;
+    } else if (mode == "LOCKED_TEMPORARY_UNLOCK_ALLOWED") {
+      return SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED;
     }
 
     return SUPLA_BUTTON_MODE_NOT_SET;
@@ -203,6 +209,12 @@ void weekly_schedule_config::add_program(unsigned char index,
       set_item_value(program, relay_opposite_mode_duration_s, cJSON_Number,
                      true, nullptr, nullptr,
                      config->Program[index].RelayOppositeModeDurationS);
+    } else if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON &&
+               config->Program[index].Mode ==
+                   SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED) {
+      set_item_value(program, button_temporary_unlock_duration_s,
+                     cJSON_Number, true, nullptr, nullptr,
+                     config->Program[index].ButtonTemporaryUnlockDurationS);
     } else if (mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
       set_item_value(program, setpoint_temperature_heat, cJSON_Number, true,
                      nullptr, nullptr,
@@ -242,7 +254,25 @@ bool weekly_schedule_config::get_program(unsigned char index,
         config->Program[index].RelayOppositeModeDurationS = dbl_value;
         result = true;
       }
-    } else if (mode_type != SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+    } else if (mode_type == SUPLA_WEEKLY_SCHEDULE_PROGRAM_MODE_TYPE_BUTTON) {
+      cJSON *duration =
+          cJSON_GetObjectItem(program, button_temporary_unlock_duration_s);
+      if (duration) {
+        if (config->Program[index].Mode !=
+                SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED ||
+            !cJSON_IsNumber(duration) || duration->valuedouble < 0 ||
+            duration->valuedouble >
+                SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC ||
+            duration->valuedouble !=
+                static_cast<unsigned int>(duration->valuedouble)) {
+          config->Program[index].Mode = SUPLA_BUTTON_MODE_NOT_SET;
+          return false;
+        }
+        config->Program[index].ButtonTemporaryUnlockDurationS =
+            duration->valuedouble;
+        result = true;
+      }
+    } else {
       if (get_double(program, setpoint_temperature_heat, &dbl_value)) {
         config->Program[index].SetpointTemperatureHeat = dbl_value;
         result = true;

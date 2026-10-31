@@ -60,7 +60,7 @@ supla_device_channels::supla_device_channels(
     char *value = nullptr;
     unsigned char number = 0;
     unsigned int action_trigger_caps = 0;
-    unsigned int flags = 0;
+    unsigned _supla_int64_t flags = 0;
     supla_channel_availability_status status;
 
     TActionTriggerProperties at_orops = {};
@@ -1408,16 +1408,44 @@ bool supla_device_channels::action_set_at_parameters(
   bool result = false;
   access_channel(channel_id, [&](supla_device_channel *channel) -> void {
     unsigned char mode = params->get_mode();
+    unsigned _supla_int_t duration_sec = params->get_duration_sec();
     if (channel->get_func() != SUPLA_CHANNELFNC_ACTIONTRIGGER ||
-        !(channel->get_flags() & SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED) ||
-        (mode != SUPLA_BUTTON_MODE_NOT_SET &&
-         mode != SUPLA_BUTTON_MODE_LOCKED)) {
+        !(channel->get_flags() & SUPLA_CHANNEL_FLAG_BUTTON_MODE_SUPPORTED)) {
       return;
+    }
+
+    switch (mode) {
+      case SUPLA_BUTTON_MODE_NOT_SET:
+      case SUPLA_BUTTON_MODE_LOCKED:
+        if (duration_sec) return;
+        break;
+      case SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED:
+      case SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK:
+        if (!(channel->get_flags() &
+              SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED) ||
+            duration_sec > SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC ||
+            (mode == SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED &&
+             duration_sec)) {
+          return;
+        }
+        if (mode == SUPLA_BUTTON_MODE_CMD_TEMPORARY_UNLOCK) {
+          char current_value[SUPLA_CHANNELVALUE_SIZE] = {};
+          channel->get_value(current_value);
+          if (((TActionTriggerProperties *)current_value)->ButtonMode !=
+              SUPLA_BUTTON_MODE_LOCKED_TEMPORARY_UNLOCK_ALLOWED) {
+            return;
+          }
+        }
+        break;
+      default:
+        return;
     }
 
     char value[SUPLA_CHANNELVALUE_SIZE] = {};
     ((TActionTriggerProperties *)value)->ButtonMode = mode;
-    async_set_channel_value(channel, caller, group_id, eol, value, 0, false);
+    // The duration field is in seconds for this AT command (proto >= 29).
+    async_set_channel_value(channel, caller, group_id, eol, value,
+                            duration_sec, false);
     result = true;
   });
 
@@ -1433,7 +1461,8 @@ bool supla_device_channels::action_set_relay_parameters(
 
   bool result = false;
   access_channel(channel_id, [&](supla_device_channel *channel) -> void {
-    if (!supla_weekly_schedule_is_relay_function(channel->get_func())) {
+    if (!supla_weekly_schedule_is_relay_function(channel->get_func()) ||
+        params->get_duration_sec()) {
       return;
     }
 

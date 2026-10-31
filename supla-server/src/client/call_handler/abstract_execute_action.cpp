@@ -103,7 +103,8 @@ void supla_ch_abstract_execute_action::execute_action(
     case ACTION_SET_AT_PARAMETERS:
       if (action->ParamSize == sizeof(TAction_AT_Parameters)) {
         params = new supla_action_mode_parameters(
-            ((TAction_AT_Parameters *)action->Param)->Mode);
+            ((TAction_AT_Parameters *)action->Param)->Mode,
+            ((TAction_AT_Parameters *)action->Param)->DurationSec);
       } else {
         send_result(action, srpc_adapter,
                     SUPLA_RESULTCODE_INCORRECT_PARAMETERS);
@@ -135,11 +136,13 @@ void supla_ch_abstract_execute_action::execute_action(
                                                      action->SubjectId)) {
     send_result(action, srpc_adapter, SUPLA_RESULTCODE_INACTIVE);
   } else {
-    aexec->execute_action(supla_caller(ctClient, client_id, client_name),
-                          user_id, action->ActionId, subject_type,
-                          action->SubjectId, nullptr, params, 0, 0, 0, nullptr);
+    bool accepted = aexec->execute_action(
+        supla_caller(ctClient, client_id, client_name), user_id,
+        action->ActionId, subject_type, action->SubjectId, nullptr, params, 0,
+        0, 0, nullptr);
 
-    send_result(action, srpc_adapter, SUPLA_RESULTCODE_TRUE);
+    send_result(action, srpc_adapter,
+                accepted ? SUPLA_RESULTCODE_TRUE : SUPLA_RESULTCODE_FALSE);
   }
 
   if (params) {
