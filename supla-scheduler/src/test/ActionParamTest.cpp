@@ -61,7 +61,8 @@ void ActionParamTest::SetUp() {
   ON_CALL(*worker, ipcc_get_fb_value).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_action_shut_partially).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_action_set_at_parameters).WillByDefault(Return(false));
-  ON_CALL(*worker, ipcc_action_set_relay_parameters).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_action_set_relay_parameters)
+      .WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_execute_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_and_execute_scene)
