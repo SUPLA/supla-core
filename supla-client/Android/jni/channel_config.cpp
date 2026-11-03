@@ -19,6 +19,7 @@
 #include "channel_config.h"
 
 #include <android/log.h>
+#include <cstdio>
 #include <stdlib.h>
 
 #include "channel_config_facade_blind.h"
@@ -77,6 +78,14 @@ jobject supla_config_result_to_jobject(JNIEnv *env, int result) {
 jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
                                         unsigned _supla_int_t crc32) {
   if (config && config->ConfigSize) {
+    if (supla_weekly_schedule_is_function_supported(config->Func) &&
+        config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
+        sizeof(TChannelConfig_WeeklySchedule) == config->ConfigSize) {
+      return supla_cc_weekly_schedule_to_jobject(
+          env, config->ChannelId, config->Func, crc32,
+          (TChannelConfig_WeeklySchedule *)config->Config);
+    }
+
     switch (config->Func) {
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
       case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
@@ -86,12 +95,6 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
           return supla_cc_hvac_to_jobject(
               env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_HVAC *)config->Config);
-        } else if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE &&
-                   sizeof(TChannelConfig_WeeklySchedule) ==
-                       config->ConfigSize) {
-          return supla_cc_weekly_schedule_to_jobject(
-              env, config->ChannelId, config->Func, crc32,
-              (TChannelConfig_WeeklySchedule *)config->Config);
         }
         break;
       case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
@@ -222,6 +225,7 @@ Java_org_supla_android_lib_SuplaClient_scSetChannelConfig(JNIEnv *env,
         "org/supla/android/data/source/remote/SuplaChannelConfig");
 
     scs_config.ChannelId = supla_CallIntMethod(env, cls, config, "getRemoteId");
+    env->DeleteLocalRef(cls);
 
     result = supla_client_set_channel_config(supla_client, &scs_config) > 0
                  ? JNI_TRUE

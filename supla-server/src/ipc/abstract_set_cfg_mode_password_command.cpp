@@ -31,7 +31,7 @@ using std::string;
 supla_abstract_set_cfg_mode_password_command::
     supla_abstract_set_cfg_mode_password_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter) {}
+    : supla_abstract_calcfg_ipc_command(socket_adapter) {}
 
 const string supla_abstract_set_cfg_mode_password_command::get_command_name(
     void) {
@@ -47,6 +47,8 @@ void supla_abstract_set_cfg_mode_password_command::on_command_match(
 
   bool result = false;
   char *password = nullptr;
+  unsigned _supla_int64_t queued_at = 0;
+  bool waiting_for_result = false;
 
   if (params) {
     sscanf(params, "%i,%i,%100s", &user_id, &device_id, password_base64);
@@ -59,7 +61,8 @@ void supla_abstract_set_cfg_mode_password_command::on_command_match(
           &len);
 
       if (password && len && len < SUPLA_PASSWORD_MAXSIZE &&
-          set_cfg_mode_password(user_id, device_id, password)) {
+          set_cfg_mode_password(user_id, device_id, password, &queued_at,
+                                &waiting_for_result)) {
         result = true;
       }
     }
@@ -69,5 +72,10 @@ void supla_abstract_set_cfg_mode_password_command::on_command_match(
     free(password);
   }
 
-  send_result(result ? "OK:" : "UNKNOWN:", device_id);
+  if (result && queued_at) {
+    send_calcfg_result("OK:", device_id, device_id, queued_at,
+                       waiting_for_result);
+  } else {
+    send_result(result ? "OK:" : "UNKNOWN:", device_id);
+  }
 }

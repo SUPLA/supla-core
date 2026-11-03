@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -8,7 +8,7 @@ set -e
 cd supla-scheduler/Test 
 make clean && make all 
 
-vg_verify "./supla-scheduler"
+vg_verify ./supla-scheduler
 
 echo OK 
 exit 0

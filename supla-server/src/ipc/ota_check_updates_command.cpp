@@ -29,13 +29,14 @@ supla_ota_check_updates_command::supla_ota_check_updates_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ota_check_updates_command(socket_adapter) {}
 
-bool supla_ota_check_updates_command::check_updates(int user_id,
-                                                    int device_id) {
+bool supla_ota_check_updates_command::check_updates(
+    int user_id, int device_id, unsigned _supla_int64_t *queued_at,
+    bool *waiting_for_result) {
   supla_user *user = supla_user::get_user(user_id);
   if (user) {
     shared_ptr<supla_device> device = user->get_devices()->get(device_id);
     if (device) {
-      return device->check_updates();
+      return device->check_updates(queued_at, waiting_for_result);
     }
   }
 

@@ -166,7 +166,14 @@ bool supla_client_dao::oauth_get_token(TSC_OAuthToken *token, int user_id,
     return false;
   }
 
-  st_random_alpha_string(token->Token, CFG_OAUTH_TOKEN_SIZE + 1);
+  if (!st_random_alpha_string(token->Token, CFG_OAUTH_TOKEN_SIZE + 1)) {
+    if (!already_connected) {
+      dba->disconnect();
+    }
+
+    return false;
+  }
+
   token->Token[CFG_OAUTH_TOKEN_SIZE] = '.';
 
   memcpy(&token->Token[CFG_OAUTH_TOKEN_SIZE + 1], svrcfg_oauth_url_base64,

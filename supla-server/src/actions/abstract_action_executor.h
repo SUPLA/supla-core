@@ -29,6 +29,7 @@
 #include "actions/action_hvac_parameters.h"
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_mode_parameters.h"
 #include "caller.h"
 #include "device.h"
 #include "device/abstract_channel_property_getter.h"
@@ -88,14 +89,14 @@ class supla_abstract_action_executor {
                       supla_abstract_channel_property_getter *property_getter,
                       nlohmann::json *template_data);
 
-  void execute_action(const supla_caller &caller, int user_id, int action_id,
+  bool execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
                       supla_abstract_action_parameters *params,
                       int source_device_id, int source_channel_id, int cap,
                       nlohmann::json *template_data);
 
-  void execute_action(const supla_caller &caller, int user_id, int action_id,
+  bool execute_action(const supla_caller &caller, int user_id, int action_id,
                       _subjectType_e subject_type, int subject_id,
                       supla_abstract_channel_property_getter *property_getter,
                       supla_abstract_action_parameters *params,
@@ -132,8 +133,10 @@ class supla_abstract_action_executor {
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
   virtual void hvac_set_parameters(supla_action_hvac_parameters *params) = 0;
-  virtual void hvac_switch_to_program_mode(void) = 0;
-  virtual void hvac_switch_to_manual_mode(void) = 0;
+  virtual bool set_at_parameters(supla_action_mode_parameters *params) = 0;
+  virtual bool set_relay_parameters(supla_action_mode_parameters *params) = 0;
+  virtual void switch_to_program_mode(void) = 0;
+  virtual void switch_to_manual_mode(void) = 0;
   virtual void hvac_set_temperature(
       supla_action_hvac_setpoint_temperature *temperature) = 0;
   virtual void hvac_set_temperatures(

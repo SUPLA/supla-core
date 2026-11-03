@@ -40,7 +40,7 @@ class binary_sensor_config : public supla_json_config {
   int get_filtering_time_ms(void);
   int get_timeout(void);
   int get_sensitivity(void);
-  unsigned char get_alarm_muted(void);
+  unsigned char get_local_alarm_indication(void);
 };
 
 #endif /* BINARY_SENSOR_CONFIG_H_ */

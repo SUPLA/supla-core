@@ -11,6 +11,7 @@ local.properties
 .settings/
 .loadpath
 .cache
+.idea
 
 # External tool builders
 .externalToolBuilders/
@@ -72,6 +73,7 @@ valgrind-suppressions.cfg
 /supla-server/coredump/*
 
 # supla client builds
+supla-client/iOS/build/
 supla-client/Tools/openssl/openssl-*
 supla-client/Release/LibSuplaClient.xcframework
 supla-client/Tools/openssl/LibSsl.xcframework

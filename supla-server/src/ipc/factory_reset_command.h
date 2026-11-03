@@ -26,7 +26,9 @@
 class supla_factory_reset_command
     : public supla_abstract_factory_reset_command {
  protected:
-  virtual bool factory_reset(int user_id, int device_id);
+  virtual bool factory_reset(int user_id, int device_id,
+                             unsigned _supla_int64_t *queued_at,
+                             bool *waiting_for_result);
 
  public:
   explicit supla_factory_reset_command(

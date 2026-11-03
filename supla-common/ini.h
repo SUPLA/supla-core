@@ -1,10 +1,10 @@
-/*
-Copyright (c) 2009, Ben Hoyt
+// SPDX-FileCopyrightText: 2009 Ben Hoyt
+// SPDX-License-Identifier: BSD-3-Clause
 
+/*
 inih -- simple .INI file parser
 
-inih is released under the New BSD license (see LICENSE.txt). Go to the project
-home page for more info:
+Go to the project home page for more info:
 
 http://code.google.com/p/inih/
 */

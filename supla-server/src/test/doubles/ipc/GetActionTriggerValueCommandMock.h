@@ -16,24 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_HVAC_SWITCH_TO_H_
-#define ACTION_HVAC_SWITCH_TO_H_
+#ifndef GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_
+#define GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_
 
-#include "action.h"
+#include <gmock/gmock.h>
 
-class s_worker_action_switch_to : public s_worker_action {
- protected:
-  virtual bool is_action_allowed(void);
-  virtual int waiting_time_to_retry(void);
-  virtual int waiting_time_to_check(void);
-  virtual bool result_success(int *fail_result_code);
-  virtual bool do_action();
-  virtual bool to_program_mode(void) = 0;
+#include "ipc/get_action_trigger_value_command.h"
 
+namespace testing {
+
+class GetActionTriggerValueCommandMock
+    : public supla_get_action_trigger_value_command {
  public:
-  explicit s_worker_action_switch_to(s_abstract_worker *worker);
-  virtual int try_limit(void);
-  virtual ~s_worker_action_switch_to(void);
+  explicit GetActionTriggerValueCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD4(get_channel_action_trigger_value,
+               bool(int user_id, int device_id, int channel_id,
+                    TActionTriggerProperties *value));
 };
 
-#endif /*ACTION_HVAC_SWITCH_TO_H_*/
+}  // namespace testing
+
+#endif /* GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_ */
