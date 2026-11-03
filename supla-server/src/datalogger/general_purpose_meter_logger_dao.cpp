@@ -51,8 +51,8 @@ void supla_general_purpose_meter_logger_dao::tsdb_add(int channel_id,
                                                       double value) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params("SELECT supla_add_gp_meter_log_item($1,$2)", channel_id,
-                  value);
+  ntx.exec("SELECT supla_add_gp_meter_log_item($1,$2)",
+           pqxx::params{channel_id, value});
 }
 
 void supla_general_purpose_meter_logger_dao::add(

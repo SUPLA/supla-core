@@ -182,6 +182,10 @@ jobject supla_CallObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                const char *method_name, const char *type) {
   jmethodID method_id = env->GetMethodID(cls, method_name, type);
 
+  if (!method_id) {
+    return nullptr;
+  }
+
   return env->CallObjectMethod(obj, method_id);
 }
 
@@ -196,6 +200,9 @@ bool supla_CallLongObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                 const char *method_name, jlong *result) {
   jobject l =
       supla_CallObjectMethod(env, cls, obj, method_name, "()Ljava/lang/Long;");
+  if (env->ExceptionCheck()) {
+    return false;
+  }
   if (!env->IsSameObject(l, nullptr)) {
     jclass l_cls = env->FindClass("java/lang/Long");
 
@@ -217,6 +224,9 @@ bool supla_CallIntObjectMethod(JNIEnv *env, jclass cls, jobject obj,
                                const char *method_name, jint *result) {
   jobject i = supla_CallObjectMethod(env, cls, obj, method_name,
                                      "()Ljava/lang/Integer;");
+  if (env->ExceptionCheck()) {
+    return false;
+  }
   if (!env->IsSameObject(i, nullptr)) {
     jclass i_cls = env->FindClass("java/lang/Integer");
 

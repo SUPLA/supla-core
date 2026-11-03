@@ -345,20 +345,40 @@ bool supla_user_channelgroups::action_hvac_set_parameters(
       });
 }
 
-bool supla_user_channelgroups::action_hvac_switch_to_program_mode(
+bool supla_user_channelgroups::action_set_at_parameters(
+    const supla_caller &caller, int group_id,
+    const supla_action_mode_parameters *params) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_set_at_parameters(
+            caller, channel_id, group_id, eol, params);
+      });
+}
+
+bool supla_user_channelgroups::action_set_relay_parameters(
+    const supla_caller &caller, int group_id,
+    const supla_action_mode_parameters *params) {
+  return for_each_channel(
+      group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
+        return device->get_channels()->action_set_relay_parameters(
+            caller, channel_id, group_id, eol, params);
+      });
+}
+
+bool supla_user_channelgroups::action_switch_to_program_mode(
     const supla_caller &caller, int group_id) {
   return for_each_channel(
       group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
-        return device->get_channels()->action_hvac_switch_to_program_mode(
+        return device->get_channels()->action_switch_to_program_mode(
             caller, channel_id, group_id, eol);
       });
 }
 
-bool supla_user_channelgroups::action_hvac_switch_to_manual_mode(
+bool supla_user_channelgroups::action_switch_to_manual_mode(
     const supla_caller &caller, int group_id) {
   return for_each_channel(
       group_id, [&](supla_device *device, int channel_id, char eol) -> bool {
-        return device->get_channels()->action_hvac_switch_to_manual_mode(
+        return device->get_channels()->action_switch_to_manual_mode(
             caller, channel_id, group_id, eol);
       });
 }

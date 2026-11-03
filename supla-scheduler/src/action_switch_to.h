@@ -16,17 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_HVAC_SWITCH_TO_MANUAL_MODE_H_
-#define ACTION_HVAC_SWITCH_TO_MANUAL_MODE_H_
+#ifndef ACTION_SWITCH_TO_H_
+#define ACTION_SWITCH_TO_H_
 
-#include "action_hvac_switch_to.h"
+#include "action.h"
 
-class s_worker_action_switch_to_manual_mode : public s_worker_action_switch_to {
+class s_worker_action_switch_to : public s_worker_action {
  protected:
-  virtual bool to_program_mode(void);
+  virtual bool is_action_allowed(void);
+  virtual int waiting_time_to_retry(void);
+  virtual int waiting_time_to_check(void);
+  virtual bool result_success(int *fail_result_code);
+  virtual bool do_action();
+  virtual bool to_program_mode(void) = 0;
 
  public:
-  explicit s_worker_action_switch_to_manual_mode(s_abstract_worker *worker);
+  explicit s_worker_action_switch_to(s_abstract_worker *worker);
+  virtual int try_limit(void);
+  virtual ~s_worker_action_switch_to(void);
 };
 
-#endif /*ACTION_HVAC_SWITCH_TO_MANUAL_MODE_H_*/
+#endif /*ACTION_SWITCH_TO_H_*/

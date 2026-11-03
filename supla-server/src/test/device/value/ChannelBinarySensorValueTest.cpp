@@ -92,6 +92,15 @@ TEST_F(ChannelBinarySensorValueTest, getVbtValue) {
   EXPECT_EQ(vbt_value, 1);
 }
 
+TEST_F(ChannelBinarySensorValueTest, specializedBinarySensorsAreSupported) {
+  EXPECT_TRUE(supla_channel_binary_sensor_value::is_function_supported(
+      SUPLA_CHANNELFNC_SMOKE_SENSOR));
+  EXPECT_TRUE(supla_channel_binary_sensor_value::is_function_supported(
+      SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR));
+  EXPECT_TRUE(supla_channel_binary_sensor_value::is_function_supported(
+      SUPLA_CHANNELFNC_GAS_SENSOR));
+}
+
 TEST_F(ChannelBinarySensorValueTest, templateData) {
   supla_channel_binary_sensor_value value(SUPLA_CHANNELFNC_BINARY_SENSOR);
 

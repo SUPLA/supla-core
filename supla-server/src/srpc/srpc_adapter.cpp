@@ -207,6 +207,10 @@ _supla_int_t supla_srpc_adapter::sd_async_channel_config_finished(
   return srpc_sd_async_channel_config_finished(get_srpc(), fin);
 }
 
+_supla_int_t supla_srpc_adapter::sd_async_device_sync_done(void) {
+  return srpc_sd_async_device_sync_done(get_srpc());
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_device_config_update_or_result(
     TSC_DeviceConfigUpdateOrResult *config) {
   return srpc_sc_async_device_config_update_or_result(get_srpc(), config);

@@ -520,18 +520,29 @@ void supla_abstract_common_channel_properties::get_config(
 
   if (get_flags() & SUPLA_CHANNEL_FLAG_WEEKLY_SCHEDULE) {
     if (config_type == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
-      JSON_TO_CONFIG(weekly_schedule_config, TChannelConfig_WeeklySchedule,
-                     config, config_size);
+      json_to_config<weekly_schedule_config, TChannelConfig_WeeklySchedule>(
+          config, config_size,
+          [&](weekly_schedule_config *json_config,
+              TChannelConfig_WeeklySchedule *ws_cfg) -> bool {
+            return json_config->get_config(ws_cfg, get_func());
+          });
 
       return;
     } else if (config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
-      JSON_TO_CONFIG(alt_weekly_schedule_config, TChannelConfig_WeeklySchedule,
-                     config, config_size);
+      json_to_config<alt_weekly_schedule_config,
+                     TChannelConfig_WeeklySchedule>(
+          config, config_size,
+          [&](alt_weekly_schedule_config *json_config,
+              TChannelConfig_WeeklySchedule *ws_cfg) -> bool {
+            return json_config->get_config(ws_cfg, get_func());
+          });
 
       return;
     }
-  } else if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-             config_type == SUPLA_CONFIG_TYPE_OCR) {
+  }
+
+  if (get_type() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+      config_type == SUPLA_CONFIG_TYPE_OCR) {
     JSON_TO_CONFIG(ocr_config, TChannelConfig_OCR, config, config_size);
   } else if (config_type == SUPLA_CONFIG_TYPE_EXTENDED &&
              get_func() == SUPLA_CHANNELFNC_STAIRCASETIMER) {
@@ -690,6 +701,16 @@ int supla_abstract_common_channel_properties::set_user_config(
     return SUPLA_CONFIG_RESULT_FALSE;
   }
 
+  // Several branches below cast the buffer to a TChannelConfig_* structure
+  // without comparing config_size with its size. Work on a zero-padded copy
+  // so that bytes not sent by the peer are never interpreted (and stored in
+  // the JSON config) as configuration values.
+  char zero_padded_config[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+  if (config_size) {
+    memcpy(zero_padded_config, config, config_size);
+  }
+  config = zero_padded_config;
+
   int result = SUPLA_CONFIG_RESULT_FALSE;
 
   supla_mariadb_access_provider dba;
@@ -713,11 +734,11 @@ int supla_abstract_common_channel_properties::set_user_config(
     if (config_type == SUPLA_CONFIG_TYPE_ALT_WEEKLY_SCHEDULE) {
       json_config = new alt_weekly_schedule_config();
       static_cast<alt_weekly_schedule_config *>(json_config)
-          ->set_config((TChannelConfig_WeeklySchedule *)config);
+          ->set_config((TChannelConfig_WeeklySchedule *)config, func);
     } else {
       json_config = new weekly_schedule_config();
       static_cast<weekly_schedule_config *>(json_config)
-          ->set_config((TChannelConfig_WeeklySchedule *)config);
+          ->set_config((TChannelConfig_WeeklySchedule *)config, func);
     }
 
   } else if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {

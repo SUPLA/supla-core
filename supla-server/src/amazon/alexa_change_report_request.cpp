@@ -235,12 +235,4 @@ void supla_alexa_change_report_request::new_request(const supla_caller &caller,
   request->set_priority(80);
   request->set_delay_usec(delay_time_usec);
   request->start();
-
-  supla_alexa_response_search_condition rcnd(user->getUserID(), device_id,
-                                             channel_id, true);
-  supla_asynctask_queue::global_instance()->access_task(
-      &rcnd, [delay_time_usec](supla_abstract_asynctask *task) -> void {
-        task->set_delay_usec(delay_time_usec + 100000);
-        dynamic_cast<supla_alexa_response_request *>(task)->mark_as_postponed();
-      });
 }

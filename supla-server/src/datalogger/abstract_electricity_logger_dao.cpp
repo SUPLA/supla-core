@@ -88,7 +88,7 @@ void supla_abstract_electricity_logger_dao ::tsdb_add(
 
   string time_str = get_tsdba()->time_to_timestamp_string(time);
 
-  ntx.exec_params(sql, time_str, channel_id, phase, min, max, avg);
+  ntx.exec(sql, pqxx::params{time_str, channel_id, phase, min, max, avg});
 }
 
 void supla_abstract_electricity_logger_dao::add(const time_t &time,

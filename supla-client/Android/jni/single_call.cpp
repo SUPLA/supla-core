@@ -246,9 +246,15 @@ Java_org_supla_android_lib_singlecall_SingleCall_executeAction(
   TCS_ClientAuthorizationDetails auth_details = {};
   int protocol_version = 0;
   getAuthDetails(env, context, auth_info, &auth_details, &protocol_version);
+  if (env->ExceptionCheck()) {
+    return;
+  }
 
   TCS_Action action = {};
   actionParamsToAction(env, action_params, &action);
+  if (env->ExceptionCheck()) {
+    return;
+  }
 
   supla_single_call single_call(&auth_details, protocol_version,
                                 conn_timeout_ms);

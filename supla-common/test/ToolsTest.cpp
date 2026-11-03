@@ -1,24 +1,10 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ToolsTest.h"
 
 #include <cmath>
+#include <cstring>
 
 #include "gtest/gtest.h"  // NOLINT
 #include "tools.h"        // NOLINT
@@ -32,6 +18,14 @@ class ToolsTest : public ::testing::Test {
 TEST_F(ToolsTest, st_file_exists) {
   ASSERT_EQ(1, st_file_exists("/dev/null"));
   ASSERT_EQ(0, st_file_exists(NULL));
+}
+
+TEST_F(ToolsTest, st_timestamp_to_zulu_time) {
+  char buffer[64];
+
+  ASSERT_STREQ("1970-01-01T00:01:40Z",
+               st_timestamp_to_zulu_time(buffer, 100));
+  ASSERT_EQ(NULL, st_timestamp_to_zulu_time(NULL, 100));
 }
 
 TEST_F(ToolsTest, pid_file) {
@@ -71,6 +65,24 @@ TEST_F(ToolsTest, st_bin2hex) {
 
   ASSERT_STREQ("FFFF", st_bin2hex(dest, src, 2));
   ASSERT_EQ(NULL, st_bin2hex(NULL, NULL, 0));
+}
+
+TEST_F(ToolsTest, st_hex2bin) {
+  const char source[] = "00aB7F";
+  const char expected[] = {0x00, (char)0xAB, 0x7F};
+  char result[sizeof(expected)] = {};
+
+  ASSERT_EQ(3, st_hex2bin(result, source, strlen(source)));
+  ASSERT_EQ(0, memcmp(expected, result, sizeof(expected)));
+}
+
+TEST_F(ToolsTest, st_hex2bin_rejects_invalid_input) {
+  char result[2] = {};
+
+  EXPECT_EQ(-1, st_hex2bin(result, "0", 1));
+  EXPECT_EQ(-1, st_hex2bin(result, "00XZ", 4));
+  EXPECT_EQ(-1, st_hex2bin(NULL, "00", 2));
+  EXPECT_EQ(-1, st_hex2bin(result, NULL, 2));
 }
 
 TEST_F(ToolsTest, st_guid2hex) {
@@ -139,17 +151,29 @@ TEST_F(ToolsTest, st_read_guid_from_file) {
 }
 
 TEST_F(ToolsTest, st_read_authkey_from_file) {
-  char file[] = "/tmp/t7oosvsTZS87";
+  char file1[] = "/tmp/t7oosvsTZS87";
+  char file2[] = "/tmp/t7oosvsTZS86";
   char AUTHKEY1[SUPLA_AUTHKEY_SIZE];
   char AUTHKEY2[SUPLA_AUTHKEY_SIZE];
+  char AUTHKEY1_COPY[SUPLA_AUTHKEY_SIZE];
 
   memset(AUTHKEY1, 0, SUPLA_AUTHKEY_SIZE);
   memset(AUTHKEY2, 0, SUPLA_AUTHKEY_SIZE);
+  memset(AUTHKEY1_COPY, 0, SUPLA_AUTHKEY_SIZE);
 
-  ASSERT_EQ(1, st_read_authkey_from_file(file, AUTHKEY1, 1));
-  ASSERT_EQ(1, st_file_exists(file));
+  unlink(file1);
+  unlink(file2);
+
+  ASSERT_EQ(1, st_read_authkey_from_file(file1, AUTHKEY1, 1));
+  ASSERT_EQ(1, st_file_exists(file1));
+  ASSERT_EQ(1, st_read_authkey_from_file(file1, AUTHKEY1_COPY, 0));
+  ASSERT_EQ(0, memcmp(AUTHKEY1, AUTHKEY1_COPY, SUPLA_AUTHKEY_SIZE));
+
+  ASSERT_EQ(1, st_read_authkey_from_file(file2, AUTHKEY2, 1));
   ASSERT_NE(0, memcmp(AUTHKEY1, AUTHKEY2, SUPLA_AUTHKEY_SIZE));
-  unlink(file);
+
+  unlink(file1);
+  unlink(file2);
 }
 
 TEST_F(ToolsTest, st_bcrypt) {

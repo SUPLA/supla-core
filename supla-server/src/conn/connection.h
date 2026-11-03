@@ -44,6 +44,9 @@ class supla_connection {
   struct timeval init_time;
   unsigned char activity_timeout;
   int unhandled_call_counter;
+  unsigned long long bytes_received;
+  bool remote_call_received;
+  bool security_event_logged;
 
   static void *reg_pending_arr;
   static struct timeval reg_limit_exceeded_alert_time;
@@ -67,6 +70,12 @@ class supla_connection {
                                unsigned char proto_version);
 
   void catch_unhandled_call(unsigned int call_id);
+  void client_ip_as_string(char *buffer, size_t buffer_size);
+  int get_server_port(void);
+  void log_security_event(int level, const char *reason, int ban);
+  void log_security_event_with_uint(int level, const char *reason,
+                                    int ban, const char *value_name,
+                                    unsigned int value);
 
  public:
   std::shared_ptr<supla_abstract_connection_object> get_object(void);

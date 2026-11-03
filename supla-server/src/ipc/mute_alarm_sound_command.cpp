@@ -29,13 +29,14 @@ supla_mute_alarm_sound_command::supla_mute_alarm_sound_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_mute_alarm_sound_command(socket_adapter) {}
 
-bool supla_mute_alarm_sound_command::mute_alarm_sound(int user_id,
-                                                      int device_id,
-                                                      int channel_id) {
+bool supla_mute_alarm_sound_command::mute_alarm_sound(
+    int user_id, int device_id, int channel_id,
+    unsigned _supla_int64_t *queued_at, bool *waiting_for_result) {
   shared_ptr<supla_device> device =
       supla_user::get_device(user_id, device_id, channel_id);
   if (device != nullptr) {
-    return device->get_channels()->mute_alarm_sound(channel_id);
+    return device->get_channels()->mute_alarm_sound(channel_id, queued_at,
+                                                    waiting_for_result);
   }
   return false;
 }

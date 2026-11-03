@@ -30,7 +30,9 @@ class EnterCfgModeCommandMock : public supla_abstract_enter_cfg_mode_command {
   explicit EnterCfgModeCommandMock(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
-  MOCK_METHOD2(enter_cfg_mode, bool(int user_id, int device_id));
+  MOCK_METHOD4(enter_cfg_mode, bool(int user_id, int device_id,
+                                    unsigned _supla_int64_t *queued_at,
+                                    bool *waiting_for_result));
 };
 
 } /* namespace testing */

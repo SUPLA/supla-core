@@ -26,7 +26,9 @@
 class supla_take_ocr_photo_command
     : public supla_abstract_take_ocr_photo_command {
  protected:
-  virtual bool take_ocr_photo(int user_id, int device_id, int channel_id);
+  virtual bool take_ocr_photo(int user_id, int device_id, int channel_id,
+                              unsigned _supla_int64_t *queued_at,
+                              bool *waiting_for_result);
 
  public:
   explicit supla_take_ocr_photo_command(

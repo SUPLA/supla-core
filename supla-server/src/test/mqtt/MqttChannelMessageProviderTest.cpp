@@ -109,6 +109,28 @@ TEST_F(MqttChannelMessageProviderTest, powerSwitch) {
   ASSERT_FALSE(dataExists(provider));
 }
 
+TEST_F(MqttChannelMessageProviderTest, specializedBinarySensorNames) {
+  struct sensor_data {
+    int function;
+    const char *function_name;
+    const char *caption;
+  } sensors[] = {
+      {SUPLA_CHANNELFNC_SMOKE_SENSOR, "SMOKE_SENSOR", "Smoke sensor"},
+      {SUPLA_CHANNELFNC_CARBON_MONOXIDE_SENSOR, "CARBON_MONOXIDE_SENSOR",
+       "Carbon monoxide sensor"},
+      {SUPLA_CHANNELFNC_GAS_SENSOR, "GAS_SENSOR", "Gas sensor"}};
+
+  char value[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+  for (const auto &sensor : sensors) {
+    provider->channel_function_to_string(sensor.function, value,
+                                         sizeof(value));
+    EXPECT_STREQ(sensor.function_name, value);
+
+    provider->get_not_empty_caption(sensor.function, nullptr, nullptr, value);
+    EXPECT_STREQ(sensor.caption, value);
+  }
+}
+
 void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
   _mqtt_db_data_row_channel_t row_channel;
   fillChannelData(&row_channel);

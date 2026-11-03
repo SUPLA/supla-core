@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/test/client/ClientSceneChangeIndicatorTest.cpp \
 ../src/test/client/ClientSceneRemoteUpdateTest.cpp \
 ../src/test/client/ClientSceneTest.cpp \
+../src/test/client/GetChannelValueWithAuthTest.cpp \
 ../src/test/client/RegisterClientEssentialTest.cpp \
 ../src/test/client/RegisterClientProtocolVersionsTest.cpp \
 ../src/test/client/RegisterClientTest.cpp \
@@ -19,6 +20,7 @@ CPP_DEPS += \
 ./src/test/client/ClientSceneChangeIndicatorTest.d \
 ./src/test/client/ClientSceneRemoteUpdateTest.d \
 ./src/test/client/ClientSceneTest.d \
+./src/test/client/GetChannelValueWithAuthTest.d \
 ./src/test/client/RegisterClientEssentialTest.d \
 ./src/test/client/RegisterClientProtocolVersionsTest.d \
 ./src/test/client/RegisterClientTest.d \
@@ -30,6 +32,7 @@ OBJS += \
 ./src/test/client/ClientSceneChangeIndicatorTest.o \
 ./src/test/client/ClientSceneRemoteUpdateTest.o \
 ./src/test/client/ClientSceneTest.o \
+./src/test/client/GetChannelValueWithAuthTest.o \
 ./src/test/client/RegisterClientEssentialTest.o \
 ./src/test/client/RegisterClientProtocolVersionsTest.o \
 ./src/test/client/RegisterClientTest.o \
@@ -41,7 +44,7 @@ OBJS += \
 src/test/client/%.o: ../src/test/client/%.cpp src/test/client/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/external/inja/include -I../src/external/cJSON -I../src/external/MQTT-C/include -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -std=c++17 -D__DEBUG=1 -DMQTTC_PAL_FILE=../src/mqtt/mqtt_pal.h -DUSE_OS_TZDB=1 -D__SUPLA_SERVER=1 -DUSE_DEPRECATED_EMEV_V1 -DUSE_DEPRECATED_EMEV_V2 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I../src -I../src/external/inja/include -I../src/external/MQTT-C/include -I../src/asynctask -I../src/mqtt -I$(INCMYSQL) -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -I/usr/include/cjson -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -49,7 +52,6 @@ src/test/client/%.o: ../src/test/client/%.cpp src/test/client/subdir.mk
 clean: clean-src-2f-test-2f-client
 
 clean-src-2f-test-2f-client:
-	-$(RM) ./src/test/client/ClientAuthorizationOnlyTest.d ./src/test/client/ClientAuthorizationOnlyTest.o ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/RegisterClientEssentialTest.d ./src/test/client/RegisterClientEssentialTest.o ./src/test/client/RegisterClientProtocolVersionsTest.d ./src/test/client/RegisterClientProtocolVersionsTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithAccessIdAuthTest.d ./src/test/client/RegisterClientWithAccessIdAuthTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
+	-$(RM) ./src/test/client/ClientAuthorizationOnlyTest.d ./src/test/client/ClientAuthorizationOnlyTest.o ./src/test/client/ClientSceneChangeIndicatorTest.d ./src/test/client/ClientSceneChangeIndicatorTest.o ./src/test/client/ClientSceneRemoteUpdateTest.d ./src/test/client/ClientSceneRemoteUpdateTest.o ./src/test/client/ClientSceneTest.d ./src/test/client/ClientSceneTest.o ./src/test/client/GetChannelValueWithAuthTest.d ./src/test/client/GetChannelValueWithAuthTest.o ./src/test/client/RegisterClientEssentialTest.d ./src/test/client/RegisterClientEssentialTest.o ./src/test/client/RegisterClientProtocolVersionsTest.d ./src/test/client/RegisterClientProtocolVersionsTest.o ./src/test/client/RegisterClientTest.d ./src/test/client/RegisterClientTest.o ./src/test/client/RegisterClientWithAccessIdAuthTest.d ./src/test/client/RegisterClientWithAccessIdAuthTest.o ./src/test/client/RegisterClientWithEmailAuthTest.d ./src/test/client/RegisterClientWithEmailAuthTest.o
 
 .PHONY: clean-src-2f-test-2f-client
-

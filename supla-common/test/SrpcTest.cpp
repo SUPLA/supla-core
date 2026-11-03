@@ -1,20 +1,5 @@
-/*
- Copyright (C) AC SOFTWARE SP. Z O.O.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
+// SPDX-FileCopyrightText: AC SOFTWARE SP. Z O.O.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SrpcTest.h"
 
@@ -549,6 +534,8 @@ vector<int> SrpcTest::get_call_ids(int version) {
 
     case 26:
       return {SUPLA_SC_CALL_CHANNEL_STATE_PACK_UPDATE};
+    case 29:
+      return {SUPLA_SD_CALL_DEVICE_SYNC_DONE};
   }
 
   return {};
@@ -605,6 +592,8 @@ TEST_F(SrpcTest, call_allowed_v23) { srpcCallAllowed(23, get_call_ids(23)); }
 TEST_F(SrpcTest, call_allowed_v25) { srpcCallAllowed(25, get_call_ids(25)); }
 
 TEST_F(SrpcTest, call_allowed_v26) { srpcCallAllowed(26, get_call_ids(26)); }
+
+TEST_F(SrpcTest, call_allowed_v29) { srpcCallAllowed(29, get_call_ids(29)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   vector<int> all_calls;
@@ -681,7 +670,10 @@ TEST_F(SrpcTest, iterate_read_error_when_zero) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_SOCKET_CLOSED,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -703,6 +695,8 @@ TEST_F(SrpcTest, iterate_incorrect_data) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_PROTOCOL_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(0, remote_version);
 
   srpc_free(srpc);
@@ -726,6 +720,8 @@ TEST_F(SrpcTest, iterate_incorrect_version) {
 
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_VERSION_ERROR,
+            srpc_get_last_iterate_reason(srpc));
   ASSERT_EQ(SUPLA_PROTO_VERSION + 1, remote_version);
 
   srpc_free(srpc);
@@ -778,6 +774,8 @@ TEST_F(SrpcTest, iterate_buffer_overflow) {
   data_read = NULL;
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW,
+            srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -799,6 +797,7 @@ TEST_F(SrpcTest, iterate_no_data) {
   ASSERT_FALSE(srpc == NULL);
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_EQ(SRPC_ITERATE_REASON_NONE, srpc_get_last_iterate_reason(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -3815,6 +3814,82 @@ TEST_F(SrpcTest, srpc_evtool_value_get) {
   }
 }
 
+TEST_F(SrpcTest, srpc_evtool_value_get_truncated_multi_value) {
+  const unsigned int header_size =
+      sizeof(TSuplaChannelExtendedValue) - SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+
+  TSuplaChannelExtendedValue b = {};
+  TSuplaChannelExtendedValue c = {};
+  TSuplaChannelExtendedValue multi = {};
+
+  b.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  b.size = 10;
+  set_random(b.value, b.size);
+  c.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  c.size = 20;
+  set_random(c.value, c.size);
+
+  ASSERT_EQ(srpc_evtool_value_add(&multi, &b), 1);
+  ASSERT_EQ(srpc_evtool_value_add(&multi, &c), 1);
+  ASSERT_EQ(multi.type, EV_TYPE_MULTI_VALUE);
+
+  const unsigned int full_size = 2 * header_size + b.size + c.size;
+  ASSERT_EQ(multi.size, full_size);
+
+  TSuplaChannelExtendedValue ev = {};
+  TSuplaChannelExtendedValue x = {};
+
+  // Empty container
+  ev = multi;
+  ev.size = 0;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Truncated inside the header of the first element
+  ev = multi;
+  ev.size = header_size - 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Complete header of the first element, truncated payload
+  ev = multi;
+  ev.size = header_size + 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+  ev.size = header_size + b.size - 1;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 0);
+
+  // Valid first element, second truncated inside its header
+  ev = multi;
+  ev.size = header_size + b.size + 2;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+
+  // Valid first element, second with complete header and truncated payload
+  ev = multi;
+  ev.size = full_size - 1;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+
+  // Declared size larger than the physical capacity of the buffer
+  ev = multi;
+  ev.size = 0xFFFFFFFF;
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 0, &x), 1);
+  EXPECT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  x = {};
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 1);
+  EXPECT_EQ(memcmp(&x, &c, header_size + c.size), 0);
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 2, &x), 0);
+
+  // Element size that would wrap the bounds arithmetic around
+  ev = multi;
+  ((TSuplaChannelExtendedValue *)&ev.value[header_size + b.size])->size =
+      0xFFFFFFF0;
+  EXPECT_EQ(srpc_evtool_value_get(&ev, 1, &x), 0);
+}
+
 //---------------------------------------------------------
 // GET USER LOCALTIME
 //---------------------------------------------------------
@@ -4036,6 +4111,9 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
                                      24, 536, sd_channel_functions,
                                      SUPLA_CHANNELMAXCOUNT, Functions,
                                      ChannelCount);
+
+SRPC_CALL_WITH_NO_DATA(srpc_sd_async_device_sync_done,
+                       SUPLA_SD_CALL_DEVICE_SYNC_DONE);
 
 //---------------------------------------------------------
 // GET CHANNEL CONFIG

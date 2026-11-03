@@ -316,6 +316,8 @@ TEST_F(ChannelEmExtendedValueTest, powerActive_W) {
   EXPECT_DOUBLE_EQ(ev.get_power_active(3), 58.76630);
   EXPECT_GE(ev.get_power_active_sum(), 130.025);
   EXPECT_LE(ev.get_power_active_sum(), 130.0251);
+  EXPECT_GE(ev.get_power_active_kw_sum(), 0.130025);
+  EXPECT_LE(ev.get_power_active_kw_sum(), 0.1300251);
 }
 
 TEST_F(ChannelEmExtendedValueTest, powerActive_kW) {
@@ -330,6 +332,7 @@ TEST_F(ChannelEmExtendedValueTest, powerActive_kW) {
   EXPECT_DOUBLE_EQ(ev.get_power_active(2), 58912.98);
   EXPECT_DOUBLE_EQ(ev.get_power_active(3), 58766.30);
   EXPECT_DOUBLE_EQ(ev.get_power_active_sum(), 130025.06);
+  EXPECT_DOUBLE_EQ(ev.get_power_active_kw_sum(), 130.02506);
 }
 
 TEST_F(ChannelEmExtendedValueTest, powerReactive_var) {
@@ -344,6 +347,8 @@ TEST_F(ChannelEmExtendedValueTest, powerReactive_var) {
   EXPECT_DOUBLE_EQ(ev.get_power_reactive(3), 58.76630);
   EXPECT_GE(ev.get_power_reactive_sum(), 130.025);
   EXPECT_LE(ev.get_power_reactive_sum(), 130.0251);
+  EXPECT_GE(ev.get_power_reactive_kvar_sum(), 0.130025);
+  EXPECT_LE(ev.get_power_reactive_kvar_sum(), 0.1300251);
 }
 
 TEST_F(ChannelEmExtendedValueTest, powerReactive_kvar) {
@@ -358,6 +363,7 @@ TEST_F(ChannelEmExtendedValueTest, powerReactive_kvar) {
   EXPECT_DOUBLE_EQ(ev.get_power_reactive(2), 58912.98);
   EXPECT_DOUBLE_EQ(ev.get_power_reactive(3), 58766.30);
   EXPECT_DOUBLE_EQ(ev.get_power_reactive_sum(), 130025.06);
+  EXPECT_DOUBLE_EQ(ev.get_power_reactive_kvar_sum(), 130.02506);
 }
 
 TEST_F(ChannelEmExtendedValueTest, powerApparent_VA) {
@@ -372,6 +378,8 @@ TEST_F(ChannelEmExtendedValueTest, powerApparent_VA) {
   EXPECT_DOUBLE_EQ(ev.get_power_apparent(3), 58.76630);
   EXPECT_GE(ev.get_power_apparent_sum(), 130.025);
   EXPECT_LE(ev.get_power_apparent_sum(), 130.0251);
+  EXPECT_GE(ev.get_power_apparent_kva_sum(), 0.130025);
+  EXPECT_LE(ev.get_power_apparent_kva_sum(), 0.1300251);
 }
 
 TEST_F(ChannelEmExtendedValueTest, powerApparent_kVA) {
@@ -386,6 +394,7 @@ TEST_F(ChannelEmExtendedValueTest, powerApparent_kVA) {
   EXPECT_DOUBLE_EQ(ev.get_power_apparent(2), 58912.98);
   EXPECT_DOUBLE_EQ(ev.get_power_apparent(3), 58766.30);
   EXPECT_DOUBLE_EQ(ev.get_power_apparent_sum(), 130025.06);
+  EXPECT_DOUBLE_EQ(ev.get_power_apparent_kva_sum(), 130.02506);
 }
 
 TEST_F(ChannelEmExtendedValueTest, forwardActiveEnergy) {
