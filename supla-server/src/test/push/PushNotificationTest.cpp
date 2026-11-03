@@ -277,7 +277,7 @@ TEST_F(PushNotificationTest, injaAndNativeReplacement) {
   EXPECT_EQ(n.get_localized_body(), "abcd|abcd");
 }
 
-TEST_F(PushNotificationTest, generalPurposeTextTemplateUsesInjaValuePlaceholder) {
+TEST_F(PushNotificationTest, generalPurposeTextTemplateUsesInjaPlaceholder) {
   char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
   strncpy(raw_value, "TextValue", SUPLA_CHANNELVALUE_SIZE - 1);
 

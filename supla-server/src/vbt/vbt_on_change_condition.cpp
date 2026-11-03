@@ -358,8 +358,9 @@ bool supla_vbt_on_change_condition::is_condition_met(
 
   if (paused) {
     return false;
-  } else if (is_condition_met(op, condition_met_at.tv_sec ? saved_old_text : old_value,
-                              new_value, text_value)) {
+  } else if (is_condition_met(
+                 op, condition_met_at.tv_sec ? saved_old_text : old_value,
+                 new_value, text_value)) {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
@@ -452,6 +453,7 @@ bool supla_vbt_on_change_condition::operator==(
     const supla_vbt_on_change_condition &cnd) const {
   return value == cnd.value && var_name == cnd.var_name && op == cnd.op &&
          resume_op == cnd.resume_op && resume_value == cnd.resume_value &&
-         text_comparison == cnd.text_comparison && text_value == cnd.text_value &&
+         text_comparison == cnd.text_comparison &&
+         text_value == cnd.text_value &&
          duration_sec == cnd.duration_sec && on_change == cnd.on_change;
 }

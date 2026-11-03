@@ -247,7 +247,8 @@ TEST_F(OnChangeConditionTest,
   supla_channel_general_purpose_text_value wrong_value(wrong_raw);
 
   _supla_int64_t milliseconds_left = 0;
-  EXPECT_FALSE(c.is_condition_met(&old_value, &wrong_value, &milliseconds_left));
+  EXPECT_FALSE(
+      c.is_condition_met(&old_value, &wrong_value, &milliseconds_left));
 
   char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
   strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
@@ -272,7 +273,8 @@ TEST_F(OnChangeConditionTest,
   EXPECT_FALSE(c.is_condition_met(&milliseconds_left));
 
   milliseconds_left = 0;
-  EXPECT_TRUE(c.is_condition_met(&other_value, &match_value, &milliseconds_left));
+  EXPECT_TRUE(
+      c.is_condition_met(&other_value, &match_value, &milliseconds_left));
   EXPECT_GT(milliseconds_left, 0);
 
   usleep(1100000);
@@ -2755,8 +2757,8 @@ TEST_F(OnChangeConditionTest, invalidStringOperatorResetsCondition) {
 TEST_F(OnChangeConditionTest, invalidResumeConfigResetsCondition) {
   supla_vbt_on_change_condition c;
 
-  cJSON *json =
-      cJSON_Parse("{\"on_change_to\":{\"eq\":1,\"resume\":{\"eq\":\"match\"}}}");
+  cJSON *json = cJSON_Parse(
+      "{\"on_change_to\":{\"eq\":1,\"resume\":{\"eq\":\"match\"}}}");
   c.apply_json_config(json);
   cJSON_Delete(json);
 
@@ -2791,7 +2793,8 @@ TEST_F(OnChangeConditionTest, nullValuesReturnFalse) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  supla_channel_floating_point_sensor_value value(SUPLA_CHANNELFNC_WEIGHTSENSOR);
+  supla_channel_floating_point_sensor_value value(
+      SUPLA_CHANNELFNC_WEIGHTSENSOR);
   value.set_value(1);
 
   EXPECT_FALSE(c.is_condition_met(nullptr, &value));
