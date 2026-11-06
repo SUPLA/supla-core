@@ -20,7 +20,10 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
 
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
+#include "proto.h"
 #include "push/push_notification.h"
 
 namespace testing {
@@ -273,6 +276,23 @@ TEST_F(PushNotificationTest, injaAndNativeReplacement) {
   n.set_localized_body("{{ str }}|{str}");
   n.set_template_data(&d);
   EXPECT_EQ(n.get_localized_body(), "abcd|abcd");
+}
+
+TEST_F(PushNotificationTest, generalPurposeTextTemplateUsesInjaPlaceholder) {
+  const char text_value[] = "TextValue";
+  TSuplaChannelExtendedValue extended_value = {};
+  extended_value.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  extended_value.size = sizeof(text_value) - 1;
+  strncpy(extended_value.value, text_value, sizeof(extended_value.value) - 1);
+
+  supla_channel_general_purpose_text_extended_value value(&extended_value);
+  auto d = value.get_template_data();
+
+  supla_push_notification n;
+  n.set_body("{value}|{{value}}|{Value}");
+  n.set_template_data(&d);
+
+  EXPECT_EQ(n.get_body(), "TextValue|TextValue|{Value}");
 }
 
 TEST_F(PushNotificationTest, injaException) {

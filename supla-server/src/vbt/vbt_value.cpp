@@ -31,6 +31,11 @@ bool supla_vbt_value::get_vbt_value(_vbt_var_name_e var_name, double *value) {
   return false;
 }
 
+bool supla_vbt_value::get_vbt_text_value(_vbt_var_name_e var_name,
+                                         std::string *value) {
+  return false;
+}
+
 nlohmann::json supla_vbt_value::get_template_data(void) {
   nlohmann::json result;
   return result;

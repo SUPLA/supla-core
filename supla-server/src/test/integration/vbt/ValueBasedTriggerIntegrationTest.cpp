@@ -18,10 +18,12 @@
 
 #include "ValueBasedTriggerIntegrationTest.h"
 
+#include <cstring>
 #include <memory>
 #include <string>
 
 #include "actions/action_shading_system_parameters.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
@@ -35,6 +37,19 @@ using std::shared_ptr;
 using std::string;
 
 namespace testing {
+
+namespace {
+
+TSuplaChannelExtendedValue make_general_purpose_text_extended_value(
+    const char *text) {
+  TSuplaChannelExtendedValue result = {};
+  result.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  result.size = std::strlen(text);
+  std::strncpy(result.value, text, sizeof(result.value) - 1);
+  return result;
+}
+
+}  // namespace
 
 ValueBasedTriggerIntegrationTest::ValueBasedTriggerIntegrationTest()
     : IntegrationTest(), Test() {
@@ -400,6 +415,56 @@ TEST_F(ValueBasedTriggerIntegrationTest, fireForChannel158) {
   EXPECT_EQ(m.size(), 2);
   EXPECT_EQ(m["temperature"].get<double>(), 25.15);
   EXPECT_EQ(m["humidity"].get<double>(), 50.00);
+}
+
+TEST_F(ValueBasedTriggerIntegrationTest,
+       fireForGeneralPurposeTextChannelWithPushNotification) {
+  runSqlScript("AddGeneralPurposeTextValueBasedTrigger.sql");
+  triggers->load();
+
+  auto gpt_trigger = triggers->get(34);
+  ASSERT_TRUE(gpt_trigger != nullptr);
+  EXPECT_EQ(gpt_trigger->get_channel_id(), 320);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_type(),
+            stPushNotification);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_subject_id(), 500);
+  EXPECT_EQ(gpt_trigger->get_action_config().get_action_id(), ACTION_SEND);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_op(), op_eq);
+  EXPECT_EQ(gpt_trigger->get_on_change_cnd().get_duration_sec(), 0);
+  double latitude = 0;
+  double longitude = 0;
+  std::string timezone = user->get_timezone(&latitude, &longitude);
+  EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
+      timezone.c_str(), latitude, longitude));
+
+  auto old_raw = make_general_purpose_text_extended_value("before");
+  supla_channel_general_purpose_text_extended_value oldv(&old_raw);
+
+  auto wrong_raw = make_general_purpose_text_extended_value("wrong");
+  supla_channel_general_purpose_text_extended_value wrongv(&wrong_raw);
+
+  auto match_raw = make_general_purpose_text_extended_value("match");
+  supla_channel_general_purpose_text_extended_value matchv(&match_raw);
+
+  ActionExecutorMock actionExecutor;
+  ChannelPropertyGetterMock propertyGetter;
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &oldv, &wrongv,
+                             &actionExecutor, &propertyGetter);
+  EXPECT_EQ(actionExecutor.getSentCounter(), 0);
+
+  auto direct_match = gpt_trigger->is_condition_met(320, &wrongv, &matchv);
+  EXPECT_TRUE(direct_match.is_condition_met());
+
+  triggers->on_value_changed(supla_caller(ctIPC), 320, &wrongv, &matchv,
+                             &actionExecutor, &propertyGetter);
+
+  EXPECT_EQ(actionExecutor.get_push_notification_id(), 500);
+  EXPECT_EQ(actionExecutor.getSentCounter(), 1);
+
+  auto m = actionExecutor.get_template_data();
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(m["value"].get<string>(), "match");
 }
 
 } /* namespace testing */

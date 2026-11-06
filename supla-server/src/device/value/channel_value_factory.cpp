@@ -27,6 +27,7 @@
 #include "device/value/channel_gate_value.h"
 #include "device/value/channel_general_purpose_measurement_value.h"
 #include "device/value/channel_general_purpose_meter_value.h"
+#include "device/value/channel_general_purpose_text_value.h"
 #include "device/value/channel_hp_thermostat_value.h"
 #include "device/value/channel_hvac_value.h"
 #include "device/value/channel_ic_value.h"
@@ -125,6 +126,10 @@ supla_abstract_channel_value *supla_abstract_channel_value_factory::new_value(
 
   if (supla_channel_general_purpose_meter_value::is_function_supported(func)) {
     return new supla_channel_general_purpose_meter_value(value);
+  }
+
+  if (supla_channel_general_purpose_text_value::is_function_supported(func)) {
+    return new supla_channel_general_purpose_text_value(value);
   }
 
   return new supla_channel_value(value);
