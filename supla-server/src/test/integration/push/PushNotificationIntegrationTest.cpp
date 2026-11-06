@@ -21,7 +21,8 @@
 #include <cstring>
 #include <string>
 
-#include "device/value/channel_general_purpose_text_value.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
+#include "proto.h"
 #include "push/push_notification.h"
 
 using std::string;
@@ -112,10 +113,13 @@ TEST_F(PushNotificationIntegrationTest, applyJsonWithId) {
 
 TEST_F(PushNotificationIntegrationTest,
        generalPurposeTextTemplateUsesLowercaseValueOnly) {
-  char raw_value[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(raw_value, "TextValue", SUPLA_CHANNELVALUE_SIZE - 1);
+  const char text_value[] = "TextValue";
+  TSuplaChannelExtendedValue extended_value = {};
+  extended_value.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  extended_value.size = sizeof(text_value) - 1;
+  strncpy(extended_value.value, text_value, sizeof(extended_value.value) - 1);
 
-  supla_channel_general_purpose_text_value value(raw_value);
+  supla_channel_general_purpose_text_extended_value value(&extended_value);
   auto d = value.get_template_data();
 
   supla_push_notification p;
