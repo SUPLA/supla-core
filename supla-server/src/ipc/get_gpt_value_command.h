@@ -23,7 +23,8 @@
 
 #include "ipc/abstract_get_gpt_value_command.h"
 
-class supla_get_gpt_value_command : public supla_abstract_get_gpt_value_command {
+class supla_get_gpt_value_command
+    : public supla_abstract_get_gpt_value_command {
  protected:
   virtual bool get_gpt_value(int user_id, int device_id, int channel_id,
                              std::string *value);

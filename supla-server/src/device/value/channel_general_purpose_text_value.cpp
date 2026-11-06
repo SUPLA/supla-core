@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "proto.h"
 
 supla_channel_general_purpose_text_value::
