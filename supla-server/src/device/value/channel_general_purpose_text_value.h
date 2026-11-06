@@ -19,6 +19,8 @@
 #ifndef CHANNEL_GENERAL_PURPOSE_TEXT_VALUE_H_
 #define CHANNEL_GENERAL_PURPOSE_TEXT_VALUE_H_
 
+#include <string>
+
 #include "device/value/abstract_channel_value.h"
 
 class supla_channel_general_purpose_text_value

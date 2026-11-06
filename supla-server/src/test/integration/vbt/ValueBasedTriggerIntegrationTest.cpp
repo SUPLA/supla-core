@@ -18,11 +18,12 @@
 
 #include "ValueBasedTriggerIntegrationTest.h"
 
+#include <cstring>
 #include <memory>
 #include <string>
 
 #include "actions/action_shading_system_parameters.h"
-#include "device/value/channel_general_purpose_text_value.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "device/value/channel_temphum_value.h"
 #include "doubles/actions/ActionExecutorMock.h"
@@ -36,6 +37,19 @@ using std::shared_ptr;
 using std::string;
 
 namespace testing {
+
+namespace {
+
+TSuplaChannelExtendedValue make_general_purpose_text_extended_value(
+    const char *text) {
+  TSuplaChannelExtendedValue result = {};
+  result.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  result.size = std::strlen(text);
+  std::strncpy(result.value, text, sizeof(result.value) - 1);
+  return result;
+}
+
+}  // namespace
 
 ValueBasedTriggerIntegrationTest::ValueBasedTriggerIntegrationTest()
     : IntegrationTest(), Test() {
@@ -423,17 +437,14 @@ TEST_F(ValueBasedTriggerIntegrationTest,
   EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
       timezone.c_str(), latitude, longitude));
 
-  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value oldv(old_raw);
+  auto old_raw = make_general_purpose_text_extended_value("before");
+  supla_channel_general_purpose_text_extended_value oldv(&old_raw);
 
-  char wrong_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(wrong_raw, "wrong", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value wrongv(wrong_raw);
+  auto wrong_raw = make_general_purpose_text_extended_value("wrong");
+  supla_channel_general_purpose_text_extended_value wrongv(&wrong_raw);
 
-  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value matchv(match_raw);
+  auto match_raw = make_general_purpose_text_extended_value("match");
+  supla_channel_general_purpose_text_extended_value matchv(&match_raw);
 
   ActionExecutorMock actionExecutor;
   ChannelPropertyGetterMock propertyGetter;

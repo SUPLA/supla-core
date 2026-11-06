@@ -658,7 +658,8 @@ void supla_device_channel::on_value_changed(
   }
 
   // GPT should be evaluated on extended values to preserve full text payload.
-  if (old_value && new_value && get_func() != SUPLA_CHANNELFNC_GENERAL_PURPOSE_TEXT) {
+  if (old_value && new_value &&
+      get_func() != SUPLA_CHANNELFNC_GENERAL_PURPOSE_TEXT) {
     get_device()->get_user()->get_value_based_triggers()->on_value_changed(
         supla_caller(ctChannel, get_id()), get_id(), old_value, new_value);
   }
@@ -721,7 +722,6 @@ void supla_device_channel::set_extended_value(
 
       delete config;
     }
-
   }
 
   extended_value = new_value;

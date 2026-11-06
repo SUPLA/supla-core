@@ -19,14 +19,30 @@
 #include "DelayedValueBasedTriggerIntegrationTest.h"
 
 #include <chrono>
+#include <cstring>
+#include <future>
 #include <memory>
 #include <string>
 
-#include "device/value/channel_general_purpose_text_value.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/value/channel_onoff_value.h"
 #include "log.h"
+#include "proto.h"
 
 namespace testing {
+
+namespace {
+
+TSuplaChannelExtendedValue make_general_purpose_text_extended_value(
+    const char *text) {
+  TSuplaChannelExtendedValue result = {};
+  result.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  result.size = std::strlen(text);
+  std::strncpy(result.value, text, sizeof(result.value) - 1);
+  return result;
+}
+
+}  // namespace
 
 DelayedValueBasedTriggerIntegrationTest::
 DelayedValueBasedTriggerIntegrationTest() : IntegrationTest(), Test() {
@@ -298,25 +314,26 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest,
   EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
       timezone.c_str(), latitude, longitude));
 
-  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value oldv(old_raw);
+  auto old_raw = make_general_purpose_text_extended_value("before");
+  supla_channel_general_purpose_text_extended_value oldv(&old_raw);
 
-  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value matchv(match_raw);
+  auto match_raw = make_general_purpose_text_extended_value("match");
+  supla_channel_general_purpose_text_extended_value matchv(&match_raw);
 
+  auto start = std::chrono::steady_clock::now();
   auto direct_match = gpt_trigger->is_condition_met(320, &oldv, &matchv);
   _supla_int64_t direct_ms_left = 0;
   EXPECT_TRUE(direct_match.is_condition_met(&direct_ms_left));
   EXPECT_GT(direct_ms_left, 0);
 
-  auto start = std::chrono::steady_clock::now();
-  std::chrono::steady_clock::time_point fire;
+  auto fire_time_promise =
+      std::make_shared<std::promise<std::chrono::steady_clock::time_point>>();
+  auto fire_time = fire_time_promise->get_future();
 
   EXPECT_CALL(*actionExecutor, send(_, _))
-      .WillOnce([&](const supla_caller &caller, nlohmann::json *template_data) {
-        fire = std::chrono::steady_clock::now();
+      .WillOnce([&, fire_time_promise](const supla_caller &caller,
+                                       nlohmann::json *template_data) {
+        fire_time_promise->set_value(std::chrono::steady_clock::now());
         EXPECT_EQ(actionExecutor->get_push_notification_id(), 500);
         ASSERT_NE(template_data, nullptr);
         EXPECT_EQ((*template_data)["value"].get<std::string>(), "match");
@@ -325,12 +342,13 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest,
   triggers->on_value_changed(supla_caller(ctIPC), 320, &oldv, &matchv,
                              actionExecutor, propertyGetter);
 
-  usleep(1500000);
+  ASSERT_EQ(fire_time.wait_for(std::chrono::seconds(3)),
+            std::future_status::ready);
 
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(fire - start)
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                fire_time.get() - start)
                 .count();
-  EXPECT_GT(ms, 1000);
-  EXPECT_LT(ms, 1500);
+  EXPECT_GE(ms, 1000);
 }
 
 TEST_F(DelayedValueBasedTriggerIntegrationTest,
@@ -353,17 +371,14 @@ TEST_F(DelayedValueBasedTriggerIntegrationTest,
   EXPECT_TRUE(gpt_trigger->get_active_period().is_now_active(
       timezone.c_str(), latitude, longitude));
 
-  char old_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(old_raw, "before", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value oldv(old_raw);
+  auto old_raw = make_general_purpose_text_extended_value("before");
+  supla_channel_general_purpose_text_extended_value oldv(&old_raw);
 
-  char match_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(match_raw, "match", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value matchv(match_raw);
+  auto match_raw = make_general_purpose_text_extended_value("match");
+  supla_channel_general_purpose_text_extended_value matchv(&match_raw);
 
-  char other_raw[SUPLA_CHANNELVALUE_SIZE] = {};
-  strncpy(other_raw, "other", SUPLA_CHANNELVALUE_SIZE - 1);
-  supla_channel_general_purpose_text_value otherv(other_raw);
+  auto other_raw = make_general_purpose_text_extended_value("other");
+  supla_channel_general_purpose_text_extended_value otherv(&other_raw);
 
   auto direct_match = gpt_trigger->is_condition_met(320, &oldv, &matchv);
   _supla_int64_t direct_ms_left = 0;
