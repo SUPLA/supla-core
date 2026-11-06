@@ -187,11 +187,9 @@ void supla_vbt_on_change_condition::apply_json_config(cJSON *json) {
   }
 }
 
-bool supla_vbt_on_change_condition::get_operator_and_value(cJSON *root,
-                                                           _vbt_operator_e *op,
-                                                           double *value,
-                                                           std::string *text_value,
-                                                           bool *text_comparison) {
+bool supla_vbt_on_change_condition::get_operator_and_value(
+  cJSON *root, _vbt_operator_e *op, double *value,
+  std::string *text_value, bool *text_comparison) {
   map<_vbt_operator_e, string> ops{{op_eq, "eq"}, {op_ne, "ne"}, {op_gt, "gt"},
                                    {op_ge, "ge"}, {op_lt, "lt"}, {op_le, "le"}};
 
