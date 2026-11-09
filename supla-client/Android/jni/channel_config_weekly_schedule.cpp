@@ -101,7 +101,7 @@ jobject supla_cc_relay_mode_to_jobject(JNIEnv *env, unsigned char mode) {
 }
 
 jobject supla_cc_button_mode_to_jobject(JNIEnv *env, unsigned char mode) {
-  char enum_name[30] = {};
+  char enum_name[32] = {};
 
   switch (mode) {
     case SUPLA_BUTTON_MODE_LOCKED:
@@ -614,7 +614,14 @@ bool supla_cc_jobject_to_weekly_schedule(JNIEnv *env, jobject object,
       (TChannelConfig_WeeklySchedule *)config->Config;
 
   supla_cc_ws_get_programs(env, programs, ws);
+  if (env->ExceptionCheck()) {
+    return false;
+  }
+
   supla_cc_ws_get_quarters(env, schedule, ws);
+  if (env->ExceptionCheck()) {
+    return false;
+  }
 
   env->DeleteLocalRef(cls);
   env->DeleteLocalRef(programs);
