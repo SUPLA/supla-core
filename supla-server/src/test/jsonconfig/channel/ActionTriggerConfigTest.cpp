@@ -357,6 +357,110 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, temporaryUnlockConfigRoundTrip) {
+  TChannelConfig_ActionTrigger expected = {};
+  expected.TemporaryUnlockDurationSec = 64800;
+  expected.TemporaryUnlockSensorEdge = SUPLA_AT_SENSOR_EDGE_BOTH;
+  expected.TemporaryUnlockSensorIsSet = 1;
+  expected.TemporaryUnlockSensorChannelNo = 17;
+
+  action_trigger_config config;
+  ASSERT_TRUE(config.set_config(&expected));
+
+  char *json = config.get_user_config();
+  ASSERT_NE(json, nullptr);
+  EXPECT_STREQ(
+      json,
+      "{\"temporaryUnlockDurationSec\":64800,"
+      "\"temporaryUnlockSensorEdge\":3,"
+      "\"temporaryUnlockSensorChannelNo\":17}");
+
+  action_trigger_config restored;
+  restored.set_user_config(json);
+  free(json);
+
+  TChannelConfig_ActionTrigger actual = {};
+  ASSERT_TRUE(restored.get_config(&actual));
+  EXPECT_EQ(actual.TemporaryUnlockDurationSec,
+            expected.TemporaryUnlockDurationSec);
+  EXPECT_EQ(actual.TemporaryUnlockSensorEdge,
+            expected.TemporaryUnlockSensorEdge);
+  EXPECT_EQ(actual.TemporaryUnlockSensorIsSet, 1);
+  EXPECT_EQ(actual.TemporaryUnlockSensorChannelNo, 17);
+}
+
+TEST_F(ActionTriggerConfigTest, temporaryUnlockConfigWithoutSensor) {
+  TChannelConfig_ActionTrigger expected = {};
+  expected.TemporaryUnlockDurationSec = 10;
+  expected.TemporaryUnlockSensorEdge = SUPLA_AT_SENSOR_EDGE_NONE;
+
+  action_trigger_config config;
+  ASSERT_TRUE(config.set_config(&expected));
+
+  char *json = config.get_user_config();
+  ASSERT_NE(json, nullptr);
+  EXPECT_STREQ(
+      json,
+      "{\"temporaryUnlockDurationSec\":10,"
+      "\"temporaryUnlockSensorEdge\":0,"
+      "\"temporaryUnlockSensorChannelNo\":null}");
+  free(json);
+
+  TChannelConfig_ActionTrigger actual = {};
+  ASSERT_TRUE(config.get_config(&actual));
+  EXPECT_EQ(actual.TemporaryUnlockSensorIsSet, 0);
+  EXPECT_EQ(actual.TemporaryUnlockSensorChannelNo, 0);
+}
+
+TEST_F(ActionTriggerConfigTest, rejectsInvalidTemporaryUnlockConfig) {
+  TChannelConfig_ActionTrigger raw = {};
+  raw.TemporaryUnlockDurationSec =
+      SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC + 1;
+
+  action_trigger_config config;
+  EXPECT_FALSE(config.set_config(&raw));
+
+  raw = {};
+  raw.TemporaryUnlockSensorEdge = SUPLA_AT_SENSOR_EDGE_BOTH + 1;
+  EXPECT_FALSE(config.set_config(&raw));
+
+  raw = {};
+  raw.TemporaryUnlockSensorIsSet = 2;
+  EXPECT_FALSE(config.set_config(&raw));
+
+  config.set_user_config(
+      "{\"temporaryUnlockDurationSec\":64801,"
+      "\"temporaryUnlockSensorEdge\":1.5,"
+      "\"temporaryUnlockSensorChannelNo\":256}");
+  raw = {};
+  EXPECT_FALSE(config.get_config(&raw));
+  EXPECT_EQ(raw.TemporaryUnlockDurationSec, 0U);
+  EXPECT_EQ(raw.TemporaryUnlockSensorEdge, 0);
+  EXPECT_EQ(raw.TemporaryUnlockSensorIsSet, 0);
+}
+
+TEST_F(ActionTriggerConfigTest, mergesTemporaryUnlockConfig) {
+  action_trigger_config source, destination;
+  source.set_user_config(
+      "{\"temporaryUnlockDurationSec\":15,"
+      "\"temporaryUnlockSensorEdge\":1,"
+      "\"temporaryUnlockSensorChannelNo\":4}");
+  destination.set_user_config(
+      "{\"actions\":{\"HOLD\":{\"subjectId\":1}},\"other\":true}");
+
+  source.merge(&destination);
+
+  char *json = destination.get_user_config();
+  ASSERT_NE(json, nullptr);
+  EXPECT_STREQ(
+      json,
+      "{\"actions\":{\"HOLD\":{\"subjectId\":1}},\"other\":true,"
+      "\"temporaryUnlockDurationSec\":15,"
+      "\"temporaryUnlockSensorEdge\":1,"
+      "\"temporaryUnlockSensorChannelNo\":4}");
+  free(json);
+}
+
 TEST_F(ActionTriggerConfigTest, actionShutRevelal) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);

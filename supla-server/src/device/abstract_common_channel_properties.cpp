@@ -660,17 +660,27 @@ void supla_abstract_common_channel_properties::get_config(
       break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
-      *config_size = sizeof(TChannelConfig_ActionTrigger);
+      bool extended_config = get_protocol_version() >= 29;
+      *config_size = extended_config ? sizeof(TChannelConfig_ActionTrigger)
+                                     : sizeof(unsigned _supla_int_t);
       TChannelConfig_ActionTrigger *cfg =
           (TChannelConfig_ActionTrigger *)config;
-      cfg->ActiveActions = 0;
       supla_json_config *json_config = get_json_config();
-      action_trigger_config *at_config = new action_trigger_config(json_config);
-      if (at_config) {
-        cfg->ActiveActions = at_config->get_active_actions();
-        delete at_config;
-        at_config = nullptr;
+
+      action_trigger_config at_config(json_config);
+      if (extended_config &&
+          (get_flags() &
+           SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED)) {
+        at_config.get_config(cfg);
+
+        if (resolve_channel_identifiers &&
+            cfg->TemporaryUnlockSensorIsSet) {
+          cfg->TemporaryUnlockSensorChannelId =
+              get_channel_id(cfg->TemporaryUnlockSensorChannelNo);
+        }
       }
+
+      cfg->ActiveActions = at_config.get_active_actions();
 
       if (json_config) {
         delete json_config;
@@ -696,7 +706,7 @@ void supla_abstract_common_channel_properties::get_config(
 
 int supla_abstract_common_channel_properties::set_user_config(
     unsigned char config_type, unsigned _supla_int16_t config_size,
-    char *config) {
+    char *config, bool resolve_channel_identifiers) {
   if (config_size > SUPLA_CHANNEL_CONFIG_MAXSIZE || !config) {
     return SUPLA_CONFIG_RESULT_FALSE;
   }
@@ -741,6 +751,45 @@ int supla_abstract_common_channel_properties::set_user_config(
           ->set_config((TChannelConfig_WeeklySchedule *)config, func);
     }
 
+  } else if (func == SUPLA_CHANNELFNC_ACTIONTRIGGER &&
+             config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
+             get_protocol_version() >= 29 &&
+             config_size == sizeof(TChannelConfig_ActionTrigger) &&
+             (get_flags() &
+              SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED)) {
+    TChannelConfig_ActionTrigger *at =
+        (TChannelConfig_ActionTrigger *)config;
+
+    if (resolve_channel_identifiers) {
+      int sensor_channel_id = at->TemporaryUnlockSensorChannelId;
+      at->TemporaryUnlockSensorChannelId = 0;
+
+      if (sensor_channel_id) {
+        bool found = false;
+        for_each(false,
+                 [&](supla_abstract_common_channel_properties *props,
+                     bool *will_continue) -> void {
+                   if (props->get_id() == sensor_channel_id) {
+                     at->TemporaryUnlockSensorIsSet = 1;
+                     at->TemporaryUnlockSensorChannelNo =
+                         props->get_channel_number();
+                     found = true;
+                     *will_continue = false;
+                   }
+                 });
+
+        if (!found) {
+          return SUPLA_CONFIG_RESULT_FALSE;
+        }
+      }
+    }
+
+    action_trigger_config *at_config = new action_trigger_config();
+    if (at_config->set_config(at)) {
+      json_config = at_config;
+    } else {
+      delete at_config;
+    }
   } else if (type == SUPLA_CHANNELTYPE_BINARYSENSOR) {
     json_config = new binary_sensor_config();
     static_cast<binary_sensor_config *>(json_config)

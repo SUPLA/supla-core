@@ -31,6 +31,16 @@ using std::function;
 using std::map;
 using std::string;
 
+#define FIELD_TEMPORARY_UNLOCK_DURATION_SEC 1
+#define FIELD_TEMPORARY_UNLOCK_SENSOR_EDGE 2
+#define FIELD_TEMPORARY_UNLOCK_SENSOR_CHANNEL_NO 3
+
+const map<unsigned _supla_int16_t, string> action_trigger_config::field_map{
+    {FIELD_TEMPORARY_UNLOCK_DURATION_SEC, "temporaryUnlockDurationSec"},
+    {FIELD_TEMPORARY_UNLOCK_SENSOR_EDGE, "temporaryUnlockSensorEdge"},
+    {FIELD_TEMPORARY_UNLOCK_SENSOR_CHANNEL_NO,
+     "temporaryUnlockSensorChannelNo"}};
+
 const map<int, string> action_trigger_config::cap_map{
     {SUPLA_ACTION_CAP_TURN_ON, "TURN_ON"},
     {SUPLA_ACTION_CAP_TURN_OFF, "TURN_OFF"},
@@ -331,6 +341,92 @@ unsigned int action_trigger_config::get_active_actions(void) {
   }
 
   return caps & result;
+}
+
+bool action_trigger_config::set_config(
+    const TChannelConfig_ActionTrigger *config) {
+  if (!config ||
+      config->TemporaryUnlockDurationSec >
+          SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC ||
+      config->TemporaryUnlockSensorEdge > SUPLA_AT_SENSOR_EDGE_BOTH ||
+      config->TemporaryUnlockSensorIsSet > 1) {
+    return false;
+  }
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return false;
+  }
+
+  set_item_value(
+      user_root, field_map.at(FIELD_TEMPORARY_UNLOCK_DURATION_SEC).c_str(),
+      cJSON_Number, true, nullptr, nullptr,
+      config->TemporaryUnlockDurationSec);
+  set_item_value(
+      user_root, field_map.at(FIELD_TEMPORARY_UNLOCK_SENSOR_EDGE).c_str(),
+      cJSON_Number, true, nullptr, nullptr,
+      config->TemporaryUnlockSensorEdge);
+  set_item_value(
+      user_root,
+      field_map.at(FIELD_TEMPORARY_UNLOCK_SENSOR_CHANNEL_NO).c_str(),
+      config->TemporaryUnlockSensorIsSet ? cJSON_Number : cJSON_NULL, true,
+      nullptr, nullptr, config->TemporaryUnlockSensorChannelNo);
+
+  return true;
+}
+
+bool action_trigger_config::get_config(TChannelConfig_ActionTrigger *config) {
+  if (!config) {
+    return false;
+  }
+
+  *config = {};
+
+  cJSON *user_root = get_user_root();
+  if (!user_root) {
+    return false;
+  }
+
+  double value = 0;
+  bool result = false;
+
+  if (get_double(
+          user_root,
+          field_map.at(FIELD_TEMPORARY_UNLOCK_DURATION_SEC).c_str(), &value) &&
+      value >= 0 && value <= SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC &&
+      value == static_cast<unsigned int>(value)) {
+    config->TemporaryUnlockDurationSec = value;
+    result = true;
+  }
+
+  if (get_double(user_root,
+                 field_map.at(FIELD_TEMPORARY_UNLOCK_SENSOR_EDGE).c_str(),
+                 &value) &&
+      value >= SUPLA_AT_SENSOR_EDGE_NONE &&
+      value <= SUPLA_AT_SENSOR_EDGE_BOTH &&
+      value == static_cast<unsigned int>(value)) {
+    config->TemporaryUnlockSensorEdge = value;
+    result = true;
+  }
+
+  if (get_double(
+          user_root,
+          field_map.at(FIELD_TEMPORARY_UNLOCK_SENSOR_CHANNEL_NO).c_str(),
+          &value) &&
+      value >= 0 && value <= 255 &&
+      value == static_cast<unsigned int>(value)) {
+    config->TemporaryUnlockSensorIsSet = 1;
+    config->TemporaryUnlockSensorChannelNo = value;
+    result = true;
+  }
+
+  return result;
+}
+
+void action_trigger_config::merge(supla_json_config *_dst) {
+  action_trigger_config dst(_dst);
+  supla_json_config::merge(get_user_root(), dst.get_user_root(), field_map,
+                           false);
 }
 
 cJSON *action_trigger_config::get_cap_user_config(int cap) {

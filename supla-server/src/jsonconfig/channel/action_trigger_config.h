@@ -40,6 +40,7 @@ typedef struct {
 class action_trigger_config : public abstract_action_config,
                               public supla_json_config {
  private:
+  static const std::map<unsigned _supla_int16_t, std::string> field_map;
   static const std::map<int, std::string> cap_map;
   static const char caps_key[];
   static const char disables_local_operation_key[];
@@ -84,6 +85,9 @@ class action_trigger_config : public abstract_action_config,
   unsigned int get_caps_that_disables_local_operation(void);
   bool set_caps_that_disables_local_operation(unsigned int caps);
   unsigned int get_active_actions(void);
+  bool set_config(const TChannelConfig_ActionTrigger *config);
+  bool get_config(TChannelConfig_ActionTrigger *config);
+  virtual void merge(supla_json_config *dst);
   virtual supla_abstract_action_parameters *get_parameters(void);
   virtual int get_cap(void);
   void set_active_cap(int cap);
