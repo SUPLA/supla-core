@@ -210,6 +210,15 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   EXPECT_EQ(sizeof(TChannelConfig_ActionTrigger), 16);
+  EXPECT_EQ(offsetof(TChannelConfig_ActionTrigger, ActiveActions), 0U);
+  EXPECT_EQ(offsetof(TChannelConfig_ActionTrigger, TemporaryUnlockDurationSec),
+            4U);
+  EXPECT_EQ(offsetof(TChannelConfig_ActionTrigger, TemporaryUnlockSensorEdge),
+            8U);
+  EXPECT_EQ(
+      offsetof(TChannelConfig_ActionTrigger, TemporaryUnlockSensorChannelId),
+      9U);
+  EXPECT_EQ(offsetof(TChannelConfig_ActionTrigger, Reserved), 13U);
   EXPECT_LE(sizeof(TChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
