@@ -719,9 +719,7 @@ int supla_client_channel::set_user_config(unsigned char config_type,
                                           unsigned _supla_int16_t config_size,
                                           char *config) {
   return supla_abstract_common_channel_properties::set_user_config(
-      get_real_config_type(config_type), config_size, config,
-      config_type == SUPLA_CONFIG_TYPE_DEFAULT &&
-          get_func() == SUPLA_CHANNELFNC_ACTIONTRIGGER);
+      get_real_config_type(config_type), config_size, config);
 }
 
 unsigned char supla_client_channel::get_protocol_version(void) {

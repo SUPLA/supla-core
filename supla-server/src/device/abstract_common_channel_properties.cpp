@@ -706,7 +706,7 @@ void supla_abstract_common_channel_properties::get_config(
 
 int supla_abstract_common_channel_properties::set_user_config(
     unsigned char config_type, unsigned _supla_int16_t config_size,
-    char *config, bool resolve_channel_identifiers) {
+    char *config) {
   if (config_size > SUPLA_CHANNEL_CONFIG_MAXSIZE || !config) {
     return SUPLA_CONFIG_RESULT_FALSE;
   }
@@ -759,30 +759,6 @@ int supla_abstract_common_channel_properties::set_user_config(
               SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED)) {
     TChannelConfig_ActionTrigger *at =
         (TChannelConfig_ActionTrigger *)config;
-
-    if (resolve_channel_identifiers) {
-      int sensor_channel_id = at->TemporaryUnlockSensorChannelId;
-      at->TemporaryUnlockSensorChannelId = 0;
-
-      if (sensor_channel_id) {
-        bool found = false;
-        for_each(false,
-                 [&](supla_abstract_common_channel_properties *props,
-                     bool *will_continue) -> void {
-                   if (props->get_id() == sensor_channel_id) {
-                     at->TemporaryUnlockSensorIsSet = 1;
-                     at->TemporaryUnlockSensorChannelNo =
-                         props->get_channel_number();
-                     found = true;
-                     *will_continue = false;
-                   }
-                 });
-
-        if (!found) {
-          return SUPLA_CONFIG_RESULT_FALSE;
-        }
-      }
-    }
 
     action_trigger_config *at_config = new action_trigger_config();
     if (at_config->set_config(at)) {

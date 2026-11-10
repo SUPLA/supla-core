@@ -88,8 +88,7 @@ class supla_abstract_common_channel_properties {
                              e_relation_kind kind);
 
   int set_user_config(unsigned char config_type,
-                      unsigned _supla_int16_t config_size, char *config,
-                      bool resolve_channel_identifiers = false);
+                      unsigned _supla_int16_t config_size, char *config);
 };
 
 #endif /*ABSTRACT_COMMON_CHANNEL_PROPERTIES_H_*/
