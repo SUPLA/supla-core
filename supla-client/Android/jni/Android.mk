@@ -29,6 +29,7 @@ LOCAL_SRC_FILES := supla.cpp \
     channel_config_weekly_schedule.cpp \
     channel_config_general_purpose_measurement.cpp \
     channel_config_general_purpose_meter.cpp \
+    channel_config_general_purpose_text.cpp \
     channel_config_roller_shutter.cpp \
     channel_config_facade_blind.cpp \
     channel_config_container.cpp \

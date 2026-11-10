@@ -414,6 +414,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 23
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER 9010        // ver. >= 23
+#define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_TEXT 9020         // ver. >= 29
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
@@ -478,6 +479,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510              // ver. >= 12
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520   // ver. >= 23
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_METER 530         // ver. >= 23
+#define SUPLA_CHANNELFNC_GENERAL_PURPOSE_TEXT 540          // ver. >= 29
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600     // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                 // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800          // ver. >= 14
@@ -782,6 +784,7 @@ typedef struct {
 #define EV_TYPE_TIMER_STATE_V1_SEC 51
 #define EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 60
 #define EV_TYPE_MULTI_VALUE 100
+#define EV_TYPE_GENERAL_PURPOSE_TEXT 110  // ver. >= 29
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -3702,6 +3705,7 @@ typedef struct {
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE 2
 
 #define SUPLA_GENERAL_PURPOSE_UNIT_SIZE 15
+#define SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE 255  // ver. >= 29
 
 // General Purpose Mesurement channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
@@ -3806,6 +3810,13 @@ typedef struct {
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
+
+// General Purpose Text channel config:
+typedef struct {
+  // Refresh interval in milliseconds. 1 - 65535, 0 = default
+  unsigned _supla_int16_t RefreshIntervalMs;
+  unsigned char Reserved[14];
+} TChannelConfig_GeneralPurposeText;  // v. >= 29
 
 #define EM_CT_TYPE_100A_33mA (1ULL << 0)
 #define EM_CT_TYPE_200A_66mA (1ULL << 1)

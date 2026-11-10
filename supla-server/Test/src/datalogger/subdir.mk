@@ -12,6 +12,8 @@ CPP_SRCS += \
 ../src/datalogger/general_purpose_measurement_logger_dao.cpp \
 ../src/datalogger/general_purpose_meter_logger.cpp \
 ../src/datalogger/general_purpose_meter_logger_dao.cpp \
+../src/datalogger/general_purpose_text_logger.cpp \
+../src/datalogger/general_purpose_text_logger_dao.cpp \
 ../src/datalogger/hp_thermostat_logger.cpp \
 ../src/datalogger/hp_thermostat_logger_dao.cpp \
 ../src/datalogger/impulse_logger.cpp \
@@ -36,6 +38,8 @@ CPP_DEPS += \
 ./src/datalogger/general_purpose_measurement_logger_dao.d \
 ./src/datalogger/general_purpose_meter_logger.d \
 ./src/datalogger/general_purpose_meter_logger_dao.d \
+./src/datalogger/general_purpose_text_logger.d \
+./src/datalogger/general_purpose_text_logger_dao.d \
 ./src/datalogger/hp_thermostat_logger.d \
 ./src/datalogger/hp_thermostat_logger_dao.d \
 ./src/datalogger/impulse_logger.d \
@@ -60,6 +64,8 @@ OBJS += \
 ./src/datalogger/general_purpose_measurement_logger_dao.o \
 ./src/datalogger/general_purpose_meter_logger.o \
 ./src/datalogger/general_purpose_meter_logger_dao.o \
+./src/datalogger/general_purpose_text_logger.o \
+./src/datalogger/general_purpose_text_logger_dao.o \
 ./src/datalogger/hp_thermostat_logger.o \
 ./src/datalogger/hp_thermostat_logger_dao.o \
 ./src/datalogger/impulse_logger.o \
@@ -88,7 +94,7 @@ src/datalogger/%.o: ../src/datalogger/%.cpp src/datalogger/subdir.mk
 clean: clean-src-2f-datalogger
 
 clean-src-2f-datalogger:
-	-$(RM) ./src/datalogger/abstract_electricity_logger.d ./src/datalogger/abstract_electricity_logger.o ./src/datalogger/abstract_electricity_logger_dao.d ./src/datalogger/abstract_electricity_logger_dao.o ./src/datalogger/current_logger.d ./src/datalogger/current_logger.o ./src/datalogger/current_logger_dao.d ./src/datalogger/current_logger_dao.o ./src/datalogger/general_purpose_measurement_logger.d ./src/datalogger/general_purpose_measurement_logger.o ./src/datalogger/general_purpose_measurement_logger_dao.d ./src/datalogger/general_purpose_measurement_logger_dao.o ./src/datalogger/general_purpose_meter_logger.d ./src/datalogger/general_purpose_meter_logger.o ./src/datalogger/general_purpose_meter_logger_dao.d ./src/datalogger/general_purpose_meter_logger_dao.o ./src/datalogger/hp_thermostat_logger.d ./src/datalogger/hp_thermostat_logger.o ./src/datalogger/hp_thermostat_logger_dao.d ./src/datalogger/hp_thermostat_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/power_active_logger.d ./src/datalogger/power_active_logger.o ./src/datalogger/power_active_logger_dao.d ./src/datalogger/power_active_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/total_energy_logger.d ./src/datalogger/total_energy_logger.o ./src/datalogger/total_energy_logger_dao.d ./src/datalogger/total_energy_logger_dao.o ./src/datalogger/voltage_aberration_logger.d ./src/datalogger/voltage_aberration_logger.o ./src/datalogger/voltage_aberration_logger_dao.d ./src/datalogger/voltage_aberration_logger_dao.o ./src/datalogger/voltage_logger.d ./src/datalogger/voltage_logger.o ./src/datalogger/voltage_logger_dao.d ./src/datalogger/voltage_logger_dao.o
+	-$(RM) ./src/datalogger/abstract_electricity_logger.d ./src/datalogger/abstract_electricity_logger.o ./src/datalogger/abstract_electricity_logger_dao.d ./src/datalogger/abstract_electricity_logger_dao.o ./src/datalogger/current_logger.d ./src/datalogger/current_logger.o ./src/datalogger/current_logger_dao.d ./src/datalogger/current_logger_dao.o ./src/datalogger/general_purpose_measurement_logger.d ./src/datalogger/general_purpose_measurement_logger.o ./src/datalogger/general_purpose_measurement_logger_dao.d ./src/datalogger/general_purpose_measurement_logger_dao.o ./src/datalogger/general_purpose_meter_logger.d ./src/datalogger/general_purpose_meter_logger.o ./src/datalogger/general_purpose_meter_logger_dao.d ./src/datalogger/general_purpose_meter_logger_dao.o ./src/datalogger/general_purpose_text_logger.d ./src/datalogger/general_purpose_text_logger.o ./src/datalogger/general_purpose_text_logger_dao.d ./src/datalogger/general_purpose_text_logger_dao.o ./src/datalogger/hp_thermostat_logger.d ./src/datalogger/hp_thermostat_logger.o ./src/datalogger/hp_thermostat_logger_dao.d ./src/datalogger/hp_thermostat_logger_dao.o ./src/datalogger/impulse_logger.d ./src/datalogger/impulse_logger.o ./src/datalogger/impulse_logger_dao.d ./src/datalogger/impulse_logger_dao.o ./src/datalogger/power_active_logger.d ./src/datalogger/power_active_logger.o ./src/datalogger/power_active_logger_dao.d ./src/datalogger/power_active_logger_dao.o ./src/datalogger/temperature_logger.d ./src/datalogger/temperature_logger.o ./src/datalogger/temperature_logger_dao.d ./src/datalogger/temperature_logger_dao.o ./src/datalogger/total_energy_logger.d ./src/datalogger/total_energy_logger.o ./src/datalogger/total_energy_logger_dao.d ./src/datalogger/total_energy_logger_dao.o ./src/datalogger/voltage_aberration_logger.d ./src/datalogger/voltage_aberration_logger.o ./src/datalogger/voltage_aberration_logger_dao.d ./src/datalogger/voltage_aberration_logger_dao.o ./src/datalogger/voltage_logger.d ./src/datalogger/voltage_logger.o ./src/datalogger/voltage_logger_dao.d ./src/datalogger/voltage_logger_dao.o
 
 .PHONY: clean-src-2f-datalogger
 

@@ -25,6 +25,7 @@
 #include <string>
 
 #include "device/channel_fragment.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
@@ -1140,6 +1141,30 @@ bool supla_mqtt_abstract_state_message_provider::get_gpm_message_at_index(
   return false;
 }
 
+bool supla_mqtt_abstract_state_message_provider::get_gpt_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index == 1) {
+    if (channel_extended_value == nullptr) {
+      channel_extended_value =
+          _get_channel_property_getter()->get_extended_value(
+              get_user_id(), get_device_id(), get_channel_id());
+    }
+
+    supla_channel_general_purpose_text_extended_value *gpt_val =
+        dynamic_cast<supla_channel_general_purpose_text_extended_value *>(
+            channel_extended_value);
+
+    return create_message(
+        topic_prefix, user_suid, topic_name, message, message_size,
+        gpt_val ? gpt_val->get_text().c_str() : nullptr, false,
+        "devices/%i/channels/%i/state/value", get_device_id(),
+        get_channel_id());
+  }
+
+  return false;
+}
+
 bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -1388,7 +1413,10 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
       return get_gpm_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
-      break;
+
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_TEXT:
+      return get_gpt_message_at_index(index, topic_prefix, topic_name, message,
+                                      message_size);
   }
 
   return false;
