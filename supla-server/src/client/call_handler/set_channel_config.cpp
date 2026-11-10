@@ -58,9 +58,7 @@ void supla_client_ch_set_channel_config::handle_call(
     if (config->ChannelId) {
       client->get_channels()->channel_access(
           config->ChannelId, [&](supla_client_channel* channel) -> void {
-            if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE ||
-                (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
-                 channel->get_func() == SUPLA_CHANNELFNC_ACTIONTRIGGER)) {
+            if (config->ConfigType == SUPLA_CONFIG_TYPE_WEEKLY_SCHEDULE) {
               cfg_result.Result = channel->set_user_config(
                   config->ConfigType, config->ConfigSize, config->Config);
             } else {
