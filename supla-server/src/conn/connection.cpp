@@ -284,7 +284,7 @@ void supla_connection::catch_unhandled_call(unsigned int call_id) {
   unhandled_call_counter++;
   if (object == nullptr || !object->is_registered()) {
     log_security_event_with_uint(LOG_WARNING, "unexpected_call_before_register",
-                                 1, "call_id", call_id);
+                                 "call_id", call_id);
   }
 
   supla_log(LOG_ERR,
@@ -347,7 +347,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
     srpc_rd_free(&rd);
   } else if (object == nullptr || !object->is_registered()) {
-    log_security_event_with_uint(LOG_WARNING, "invalid_call_payload", 1,
+    log_security_event_with_uint(LOG_WARNING, "invalid_call_payload",
                                  "call_id", call_id);
   }
 }
@@ -372,8 +372,7 @@ int supla_connection::get_server_port(void) {
                                 : scfg_int(CFG_TCP_PORT);
 }
 
-void supla_connection::log_security_event(int level, const char *reason,
-                                          int ban) {
+void supla_connection::log_security_event(int level, const char *reason) {
   if (security_event_logged || client_ipv4 == INADDR_LOOPBACK) {
     return;
   }
@@ -384,14 +383,14 @@ void supla_connection::log_security_event(int level, const char *reason,
   client_ip_as_string(client_ip, sizeof(client_ip));
 
   supla_log(level,
-            "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+            "SECURITY: supla-port-abuse reason=%s ip=%s port=%i "
             "secure=%i bytes_received=%llu client_sd=%i thread=%p",
-            ban, reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
+            reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
             bytes_received, get_client_sd(), sthread);
 }
 
 void supla_connection::log_security_event_with_uint(int level,
-                                                    const char *reason, int ban,
+                                                    const char *reason,
                                                     const char *value_name,
                                                     unsigned int value) {
   if (security_event_logged || client_ipv4 == INADDR_LOOPBACK) {
@@ -404,9 +403,9 @@ void supla_connection::log_security_event_with_uint(int level,
   client_ip_as_string(client_ip, sizeof(client_ip));
 
   supla_log(level,
-            "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+            "SECURITY: supla-port-abuse reason=%s ip=%s port=%i "
             "secure=%i bytes_received=%llu client_sd=%i thread=%p %s=%u",
-            ban, reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
+            reason, client_ip, get_server_port(), ssocket_is_secure(ssd),
             bytes_received, get_client_sd(), sthread, value_name, value);
 }
 
@@ -432,24 +431,24 @@ void supla_connection::execute(void *sthread) {
 
         switch (srpc_reason) {
           case SRPC_ITERATE_REASON_PROTOCOL_ERROR:
-            log_security_event(LOG_WARNING, "invalid_protocol_data", 1);
+            log_security_event(LOG_WARNING, "invalid_protocol_data");
             break;
           case SRPC_ITERATE_REASON_INPUT_BUFFER_OVERFLOW:
-            log_security_event(LOG_WARNING, "input_buffer_overflow", 1);
+            log_security_event(LOG_WARNING, "input_buffer_overflow");
             break;
           case SRPC_ITERATE_REASON_VERSION_ERROR:
             break;
           case SRPC_ITERATE_REASON_SOCKET_CLOSED:
             if (bytes_received == 0) {
               log_security_event(LOG_NOTICE,
-                                 "connection_closed_without_communication", 1);
+                                 "connection_closed_without_communication");
             } else if (!remote_call_received) {
               log_security_event(
                   LOG_NOTICE,
-                  "connection_closed_after_incomplete_communication", 0);
+                  "connection_closed_after_incomplete_communication");
             } else if (object == nullptr) {
               log_security_event(LOG_NOTICE,
-                                 "connection_closed_before_registration", 0);
+                                 "connection_closed_before_registration");
             }
             break;
           default:
@@ -468,15 +467,15 @@ void supla_connection::execute(void *sthread) {
         terminate();
         if (bytes_received == 0) {
           log_security_event(LOG_NOTICE,
-                             "registration_timeout_no_communication", 1);
+                             "registration_timeout_no_communication");
         } else if (!remote_call_received) {
           log_security_event(
-              LOG_NOTICE, "registration_timeout_incomplete_communication", 0);
+              LOG_NOTICE, "registration_timeout_incomplete_communication");
         } else if (object == nullptr) {
           log_security_event(LOG_NOTICE,
-                             "registration_timeout_before_registration", 0);
+                             "registration_timeout_before_registration");
         } else {
-          log_security_event(LOG_NOTICE, "registration_timeout", 0);
+          log_security_event(LOG_NOTICE, "registration_timeout");
         }
         break;
       }

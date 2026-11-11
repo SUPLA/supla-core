@@ -423,12 +423,10 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
 
       const char *reason = "tls_handshake_failed";
       int level = LOG_WARNING;
-      int ban = 1;
 
       if (n == -1) {
         reason = "tls_socket_setup_failed";
         level = LOG_NOTICE;
-        ban = 0;
       } else if (ssl_error == SSL_ERROR_WANT_READ ||
                  ssl_error == SSL_ERROR_WANT_WRITE ||
                  (ssl_error == SSL_ERROR_SYSCALL &&
@@ -440,9 +438,9 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
 
       if (strcmp(supla_socket->client_ip, "127.0.0.1") != 0) {
         supla_log(level,
-                  "SECURITY: supla-port-abuse ban=%i reason=%s ip=%s port=%i "
+                  "SECURITY: supla-port-abuse reason=%s ip=%s port=%i "
                   "secure=1 client_port=%i client_sd=%i ssl_error=%i errno=%i",
-                  ban, reason, supla_socket->client_ip, ssd->port,
+                  reason, supla_socket->client_ip, ssd->port,
                   supla_socket->client_port, supla_socket->sfd, ssl_error,
                   saved_errno);
       }

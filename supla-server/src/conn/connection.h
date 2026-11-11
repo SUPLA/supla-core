@@ -72,9 +72,9 @@ class supla_connection {
   void catch_unhandled_call(unsigned int call_id);
   void client_ip_as_string(char *buffer, size_t buffer_size);
   int get_server_port(void);
-  void log_security_event(int level, const char *reason, int ban);
+  void log_security_event(int level, const char *reason);
   void log_security_event_with_uint(int level, const char *reason,
-                                    int ban, const char *value_name,
+                                    const char *value_name,
                                     unsigned int value);
 
  public:
