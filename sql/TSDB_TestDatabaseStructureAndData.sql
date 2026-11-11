@@ -467,6 +467,7 @@ COPY public.doctrine_migration_versions (version, executed_at, execution_time) F
 SuplaBundle\\Migrations\\TsDbMigration\\Version20250529192110	2025-12-18 12:54:24	61
 SuplaBundle\\Migrations\\TsDbMigration\\Version20250611074734	2025-12-18 12:54:24	3
 SuplaBundle\\Migrations\\TsDbMigration\\Version20250625101351	2025-12-18 12:54:24	1
+SuplaBundle\\Migrations\\TsDbMigration\\Version20260723155215	2026-07-23 12:54:24	1
 \.
 
 ALTER TABLE ONLY public.doctrine_migration_versions
