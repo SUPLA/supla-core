@@ -323,8 +323,7 @@ INSERT INTO `migration_versions` VALUES
 ('SuplaBundle\\Migrations\\Migration\\Version20251112105645','2025-11-14 18:43:41',27),
 ('SuplaBundle\\Migrations\\Migration\\Version20260310222704','2026-03-13 14:11:27',40),
 ('SuplaBundle\\Migrations\\Migration\\Version20260330150252','2026-03-20 17:08:27',40),
-('SuplaBundle\\Migrations\\Migration\\Version20260901155422','2026-09-01 15:54:22',40),
-('SuplaBundle\\Migrations\\Migration\\Version20261020202651','2026-10-20 15:54:22',40);
+('SuplaBundle\\Migrations\\Migration\\Version20261020202651','2026-10-20 20:26:51',40);
 
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -1290,6 +1289,8 @@ CREATE TABLE `supla_oauth_auth_codes` (
   `redirect_uri` longtext NOT NULL,
   `expires_at` int(11) DEFAULT NULL,
   `scope` varchar(255) DEFAULT NULL,
+  `codeChallenge` varchar(128) DEFAULT NULL,
+  `codeChallengeMethod` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_48E00E5D5F37A13B` (`token`),
   KEY `IDX_48E00E5D19EB6921` (`client_id`),
@@ -1360,6 +1361,7 @@ CREATE TABLE `supla_oauth_clients` (
   `public_client_id` varchar(255) DEFAULT NULL,
   `long_description` longtext DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `supla_oauth_clients_public_client_id_uniq` (`public_client_id`),
   KEY `IDX_4035AD80A76ED395` (`user_id`),
   KEY `supla_oauth_clients_random_id_idx` (`random_id`),
   KEY `supla_oauth_clients_type_idx` (`type`),
