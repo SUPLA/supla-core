@@ -116,8 +116,11 @@ TEST_F(PushNotificationIntegrationTest,
   const char text_value[] = "TextValue";
   TSuplaChannelExtendedValue extended_value = {};
   extended_value.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  extended_value.size = sizeof(text_value) - 1;
-  strncpy(extended_value.value, text_value, sizeof(extended_value.value) - 1);
+  extended_value.size = SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE +
+                        sizeof(text_value) - 1;
+  std::memcpy(extended_value.value +
+                  SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE,
+              text_value, sizeof(text_value) - 1);
 
   supla_channel_general_purpose_text_extended_value value(&extended_value);
   auto d = value.get_template_data();

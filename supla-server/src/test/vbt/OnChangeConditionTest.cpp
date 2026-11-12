@@ -50,6 +50,17 @@ OnChangeConditionTest::OnChangeConditionTest() : Test() {}
 
 OnChangeConditionTest::~OnChangeConditionTest() {}
 
+static TSuplaChannelExtendedValue make_general_purpose_text_ev(
+    const string &text) {
+  TSuplaChannelExtendedValue result = {};
+  result.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
+  result.size = SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE +
+                static_cast<unsigned int>(text.size());
+  text.copy(result.value + SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE,
+            text.size());
+  return result;
+}
+
 TEST_F(OnChangeConditionTest, defaults) {
   supla_vbt_on_change_condition c;
   EXPECT_EQ(c.get_value(), 0);
@@ -135,6 +146,33 @@ TEST_F(OnChangeConditionTest, generalPurposeTextEqualCondition) {
   EXPECT_TRUE(c.is_condition_met(&old_value, &new_value));
 }
 
+TEST_F(OnChangeConditionTest, generalPurposeTextBooleanWordCondition) {
+  supla_vbt_on_change_condition c;
+
+  cJSON *json = cJSON_Parse("{\"on_change_to\":{\"eq\":\"on\"}}");
+  c.apply_json_config(json);
+  cJSON_Delete(json);
+
+  const string old_text = "off";
+  TSuplaChannelExtendedValue old_ev =
+      make_general_purpose_text_ev(old_text);
+  supla_channel_general_purpose_text_extended_value old_value(&old_ev);
+
+  const string new_text = "on";
+  TSuplaChannelExtendedValue new_ev =
+      make_general_purpose_text_ev(new_text);
+  supla_channel_general_purpose_text_extended_value new_value(&new_ev);
+
+  EXPECT_TRUE(c.is_condition_met(&old_value, &new_value));
+}
+
+TEST_F(OnChangeConditionTest, generalPurposeTextExtendedValueKeepsFullPayload) {
+  const string text(SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE, 'y');
+  TSuplaChannelExtendedValue ev = make_general_purpose_text_ev(text);
+  supla_channel_general_purpose_text_extended_value value(&ev);
+  EXPECT_EQ(text, value.get_text());
+}
+
 TEST_F(OnChangeConditionTest, generalPurposeTextOnChangeCondition) {
   supla_vbt_on_change_condition c;
 
@@ -142,16 +180,10 @@ TEST_F(OnChangeConditionTest, generalPurposeTextOnChangeCondition) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  TSuplaChannelExtendedValue old_ev = {};
-  old_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  old_ev.size = 3;
-  strncpy(old_ev.value, "old", sizeof(old_ev.value) - 1);
+  TSuplaChannelExtendedValue old_ev = make_general_purpose_text_ev("old");
   supla_channel_general_purpose_text_extended_value old_value(&old_ev);
 
-  TSuplaChannelExtendedValue new_ev = {};
-  new_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  new_ev.size = 3;
-  strncpy(new_ev.value, "new", sizeof(new_ev.value) - 1);
+  TSuplaChannelExtendedValue new_ev = make_general_purpose_text_ev("new");
   supla_channel_general_purpose_text_extended_value new_value(&new_ev);
 
   EXPECT_TRUE(c.is_condition_met(&old_value, &new_value));
@@ -164,16 +196,10 @@ TEST_F(OnChangeConditionTest, generalPurposeTextOnChangeDelayedCondition) {
   c.apply_json_config(json);
   cJSON_Delete(json);
 
-  TSuplaChannelExtendedValue old_ev = {};
-  old_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  old_ev.size = 3;
-  strncpy(old_ev.value, "old", sizeof(old_ev.value) - 1);
+  TSuplaChannelExtendedValue old_ev = make_general_purpose_text_ev("old");
   supla_channel_general_purpose_text_extended_value old_value(&old_ev);
 
-  TSuplaChannelExtendedValue new_ev = {};
-  new_ev.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  new_ev.size = 3;
-  strncpy(new_ev.value, "new", sizeof(new_ev.value) - 1);
+  TSuplaChannelExtendedValue new_ev = make_general_purpose_text_ev("new");
   supla_channel_general_purpose_text_extended_value new_value(&new_ev);
 
   _supla_int64_t milliseconds_left = 0;

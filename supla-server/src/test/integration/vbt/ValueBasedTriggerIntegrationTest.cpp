@@ -44,8 +44,10 @@ TSuplaChannelExtendedValue make_general_purpose_text_extended_value(
     const char *text) {
   TSuplaChannelExtendedValue result = {};
   result.type = EV_TYPE_GENERAL_PURPOSE_TEXT;
-  result.size = std::strlen(text);
-  std::strncpy(result.value, text, sizeof(result.value) - 1);
+  const size_t text_size = std::strlen(text);
+  result.size = SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE + text_size;
+  std::memcpy(result.value + SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE,
+              text, text_size);
   return result;
 }
 

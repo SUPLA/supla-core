@@ -219,6 +219,7 @@ bool supla_vbt_on_change_condition::get_operator_and_value(
     }
 
     string value_str = cJSON_GetStringValue(op_json);
+    *text_value = value_str;
     if (value_str == "hi" || value_str == "closed" || value_str == "on") {
       *value = 1;
       *text_comparison = false;
@@ -227,7 +228,6 @@ bool supla_vbt_on_change_condition::get_operator_and_value(
       *value = 0;
       *text_comparison = false;
     } else {
-      *text_value = value_str;
       *text_comparison = true;
     }
   } else {

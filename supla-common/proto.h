@@ -3705,7 +3705,15 @@ typedef struct {
 #define SUPLA_GENERAL_PURPOSE_MEASUREMENT_CHART_TYPE_CANDLE 2
 
 #define SUPLA_GENERAL_PURPOSE_UNIT_SIZE 15
-#define SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE 255  // ver. >= 29
+#define SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE 4
+#define SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE 250  // ver. >= 30
+
+typedef struct {
+  unsigned char PayloadType;
+  unsigned char IconStateId;
+  unsigned char Reserved[2];
+  char Text[SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE];
+} TSuplaGeneralPurposeTextPayload;
 
 // General Purpose Mesurement channel config:
 // Calculated value is: (value / ValueDivider) * ValueMultiplier + ValueAdded
@@ -3810,13 +3818,6 @@ typedef struct {
 
   unsigned char Reserved[8];
 } TChannelConfig_GeneralPurposeMeter;  // v. >= 23
-
-// General Purpose Text channel config:
-typedef struct {
-  // Refresh interval in milliseconds. 1 - 65535, 0 = default
-  unsigned _supla_int16_t RefreshIntervalMs;
-  unsigned char Reserved[14];
-} TChannelConfig_GeneralPurposeText;  // v. >= 29
 
 #define EM_CT_TYPE_100A_33mA (1ULL << 0)
 #define EM_CT_TYPE_200A_66mA (1ULL << 1)

@@ -20,8 +20,10 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <string>
 
+#include "log.h"
 #include "proto.h"
 
 using std::string;
@@ -71,12 +73,22 @@ string supla_channel_general_purpose_text_extended_value::get_text(
     return "";
   }
 
-  // Ensure null-termination within the allowed size
-  unsigned int len = ev.size < SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE
-                         ? ev.size
-                         : SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE - 1;
-  ev.value[len] = '\0';
-  return string(ev.value, strnlen(ev.value, len + 1));
+  size_t size = std::min(static_cast<size_t>(ev.size), sizeof(ev.value));
+  if (size < SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE ||
+      ev.value[0] != 0 || ev.value[1] != 0 || ev.value[2] != 0 ||
+      ev.value[3] != 0) {
+    supla_log(LOG_WARNING, "Invalid general purpose text payload header");
+    return "";
+  }
+
+  size -= SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE;
+  if (size > SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE) {
+    supla_log(LOG_WARNING, "General purpose text payload exceeds its limit");
+    size = SUPLA_GENERAL_PURPOSE_TEXT_MAX_SIZE;
+  }
+
+  return string(ev.value + SUPLA_GENERAL_PURPOSE_TEXT_PAYLOAD_HEADER_SIZE,
+                size);
 }
 
 // static

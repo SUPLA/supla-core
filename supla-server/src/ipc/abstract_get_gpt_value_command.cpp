@@ -18,9 +18,11 @@
 
 #include "abstract_get_gpt_value_command.h"
 
+#include <cstdlib>
 #include <string>
 
 #include "ipc/abstract_ipc_ctrl.h"
+#include "tools.h"
 
 using std::string;
 
@@ -41,7 +43,16 @@ void supla_abstract_get_gpt_value_command::on_command_match(
           return false;
         }
 
-        string result = "VALUE:" + value;
+        string result = "VALUE-B64:";
+        if (!value.empty()) {
+          char *encoded = st_openssl_base64_encode(
+              value.c_str(), static_cast<int>(value.size()));
+          if (!encoded) {
+            return false;
+          }
+          result += encoded;
+          std::free(encoded);
+        }
         send_result(result.c_str());
         return true;
       });
