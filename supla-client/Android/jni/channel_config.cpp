@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <stdlib.h>
 
+#include "channel_config_action_trigger.h"
 #include "channel_config_facade_blind.h"
 #include "channel_config_general_purpose_measurement.h"
 #include "channel_config_general_purpose_meter.h"
@@ -95,6 +96,14 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
           return supla_cc_hvac_to_jobject(
               env, config->ChannelId, config->Func, crc32,
               (TChannelConfig_HVAC *)config->Config);
+        }
+        break;
+      case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+        if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
+            sizeof(TChannelConfig_ActionTrigger) == config->ConfigSize) {
+          return supla_cc_action_trigger_to_jobject(
+              env, config->ChannelId, config->Func, crc32,
+              (TChannelConfig_ActionTrigger *)config->Config);
         }
         break;
       case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
