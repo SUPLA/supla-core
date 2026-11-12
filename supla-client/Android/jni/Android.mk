@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := supla.cpp \
     single_call.cpp \
     push.cpp \
     channel_config.cpp \
+    channel_config_action_trigger.cpp \
     channel_config_hvac.cpp \
     channel_config_weekly_schedule.cpp \
     channel_config_general_purpose_measurement.cpp \
