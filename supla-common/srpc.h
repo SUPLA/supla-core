@@ -218,6 +218,7 @@ union TsrpcDataPacketData {
   TCS_GetDeviceConfigRequest *cs_get_device_config_request;
   TDS_SubdeviceDetails *ds_subdevice_details;
   TSC_SuplaChannelStatePack *sc_channel_state_pack;
+  TDS_ObjectAlerts *ds_object_alerts;
 };
 
 typedef struct {
@@ -376,6 +377,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_device_config_result(
     void *_srpc, TSDS_SetDeviceConfigResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_subdevice_details(void *_srpc, TDS_SubdeviceDetails *reg);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_report(void *_srpc, TDS_ObjectAlerts *alerts);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_object_alerts_changed(void *_srpc, TDS_ObjectAlerts *alerts);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
