@@ -39,7 +39,7 @@ TEST_F(RestartDeviceCommandTest, noData) {
 }
 
 TEST_F(RestartDeviceCommandTest, RestartWithSuccess) {
-  EXPECT_CALL(*cmd, restart_device(10, 20)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, restart_device(10, 20, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("RESTART-DEVICE:10,20\n", "OK:20\n");
 }

@@ -27,7 +27,9 @@ class supla_set_cfg_mode_password_command
     : public supla_abstract_set_cfg_mode_password_command {
  protected:
   virtual bool set_cfg_mode_password(int user_id, int device_id,
-                                     const char *password);
+                                     const char *password,
+                                     unsigned _supla_int64_t *queued_at,
+                                     bool *waiting_for_result);
 
  public:
   explicit supla_set_cfg_mode_password_command(

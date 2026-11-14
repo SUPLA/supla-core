@@ -377,7 +377,7 @@ TEST_F(ActionTriggerTest, interruptScene) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
-TEST_F(ActionTriggerTest, hvacSwitchToProgramMode) {
+TEST_F(ActionTriggerTest, switchToProgramMode) {
   at_config->set_user_config(
       "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
       "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
@@ -388,12 +388,12 @@ TEST_F(ActionTriggerTest, hvacSwitchToProgramMode) {
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
-  EXPECT_EQ(aexec->getHvacSwitchToProgramModeCounter(), 1);
+  EXPECT_EQ(aexec->getSwitchToProgramModeCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 20);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
-TEST_F(ActionTriggerTest, hvacSwitchToManualMode) {
+TEST_F(ActionTriggerTest, switchToManualMode) {
   at_config->set_user_config(
       "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
       "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
@@ -404,7 +404,7 @@ TEST_F(ActionTriggerTest, hvacSwitchToManualMode) {
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
-  EXPECT_EQ(aexec->getHvacSwitchToManualModeCounter(), 1);
+  EXPECT_EQ(aexec->getSwitchToManualModeCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 20);
 }
 

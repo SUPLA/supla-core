@@ -78,6 +78,10 @@ int supla_abstract_register_device::get_device_flags(void) {
   return device_flags;
 }
 
+short supla_abstract_register_device::get_manufacturer_id(void) {
+  return manufacturer_id;
+}
+
 int supla_abstract_register_device::get_location_id() { return location_id; }
 
 int supla_abstract_register_device::get_channel_count() {
@@ -540,10 +544,19 @@ void supla_abstract_register_device::register_device(
 
   set_should_rollback(false);
 
+  if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
+      (new_device || (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED))) {
+    send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
+    return;
+  }
+
+  on_registration_success();
+
   int resultcode = SUPLA_RESULTCODE_TRUE;
 
-  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED)) {
-    switch (get_last_calcfg_command_importatnt_for_sleepers()) {
+  if ((device_flags & SUPLA_DEVICE_FLAG_SLEEP_MODE_ENABLED) &&
+      !(device_flags & SUPLA_DEVICE_FLAG_SYNC_DONE_SUPPORTED)) {
+    switch (take_latest_calcfg_command_for_sleepers()) {
       case SUPLA_CALCFG_CMD_ENTER_CFG_MODE:
         resultcode = SUPLA_RESULTCODE_CFG_MODE_REQUESTED;
         break;
@@ -555,14 +568,6 @@ void supla_abstract_register_device::register_device(
         break;
     }
   }
-
-  if ((device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED) &&
-      (new_device || (_device_flags & SUPLA_DEVICE_FLAG_DEVICE_LOCKED))) {
-    send_result(SUPLA_RESULTCODE_DEVICE_LOCKED);
-    return;
-  }
-
-  on_registration_success();
 
   send_result(resultcode);
 

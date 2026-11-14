@@ -69,11 +69,15 @@ void supla_abstract_ipc_ctrl::execute(void) {
     socket_adapter->wait(1000000);
     while (socket_adapter->recv_byte(&c) && !socket_adapter->is_error() &&
            !is_terminated()) {
-      buffer[offset] = c;
-      offset++;
-      if (offset >= sizeof(buffer)) {
-        offset = 0;
+      if (offset >= sizeof(buffer) - 1) {
+        supla_log(LOG_WARNING, "IPC - COMMAND TOO LONG");
+        socket_adapter->send_data("COMMAND_TOO_LONG\n");
+        terminate();
+        break;
       }
+
+      buffer[offset++] = c;
+      buffer[offset] = '\0';
 
       if (c == '\n') {
         bool result = false;

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "amazon/alexa_access_token_refresh_cyclictask.h"
+#include "cyclictasks/autodiscover_statistics.h"
 #include "cyclictasks/auto_gate_closing.h"
 #include "datalogger/current_logger.h"
 #include "datalogger/general_purpose_measurement_logger.h"
@@ -54,6 +55,7 @@ supla_cyclictasks_agent::supla_cyclictasks_agent() {
   add(new supla_general_purpose_measurement_logger());
   add(new supla_general_purpose_meter_logger());
   add(new supla_virtual_channel_updater_cyclictask());
+  add(new supla_autodiscover_statistics());
 
   // Refreshing tokens at the end
   add(new supla_alexa_access_token_refresh_cyclictask());

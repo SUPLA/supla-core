@@ -25,6 +25,7 @@
 
 #include "caller.h"
 #include "ipc/abstract_ipc_socket_adapter.h"
+#include "proto.h"
 
 class supla_abstract_ipc_ctrl;
 class supla_abstract_ipc_command {
@@ -43,6 +44,7 @@ class supla_abstract_ipc_command {
                           unsigned int buffer_size);
   void send_result(const char *result);
   void send_result(const char *result, int i);
+  void send_result(const char *result, int i, unsigned _supla_int64_t ull);
   void send_result(const char *result, double d);
 
   void process_parameters(

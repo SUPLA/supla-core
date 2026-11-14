@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_HVAC_SWITCH_TO_H_
-#define ACTION_HVAC_SWITCH_TO_H_
+#ifndef ACTION_SWITCH_TO_H_
+#define ACTION_SWITCH_TO_H_
 
 #include "action.h"
 
@@ -36,4 +36,4 @@ class s_worker_action_switch_to : public s_worker_action {
   virtual ~s_worker_action_switch_to(void);
 };
 
-#endif /*ACTION_HVAC_SWITCH_TO_H_*/
+#endif /*ACTION_SWITCH_TO_H_*/

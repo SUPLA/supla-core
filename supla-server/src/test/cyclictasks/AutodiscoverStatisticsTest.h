@@ -16,15 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_hvac_switch_to_manual_mode.h"
+#ifndef AUTODISCOVER_STATISTICS_TEST_H_
+#define AUTODISCOVER_STATISTICS_TEST_H_
 
-s_worker_action_switch_to_manual_mode::s_worker_action_switch_to_manual_mode(
-    s_abstract_worker *worker)
-    : s_worker_action_switch_to(worker) {}
+#include "doubles/cyclictasks/AutodiscoverStatisticsMock.h"
+#include "doubles/http/CurlAdapterMock.h"
+#include "gtest/gtest.h"  // NOLINT
 
-bool s_worker_action_switch_to_manual_mode::to_program_mode(void) {
-  return false;
-}
+namespace testing {
 
-REGISTER_ACTION(s_worker_action_switch_to_manual_mode,
-                ACTION_HVAC_SWITCH_TO_MANUAL_MODE);
+class AutodiscoverStatisticsTest : public Test {
+ protected:
+  CurlAdapterMock curlAdapter;
+  AutodiscoverStatisticsMock task;
+
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+}  // namespace testing
+
+#endif /* AUTODISCOVER_STATISTICS_TEST_H_ */

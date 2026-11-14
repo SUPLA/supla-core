@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "doubles/device/CommonChannelPropertiesMock.h"
+#include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/container_config.h"
 #include "jsonconfig/channel/hvac_config.h"
 #include "jsonconfig/channel/power_switch_config.h"
@@ -31,6 +32,97 @@ namespace testing {
 
 using std::string;
 using std::vector;
+
+namespace {
+
+supla_json_config *create_action_trigger_config(void) {
+  supla_json_config *config = new supla_json_config();
+  config->set_properties(
+      "{\"actionTriggerCapabilities\":[\"HOLD\"]}");
+  config->set_user_config(
+      "{\"actions\":{\"HOLD\":{}},"
+      "\"temporaryUnlockDurationSec\":123,"
+      "\"temporaryUnlockSensorEdge\":2,"
+      "\"temporaryUnlockSensorChannelNo\":7}");
+  return config;
+}
+
+}  // namespace
+
+TEST_F(CommonChannelPropertiesTest, actionTriggerConfigForProtocol28) {
+  CommonChannelPropertiesMock mock;
+  EXPECT_CALL(mock, get_func)
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_type)
+      .WillRepeatedly(Return(SUPLA_CHANNELTYPE_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_flags)
+      .WillRepeatedly(Return(
+          SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED));
+  EXPECT_CALL(mock, get_protocol_version).WillOnce(Return(28));
+  EXPECT_CALL(mock, get_json_config)
+      .WillOnce(Invoke(create_action_trigger_config));
+
+  char raw[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+  unsigned _supla_int16_t size = 0;
+  mock.get_config(raw, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0, false);
+
+  EXPECT_EQ(size, sizeof(unsigned _supla_int_t));
+  TChannelConfig_ActionTrigger *config =
+      (TChannelConfig_ActionTrigger *)raw;
+  EXPECT_EQ(config->ActiveActions, SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(config->TemporaryUnlockDurationSec, 0U);
+}
+
+TEST_F(CommonChannelPropertiesTest, actionTriggerConfigForProtocol29) {
+  CommonChannelPropertiesMock mock;
+  EXPECT_CALL(mock, get_func)
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_type)
+      .WillRepeatedly(Return(SUPLA_CHANNELTYPE_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_flags)
+      .WillRepeatedly(Return(
+          SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED));
+  EXPECT_CALL(mock, get_protocol_version).WillOnce(Return(29));
+  EXPECT_CALL(mock, get_json_config)
+      .WillOnce(Invoke(create_action_trigger_config));
+
+  char raw[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+  unsigned _supla_int16_t size = 0;
+  mock.get_config(raw, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0, false);
+
+  EXPECT_EQ(size, sizeof(TChannelConfig_ActionTrigger));
+  TChannelConfig_ActionTrigger *config =
+      (TChannelConfig_ActionTrigger *)raw;
+  EXPECT_EQ(config->ActiveActions, SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(config->TemporaryUnlockDurationSec, 123U);
+  EXPECT_EQ(config->TemporaryUnlockSensorEdge, SUPLA_AT_SENSOR_EDGE_FALLING);
+  EXPECT_EQ(config->TemporaryUnlockSensorIsSet, 1);
+  EXPECT_EQ(config->TemporaryUnlockSensorChannelNo, 7);
+}
+
+TEST_F(CommonChannelPropertiesTest, actionTriggerResolvesSensorChannelId) {
+  CommonChannelPropertiesMock mock;
+  EXPECT_CALL(mock, get_func)
+      .WillRepeatedly(Return(SUPLA_CHANNELFNC_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_type)
+      .WillRepeatedly(Return(SUPLA_CHANNELTYPE_ACTIONTRIGGER));
+  EXPECT_CALL(mock, get_flags)
+      .WillRepeatedly(Return(
+          SUPLA_CHANNEL_FLAG_BUTTON_TEMPORARY_UNLOCK_SUPPORTED));
+  EXPECT_CALL(mock, get_protocol_version).WillOnce(Return(29));
+  EXPECT_CALL(mock, get_json_config)
+      .WillOnce(Invoke(create_action_trigger_config));
+  EXPECT_CALL(mock, get_channel_number).WillRepeatedly(Return(7));
+  EXPECT_CALL(mock, get_id).WillRepeatedly(Return(9876));
+
+  char raw[SUPLA_CHANNEL_CONFIG_MAXSIZE] = {};
+  unsigned _supla_int16_t size = 0;
+  mock.get_config(raw, &size, SUPLA_CONFIG_TYPE_DEFAULT, 0, true);
+
+  TChannelConfig_ActionTrigger *config =
+      (TChannelConfig_ActionTrigger *)raw;
+  EXPECT_EQ(config->TemporaryUnlockSensorChannelId, 9876);
+}
 
 TEST_F(CommonChannelPropertiesTest, appendRelationList) {
   vector<supla_channel_relation> rel;

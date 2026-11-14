@@ -262,6 +262,10 @@ double supla_channel_em_extended_value::get_power_active_sum(void) {
   return sum;
 }
 
+double supla_channel_em_extended_value::get_power_active_kw_sum(void) {
+  return get_power_active_sum() * 0.001;
+}
+
 double supla_channel_em_extended_value::get_power_reactive(int phase) {
   if (phase >= 1 && phase <= 3) {
     TElectricityMeter_ExtendedValue_V3 em_ev = {};
@@ -291,6 +295,10 @@ double supla_channel_em_extended_value::get_power_reactive_sum(void) {
   return sum;
 }
 
+double supla_channel_em_extended_value::get_power_reactive_kvar_sum(void) {
+  return get_power_reactive_sum() * 0.001;
+}
+
 double supla_channel_em_extended_value::get_power_apparent(int phase) {
   if (phase >= 1 && phase <= 3) {
     TElectricityMeter_ExtendedValue_V3 em_ev = {};
@@ -318,6 +326,10 @@ double supla_channel_em_extended_value::get_power_apparent_sum(void) {
   }
 
   return sum;
+}
+
+double supla_channel_em_extended_value::get_power_apparent_kva_sum(void) {
+  return get_power_apparent_sum() * 0.001;
 }
 
 double supla_channel_em_extended_value::get_fae(int phase) {

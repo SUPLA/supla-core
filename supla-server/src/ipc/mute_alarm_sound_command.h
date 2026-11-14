@@ -26,7 +26,9 @@
 class supla_mute_alarm_sound_command
     : public supla_abstract_mute_alarm_sound_command {
  protected:
-  virtual bool mute_alarm_sound(int user_id, int device_id, int channel_id);
+  virtual bool mute_alarm_sound(int user_id, int device_id, int channel_id,
+                                unsigned _supla_int64_t *queued_at,
+                                bool *waiting_for_result);
 
  public:
   explicit supla_mute_alarm_sound_command(

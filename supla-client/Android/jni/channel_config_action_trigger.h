@@ -16,18 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_HVAC_SWITCH_TO_PROGRAM_MODE_H_
-#define ACTION_HVAC_SWITCH_TO_PROGRAM_MODE_H_
+#ifndef CHANNEL_CONFIG_ACTION_TRIGGER_H_
+#define CHANNEL_CONFIG_ACTION_TRIGGER_H_
 
-#include "action_hvac_switch_to.h"
+#include <jni.h>
 
-class s_worker_action_switch_to_program_mode
-    : public s_worker_action_switch_to {
- protected:
-  virtual bool to_program_mode(void);
+#include "proto.h"
 
- public:
-  explicit s_worker_action_switch_to_program_mode(s_abstract_worker *worker);
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /*ACTION_HVAC_SWITCH_TO_PROGRAM_MODE_H_*/
+jobject supla_cc_action_trigger_to_jobject(
+    JNIEnv *env, _supla_int_t channel_id, _supla_int_t func, jlong crc32,
+    TChannelConfig_ActionTrigger *action_trigger);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* CHANNEL_CONFIG_ACTION_TRIGGER_H_ */

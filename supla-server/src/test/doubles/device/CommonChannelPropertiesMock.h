@@ -32,6 +32,8 @@ class CommonChannelPropertiesMock
   CommonChannelPropertiesMock(void);
   virtual ~CommonChannelPropertiesMock(void);
 
+  using supla_abstract_common_channel_properties::get_config;
+
   MOCK_METHOD0(get_id, int());
   MOCK_METHOD0(get_user_id, int());
   MOCK_METHOD0(get_device_id, int());

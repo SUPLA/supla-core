@@ -49,8 +49,8 @@ void supla_impulse_logger_dao::tsdb_add(
     unsigned _supla_int64_t calculated_value) {
   pqxx::nontransaction ntx(*get_tsdba()->get_conn());
 
-  ntx.exec_params("SELECT supla_add_ic_log_item($1,$2,$3)", channel_id, counter,
-                  calculated_value);
+  ntx.exec("SELECT supla_add_ic_log_item($1,$2,$3)",
+           pqxx::params{channel_id, counter, calculated_value});
 }
 
 void supla_impulse_logger_dao::add(int channel_id,

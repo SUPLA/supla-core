@@ -16,15 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_hvac_switch_to_program_mode.h"
+#ifndef GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_
+#define GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_
 
-s_worker_action_switch_to_program_mode::s_worker_action_switch_to_program_mode(
-    s_abstract_worker *worker)
-    : s_worker_action_switch_to(worker) {}
+#include <gmock/gmock.h>
 
-bool s_worker_action_switch_to_program_mode::to_program_mode(void) {
-  return true;
-}
+#include "ipc/get_action_trigger_value_command.h"
 
-REGISTER_ACTION(s_worker_action_switch_to_program_mode,
-                ACTION_HVAC_SWITCH_TO_PROGRAM_MODE);
+namespace testing {
+
+class GetActionTriggerValueCommandMock
+    : public supla_get_action_trigger_value_command {
+ public:
+  explicit GetActionTriggerValueCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD4(get_channel_action_trigger_value,
+               bool(int user_id, int device_id, int channel_id,
+                    TActionTriggerProperties *value));
+};
+
+}  // namespace testing
+
+#endif /* GET_ACTION_TRIGGER_VALUE_COMMAND_MOCK_H_ */

@@ -39,13 +39,13 @@ TEST_F(OtaPerformUpdateCommandTest, noData) {
 }
 
 TEST_F(OtaPerformUpdateCommandTest, performUpdateWithFailure) {
-  EXPECT_CALL(*cmd, perform_update(10, 20)).WillOnce(Return(false));
+  EXPECT_CALL(*cmd, perform_update(10, 20, _, _)).WillOnce(Return(false));
 
   commandProcessingTest("OTA-PERFORM-UPDATE:10,20\n", "UNKNOWN:10\n");
 }
 
 TEST_F(OtaPerformUpdateCommandTest, performUpdateWithSuccess) {
-  EXPECT_CALL(*cmd, perform_update(10, 20)).WillOnce(Return(true));
+  EXPECT_CALL(*cmd, perform_update(10, 20, _, _)).WillOnce(Return(true));
 
   commandProcessingTest("OTA-PERFORM-UPDATE:10,20\n", "OK:10\n");
 }

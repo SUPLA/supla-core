@@ -23,12 +23,15 @@
 #include <time.h>
 
 #include <cerrno>
+#include <cstring>
 
 #include "actions/action_hvac_setpoint_temperature.h"
 #include "actions/action_hvac_setpoint_temperatures.h"
+#include "actions/action_mode_parameters.h"
 #include "actions/action_rgbw_parameters.h"
 #include "actions/action_shading_system_parameters.h"
 #include "cJSON.h"
+#include "proto.h"
 #include "tools.h"
 
 supla_action_config::supla_action_config(void) : abstract_action_config() {
@@ -117,24 +120,50 @@ void supla_action_config::apply_json_params(const char *params) {
     return;
   }
 
+  cJSON *item = cJSON_GetObjectItem(root, "sourceChannelId");
+  if (item && cJSON_IsNumber(item)) {
+    set_source_channel_id(item->valuedouble);
+  }
+
+  item = cJSON_GetObjectItem(root, "sourceDeviceId");
+  if (item && cJSON_IsNumber(item)) {
+    set_source_device_id(item->valuedouble);
+  }
+
+  if (action_id == ACTION_SET_AT_PARAMETERS ||
+      action_id == ACTION_SET_RELAY_PARAMETERS) {
+    set_parameters(nullptr);
+    cJSON *mode = cJSON_GetObjectItem(root, "mode");
+    cJSON *duration = cJSON_GetObjectItem(root, "durationSec");
+    unsigned char mode_value = 0;
+    unsigned _supla_int_t duration_sec = 0;
+    bool duration_valid = !duration;
+    if (duration && action_id == ACTION_SET_AT_PARAMETERS &&
+        mode && cJSON_IsString(mode) &&
+        cJSON_IsNumber(duration) &&
+        duration->valuedouble >= 0 &&
+        duration->valuedouble <=
+            SUPLA_BUTTON_TEMPORARY_UNLOCK_MAX_DURATION_SEC) {
+      duration_sec = duration->valuedouble;
+      duration_valid = duration->valuedouble == duration_sec &&
+                       strcmp(mode->valuestring, "CMD_TEMPORARY_UNLOCK") == 0;
+    }
+    if (mode && cJSON_IsString(mode) &&
+        supla_action_mode_from_text(action_id, mode->valuestring,
+                                    &mode_value) && duration_valid) {
+      supla_action_mode_parameters mode_params(mode_value, duration_sec);
+      set_parameters(&mode_params);
+    }
+    cJSON_Delete(root);
+    return;
+  }
+
   supla_action_shading_system_parameters *ss_params =
       new supla_action_shading_system_parameters(root);
   if (ss_params->is_any_param_set()) {
     set_parameters(ss_params);
   }
   delete ss_params;
-
-  cJSON *item = cJSON_GetObjectItem(root, "sourceChannelId");
-
-  if (item && cJSON_IsNumber(item)) {
-    set_source_channel_id(item->valuedouble);
-  }
-
-  item = cJSON_GetObjectItem(root, "sourceDeviceId");
-
-  if (item && cJSON_IsNumber(item)) {
-    set_source_device_id(item->valuedouble);
-  }
 
   {
     supla_action_rgbw_parameters rgbw;
