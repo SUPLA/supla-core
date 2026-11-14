@@ -1693,13 +1693,7 @@ bool supla_device_dao::set_calcfg_queue(int user_id, int device_id,
       valid_until_mysql = dba->time_t_to_mytime(&valid_until);
     }
 
-    const char sql[] =
-        "INSERT INTO `supla_calcfg_queue` "
-        "(`user_id`, `iodevice_id`, `queue`, `valid_until`, `updated_at`) "
-        "VALUES (?, ?, ?, ?, UTC_TIMESTAMP()) "
-        "ON DUPLICATE KEY UPDATE `user_id` = VALUES(`user_id`), "
-        "`queue` = VALUES(`queue`), `valid_until` = VALUES(`valid_until`), "
-        "`updated_at` = UTC_TIMESTAMP()";
+    const char sql[] = "CALL `supla_update_calcfg_queue`(?, ?, ?, ?)";
 
     result = dba->stmt_execute((void **)&stmt, sql, pbind, 4, true);
   }
