@@ -20,6 +20,7 @@
 #define MQTT_CHANNEL_MESSAGE_PROVIDER_H_
 
 #include <string>
+#include <vector>
 
 #include "cJSON.h"
 #include "mqtt_db.h"
@@ -34,6 +35,13 @@ enum ha_state_class_e {
 class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
  private:
   _mqtt_db_data_row_channel_t *row;
+  std::vector<std::pair<unsigned int, int>> batteries;
+  bool valve_opening_supported = false;
+  bool withdraw_valve_opening = false;
+
+  void snapshot_diagnostics(bool topics_only);
+  bool ha_battery(unsigned int owner, int level, const char *topic_prefix,
+                  char **topic_name, void **message, size_t *message_size);
 
  protected:
   void ha_json_set_name(cJSON *root, const char *name_if_empty,
@@ -64,7 +72,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
 
   bool ha_get_message(cJSON *root, const char *component, int sub_id,
                       bool set_sub_id, char **topic_name, void **message,
-                      size_t *message_size);
+                      size_t *message_size,
+                      const char *custom_object_id = nullptr);
 
   cJSON *ha_json_create_root(const char *topic_prefix,
                              const char *name_if_empty = NULL,

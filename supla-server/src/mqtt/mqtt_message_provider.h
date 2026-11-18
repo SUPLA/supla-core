@@ -34,6 +34,10 @@ class supla_mqtt_message_provider {
                       char **topic_name_out, void **message,
                       size_t *message_size, const char *message_string_in,
                       bool include_null_byte, const char *topic_name_in, ...);
+  bool create_battery_message(const char *topic_prefix, const char *suid,
+                              int device_id, unsigned int owner, int level,
+                              char **topic_name, void **message,
+                              size_t *message_size);
   void get_mfr_name(int mfr_id, char *buf, size_t buf_size);
 
  public:

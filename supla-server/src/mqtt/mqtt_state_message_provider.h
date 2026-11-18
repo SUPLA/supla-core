@@ -30,6 +30,14 @@ class supla_mqtt_state_message_provider
     : public supla_mqtt_abstract_state_message_provider {
  private:
   supla_channel_property_getter prop_getter;
+  std::vector<std::pair<unsigned int, int>> batteries;
+  size_t next_battery = 0;
+
+ public:
+  void use_channel_metadata_for_batteries() { publish_batteries = false; }
+
+ private:
+  bool publish_batteries = true;
 
  protected:
   virtual const char *_get_user_suid(void);
@@ -39,6 +47,9 @@ class supla_mqtt_state_message_provider
  public:
   supla_mqtt_state_message_provider(void);
   virtual ~supla_mqtt_state_message_provider(void);
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size) override;
 };
 
 #endif /*MQTT_STATE_MESSAGE_PROVIDER_H_*/

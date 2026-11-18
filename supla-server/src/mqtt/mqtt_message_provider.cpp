@@ -94,6 +94,23 @@ bool supla_mqtt_message_provider::create_message(
   return false;
 }
 
+bool supla_mqtt_message_provider::create_battery_message(
+    const char *topic_prefix, const char *suid, int device_id,
+    unsigned int owner, int level, char **topic_name, void **message,
+    size_t *message_size) {
+  char value[16];
+  snprintf(value, sizeof(value), "%d", level);
+  const char *payload = level >= 0 ? value : nullptr;
+  if (owner == 0) {
+    return create_message(topic_prefix, suid, topic_name, message, message_size,
+                          payload, false, "devices/%i/state/battery_level",
+                          device_id);
+  }
+  return create_message(
+      topic_prefix, suid, topic_name, message, message_size, payload, false,
+      "devices/%i/subdevices/%u/state/battery_level", device_id, owner);
+}
+
 void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,
                                                size_t buf_size) {
   switch (mfr_id) {

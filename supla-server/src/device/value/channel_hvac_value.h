@@ -62,6 +62,7 @@ class supla_channel_hvac_value : public supla_abstract_channel_value {
   void set_flags(unsigned short flags);
   void set_on(unsigned char on);
   unsigned char is_on(void);
+  int get_opening_percentage() const;
   bool is_heating(void);
   bool is_cooling(void);
   void turn_on(void);

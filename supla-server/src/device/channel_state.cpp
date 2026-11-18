@@ -293,9 +293,8 @@ void supla_channel_state::apply_json(const char *json) {
   }
 
   if (get_bool(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_LEVEL).c_str(),
-               &bool_val)) {
+               &bool_val) && bool_val) {
     state.Fields |= SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
-    state.OperatingTime = dbl_val;
   }
 
   if (get_bool(root, field_map.at(JSON_FIELD_DEVICE_BATTERY_STATE).c_str(),
@@ -469,11 +468,22 @@ char *supla_channel_state::get_json(void) {
 
 const TDSC_ChannelState *supla_channel_state::get_state(void) { return &state; }
 
+bool supla_channel_state::has_valid_battery_level(
+    const TDSC_ChannelState &state) {
+  return (state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
+         state.BatteryLevel <= 100;
+}
+
 void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
-  if (!(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL) &&
-      (old->state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
-    state.Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
-    state.BatteryLevel = old->state.BatteryLevel;
+  if (!has_valid_battery_level(state)) {
+    constexpr auto battery_fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+                                    SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+    // An out-of-range report leaves the last valid battery sample intact.
+    state.Fields &= ~battery_fields;
+    if (has_valid_battery_level(old->state)) {
+      state.Fields |= old->state.Fields & battery_fields;
+      state.BatteryLevel = old->state.BatteryLevel;
+    }
   }
 
   if (!(state.Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED) &&

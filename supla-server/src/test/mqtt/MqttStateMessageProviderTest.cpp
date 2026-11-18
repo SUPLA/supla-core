@@ -1989,4 +1989,30 @@ TEST_F(MqttStateMessageProviderTest, hvacPercentage_100) {
   ASSERT_FALSE(dataExists(&provider));
 }
 
+TEST_F(MqttStateMessageProviderTest, invalidHvacPercentageClearsState) {
+  auto *value = new supla_channel_hvac_value();
+  value->set_on(255);
+  SetResultValue(SUPLA_CHANNELFNC_HVAC_THERMOSTAT, true, value);
+
+  const std::string percentage_topic =
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/789/"
+      "state/percentage";
+  bool found = false;
+  char *topic = nullptr;
+  void *message = nullptr;
+  size_t size = 0;
+  while (provider.fetch(nullptr, &topic, &message, &size)) {
+    if (percentage_topic == topic) {
+      EXPECT_EQ(size, 0u);
+      found = true;
+    }
+    free(topic);
+    free(message);
+    topic = nullptr;
+    message = nullptr;
+    size = 0;
+  }
+  EXPECT_TRUE(found);
+}
+
 } /* namespace testing */

@@ -17,6 +17,7 @@
  */
 
 #include "devicechannels.h"
+#include "mqtt/mqtt_client_suite.h"
 
 #include <math.h>
 #include <string.h>
@@ -112,6 +113,7 @@ supla_device_channels::supla_device_channels(
       }
     }
   }
+  initialize_battery_channels();
 }
 
 supla_device_channels::~supla_device_channels() {
@@ -722,6 +724,156 @@ bool supla_device_channels::calcfg_request(const supla_caller &caller,
   }
 
   return false;
+}
+
+namespace {
+unsigned int battery_owner(supla_device_channel *channel,
+                           const TDSC_ChannelState &state) {
+  return state.Fields & SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL
+             ? 0
+             : channel->sub_device_id;
+}
+}  // namespace
+
+void supla_device_channels::initialize_battery_channels() {
+  if (channels.empty()) {
+    return;
+  }
+  battery_anchors.emplace(0, channels.front()->get_id());
+  for (auto *channel : channels) {
+    // The anchor only routes the publication. It is not part of the MQTT ID.
+    battery_anchors.emplace(channel->sub_device_id, channel->get_id());
+
+    TDSC_ChannelState state = {};
+    if (channel->get_state(&state) &&
+        supla_channel_state::has_valid_battery_level(state)) {
+      battery_reports.emplace(channel->get_id(),
+                              battery_report{battery_owner(channel, state), 0});
+    }
+  }
+  for (const auto &[owner, anchor] : battery_anchors) {
+    battery_owners[anchor].push_back(owner);
+    select_battery_source(owner);
+  }
+}
+
+void supla_device_channels::select_battery_source(unsigned int owner) {
+  supla_device_channel *best = nullptr;
+  uint64_t sequence = 0;
+  bool conflict = false;
+  int restored_level = battery_missing;
+  for (const auto &[id, report] : battery_reports) {
+    if (report.owner != owner || report.sequence < sequence) {
+      continue;
+    }
+    auto *channel = find_channel(id);
+    TDSC_ChannelState state = {};
+    if (!channel || !channel->get_state(&state) ||
+        !supla_channel_state::has_valid_battery_level(state) ||
+        battery_owner(channel, state) != owner) {
+      continue;
+    }
+    if (report.sequence == 0 && best && state.BatteryLevel != restored_level) {
+      // Historical ChannelState has no timestamp for the battery field.
+      conflict = true;
+    }
+    best = channel;
+    sequence = report.sequence;
+    restored_level = state.BatteryLevel;
+  }
+
+  if (!best) {
+    battery_sources.erase(owner);
+  } else {
+    battery_sources[owner] = sequence == 0 && conflict ? nullptr : best;
+  }
+}
+
+void supla_device_channels::on_battery_report(
+    supla_device_channel *channel, const TDSC_ChannelState &report,
+    const TDSC_ChannelState &previous) {
+  const int id = channel->get_id();
+  const auto owner = battery_owner(channel, report);
+  if (!supla_channel_state::has_valid_battery_level(report)) {
+    return;
+  }
+
+  bool discovery_changed = false;
+  int anchor_to_publish = 0;
+  {
+    std::lock_guard<std::mutex> lock(battery_channels_mutex);
+    const auto prior_report = battery_reports.find(id);
+    if (prior_report != battery_reports.end() &&
+        prior_report->second.owner != owner) {
+      const auto old_owner = prior_report->second.owner;
+      battery_reports.erase(prior_report);
+      const auto source = battery_sources.find(old_owner);
+      if (source != battery_sources.end() &&
+          (!source->second || source->second == channel)) {
+        select_battery_source(old_owner);
+        // Reconcile the old owner's topics, even when it has no source left.
+        discovery_changed = true;
+      }
+    }
+
+    const auto source = battery_sources.find(owner);
+    int previous_level = battery_missing;
+    if (source != battery_sources.end() && source->second) {
+      if (source->second == channel) {
+        if (supla_channel_state::has_valid_battery_level(previous) &&
+            battery_owner(channel, previous) == owner) {
+          previous_level = previous.BatteryLevel;
+        }
+      } else {
+        TDSC_ChannelState old_source = {};
+        if (source->second->get_state(&old_source) &&
+            supla_channel_state::has_valid_battery_level(old_source)) {
+          previous_level = old_source.BatteryLevel;
+        }
+      }
+    }
+
+    discovery_changed |= source == battery_sources.end() || !source->second;
+    battery_reports[id] = {owner, ++battery_sequence};
+    battery_sources[owner] = channel;
+    if (previous_level != report.BatteryLevel) {
+      anchor_to_publish = battery_anchors.at(owner);
+    }
+  }
+
+  auto *mqtt = supla_mqtt_client_suite::globalInstance();
+  if (discovery_changed) {
+    mqtt->onDeviceSettingsChanged(device->get_user_id(), device->get_id());
+  } else if (anchor_to_publish) {
+    mqtt->onChannelStateChanged(device->get_user_id(), device->get_id(),
+                                anchor_to_publish);
+  }
+}
+
+std::vector<std::pair<unsigned int, int>> supla_device_channels::get_batteries(
+    int channel_id) {
+  std::vector<std::pair<unsigned int, int>> result;
+  std::lock_guard<std::mutex> lock(battery_channels_mutex);
+  const auto owners = battery_owners.find(channel_id);
+  if (owners == battery_owners.end()) {
+    return result;
+  }
+  for (const auto owner : owners->second) {
+    int level = battery_missing;
+    const auto source = battery_sources.find(owner);
+    if (source != battery_sources.end()) {
+      TDSC_ChannelState state = {};
+      if (!source->second) {
+        level = battery_conflicting;
+      } else if (source->second->get_state(&state) &&
+                 supla_channel_state::has_valid_battery_level(state) &&
+                 battery_owner(source->second, state) == owner) {
+        level = state.BatteryLevel;
+      }
+    }
+    result.emplace_back(owner, level);
+  }
+  return result;
 }
 
 void supla_device_channels::set_channel_state(int channel_id,

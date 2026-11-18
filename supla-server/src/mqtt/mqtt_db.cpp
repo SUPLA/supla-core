@@ -421,7 +421,8 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
       "c.`channel_number`, c.`type`, c.`func`, c.`flags`, IFNULL(l.`caption`, "
       "dl.`caption`), c.`caption`, c.`hidden`, c.`param1`, c.`param2`, "
       "c.`param3`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
-      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c LEFT JOIN "
+      "c.`user_config`, c.`properties`, c.`sub_device_id` "
+      "FROM `supla_dev_channel` c LEFT JOIN "
       "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN "
       "`supla_location` l ON l.`id` = c.`location_id` LEFT JOIN "
       "`supla_location` dl ON dl.`id` = d.`location_id` LEFT JOIN `supla_user` "
@@ -451,7 +452,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   pbind[5].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&query->stmt, sql, pbind, 6, true)) {
-    MYSQL_BIND rbind[23];
+    MYSQL_BIND rbind[24];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -565,6 +566,9 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
     rbind[22].buffer_length = sizeof(query->channel_properties);
     rbind[22].length = &query->channel_properties_len;
     rbind[22].is_null = &query->channel_properties_is_null;
+    rbind[23].buffer_type = MYSQL_TYPE_LONG;
+    rbind[23].buffer = &query->row->sub_device_id;
+    rbind[23].is_unsigned = true;
 
     if (mysql_stmt_bind_result(query->stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",

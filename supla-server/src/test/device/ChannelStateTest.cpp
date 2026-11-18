@@ -24,6 +24,70 @@
 
 namespace testing {
 
+TEST_F(ChannelStateTest, preservesDeviceBatteryOwnerOnPartialUpdate) {
+  TDSC_ChannelState battery = {};
+  battery.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+                   SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+  battery.BatteryLevel = 89;
+  supla_channel_state previous(&battery);
+
+  TDSC_ChannelState signal = {};
+  signal.Fields = SUPLA_CHANNELSTATE_FIELD_WIFIRSSI;
+  supla_channel_state update(&signal);
+  update.merge_old_if_needed(&previous);
+
+  EXPECT_EQ(update.get_state()->BatteryLevel, 89);
+  EXPECT_TRUE(update.get_state()->Fields &
+              SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
+
+  battery.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+  supla_channel_state next(&battery);
+  next.merge_old_if_needed(&previous);
+  EXPECT_FALSE(next.get_state()->Fields &
+               SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
+}
+
+TEST_F(ChannelStateTest, ignoresOutOfRangeBatteryLevel) {
+  TDSC_ChannelState invalid = {};
+  invalid.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+                   SUPLA_CHANNELSTATE_FIELD_WIFIRSSI;
+  invalid.BatteryLevel = 255;
+  invalid.WiFiRSSI = -42;
+
+  supla_channel_state empty;
+  supla_channel_state first(&invalid);
+  first.merge_old_if_needed(&empty);
+  EXPECT_FALSE(first.get_state()->Fields &
+               SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL);
+
+  TDSC_ChannelState battery = {};
+  battery.Fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+                   SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+  battery.BatteryLevel = 89;
+  supla_channel_state previous(&battery);
+  supla_channel_state update(&invalid);
+  update.merge_old_if_needed(&previous);
+  EXPECT_TRUE(supla_channel_state::has_valid_battery_level(*update.get_state()));
+  EXPECT_TRUE(update.get_state()->Fields &
+              SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
+  EXPECT_EQ(update.get_state()->BatteryLevel, 89);
+  EXPECT_EQ(update.get_state()->WiFiRSSI, -42);
+}
+
+TEST_F(ChannelStateTest, deviceBatteryLevelDoesNotOverwriteOperatingTime) {
+  supla_channel_state local(
+      R"({"batteryLevel":50,"operatingTime":123,"deviceBatteryLevel":false})");
+  EXPECT_FALSE(local.get_state()->Fields &
+               SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
+  EXPECT_EQ(local.get_state()->OperatingTime, 123);
+
+  supla_channel_state device(
+      R"({"batteryLevel":88,"deviceBatteryLevel":true})");
+  EXPECT_TRUE(device.get_state()->Fields &
+              SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
+  EXPECT_EQ(device.get_state()->OperatingTime, 0);
+}
+
 TEST_F(ChannelStateTest, ffffffff_rawToJsonAndBack) {
   TDSC_ChannelState raw = {};
   raw.Fields = 0xFFFFFFFF;

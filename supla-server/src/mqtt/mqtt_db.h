@@ -59,6 +59,7 @@ typedef struct {
 
   int channel_id;
   int channel_number;
+  unsigned int sub_device_id;
   int channel_type;
   int channel_func;
   unsigned _supla_int64_t channel_flags;

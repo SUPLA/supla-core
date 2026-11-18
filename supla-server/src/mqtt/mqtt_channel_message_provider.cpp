@@ -24,7 +24,10 @@
 #include <cstdio>
 #include <string>
 
+#include "device/channel_property_getter.h"
+#include "device/device.h"
 #include "device/extended_value/channel_em_extended_value.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
@@ -805,7 +808,8 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
 
 bool supla_mqtt_channel_message_provider::ha_get_message(
     cJSON *root, const char *component, int sub_id, bool set_sub_id,
-    char **topic_name, void **message, size_t *message_size) {
+    char **topic_name, void **message, size_t *message_size,
+    const char *custom_object_id) {
   if (message) {
     *message = cJSON_PrintUnformatted(root);
 
@@ -821,7 +825,9 @@ bool supla_mqtt_channel_message_provider::ha_get_message(
   cJSON_Delete(root);
 
   char object_id[50];
-  if (set_sub_id) {
+  if (custom_object_id) {
+    snprintf(object_id, sizeof(object_id), "%s", custom_object_id);
+  } else if (set_sub_id) {
     snprintf(object_id, sizeof(object_id), "%i_%i", row->channel_id, sub_id);
   } else {
     snprintf(object_id, sizeof(object_id), "%i", row->channel_id);
@@ -1680,6 +1686,45 @@ supla_mqtt_channel_message_provider::get_channel_fragment(int device_id,
 bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  const bool is_hvac = row->channel_type == SUPLA_CHANNELTYPE_HVAC;
+  const bool has_battery_cover =
+      is_hvac && (row->channel_flags & SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE);
+  if (has_battery_cover && index == 1) {
+    const int battery_cover_problem_id = 2;
+    cJSON *root = ha_json_create_root(topic_prefix, nullptr,
+                                     "Battery cover problem", true,
+                                     battery_cover_problem_id, true);
+    if (!root) {
+      return false;
+    }
+
+    ha_json_set_short_topic(root, "stat_t", "state/battery_cover_open");
+    ha_json_set_string_param(root, "pl_on", "true");
+    ha_json_set_string_param(root, "pl_off", "false");
+    ha_json_set_string_param(root, "device_class", "problem");
+    ha_json_set_string_param(root, "entity_category", "diagnostic");
+    return ha_get_message(root, "binary_sensor", battery_cover_problem_id,
+                          true, topic_name, message, message_size);
+  }
+
+  if (is_hvac && valve_opening_supported &&
+      index == (has_battery_cover ? 2 : 1)) {
+    const int percentage_id = 3;
+    cJSON *root = ha_json_create_root(topic_prefix, nullptr, "Valve opening",
+                                     true, percentage_id, true);
+    if (!root) {
+      return false;
+    }
+
+    ha_json_set_short_topic(root, "stat_t", "state/percentage");
+    ha_json_set_string_param(root, "val_tpl",
+                             "{{ value if value else 'None' }}");
+    ha_json_set_string_param(root, "unit_of_meas", "%");
+    ha_json_set_string_param(root, "entity_category", "diagnostic");
+    return ha_get_message(root, "sensor", percentage_id, true, topic_name,
+                          message, message_size);
+  }
+
   if (index != 0) {
     return false;
   }
@@ -1862,6 +1907,14 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
         return false;
       }
       break;
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_HEAT_COOL:
+    case SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL:
+    case SUPLA_CHANNELFNC_HVAC_DOMESTIC_HOT_WATER:
+      if (index > 2) {
+        return false;
+      }
+      break;
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       if (index > 7) {
         return false;
@@ -2041,10 +2094,92 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
   return false;
 }
 
+void supla_mqtt_channel_message_provider::snapshot_diagnostics(
+    bool topics_only) {
+  batteries.clear();
+  valve_opening_supported = false;
+  withdraw_valve_opening = false;
+
+  if (topics_only || !row->device_enabled) {
+    batteries.emplace_back(0, supla_device_channels::battery_missing);
+    if (row->sub_device_id != 0) {
+      batteries.emplace_back(row->sub_device_id,
+                             supla_device_channels::battery_missing);
+    }
+  } else if (auto device =
+                 supla_user::get_device(row->user_id, row->device_id, 0)) {
+    for (const auto &battery :
+         device->get_channels()->get_batteries(row->channel_id)) {
+      if (battery.second != supla_device_channels::battery_conflicting) {
+        batteries.push_back(battery);
+      }
+    }
+  }
+
+  if (row->channel_type != SUPLA_CHANNELTYPE_HVAC) {
+    return;
+  }
+  withdraw_valve_opening = !topics_only &&
+                           (!row->device_enabled || row->channel_hidden);
+  if (topics_only) {
+    // The unpublisher needs topic names independently of live telemetry.
+    valve_opening_supported = true;
+  } else if (!withdraw_valve_opening) {
+    supla_channel_property_getter getter;
+    std::unique_ptr<supla_channel_hvac_value> value(
+        getter.get_value_as<supla_channel_hvac_value>(
+            row->user_id, row->device_id, row->channel_id));
+    valve_opening_supported = value && value->get_opening_percentage() >= 0;
+  }
+}
+
+bool supla_mqtt_channel_message_provider::ha_battery(
+    unsigned int owner, int level, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  const string object_id = "battery_" + std::to_string(row->device_id) + "_" +
+                           std::to_string(owner);
+  if (!message || level < 0) {
+    return ha_get_message(nullptr, "sensor", 0, false, topic_name, nullptr,
+                          nullptr, object_id.c_str());
+  }
+
+  cJSON *root = cJSON_CreateObject();
+  if (!root) {
+    return false;
+  }
+
+  char *state_topic = nullptr;
+  if (!create_battery_message(topic_prefix, row->user_suid, row->device_id,
+                              owner, level, &state_topic, nullptr, nullptr)) {
+    cJSON_Delete(root);
+    return false;
+  }
+  const string unique_id = string("supla_") + row->user_suid + "_" + object_id;
+  ha_json_set_string_param(root, "uniq_id", unique_id.c_str());
+  ha_json_set_string_param(root, "stat_t", state_topic);
+  free(state_topic);
+  if (owner == 0) {
+    ha_json_set_string_param(root, "name", "Battery");
+  } else {
+    ha_json_set_name(root, nullptr, "Battery");
+    ha_json_set_availability(root, topic_prefix, "true", "false");
+  }
+  ha_json_set_device_info(root);
+  ha_json_set_qos(root);
+  ha_json_set_string_param(root, "device_class", "battery");
+  ha_json_set_string_param(root, "unit_of_meas", "%");
+  ha_json_set_string_param(root, "entity_category", "diagnostic");
+  return ha_get_message(root, "sensor", 0, false, topic_name, message,
+                        message_size, object_id.c_str());
+}
+
 bool supla_mqtt_channel_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (row != NULL) {
+    if (index == 0) {
+      snapshot_diagnostics(message == nullptr);
+    }
     switch (index) {
       case 0: {
         char channel_type[35];
@@ -2077,10 +2212,29 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
             "devices/%i/channels/%i/hidden", row->device_id, row->channel_id);
     }
 
-    if (index > 3) {
-      return get_home_assistant_cfgitem(index - 4, topic_prefix, topic_name,
-                                        message, message_size);
+    index -= 4;
+    if (index < batteries.size() * 2) {
+      const auto [owner, level] = batteries[index / 2];
+      if (index % 2 == 0) {
+        return ha_battery(owner, level, topic_prefix, topic_name, message,
+                          message_size);
+      }
+      return create_battery_message(topic_prefix, row->user_suid, row->device_id,
+                                    owner, level, topic_name, message,
+                                    message_size);
     }
+    index -= batteries.size() * 2;
+
+    if (withdraw_valve_opening) {
+      if (index == 0) {
+        return ha_get_message(nullptr, "sensor", 3, true, topic_name, nullptr,
+                              nullptr);
+      }
+      index--;
+    }
+
+    return get_home_assistant_cfgitem(index, topic_prefix, topic_name, message,
+                                      message_size);
   }
   return false;
 }
