@@ -29,6 +29,7 @@
 #include "device/device.h"
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "log.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "tools.h"
 
 using std::string;
@@ -1841,6 +1842,8 @@ void supla_device_dao::set_subdevice_details(int device_id,
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+    supla_mqtt_client_suite::globalInstance()->onSubdeviceNameChanged(
+        device_id, details->SubDeviceId, details->Name);
   }
 
   if (!already_connected) {

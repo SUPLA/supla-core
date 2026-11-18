@@ -55,6 +55,11 @@ class supla_device_channels {
   std::map<int, std::vector<unsigned int>> battery_owners;
   std::map<unsigned int, supla_device_channel *> battery_sources;
   uint64_t battery_sequence = 0;
+  std::map<unsigned int, bool> bridge_online;
+  std::map<unsigned int, std::map<int, int64_t>> network_values;
+
+  void on_network_report(supla_device_channel *channel,
+                         const TDSC_ChannelState &state, bool restoring);
 
   void initialize_battery_channels();
   void select_battery_source(unsigned int owner);
@@ -182,6 +187,16 @@ class supla_device_channels {
                          const TDSC_ChannelState &report,
                          const TDSC_ChannelState &previous);
   std::vector<std::pair<unsigned int, int>> get_batteries(int channel_id);
+
+  struct network_sample {
+    unsigned int owner;
+    int field;
+    int64_t value;
+  };
+  std::vector<network_sample> get_network_samples(int channel_id);
+  std::vector<unsigned int> get_diagnostic_owners(int channel_id);
+  bool is_diagnostic_connected(unsigned int owner);
+  void on_diagnostic_availability_changed(unsigned int owner);
 
   bool get_channel_state(int channel_id, TDSC_ChannelState *state);
 

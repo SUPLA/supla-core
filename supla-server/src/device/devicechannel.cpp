@@ -365,6 +365,9 @@ bool supla_device_channel::set_availability_status(
   unlock();
 
   if (result) {
+    if (device->get_channels()) {
+      device->get_channels()->on_diagnostic_availability_changed(sub_device_id);
+    }
     if (raise_change_event) {
       on_value_changed(nullptr, nullptr, true, false);
     }

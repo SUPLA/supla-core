@@ -77,6 +77,8 @@ typedef struct {
   my_bool channel_location_is_null;
   unsigned long channel_caption_len;
   my_bool channel_caption_is_null;
+  unsigned long sub_device_name_len;
+  my_bool sub_device_name_is_null;
   int channel_hidden;
 
   unsigned long channel_text_param1_len;
@@ -421,9 +423,12 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
       "c.`channel_number`, c.`type`, c.`func`, c.`flags`, IFNULL(l.`caption`, "
       "dl.`caption`), c.`caption`, c.`hidden`, c.`param1`, c.`param2`, "
       "c.`param3`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
-      "c.`user_config`, c.`properties`, c.`sub_device_id` "
+      "c.`user_config`, c.`properties`, c.`sub_device_id`, "
+      "NULLIF(TRIM(sd.`name`),'') "
       "FROM `supla_dev_channel` c LEFT JOIN "
       "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN "
+      "`supla_subdevice` sd ON sd.`iodevice_id` = c.`iodevice_id` "
+      "AND sd.`id` = c.`sub_device_id` LEFT JOIN "
       "`supla_location` l ON l.`id` = c.`location_id` LEFT JOIN "
       "`supla_location` dl ON dl.`id` = d.`location_id` LEFT JOIN `supla_user` "
       "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
@@ -452,7 +457,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   pbind[5].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&query->stmt, sql, pbind, 6, true)) {
-    MYSQL_BIND rbind[24];
+    MYSQL_BIND rbind[25];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -569,6 +574,11 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
     rbind[23].buffer_type = MYSQL_TYPE_LONG;
     rbind[23].buffer = &query->row->sub_device_id;
     rbind[23].is_unsigned = true;
+    rbind[24].buffer_type = MYSQL_TYPE_STRING;
+    rbind[24].buffer = query->row->sub_device_name;
+    rbind[24].buffer_length = sizeof(query->row->sub_device_name);
+    rbind[24].length = &query->sub_device_name_len;
+    rbind[24].is_null = &query->sub_device_name_is_null;
 
     if (mysql_stmt_bind_result(query->stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -600,6 +610,10 @@ bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
     set_terminating_byte(
         query->row->channel_caption, sizeof(query->row->channel_caption),
         query->channel_caption_len, query->channel_caption_is_null);
+
+    set_terminating_byte(
+        query->row->sub_device_name, sizeof(query->row->sub_device_name),
+        query->sub_device_name_len, query->sub_device_name_is_null);
 
     set_terminating_byte(query->row->device_name,
                          sizeof(query->row->device_name),

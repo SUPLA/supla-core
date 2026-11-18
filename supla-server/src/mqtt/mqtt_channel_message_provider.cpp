@@ -23,6 +23,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <algorithm>
 #include <string>
 
 #include "device/channel_property_getter.h"
@@ -768,22 +769,35 @@ void supla_mqtt_channel_message_provider::ha_json_set_availability(
   }
 }
 
-void supla_mqtt_channel_message_provider::ha_json_set_device_info(cJSON *root) {
-  cJSON *device = cJSON_CreateObject();
-  if (device) {
-    char mfr_name[20];
-    get_mfr_name(row->device_mfr_id, mfr_name, sizeof(mfr_name));
-
-    char id[30];
-    snprintf(id, sizeof(id), "supla-iodevice-%i", row->device_id);
-
-    cJSON_AddStringToObject(device, "ids", id);
-    cJSON_AddStringToObject(device, "mf", mfr_name);
-    cJSON_AddStringToObject(device, "name", row->device_name);
-    cJSON_AddStringToObject(device, "sw", row->device_softver);
-
-    cJSON_AddItemToObject(root, "device", device);
+void supla_mqtt_channel_message_provider::ha_json_set_device_info(
+    cJSON *root, unsigned int sub_device_id) {
+  cJSON *device = cJSON_AddObjectToObject(root, "device");
+  if (!device) {
+    return;
   }
+
+  char id[30];
+  snprintf(id, sizeof(id), "supla-iodevice-%i", row->device_id);
+
+  if (sub_device_id) {
+    const string subdevice_id =
+        string(id) + "-subdevice-" + std::to_string(sub_device_id);
+    const string name = row->sub_device_name[0] ? row->sub_device_name
+        : string(row->device_name) + " - Subdevice " +
+              std::to_string(sub_device_id);
+
+    cJSON_AddStringToObject(device, "ids", subdevice_id.c_str());
+    cJSON_AddStringToObject(device, "via_device", id);
+    cJSON_AddStringToObject(device, "name", name.c_str());
+    return;
+  }
+
+  char mfr_name[20];
+  get_mfr_name(row->device_mfr_id, mfr_name, sizeof(mfr_name));
+  cJSON_AddStringToObject(device, "ids", id);
+  cJSON_AddStringToObject(device, "mf", mfr_name);
+  cJSON_AddStringToObject(device, "name", row->device_name);
+  cJSON_AddStringToObject(device, "sw", row->device_softver);
 }
 
 cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
@@ -799,7 +813,7 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
     ha_json_set_availability(root, topic_prefix, "true", "false");
   }
   ha_json_set_topic_base(root, topic_prefix);
-  ha_json_set_device_info(root);
+  ha_json_set_device_info(root, row->sub_device_id);
   ha_json_set_name(root, name_if_empty, name_second_segment);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
@@ -2099,10 +2113,22 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
 void supla_mqtt_channel_message_provider::snapshot_diagnostics(
     bool topics_only) {
   batteries.clear();
+  network.clear();
+  diagnostic_connections.clear();
   valve_opening_supported = false;
   withdraw_valve_opening = false;
 
   if (topics_only || !row->device_enabled) {
+    network.push_back(network_metadata(0, SUPLA_CHANNELSTATE_FIELD_IPV4));
+    network.push_back(network_metadata(0, SUPLA_CHANNELSTATE_FIELD_WIFIRSSI));
+    if (row->sub_device_id) {
+      network.push_back(network_metadata(
+          row->sub_device_id,
+          SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH));
+    }
+    if (row->sub_device_id) {
+      diagnostic_connections.emplace_back(row->sub_device_id, false);
+    }
     batteries.emplace_back(0, supla_device_channels::battery_missing);
     if (row->sub_device_id != 0) {
       batteries.emplace_back(row->sub_device_id,
@@ -2110,15 +2136,35 @@ void supla_mqtt_channel_message_provider::snapshot_diagnostics(
     }
   } else if (auto device =
                  supla_user::get_device(row->user_id, row->device_id, 0)) {
-    for (const auto &battery :
-         device->get_channels()->get_batteries(row->channel_id)) {
-      if (battery.second != supla_device_channels::battery_conflicting) {
-        batteries.push_back(battery);
+    auto *channels = device->get_channels();
+    network = snapshot_network_diagnostics(channels, row->channel_id);
+    for (const auto owner : channels->get_diagnostic_owners(row->channel_id)) {
+      if (owner) {
+        diagnostic_connections.emplace_back(
+            owner, channels->is_diagnostic_connected(owner));
       }
+    }
+    for (const auto &battery : channels->get_batteries(row->channel_id)) {
+      batteries.push_back(battery);
     }
   }
 
-  if (row->channel_type != SUPLA_CHANNELTYPE_HVAC) {
+  if (diagnostic_owner >= 0) {
+    const auto owner = static_cast<unsigned int>(diagnostic_owner);
+    diagnostic_connections.erase(
+        std::remove_if(diagnostic_connections.begin(),
+                       diagnostic_connections.end(),
+                       [owner](const auto &sample) {
+                         return sample.first != owner;
+                       }), diagnostic_connections.end());
+    batteries.erase(std::remove_if(batteries.begin(), batteries.end(),
+        [owner](const auto &sample) { return sample.first != owner; }),
+        batteries.end());
+    network.erase(std::remove_if(network.begin(), network.end(),
+        [owner](const auto &sample) { return sample.owner != owner; }),
+        network.end());
+  }
+  if (diagnostics_only || row->channel_type != SUPLA_CHANNELTYPE_HVAC) {
     return;
   }
   withdraw_valve_opening = !topics_only &&
@@ -2131,8 +2177,55 @@ void supla_mqtt_channel_message_provider::snapshot_diagnostics(
     std::unique_ptr<supla_channel_hvac_value> value(
         getter.get_value_as<supla_channel_hvac_value>(
             row->user_id, row->device_id, row->channel_id));
-    valve_opening_supported = value && value->get_opening_percentage() >= 0;
+    valve_opening_supported =
+        value && value->get_opening_percentage() >= 0;
   }
+}
+
+bool supla_mqtt_channel_message_provider::ha_network_diagnostic(
+    const network_diagnostic &data, const char *prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  const string object_id = "network_" + std::to_string(row->device_id) + "_" +
+                           std::to_string(data.owner) + "_" + data.key;
+  if (!message || !row->device_enabled) {
+    return ha_get_message(nullptr, "sensor", 0, false, topic_name, nullptr,
+                          nullptr, object_id.c_str());
+  }
+
+  char *state_topic = nullptr;
+  if (!create_network_message(data, prefix, row->user_suid, row->device_id,
+                              &state_topic, nullptr, nullptr)) {
+    return false;
+  }
+  cJSON *root = cJSON_CreateObject();
+  if (!root) {
+    free(state_topic);
+    return false;
+  }
+  const string unique_id = string("supla_") + row->user_suid + "_" + object_id;
+  ha_json_set_string_param(root, "uniq_id", unique_id.c_str());
+  ha_json_set_string_param(root, "stat_t", state_topic);
+  ha_json_set_string_param(root, "val_tpl",
+                           "{{ value if value else 'None' }}");
+  free(state_topic);
+  ha_json_set_string_param(root, "name", data.label);
+  ha_json_set_string_param(root, "entity_category", "diagnostic");
+  if (data.unit) {
+    ha_json_set_string_param(root, "unit_of_meas", data.unit);
+  }
+  if (data.device_class) {
+    ha_json_set_string_param(root, "device_class", data.device_class);
+  }
+  if (data.owner) {
+    ha_json_set_string_param(root, "icon", "mdi:signal");
+    ha_diagnostic_availability(root, prefix, data.owner);
+  } else if (strcmp(data.key, "ip_address") == 0) {
+    ha_json_set_string_param(root, "icon", "mdi:ip-network");
+  }
+  ha_json_set_device_info(root, data.owner);
+  ha_json_set_qos(root);
+  return ha_get_message(root, "sensor", 0, false, topic_name, message,
+                        message_size, object_id.c_str());
 }
 
 bool supla_mqtt_channel_message_provider::ha_battery(
@@ -2140,7 +2233,7 @@ bool supla_mqtt_channel_message_provider::ha_battery(
     void **message, size_t *message_size) {
   const string object_id = "battery_" + std::to_string(row->device_id) + "_" +
                            std::to_string(owner);
-  if (!message || level < 0) {
+  if (!message || level == supla_device_channels::battery_missing) {
     return ha_get_message(nullptr, "sensor", 0, false, topic_name, nullptr,
                           nullptr, object_id.c_str());
   }
@@ -2159,14 +2252,14 @@ bool supla_mqtt_channel_message_provider::ha_battery(
   const string unique_id = string("supla_") + row->user_suid + "_" + object_id;
   ha_json_set_string_param(root, "uniq_id", unique_id.c_str());
   ha_json_set_string_param(root, "stat_t", state_topic);
+  ha_json_set_string_param(root, "val_tpl",
+                           "{{ value if value else 'None' }}");
   free(state_topic);
-  if (owner == 0) {
-    ha_json_set_string_param(root, "name", "Battery");
-  } else {
-    ha_json_set_name(root, nullptr, "Battery");
-    ha_json_set_availability(root, topic_prefix, "true", "false");
+  ha_json_set_string_param(root, "name", "Battery");
+  if (owner != 0) {
+    ha_diagnostic_availability(root, topic_prefix, owner);
   }
-  ha_json_set_device_info(root);
+  ha_json_set_device_info(root, owner);
   ha_json_set_qos(root);
   ha_json_set_string_param(root, "device_class", "battery");
   ha_json_set_string_param(root, "unit_of_meas", "%");
@@ -2181,6 +2274,9 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
   if (row != NULL) {
     if (index == 0) {
       snapshot_diagnostics(message == nullptr);
+    }
+    if (diagnostics_only) {
+      index += 4;
     }
     switch (index) {
       case 0: {
@@ -2226,6 +2322,28 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
           topic_name, message, message_size);
     }
     index -= batteries.size() * 2;
+    if (index < network.size() * 2) {
+      const auto &data = network[index / 2];
+      if (index % 2 == 0) {
+        return ha_network_diagnostic(data, topic_prefix, topic_name, message,
+                                     message_size);
+      }
+      return create_network_message(data, topic_prefix, row->user_suid,
+                                    row->device_id, topic_name, message,
+                                    message_size);
+    }
+    index -= network.size() * 2;
+    if (index < diagnostic_connections.size()) {
+      const auto [owner, connected] = diagnostic_connections[index];
+      return create_message(
+          topic_prefix, row->user_suid, topic_name, message, message_size,
+          connected ? "true" : "false", false,
+          "devices/%i/subdevices/%u/state/connected", row->device_id, owner);
+    }
+    index -= diagnostic_connections.size();
+    if (diagnostics_only) {
+      return false;
+    }
 
     if (withdraw_valve_opening) {
       if (index == 0) {
@@ -2239,6 +2357,29 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
                                       message_size);
   }
   return false;
+}
+
+void supla_mqtt_channel_message_provider::set_diagnostics_only(
+    unsigned int owner) {
+  diagnostics_only = true;
+  diagnostic_owner = owner;
+}
+
+void supla_mqtt_channel_message_provider::ha_diagnostic_availability(
+    cJSON *root, const char *prefix, unsigned int owner) {
+  cJSON *availability = cJSON_AddObjectToObject(root, "avty");
+  if (!availability) {
+    return;
+  }
+  char *topic = nullptr;
+  if (create_message(prefix, row->user_suid, &topic, nullptr, nullptr, nullptr,
+                     false, "devices/%i/subdevices/%u/state/connected",
+                     row->device_id, owner)) {
+    cJSON_AddStringToObject(availability, "topic", topic);
+    free(topic);
+  }
+  cJSON_AddStringToObject(availability, "payload_available", "true");
+  cJSON_AddStringToObject(availability, "payload_not_available", "false");
 }
 
 void supla_mqtt_channel_message_provider::set_data_row(

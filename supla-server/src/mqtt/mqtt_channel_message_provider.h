@@ -36,7 +36,16 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
  private:
   _mqtt_db_data_row_channel_t *row;
   std::vector<std::pair<unsigned int, int>> batteries;
+  std::vector<network_diagnostic> network;
+  bool ha_network_diagnostic(const network_diagnostic &data,
+                             const char *prefix, char **topic_name,
+                             void **message, size_t *message_size);
   bool valve_opening_supported = false;
+  bool diagnostics_only = false;
+  int diagnostic_owner = -1;
+  std::vector<std::pair<unsigned int, bool>> diagnostic_connections;
+  void ha_diagnostic_availability(cJSON *root, const char *prefix,
+                                  unsigned int owner);
   bool withdraw_valve_opening = false;
 
   void snapshot_diagnostics(bool topics_only);
@@ -66,7 +75,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   void ha_json_set_int_param(cJSON *root, const char *param_name, int value);
   void ha_json_set_availability(cJSON *root, const char *topic_prefix,
                                 const char *avil, const char *notavil);
-  void ha_json_set_device_info(cJSON *root);
+  void ha_json_set_device_info(cJSON *root, unsigned int sub_device_id = 0);
   void ha_json_set_brightness(cJSON *root, const char *bri_cmd_t,
                               const char *bti_stat_t);
 
@@ -153,6 +162,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size);
+  void set_diagnostics_only(unsigned int owner);
   void set_data_row(_mqtt_db_data_row_channel_t *row);
 };
 

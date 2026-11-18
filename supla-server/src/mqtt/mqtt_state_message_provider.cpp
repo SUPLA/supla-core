@@ -54,10 +54,14 @@ bool supla_mqtt_state_message_provider::get_message_at_index(
   if (index == 0) {
     batteries.clear();
     next_battery = 0;
-    if (publish_batteries && message) {
+    network.clear();
+    next_network = 0;
+    if (publish_diagnostics && message) {
       auto device = supla_user::get_device(get_user_id(), get_device_id(), 0);
       if (device) {
-        batteries = device->get_channels()->get_batteries(get_channel_id());
+        auto *channels = device->get_channels();
+        batteries = channels->get_batteries(get_channel_id());
+        network = snapshot_network_diagnostics(channels, get_channel_id());
       }
     }
   }
@@ -72,6 +76,11 @@ bool supla_mqtt_state_message_provider::get_message_at_index(
           topic_prefix, _get_user_suid(), get_device_id(), owner, level,
           topic_name, message, message_size);
     }
+  }
+  if (next_network < network.size()) {
+    return create_network_message(network[next_network++], topic_prefix,
+                                  _get_user_suid(), get_device_id(), topic_name,
+                                  message, message_size);
   }
   return false;
 }

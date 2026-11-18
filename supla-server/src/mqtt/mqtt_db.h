@@ -60,6 +60,7 @@ typedef struct {
   int channel_id;
   int channel_number;
   unsigned int sub_device_id;
+  char sub_device_name[801];  // 200 utf8mb4 characters and the terminator.
   int channel_type;
   int channel_func;
   unsigned _supla_int64_t channel_flags;

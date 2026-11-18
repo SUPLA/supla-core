@@ -81,7 +81,7 @@ void supla_mqtt_channelandstate_message_provider::init_providers_if_needed(
 
   if (state_message_provider == NULL) {
     state_message_provider = new supla_mqtt_state_message_provider();
-    state_message_provider->use_channel_metadata_for_batteries();
+    state_message_provider->use_channel_metadata_for_diagnostics();
   }
 }
 

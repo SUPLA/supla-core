@@ -34,12 +34,14 @@ class supla_mqtt_state_message_provider
   supla_channel_property_getter prop_getter;
   std::vector<std::pair<unsigned int, int>> batteries;
   size_t next_battery = 0;
+  std::vector<network_diagnostic> network;
+  size_t next_network = 0;
 
  public:
-  void use_channel_metadata_for_batteries() { publish_batteries = false; }
+  void use_channel_metadata_for_diagnostics() { publish_diagnostics = false; }
 
  private:
-  bool publish_batteries = true;
+  bool publish_diagnostics = false;
 
  protected:
   virtual const char *_get_user_suid(void);

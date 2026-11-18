@@ -20,6 +20,13 @@
 #define MQTT_PUBLISHER_DATASOURCE_H_
 
 #include <list>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
+#include "mqtt_channel_message_provider.h"
 
 #include "mqtt_action_message_provider.h"
 #include "mqtt_client_db_datasource.h"
@@ -35,6 +42,28 @@ typedef struct {
 
 class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
  private:
+  using diagnostic_key = std::pair<int, unsigned int>;
+  std::map<diagnostic_key, _mqtt_db_data_row_channel_t> diagnostic_rows;
+  std::set<diagnostic_key> retired_diagnostics;
+  struct channel_owner {
+    int device_id;
+    unsigned int owner;
+    bool retired = false;
+  };
+  std::map<int, channel_owner> channel_owners;
+  std::map<diagnostic_key, bool> diagnostic_queue;
+  std::map<diagnostic_key, std::string> subdevice_names;
+  std::list<std::pair<_mqtt_db_data_row_channel_t, unsigned int>>
+      diagnostic_withdrawals;
+  std::unique_ptr<supla_mqtt_channel_message_provider> diagnostic_provider;
+  _mqtt_db_data_row_channel_t diagnostic_row = {};
+  bool diagnostic_withdrawal = false;
+  std::map<std::string, std::string> diagnostic_publications;
+
+  void remember_diagnostic_metadata(const _mqtt_db_data_row_channel_t &row);
+  bool fetch_diagnostics(char **topic, void **message, size_t *size);
+  bool repeated_diagnostic(const char *topic, const void *message, size_t size);
+
   std::list<int> users_enabled;
   std::list<int> users_enabled_tmp;
   std::list<_mqtt_ds_triggered_actions_t> triggered_actions;
@@ -100,6 +129,12 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   virtual ~supla_mqtt_publisher_datasource(void);
   virtual bool fetch(char **topic_name, void **message, size_t *message_size,
                      bool *retain);
+  void on_diagnostics_changed(int device_id, unsigned int owner);
+  void on_subdevice_name_changed(int device_id, unsigned int owner,
+                                const char *name);
+  void on_channel_deleted(int device_id, int channel_id);
+  void on_device_deleted(int device_id);
+
   void on_actions_triggered(int user_id, int device_id, int channel_id,
                             unsigned int actions);
 };

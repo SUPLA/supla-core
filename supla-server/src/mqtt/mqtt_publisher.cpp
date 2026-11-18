@@ -31,7 +31,10 @@ supla_mqtt_publisher::supla_mqtt_publisher(
     supla_mqtt_client_datasource *datasource)
     : supla_mqtt_client(library_adapter, settings, datasource) {}
 
-supla_mqtt_publisher::~supla_mqtt_publisher(void) {}
+supla_mqtt_publisher::~supla_mqtt_publisher(void) {
+  free(pending_topic);
+  free(pending_message);
+}
 
 ssize_t supla_mqtt_publisher::get_send_buffer_size(void) { return 32768; }
 
@@ -44,26 +47,28 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
 }
 
 bool supla_mqtt_publisher::on_iterate(void) {
-  char *topic_name = NULL;
-  void *message = NULL;
-  size_t message_size = 0;
-  bool result = false;
-  bool retain = true;
-
-  if (datasource->fetch(&topic_name, &message, &message_size, &retain)) {
-    publish(topic_name, message, message_size, SUPLA_MQTT_QOS_0, retain);
-    result = true;
+  if (!pending_topic &&
+      !datasource->fetch(&pending_topic, &pending_message,
+                         &pending_size, &pending_retain)) {
+    return false;
   }
-
-  if (topic_name) {
-    free(topic_name);
+  if (!publish(pending_topic, pending_message, pending_size,
+                SUPLA_MQTT_QOS_0, pending_retain)) {
+    if (!pending_retain) {
+      free(pending_topic);
+      free(pending_message);
+      pending_topic = nullptr;
+      pending_message = nullptr;
+      pending_size = 0;
+    }
+    return false;
   }
-
-  if (message) {
-    free(message);
-  }
-
-  return result;
+  free(pending_topic);
+  free(pending_message);
+  pending_topic = nullptr;
+  pending_message = nullptr;
+  pending_size = 0;
+  return true;
 }
 
 void supla_mqtt_publisher::on_message_received(

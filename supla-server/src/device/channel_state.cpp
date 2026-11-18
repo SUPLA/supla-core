@@ -475,6 +475,31 @@ bool supla_channel_state::has_valid_battery_level(
 }
 
 void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
+  const int network_fields[] = {
+      SUPLA_CHANNELSTATE_FIELD_IPV4, SUPLA_CHANNELSTATE_FIELD_WIFIRSSI,
+      SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH,
+      SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE};
+  for (const int field : network_fields) {
+    if ((state.Fields & field) || !(old->state.Fields & field)) {
+      continue;
+    }
+    state.Fields |= field;
+    switch (field) {
+      case SUPLA_CHANNELSTATE_FIELD_IPV4:
+        state.IPv4 = old->state.IPv4;
+        break;
+      case SUPLA_CHANNELSTATE_FIELD_WIFIRSSI:
+        state.WiFiRSSI = old->state.WiFiRSSI;
+        break;
+      case SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH:
+        state.BridgeNodeSignalStrength = old->state.BridgeNodeSignalStrength;
+        break;
+      case SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE:
+        state.BridgeNodeOnline = old->state.BridgeNodeOnline;
+        break;
+    }
+  }
+
   if (!has_valid_battery_level(state)) {
     constexpr auto battery_fields =
         SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |

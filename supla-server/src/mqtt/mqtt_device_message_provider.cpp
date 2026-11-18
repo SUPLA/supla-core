@@ -19,6 +19,11 @@
 #include <mqtt_device_message_provider.h>
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+
+#include "cJSON.h"
 
 supla_mqtt_device_message_provider::supla_mqtt_device_message_provider(void)
     : supla_mqtt_message_provider() {
@@ -69,6 +74,70 @@ bool supla_mqtt_device_message_provider::get_message_at_index(
         return create_message(topic_prefix, row->user_suid, topic_name, message,
                               message_size, row->device_softver, false,
                               "devices/%i/soft_ver", row->device_id);
+      case 7: {
+        if (!topic_name) {
+          return false;
+        }
+
+        const auto id = std::to_string(row->device_id);
+        // Keep the original Discovery ID for existing entities.
+        const auto object_id = "gateway_" + id + "_last_connected";
+        const auto discovery_topic =
+            std::string("homeassistant/sensor/") + row->user_suid + "/" +
+            object_id + "/config";
+        if (!message || !row->device_enabled) {
+          *topic_name = strdup(discovery_topic.c_str());
+          return *topic_name != nullptr;
+        }
+
+        char *state_topic = nullptr;
+        if (!create_message(topic_prefix, row->user_suid, &state_topic, nullptr,
+                            nullptr, nullptr, false,
+                            "devices/%i/last_connected", row->device_id)) {
+          return false;
+        }
+        cJSON *root = cJSON_CreateObject();
+        if (!root) {
+          free(state_topic);
+          return false;
+        }
+        const auto unique_id = std::string("supla_") + row->user_suid +
+                               "_" + object_id;
+        cJSON_AddStringToObject(root, "uniq_id", unique_id.c_str());
+        cJSON_AddStringToObject(root, "name", "Last connected");
+        cJSON_AddStringToObject(root, "stat_t", state_topic);
+        free(state_topic);
+        cJSON_AddStringToObject(root, "device_class", "timestamp");
+        cJSON_AddStringToObject(root, "entity_category", "diagnostic");
+
+        cJSON *device = cJSON_AddObjectToObject(root, "device");
+        if (!device) {
+          cJSON_Delete(root);
+          return false;
+        }
+        char manufacturer[20];
+        get_mfr_name(row->device_mfr_id, manufacturer, sizeof(manufacturer));
+        cJSON_AddStringToObject(device, "ids",
+                                ("supla-iodevice-" + id).c_str());
+        cJSON_AddStringToObject(device, "name", row->device_name);
+        cJSON_AddStringToObject(device, "mf", manufacturer);
+        cJSON_AddStringToObject(device, "sw", row->device_softver);
+        char *payload = cJSON_PrintUnformatted(root);
+        cJSON_Delete(root);
+        if (!payload) {
+          return false;
+        }
+        *topic_name = strdup(discovery_topic.c_str());
+        if (!*topic_name) {
+          free(payload);
+          return false;
+        }
+        *message = payload;
+        if (message_size) {
+          *message_size = strlen(payload);
+        }
+        return true;
+      }
     }
   }
 
