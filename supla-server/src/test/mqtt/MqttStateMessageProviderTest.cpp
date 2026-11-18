@@ -18,6 +18,8 @@
 
 #include "MqttStateMessageProviderTest.h"
 
+#include <string>
+
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_hp_thermostat_ev_decorator.h"
 #include "device/extended_value/channel_ic_extended_value.h"

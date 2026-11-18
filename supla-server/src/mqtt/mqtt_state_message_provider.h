@@ -21,6 +21,8 @@
 
 #include <memory.h>
 
+#include <vector>
+
 #include "device/channel_property_getter.h"
 #include "devicechannel.h"
 #include "mqtt_abstract_state_message_provider.h"

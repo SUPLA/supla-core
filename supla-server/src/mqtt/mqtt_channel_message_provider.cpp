@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include "device/channel_property_getter.h"
@@ -1688,7 +1689,8 @@ bool supla_mqtt_channel_message_provider::ha_climate_thermostat(
     void **message, size_t *message_size) {
   const bool is_hvac = row->channel_type == SUPLA_CHANNELTYPE_HVAC;
   const bool has_battery_cover =
-      is_hvac && (row->channel_flags & SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE);
+      is_hvac &&
+      (row->channel_flags & SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE);
   if (has_battery_cover && index == 1) {
     const int battery_cover_problem_id = 2;
     cJSON *root = ha_json_create_root(topic_prefix, nullptr,
@@ -2219,9 +2221,9 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
         return ha_battery(owner, level, topic_prefix, topic_name, message,
                           message_size);
       }
-      return create_battery_message(topic_prefix, row->user_suid, row->device_id,
-                                    owner, level, topic_name, message,
-                                    message_size);
+      return create_battery_message(
+          topic_prefix, row->user_suid, row->device_id, owner, level,
+          topic_name, message, message_size);
     }
     index -= batteries.size() * 2;
 

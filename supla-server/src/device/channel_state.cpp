@@ -476,8 +476,9 @@ bool supla_channel_state::has_valid_battery_level(
 
 void supla_channel_state::merge_old_if_needed(supla_channel_state *old) {
   if (!has_valid_battery_level(state)) {
-    constexpr auto battery_fields = SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
-                                    SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
+    constexpr auto battery_fields =
+        SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL |
+        SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL;
     // An out-of-range report leaves the last valid battery sample intact.
     state.Fields &= ~battery_fields;
     if (has_valid_battery_level(old->state)) {

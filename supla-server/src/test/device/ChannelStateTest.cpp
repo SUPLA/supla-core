@@ -67,7 +67,8 @@ TEST_F(ChannelStateTest, ignoresOutOfRangeBatteryLevel) {
   supla_channel_state previous(&battery);
   supla_channel_state update(&invalid);
   update.merge_old_if_needed(&previous);
-  EXPECT_TRUE(supla_channel_state::has_valid_battery_level(*update.get_state()));
+  EXPECT_TRUE(
+      supla_channel_state::has_valid_battery_level(*update.get_state()));
   EXPECT_TRUE(update.get_state()->Fields &
               SUPLA_CHANNELSTATE_FIELD_DEVICE_BATTERYLEVEL);
   EXPECT_EQ(update.get_state()->BatteryLevel, 89);
