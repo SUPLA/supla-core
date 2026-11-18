@@ -96,6 +96,20 @@ TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
       "supla/8820767494dd87196e1896c7cbab707c/devices/%i/soft_ver",
       row_device.device_id));
 
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL,
+      "{\"uniq_id\":\"supla_8820767494dd87196e1896c7cbab707c_gateway_555_"
+      "last_connected\",\"name\":\"Last connected\","
+      "\"stat_t\":\"supla/8820767494dd87196e1896c7cbab707c/devices/555/"
+      "last_connected\",\"device_class\":\"timestamp\","
+      "\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-555\","
+      "\"name\":\"GATE CONTROLLER\",\"mf\":\"AC SOFTWARE\","
+      "\"sw\":\"2.7.23\"}}",
+      false,
+      "homeassistant/sensor/8820767494dd87196e1896c7cbab707c/"
+      "gateway_555_last_connected/config"));
+
   ASSERT_FALSE(dataExists(provider));
 }
 
