@@ -30,7 +30,13 @@ supla_abstract_cyclictask::supla_abstract_cyclictask() {
 supla_abstract_cyclictask::~supla_abstract_cyclictask() {}
 
 bool supla_abstract_cyclictask::is_it_time(const struct timeval *now) {
-  return now->tv_sec - last_run_time.tv_sec >= task_interval_sec();
+  unsigned int interval = task_interval_sec();
+
+  if (task_interval_aligned() && interval > 0) {
+    return now->tv_sec / interval > last_run_time.tv_sec / interval;
+  }
+
+  return now->tv_sec - last_run_time.tv_sec >= interval;
 }
 
 void supla_abstract_cyclictask::run(const struct timeval *now,
@@ -45,3 +51,5 @@ bool supla_abstract_cyclictask::db_access_needed(void) { return true; }
 bool supla_abstract_cyclictask::is_tsdb_preffered(void) { return false; }
 
 bool supla_abstract_cyclictask::user_access_needed(void) { return true; }
+
+bool supla_abstract_cyclictask::task_interval_aligned(void) { return false; }

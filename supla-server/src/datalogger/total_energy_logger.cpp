@@ -38,7 +38,9 @@ supla_total_energy_logger::~supla_total_energy_logger() {}
 
 bool supla_total_energy_logger::is_tsdb_preffered(void) { return true; }
 
-unsigned int supla_total_energy_logger::task_interval_sec(void) { return 600; }
+unsigned int supla_total_energy_logger::task_interval_sec(void) { return 900; }
+
+bool supla_total_energy_logger::task_interval_aligned(void) { return true; }
 
 void supla_total_energy_logger::run(const vector<supla_user *> *users,
                                     supla_abstract_db_access_provider *dba) {

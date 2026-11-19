@@ -26,6 +26,7 @@
 class supla_impulse_logger : public supla_abstract_cyclictask {
  protected:
   virtual unsigned int task_interval_sec(void);
+  virtual bool task_interval_aligned(void);
   virtual void run(const std::vector<supla_user *> *users,
                    supla_abstract_db_access_provider *dba);
 

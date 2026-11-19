@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/cyclictasks/AutoGateClosingTest.cpp \
-../src/test/cyclictasks/AutodiscoverStatisticsTest.cpp 
+../src/test/cyclictasks/AutodiscoverStatisticsTest.cpp \
+../src/test/cyclictasks/LoggerScheduleTest.cpp
 
 CPP_DEPS += \
 ./src/test/cyclictasks/AutoGateClosingTest.d \
-./src/test/cyclictasks/AutodiscoverStatisticsTest.d 
+./src/test/cyclictasks/AutodiscoverStatisticsTest.d \
+./src/test/cyclictasks/LoggerScheduleTest.d
 
 OBJS += \
 ./src/test/cyclictasks/AutoGateClosingTest.o \
-./src/test/cyclictasks/AutodiscoverStatisticsTest.o 
+./src/test/cyclictasks/AutodiscoverStatisticsTest.o \
+./src/test/cyclictasks/LoggerScheduleTest.o
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +31,7 @@ src/test/cyclictasks/%.o: ../src/test/cyclictasks/%.cpp src/test/cyclictasks/sub
 clean: clean-src-2f-test-2f-cyclictasks
 
 clean-src-2f-test-2f-cyclictasks:
-	-$(RM) ./src/test/cyclictasks/AutoGateClosingTest.d ./src/test/cyclictasks/AutoGateClosingTest.o ./src/test/cyclictasks/AutodiscoverStatisticsTest.d ./src/test/cyclictasks/AutodiscoverStatisticsTest.o
+	-$(RM) ./src/test/cyclictasks/AutoGateClosingTest.d ./src/test/cyclictasks/AutoGateClosingTest.o ./src/test/cyclictasks/AutodiscoverStatisticsTest.d ./src/test/cyclictasks/AutodiscoverStatisticsTest.o ./src/test/cyclictasks/LoggerScheduleTest.d ./src/test/cyclictasks/LoggerScheduleTest.o
 
 .PHONY: clean-src-2f-test-2f-cyclictasks
 
