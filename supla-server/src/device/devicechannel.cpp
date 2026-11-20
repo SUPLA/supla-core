@@ -30,6 +30,7 @@
 #include "device/device_dao.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_extended_value_factory.h"
+#include "device/value/channel_hvac_value.h"
 #include "device/value/channel_value_factory.h"
 #include "jsonconfig/channel/action_trigger_config.h"
 #include "jsonconfig/channel/electricity_meter_config.h"
@@ -40,6 +41,7 @@
 #include "jsonconfig/channel/weekly_schedule_config.h"
 #include "jsonconfig/device/device_json_config.h"
 #include "lck.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "user/user.h"
 #include "user/virtualchannel.h"
 #include "value/channel_openclosed_value.h"
@@ -363,6 +365,9 @@ bool supla_device_channel::set_availability_status(
   unlock();
 
   if (result) {
+    if (device->get_channels()) {
+      device->get_channels()->on_diagnostic_availability_changed(sub_device_id);
+    }
     if (raise_change_event) {
       on_value_changed(nullptr, nullptr, true, false);
     }
@@ -644,6 +649,14 @@ void supla_device_channel::on_value_changed(
         }
       }
       break;
+  }
+
+  auto *old_hvac = dynamic_cast<supla_channel_hvac_value *>(old_value);
+  auto *new_hvac = dynamic_cast<supla_channel_hvac_value *>(new_value);
+  if (new_hvac && new_hvac->get_opening_percentage() >= 0 &&
+      (!old_hvac || old_hvac->get_opening_percentage() < 0)) {
+    supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(
+        get_user_id(), get_device()->get_id());
   }
 
   get_device()->get_user()->on_channel_value_changed(
@@ -1130,9 +1143,13 @@ void supla_device_channel::set_state(TDSC_ChannelState *state) {
     supla_mariadb_access_provider dba;
     supla_device_dao dao(&dba);
     dao.update_channel_state(get_id(), get_user_id(), &new_state);
-
     get_device()->get_user()->get_value_based_triggers()->on_value_changed(
         supla_caller(ctChannel, get_id()), get_id(), &old_state, &new_state);
+  }
+
+  if (state && (state->Fields & SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL)) {
+    get_device()->get_channels()->on_battery_report(
+        this, *state, *old_state.get_state());
   }
 }
 

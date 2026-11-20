@@ -157,6 +157,7 @@ class supla_device_channel : public supla_abstract_common_channel_properties {
   unsigned int get_value_validity_time_left_msec(void);
   void set_state(TDSC_ChannelState *state);
   bool get_state(TDSC_ChannelState *state);
+  unsigned int sub_device_id = 0;
   void access_data_analyzer(
       std::function<void(supla_abstract_data_analyzer *analyzer)>
           on_data_analyzer);

@@ -216,6 +216,11 @@ unsigned char supla_channel_hvac_value::is_on(void) {
   return ((THVACValue *)raw_value)->IsOn;
 }
 
+int supla_channel_hvac_value::get_opening_percentage() const {
+  const auto value = reinterpret_cast<const THVACValue *>(raw_value)->IsOn;
+  return value >= 2 && value <= 102 ? value - 2 : -1;
+}
+
 bool supla_channel_hvac_value::is_heating(void) {
   return ((THVACValue *)raw_value)->IsOn > 0 &&
          (((THVACValue *)raw_value)->Flags & SUPLA_HVAC_VALUE_FLAG_HEATING);

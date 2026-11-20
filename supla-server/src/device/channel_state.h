@@ -44,6 +44,7 @@ class supla_channel_state : supla_json_helper,
   virtual ~supla_channel_state();
 
   const TDSC_ChannelState *get_state(void);
+  static bool has_valid_battery_level(const TDSC_ChannelState &state);
   char *get_json(void);
   void merge_old_if_needed(supla_channel_state *old);
   bool equal_fields(supla_channel_state *state);

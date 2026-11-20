@@ -19,6 +19,9 @@
 #include "MqttChannelMessageProviderTest.h"
 
 #include <cstdio>
+#include <cstdlib>
+#include <set>
+#include <string>
 
 #include "gmock/gmock.h"
 #include "jsonconfig/channel/general_purpose_measurement_config.h"
@@ -1105,6 +1108,70 @@ TEST_F(MqttChannelMessageProviderTest, electricityMeterWithoutPhases) {
   electricityMeterTest(SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
                        SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
                        SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED);
+}
+
+TEST_F(MqttChannelMessageProviderTest, batteryTopicsUseOwnerInsteadOfChannel) {
+  _mqtt_db_data_row_channel_t row;
+  fillChannelData(&row);
+  row.sub_device_id = 7;
+  auto fetch_topics = [&] {
+    provider->set_data_row(&row);
+    std::set<std::string> topics;
+    char *topic = nullptr;
+    while (provider->fetch(nullptr, &topic, nullptr, nullptr)) {
+      topics.emplace(topic);
+      free(topic);
+      topic = nullptr;
+    }
+    return topics;
+  };
+
+  const std::string discovery =
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/battery_555_";
+  const std::string state =
+      "supla/7720767494dd87196e1896c7cbab707c/devices/555/";
+  for (int id : {754, 755}) {
+    row.channel_id = id;
+    const auto topics = fetch_topics();
+    EXPECT_EQ(topics.count(discovery + "0/config"), 1);
+    EXPECT_EQ(topics.count(discovery + "7/config"), 1);
+    EXPECT_EQ(topics.count(state + "state/battery_level"), 1);
+    EXPECT_EQ(topics.count(state + "subdevices/7/state/battery_level"), 1);
+  }
+}
+
+TEST_F(MqttChannelMessageProviderTest, offlineValveDiscoveryIsNotWithdrawn) {
+  _mqtt_db_data_row_channel_t row;
+  fillChannelData(&row);
+  row.channel_type = SUPLA_CHANNELTYPE_HVAC;
+  row.channel_func = SUPLA_CHANNELFNC_HVAC_THERMOSTAT;
+  provider->set_data_row(&row);
+
+  const char *valve_topic =
+      "homeassistant/sensor/7720767494dd87196e1896c7cbab707c/754_3/config";
+  char *topic = nullptr;
+  void *message = nullptr;
+  size_t size = 0;
+  while (provider->fetch(nullptr, &topic, &message, &size)) {
+    EXPECT_STRNE(topic, valve_topic);
+    free(topic);
+    free(message);
+    topic = nullptr;
+    message = nullptr;
+    size = 0;
+  }
+
+  // Explicit topic enumeration still includes the valve for the unpublisher.
+  provider->set_data_row(&row);
+  bool saw_valve = false;
+  while (provider->fetch(nullptr, &topic, nullptr, nullptr)) {
+    if (std::string(topic) == valve_topic) {
+      saw_valve = true;
+    }
+    free(topic);
+    topic = nullptr;
+  }
+  EXPECT_TRUE(saw_valve);
 }
 
 TEST_F(MqttChannelMessageProviderTest, thermostat) {

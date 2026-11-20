@@ -19,9 +19,11 @@
 #ifndef DEVICECHANNELS_H_
 #define DEVICECHANNELS_H_
 
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 #include <vector>
 
 #include "actions/action_hvac_parameters.h"
@@ -43,6 +45,24 @@ class supla_device_channels {
   std::vector<supla_device_channel *> channels;
   supla_device *device;
   supla_channel_config_sync_coordinator channel_config_sync_coordinator;
+  struct battery_report {
+    unsigned int owner;
+    uint64_t sequence;
+  };
+  std::mutex battery_channels_mutex;
+  std::map<int, battery_report> battery_reports;
+  std::map<unsigned int, int> battery_anchors;
+  std::map<int, std::vector<unsigned int>> battery_owners;
+  std::map<unsigned int, supla_device_channel *> battery_sources;
+  uint64_t battery_sequence = 0;
+  std::map<unsigned int, bool> bridge_online;
+  std::map<unsigned int, std::map<int, int64_t>> network_values;
+
+  void on_network_report(supla_device_channel *channel,
+                         const TDSC_ChannelState &state, bool restoring);
+
+  void initialize_battery_channels();
+  void select_battery_source(unsigned int owner);
 
   void *get_srpc(void);
 
@@ -162,6 +182,21 @@ class supla_device_channels {
                       TCS_DeviceCalCfgRequest_B *request);
 
   void set_channel_state(int channel_id, TDSC_ChannelState *state);
+  enum : int { battery_missing = -1, battery_conflicting = -2 };
+  void on_battery_report(supla_device_channel *channel,
+                         const TDSC_ChannelState &report,
+                         const TDSC_ChannelState &previous);
+  std::vector<std::pair<unsigned int, int>> get_batteries(int channel_id);
+
+  struct network_sample {
+    unsigned int owner;
+    int field;
+    int64_t value;
+  };
+  std::vector<network_sample> get_network_samples(int channel_id);
+  std::vector<unsigned int> get_diagnostic_owners(int channel_id);
+  bool is_diagnostic_connected(unsigned int owner);
+  void on_diagnostic_availability_changed(unsigned int owner);
 
   bool get_channel_state(int channel_id, TDSC_ChannelState *state);
 

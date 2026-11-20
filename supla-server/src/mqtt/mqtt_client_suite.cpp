@@ -205,6 +205,22 @@ void supla_mqtt_client_suite::onChannelStateChanged(int UserID, int DeviceID,
   }
 }
 
+void supla_mqtt_client_suite::onDiagnosticsChanged(
+    int user_id, int device_id, unsigned int owner) {
+  if (publisher_ds && !st_app_terminate) {
+    publisher_ds->on_diagnostics_changed(device_id, owner);
+    library_adapter_pub->raise_event();
+  }
+}
+
+void supla_mqtt_client_suite::onSubdeviceNameChanged(
+    int device_id, unsigned int owner, const char *name) {
+  if (publisher_ds && !st_app_terminate) {
+    publisher_ds->on_subdevice_name_changed(device_id, owner, name);
+    library_adapter_pub->raise_event();
+  }
+}
+
 void supla_mqtt_client_suite::beforeChannelFunctionChange(int UserID,
                                                           int ChannelID) {
   if (unpublisher && st_app_terminate == 0) {
@@ -219,6 +235,9 @@ void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {
 }
 
 void supla_mqtt_client_suite::onDeviceDeleted(int UserID, int DeviceID) {
+  if (publisher_ds && !st_app_terminate) {
+    publisher_ds->on_device_deleted(DeviceID);
+  }
   if (unpublisher && st_app_terminate == 0) {
     unpublisher->on_device_deleted(UserID, DeviceID);
   }
@@ -226,7 +245,13 @@ void supla_mqtt_client_suite::onDeviceDeleted(int UserID, int DeviceID) {
 
 void supla_mqtt_client_suite::onChannelDeleted(int UserID, int DeviceID,
                                                int ChannelId) {
-  onDeviceDeleted(UserID, DeviceID);
+  if (publisher_ds && !st_app_terminate) {
+    publisher_ds->on_channel_deleted(DeviceID, ChannelId);
+    library_adapter_pub->raise_event();
+  }
+  if (unpublisher && !st_app_terminate) {
+    unpublisher->on_device_deleted(UserID, DeviceID);
+  }
 }
 
 void supla_mqtt_client_suite::onChannelAdded(int UserID, int DeviceID,

@@ -19,7 +19,10 @@
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
 
+#include <cstdio>
 #include <list>
+#include <memory>
+#include <string>
 
 #include "log.h"
 #include "mqtt_channelandstate_message_provider.h"
@@ -109,6 +112,32 @@ bool supla_mqtt_publisher_datasource::context_open(
   fetch_devices = false;
   fetch_channels = false;
   fetch_states = false;
+  if (context->get_scope() == MQTTDS_SCOPE_FULL ||
+      context->get_scope() == MQTTDS_SCOPE_USER ||
+      context->get_scope() == MQTTDS_SCOPE_DEVICE) {
+    lock();
+    for (auto it = diagnostic_rows.begin(); it != diagnostic_rows.end();) {
+      const auto &row = it->second;
+      if (context->get_scope() == MQTTDS_SCOPE_FULL ||
+          (context->get_scope() == MQTTDS_SCOPE_USER &&
+           row.user_id == context->get_user_id()) ||
+          (context->get_scope() == MQTTDS_SCOPE_DEVICE &&
+           row.device_id == context->get_device_id())) {
+        it = diagnostic_rows.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    unlock();
+    if (context->get_scope() == MQTTDS_SCOPE_FULL) {
+      diagnostic_publications.clear();
+      lock();
+      channel_owners.clear();
+      subdevice_names.clear();
+      retired_diagnostics.clear();
+      unlock();
+    }
+  }
 
   switch (context->get_scope()) {
     case MQTTDS_SCOPE_FULL:
@@ -215,6 +244,8 @@ void supla_mqtt_publisher_datasource::set_provider_data_row(
           static_cast<_mqtt_db_data_row_device_t *>(data_row));
       break;
     case MPD_DATATYPE_CHANNEL:
+      remember_diagnostic_metadata(
+          *static_cast<_mqtt_db_data_row_channel_t *>(data_row));
       static_cast<supla_mqtt_channelandstate_message_provider *>(provider)
           ->set_data_row(static_cast<_mqtt_db_data_row_channel_t *>(data_row));
       break;
@@ -441,9 +472,22 @@ bool supla_mqtt_publisher_datasource::fetch(char **topic_name, void **message,
   }
 
   *retain = true;
-
-  return supla_mqtt_client_db_datasource::fetch(topic_name, message,
-                                                message_size, retain);
+  for (int attempts = 0; attempts < 256; ++attempts) {
+    if (!fetch_diagnostics(topic_name, message, message_size) &&
+        !supla_mqtt_client_db_datasource::fetch(
+            topic_name, message, message_size, retain)) {
+      return false;
+    }
+    if (!repeated_diagnostic(*topic_name, *message, *message_size)) {
+      return true;
+    }
+    free(*topic_name);
+    free(*message);
+    *topic_name = nullptr;
+    *message = nullptr;
+    *message_size = 0;
+  }
+  return false;
 }
 
 void supla_mqtt_publisher_datasource::close_userquery(void) {
@@ -604,4 +648,239 @@ void supla_mqtt_publisher_datasource::on_actions_triggered(
   }
 
   unlock();
+}
+
+
+void supla_mqtt_publisher_datasource::remember_diagnostic_metadata(
+    const _mqtt_db_data_row_channel_t &row) {
+  lock();
+  const auto previous = channel_owners.find(row.channel_id);
+  if (previous != channel_owners.end() &&
+      previous->second.retired) {
+    unlock();
+    return;
+  }
+  channel_owners[row.channel_id] = {row.device_id, row.sub_device_id};
+  const unsigned int owners[] = {0, row.sub_device_id};
+  for (const auto owner : owners) {
+    const diagnostic_key key{row.device_id, owner};
+    auto [it, inserted] = diagnostic_rows.emplace(key, row);
+    if (!inserted && it->second.channel_id != row.channel_id) {
+      continue;
+    }
+    it->second = row;
+    retired_diagnostics.erase(key);
+    const auto name = subdevice_names.find(key);
+    if (name != subdevice_names.end()) {
+      snprintf(it->second.sub_device_name,
+               sizeof(it->second.sub_device_name), "%s", name->second.c_str());
+    }
+    // Supply availability after initial Discovery, even if telemetry is idle.
+    diagnostic_queue.emplace(key, false);
+  }
+  unlock();
+}
+
+void supla_mqtt_publisher_datasource::on_diagnostics_changed(
+    int device_id, unsigned int owner) {
+  lock();
+  const diagnostic_key key{device_id, owner};
+  if (diagnostic_rows.count(key)) {
+    diagnostic_queue.emplace(key, false);
+  }
+  unlock();
+}
+
+void supla_mqtt_publisher_datasource::on_subdevice_name_changed(
+    int device_id, unsigned int owner, const char *name) {
+  std::string normalized = name ? name : "";
+  const auto first = normalized.find_first_not_of(' ');
+  normalized = first == std::string::npos ? ""
+      : normalized.substr(first, normalized.find_last_not_of(' ') - first + 1);
+  lock();
+  const diagnostic_key key{device_id, owner};
+  const auto found = diagnostic_rows.find(key);
+  if (found == diagnostic_rows.end()) {
+    unlock();
+    return;
+  }
+  subdevice_names[key] = normalized;
+  if (normalized != found->second.sub_device_name) {
+    snprintf(found->second.sub_device_name,
+             sizeof(found->second.sub_device_name), "%s", normalized.c_str());
+    diagnostic_queue[key] = true;
+  }
+  unlock();
+}
+
+void supla_mqtt_publisher_datasource::on_channel_deleted(
+    int device_id, int channel_id) {
+  lock();
+  const auto known = channel_owners.find(channel_id);
+  if (known == channel_owners.end() || known->second.retired ||
+      known->second.device_id != device_id) {
+    unlock();
+    return;
+  }
+  const unsigned int owner = known->second.owner;
+  // Cloud removes all channels of the same subdevice in one transaction.
+  if (owner) {
+    const diagnostic_key key{device_id, owner};
+    const auto metadata = diagnostic_rows.find(key);
+    if (metadata != diagnostic_rows.end()) {
+      diagnostic_withdrawals.emplace_back(metadata->second, owner);
+      diagnostic_rows.erase(metadata);
+    }
+    diagnostic_queue.erase(key);
+    subdevice_names.erase(key);
+  }
+  for (auto it = channel_owners.begin(); it != channel_owners.end();) {
+    if (it->first == channel_id ||
+        (owner && it->second.device_id == device_id &&
+         it->second.owner == owner)) {
+      it->second.retired = true;
+    }
+    ++it;
+  }
+  unlock();
+}
+
+void supla_mqtt_publisher_datasource::on_device_deleted(int device_id) {
+  lock();
+  for (auto it = diagnostic_rows.begin(); it != diagnostic_rows.end();) {
+    if (it->first.first == device_id) {
+      diagnostic_withdrawals.emplace_back(it->second, it->first.second);
+      diagnostic_queue.erase(it->first);
+      subdevice_names.erase(it->first);
+      it = diagnostic_rows.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  for (auto it = channel_owners.begin(); it != channel_owners.end();) {
+    if (it->second.device_id == device_id) {
+      it->second.retired = true;
+    }
+    ++it;
+  }
+  unlock();
+}
+
+bool supla_mqtt_publisher_datasource::fetch_diagnostics(
+    char **topic, void **message, size_t *size) {
+  while (true) {
+    if (diagnostic_provider) {
+      if (diagnostic_provider->fetch(
+              get_settings()->getPrefix(), topic,
+              diagnostic_withdrawal ? nullptr : message,
+              diagnostic_withdrawal ? nullptr : size)) {
+        return true;
+      }
+      diagnostic_provider.reset();
+    }
+    lock();
+    if (!diagnostic_withdrawals.empty()) {
+      diagnostic_row = diagnostic_withdrawals.front().first;
+      const auto owner = diagnostic_withdrawals.front().second;
+      diagnostic_withdrawals.pop_front();
+      unlock();
+      retired_diagnostics.emplace(diagnostic_row.device_id, owner);
+      diagnostic_provider =
+          std::make_unique<supla_mqtt_channel_message_provider>();
+      diagnostic_provider->set_diagnostics_only(owner);
+      diagnostic_provider->set_data_row(&diagnostic_row);
+      diagnostic_withdrawal = true;
+      continue;
+    }
+    if (diagnostic_queue.empty()) {
+      unlock();
+      return false;
+    }
+    const auto request = *diagnostic_queue.begin();
+    diagnostic_queue.erase(diagnostic_queue.begin());
+    const auto found = diagnostic_rows.find(request.first);
+    if (found == diagnostic_rows.end()) {
+      unlock();
+      continue;
+    }
+    diagnostic_row = found->second;
+    unlock();
+    if (!is_user_enabled(diagnostic_row.user_id)) {
+      if (is_context_open()) {
+        lock();
+        diagnostic_queue.emplace(request);
+        unlock();
+        return false;
+      }
+      continue;
+    }
+    diagnostic_provider =
+        std::make_unique<supla_mqtt_channel_message_provider>();
+    if (!request.second) {
+      diagnostic_provider->set_diagnostics_only(request.first.second);
+    }
+    diagnostic_provider->set_data_row(&diagnostic_row);
+    diagnostic_withdrawal = false;
+  }
+}
+
+bool supla_mqtt_publisher_datasource::repeated_diagnostic(
+    const char *topic, const void *message, size_t size) {
+  if (!topic) {
+    return false;
+  }
+  const std::string key(topic);
+  const bool diagnostic =
+      key.find("/battery_") != std::string::npos ||
+      key.find("/network_") != std::string::npos ||
+      key.find("/subdevices/") != std::string::npos ||
+      key.find("/state/battery_level") != std::string::npos ||
+      key.find("/state/battery_cover_open") != std::string::npos ||
+      key.find("/state/percentage") != std::string::npos ||
+      key.find("/state/ip_address") != std::string::npos ||
+      key.find("/state/wifi_rssi") != std::string::npos ||
+      key.find("/last_connected") != std::string::npos ||
+      key.find("/gateway_") != std::string::npos;
+  if (!diagnostic) {
+    return false;
+  }
+  if (message && size) {
+    int device_id = 0;
+    unsigned int owner = 0;
+    const char *marker = nullptr;
+    if (strncmp(topic, "homeassistant/", 14) == 0) {
+      if ((marker = strstr(topic, "/network_"))) {
+        sscanf(marker, "/network_%d_%u_", &device_id, &owner);
+      } else if ((marker = strstr(topic, "/battery_"))) {
+        sscanf(marker, "/battery_%d_%u", &device_id, &owner);
+      } else if ((marker = strstr(topic, "/gateway_"))) {
+        sscanf(marker, "/gateway_%d_last_connected", &device_id);
+      }
+    } else if ((marker = strstr(topic, "/devices/"))) {
+      sscanf(marker, "/devices/%d/subdevices/%u/", &device_id, &owner);
+      int channel = 0;
+      if (sscanf(marker, "/devices/%d/channels/%d/",
+                 &device_id, &channel) == 2) {
+        lock();
+        const auto found = channel_owners.find(channel);
+        const bool deleted = found != channel_owners.end() &&
+                             found->second.retired;
+        unlock();
+        if (deleted) {
+          return true;
+        }
+      }
+    }
+    if (retired_diagnostics.count({device_id, owner})) {
+      return true;
+    }
+  }
+  const std::string value(message ? static_cast<const char *>(message) : "",
+                          message ? size : 0);
+  const auto found = diagnostic_publications.find(key);
+  if (found != diagnostic_publications.end() && found->second == value) {
+    return true;
+  }
+  diagnostic_publications[key] = value;
+  return false;
 }

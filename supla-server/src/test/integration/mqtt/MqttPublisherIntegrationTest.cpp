@@ -62,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(778);
+  waitForPublications(816);
   // print_expected();
 
   const char *expectedData[] = {
@@ -196,6 +196,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/soft_ver",
       "2.7.2",
+      "homeassistant/sensor/8ce92cb8c9f6db6b65703d2703691700/"
+      "gateway_12_last_connected/config",
+      "{\"uniq_id\":\"supla_8ce92cb8c9f6db6b65703d2703691700_gateway_12_last_"
+      "connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "8ce92cb8c9f6db6b65703d2703691700/devices/12/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-12\",\"name\":\"ZAMEL SRW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.2\"}}",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/enabled",
       "true",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/last_connected",
@@ -210,6 +218,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "23",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/25691/soft_ver",
       "2.8.59",
+      "homeassistant/sensor/8ce92cb8c9f6db6b65703d2703691700/"
+      "gateway_25691_last_connected/config",
+      "{\"uniq_id\":\"supla_8ce92cb8c9f6db6b65703d2703691700_gateway_25691_la"
+      "st_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "8ce92cb8c9f6db6b65703d2703691700/devices/25691/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-25691\",\"name\":\"ZAMEL "
+      "mSRW-01\",\"mf\":\"Zamel\",\"sw\":\"2.8.59\"}}",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/enabled",
       "true",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/last_connected",
@@ -224,6 +240,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/soft_ver",
       "2.5.3",
+      "homeassistant/sensor/61b2f9bdb22d3bd6336bb235bcb1b77e/"
+      "gateway_14_last_connected/config",
+      "{\"uniq_id\":\"supla_61b2f9bdb22d3bd6336bb235bcb1b77e_gateway_14_last_"
+      "connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "61b2f9bdb22d3bd6336bb235bcb1b77e/devices/14/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-14\",\"name\":\"SONOFF-DS18B20\","
+      "\"mf\":\"Itead\",\"sw\":\"2.5.3\"}}",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/6688/enabled",
       "true",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/6688/last_connected",
@@ -238,6 +262,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "10",
       "supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/6688/soft_ver",
       "2.7.9",
+      "homeassistant/sensor/61b2f9bdb22d3bd6336bb235bcb1b77e/"
+      "gateway_6688_last_connected/config",
+      "{\"uniq_id\":\"supla_61b2f9bdb22d3bd6336bb235bcb1b77e_gateway_6688_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "61b2f9bdb22d3bd6336bb235bcb1b77e/devices/6688/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-6688\",\"name\":\"Impulse counter "
+      "RB-03\",\"mf\":\"\",\"sw\":\"2.7.9\"}}",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/enabled",
       "true",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/last_connected",
@@ -252,6 +284,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/soft_ver",
       "2.7.0",
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "gateway_36_last_connected/config",
+      "{\"uniq_id\":\"supla_5b15b00055c044220196eb41965b3627_gateway_36_last_"
+      "connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "5b15b00055c044220196eb41965b3627/devices/36/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-36\",\"name\":\"ZAMEL ROW-02\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.0\"}}",
       "supla/45004b208185b207175522c7471f8526/devices/40/enabled",
       "true",
       "supla/45004b208185b207175522c7471f8526/devices/40/last_connected",
@@ -266,6 +306,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/45004b208185b207175522c7471f8526/devices/40/soft_ver",
       "2.5.3",
+      "homeassistant/sensor/45004b208185b207175522c7471f8526/"
+      "gateway_40_last_connected/config",
+      "{\"uniq_id\":\"supla_45004b208185b207175522c7471f8526_gateway_40_last_"
+      "connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "45004b208185b207175522c7471f8526/devices/40/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-40\",\"name\":\"SONOFF-TH16\","
+      "\"mf\":\"Itead\",\"sw\":\"2.5.3\"}}",
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/enabled",
       "true",
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/last_connected",
@@ -280,6 +328,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/soft_ver",
       "2.7.0",
+      "homeassistant/sensor/0c6beb47b1c2b14191e2bbb49e9d41c2/"
+      "gateway_157_last_connected/config",
+      "{\"uniq_id\":\"supla_0c6beb47b1c2b14191e2bbb49e9d41c2_gateway_157_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-157\",\"name\":\"ZAMEL SBW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.0\"}}",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/enabled",
       "true",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/last_connected",
@@ -294,6 +350,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/soft_ver",
       "2.7.2",
+      "homeassistant/sensor/4d3e49b9f3b202b1092fbfdc48d8d04f/"
+      "gateway_983_last_connected/config",
+      "{\"uniq_id\":\"supla_4d3e49b9f3b202b1092fbfdc48d8d04f_gateway_983_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-983\",\"name\":\"*Yunshan\","
+      "\"mf\":\"\",\"sw\":\"2.7.2\"}}",
       "supla/de1257b7824b6825c276b763db1b711f/devices/205/enabled",
       "true",
       "supla/de1257b7824b6825c276b763db1b711f/devices/205/last_connected",
@@ -308,6 +372,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/de1257b7824b6825c276b763db1b711f/devices/205/soft_ver",
       "2.5.5",
+      "homeassistant/sensor/de1257b7824b6825c276b763db1b711f/"
+      "gateway_205_last_connected/config",
+      "{\"uniq_id\":\"supla_de1257b7824b6825c276b763db1b711f_gateway_205_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "de1257b7824b6825c276b763db1b711f/devices/205/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-205\","
+      "\"name\":\"SUPLA-GATE-MODULE\",\"mf\":\"\",\"sw\":\"2.5.5\"}}",
       "supla/b72dfbdb402908e6939d7257dfed2367/devices/7212/enabled",
       "true",
       "supla/b72dfbdb402908e6939d7257dfed2367/devices/7212/last_connected",
@@ -322,6 +394,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/b72dfbdb402908e6939d7257dfed2367/devices/7212/soft_ver",
       "1.6.1",
+      "homeassistant/sensor/b72dfbdb402908e6939d7257dfed2367/"
+      "gateway_7212_last_connected/config",
+      "{\"uniq_id\":\"supla_b72dfbdb402908e6939d7257dfed2367_gateway_7212_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "b72dfbdb402908e6939d7257dfed2367/devices/7212/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-7212\",\"name\":\"Eco-pea level "
+      "sensor\",\"mf\":\"\",\"sw\":\"1.6.1\"}}",
       "supla/3281677315ff159f91471b34828f603b/devices/563/enabled",
       "true",
       "supla/3281677315ff159f91471b34828f603b/devices/563/last_connected",
@@ -336,6 +416,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/3281677315ff159f91471b34828f603b/devices/563/soft_ver",
       "2.7.0",
+      "homeassistant/sensor/3281677315ff159f91471b34828f603b/"
+      "gateway_563_last_connected/config",
+      "{\"uniq_id\":\"supla_3281677315ff159f91471b34828f603b_gateway_563_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "3281677315ff159f91471b34828f603b/devices/563/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-563\",\"name\":\"ZAMEL SBW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.0\"}}",
       "supla/46948d474db1b5e3cccf2c89281414c2/devices/411/enabled",
       "true",
       "supla/46948d474db1b5e3cccf2c89281414c2/devices/411/last_connected",
@@ -350,6 +438,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/46948d474db1b5e3cccf2c89281414c2/devices/411/soft_ver",
       "2.7.2",
+      "homeassistant/sensor/46948d474db1b5e3cccf2c89281414c2/"
+      "gateway_411_last_connected/config",
+      "{\"uniq_id\":\"supla_46948d474db1b5e3cccf2c89281414c2_gateway_411_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "46948d474db1b5e3cccf2c89281414c2/devices/411/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-411\",\"name\":\"ZAMEL SLW-02\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.2\"}}",
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/enabled",
       "true",
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/last_connected",
@@ -364,6 +460,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "10",
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/soft_ver",
       "2.7.8",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "gateway_506_last_connected/config",
+      "{\"uniq_id\":\"supla_0df527b1786040fe57d6d9f43b632fbb_gateway_506_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "0df527b1786040fe57d6d9f43b632fbb/devices/506/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-506\",\"name\":\"ZAMEL MEW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.8\"}}",
       "supla/c2e6c948d570bfb4e8b7152d890937db/devices/989/enabled",
       "true",
       "supla/c2e6c948d570bfb4e8b7152d890937db/devices/989/last_connected",
@@ -378,6 +482,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/c2e6c948d570bfb4e8b7152d890937db/devices/989/soft_ver",
       "2.5.5",
+      "homeassistant/sensor/c2e6c948d570bfb4e8b7152d890937db/"
+      "gateway_989_last_connected/config",
+      "{\"uniq_id\":\"supla_c2e6c948d570bfb4e8b7152d890937db_gateway_989_last"
+      "_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "c2e6c948d570bfb4e8b7152d890937db/devices/989/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-989\",\"name\":\"ZAMEL SLW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.5.5\"}}",
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/enabled",
       "true",
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/last_connected",
@@ -392,6 +504,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/soft_ver",
       "2.0.0",
+      "homeassistant/sensor/8588fb099c7f6f32d0b5dc43cbc3318b/"
+      "gateway_7878_last_connected/config",
+      "{\"uniq_id\":\"supla_8588fb099c7f6f32d0b5dc43cbc3318b_gateway_7878_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "8588fb099c7f6f32d0b5dc43cbc3318b/devices/7878/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-7878\",\"name\":\"BME280\","
+      "\"mf\":\"\",\"sw\":\"2.0.0\"}}",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/enabled",
       "true",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/last_connected",
@@ -406,6 +526,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "11",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/9934/soft_ver",
       "2.7.25",
+      "homeassistant/sensor/7450214b8189dc129301c2c922cdcfd0/"
+      "gateway_9934_last_connected/config",
+      "{\"uniq_id\":\"supla_7450214b8189dc129301c2c922cdcfd0_gateway_9934_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "7450214b8189dc129301c2c922cdcfd0/devices/9934/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9934\",\"name\":\"HEATPOL HOME+\","
+      "\"mf\":\"Heatpol\",\"sw\":\"2.7.25\"}}",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/enabled",
       "true",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/last_connected",
@@ -420,6 +548,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "21",
       "supla/7450214b8189dc129301c2c922cdcfd0/devices/23267/soft_ver",
       "23.11.01",
+      "homeassistant/sensor/7450214b8189dc129301c2c922cdcfd0/"
+      "gateway_23267_last_connected/config",
+      "{\"uniq_id\":\"supla_7450214b8189dc129301c2c922cdcfd0_gateway_23267_la"
+      "st_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "7450214b8189dc129301c2c922cdcfd0/devices/23267/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-23267\",\"name\":\"ZAMEL GKW-01\","
+      "\"mf\":\"Zamel\",\"sw\":\"23.11.01\"}}",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/enabled",
       "true",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/last_connected",
@@ -434,6 +570,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/bd6287c398bc81403c643410f5043d4e/devices/9236/soft_ver",
       "1.6.1",
+      "homeassistant/sensor/bd6287c398bc81403c643410f5043d4e/"
+      "gateway_9236_last_connected/config",
+      "{\"uniq_id\":\"supla_bd6287c398bc81403c643410f5043d4e_gateway_9236_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "bd6287c398bc81403c643410f5043d4e/devices/9236/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9236\",\"name\":\"HOME\","
+      "\"mf\":\"\",\"sw\":\"1.6.1\"}}",
       "supla/689eb3922683b4e4e7b9227f32f2d89b/devices/5823/enabled",
       "true",
       "supla/689eb3922683b4e4e7b9227f32f2d89b/devices/5823/last_connected",
@@ -448,6 +592,15 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/689eb3922683b4e4e7b9227f32f2d89b/devices/5823/soft_ver",
       "2.5.3",
+      "homeassistant/sensor/689eb3922683b4e4e7b9227f32f2d89b/"
+      "gateway_5823_last_connected/config",
+      "{\"uniq_id\":\"supla_689eb3922683b4e4e7b9227f32f2d89b_gateway_5823_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "689eb3922683b4e4e7b9227f32f2d89b/devices/5823/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-5823\","
+      "\"name\":\"WEMOS-ROLLER-SHUTTER-UNI by@Zybi\",\"mf\":\"\","
+      "\"sw\":\"2.5.3\"}}",
       "supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/enabled",
       "true",
       "supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/last_connected",
@@ -462,6 +615,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/soft_ver",
       "2.5.5",
+      "homeassistant/sensor/113fb17f5b300bfbbfb667eb6d4d1ef8/"
+      "gateway_1068_last_connected/config",
+      "{\"uniq_id\":\"supla_113fb17f5b300bfbbfb667eb6d4d1ef8_gateway_1068_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "113fb17f5b300bfbbfb667eb6d4d1ef8/devices/1068/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-1068\","
+      "\"name\":\"SUPLA-GATE-MODULE\",\"mf\":\"\",\"sw\":\"2.5.5\"}}",
       "supla/1d43b8d35e31f1508c70b9b77e03e293/devices/3195/enabled",
       "true",
       "supla/1d43b8d35e31f1508c70b9b77e03e293/devices/3195/last_connected",
@@ -476,6 +637,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "5",
       "supla/1d43b8d35e31f1508c70b9b77e03e293/devices/3195/soft_ver",
       "2.0",
+      "homeassistant/sensor/1d43b8d35e31f1508c70b9b77e03e293/"
+      "gateway_3195_last_connected/config",
+      "{\"uniq_id\":\"supla_1d43b8d35e31f1508c70b9b77e03e293_gateway_3195_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "1d43b8d35e31f1508c70b9b77e03e293/devices/3195/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-3195\",\"name\":\"SONOFF-p4-DHT22 "
+      "by@Zybi\",\"mf\":\"Itead\",\"sw\":\"2.0\"}}",
       "supla/b9802383dd06c57d0c41de6805957d0f/devices/9480/enabled",
       "true",
       "supla/b9802383dd06c57d0c41de6805957d0f/devices/9480/last_connected",
@@ -490,6 +659,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "11",
       "supla/b9802383dd06c57d0c41de6805957d0f/devices/9480/soft_ver",
       "2.7.18",
+      "homeassistant/sensor/b9802383dd06c57d0c41de6805957d0f/"
+      "gateway_9480_last_connected/config",
+      "{\"uniq_id\":\"supla_b9802383dd06c57d0c41de6805957d0f_gateway_9480_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "b9802383dd06c57d0c41de6805957d0f/devices/9480/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9480\",\"name\":\"SMART VALVE "
+      "PEVEKO\",\"mf\":\"Peveko\",\"sw\":\"2.7.18\"}}",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/enabled",
       "true",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/last_connected",
@@ -504,6 +681,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "10",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/soft_ver",
       "2.7.2",
+      "homeassistant/sensor/64d3d5bd59eb5fe2b67bf4fe4d222905/"
+      "gateway_9717_last_connected/config",
+      "{\"uniq_id\":\"supla_64d3d5bd59eb5fe2b67bf4fe4d222905_gateway_9717_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9717\",\"name\":\"IMPULSE "
+      "COUNTER\",\"mf\":\"\",\"sw\":\"2.7.2\"}}",
       "supla/93158d9b795bb1c65e79199d42381706/devices/9344/enabled",
       "true",
       "supla/93158d9b795bb1c65e79199d42381706/devices/9344/last_connected",
@@ -518,6 +703,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/93158d9b795bb1c65e79199d42381706/devices/9344/soft_ver",
       "2.7.13",
+      "homeassistant/sensor/93158d9b795bb1c65e79199d42381706/"
+      "gateway_9344_last_connected/config",
+      "{\"uniq_id\":\"supla_93158d9b795bb1c65e79199d42381706_gateway_9344_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "93158d9b795bb1c65e79199d42381706/devices/9344/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9344\",\"name\":\"ZAMEL SBW-02\","
+      "\"mf\":\"Zamel\",\"sw\":\"2.7.13\"}}",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/enabled",
       "true",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/last_connected",
@@ -532,6 +725,15 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "5",
       "supla/4b2bb30d2db31cf5809ede445862f6d7/devices/5761/soft_ver",
       "2.0",
+      "homeassistant/sensor/4b2bb30d2db31cf5809ede445862f6d7/"
+      "gateway_5761_last_connected/config",
+      "{\"uniq_id\":\"supla_4b2bb30d2db31cf5809ede445862f6d7_gateway_5761_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "4b2bb30d2db31cf5809ede445862f6d7/devices/5761/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-5761\","
+      "\"name\":\"SONOFF-gate-p5-DS18B20 by@Zybi\",\"mf\":\"Itead\","
+      "\"sw\":\"2.0\"}}",
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/enabled",
       "false",
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/last_connected",
@@ -546,6 +748,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/soft_ver",
       "1.6.1",
+      "homeassistant/sensor/879b9d8688bc4b7108801c5c6bff4b3b/"
+      "gateway_4567_last_connected/config",
+      NULL,
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/enabled",
       "true",
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/last_connected",
@@ -560,6 +765,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "12",
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/soft_ver",
       "2.3.2/1.11 @lukfud",
+      "homeassistant/sensor/ee2611c4632f53261cf3fb8d9d2f182d/"
+      "gateway_10286_last_connected/config",
+      "{\"uniq_id\":\"supla_ee2611c4632f53261cf3fb8d9d2f182d_gateway_10286_la"
+      "st_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-10286\",\"name\":\"GATE\","
+      "\"mf\":\"\",\"sw\":\"2.3.2/1.11 @lukfud\"}}",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/enabled",
       "true",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/last_connected",
@@ -574,6 +787,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/soft_ver",
       "1.6.1",
+      "homeassistant/sensor/7e2182788b9214ee5b66349d5b7668cf/"
+      "gateway_10190_last_connected/config",
+      "{\"uniq_id\":\"supla_7e2182788b9214ee5b66349d5b7668cf_gateway_10190_la"
+      "st_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "7e2182788b9214ee5b66349d5b7668cf/devices/10190/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-10190\",\"name\":\"SUPLA-Skalar\","
+      "\"mf\":\"\",\"sw\":\"1.6.1\"}}",
       "supla/6527881802ebd8c4ff2b3955bc326704/devices/4124/enabled",
       "true",
       "supla/6527881802ebd8c4ff2b3955bc326704/devices/4124/last_connected",
@@ -588,6 +809,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "9",
       "supla/6527881802ebd8c4ff2b3955bc326704/devices/4124/soft_ver",
       "1.6.1",
+      "homeassistant/sensor/6527881802ebd8c4ff2b3955bc326704/"
+      "gateway_4124_last_connected/config",
+      "{\"uniq_id\":\"supla_6527881802ebd8c4ff2b3955bc326704_gateway_4124_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "6527881802ebd8c4ff2b3955bc326704/devices/4124/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-4124\",\"name\":\"8xDSv3.1 "
+      "by@wojtek\",\"mf\":\"\",\"sw\":\"1.6.1\"}}",
       "supla/15cb17b568de00e1ddc3005e4674bbde/devices/9665/enabled",
       "true",
       "supla/15cb17b568de00e1ddc3005e4674bbde/devices/9665/last_connected",
@@ -602,6 +831,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "10",
       "supla/15cb17b568de00e1ddc3005e4674bbde/devices/9665/soft_ver",
       "1.0.4",
+      "homeassistant/sensor/15cb17b568de00e1ddc3005e4674bbde/"
+      "gateway_9665_last_connected/config",
+      "{\"uniq_id\":\"supla_15cb17b568de00e1ddc3005e4674bbde_gateway_9665_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "15cb17b568de00e1ddc3005e4674bbde/devices/9665/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-9665\",\"name\":\"Weather\","
+      "\"mf\":\"\",\"sw\":\"1.0.4\"}}",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/enabled",
       "true",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/last_connected",
@@ -616,6 +853,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/soft_ver",
       "2.5.5s",
+      "homeassistant/sensor/c8e5fd3b528033b98e09e0d1582d1031/"
+      "gateway_6361_last_connected/config",
+      "{\"uniq_id\":\"supla_c8e5fd3b528033b98e09e0d1582d1031_gateway_6361_las"
+      "t_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "c8e5fd3b528033b98e09e0d1582d1031/devices/6361/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-6361\",\"name\":\"SONOFF-SV by "
+      "@slawek\",\"mf\":\"Itead\",\"sw\":\"2.5.5s\"}}",
       "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/enabled",
       "true",
       "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/last_connected",
@@ -630,6 +875,14 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "17",
       "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/soft_ver",
       "2.8.47",
+      "homeassistant/sensor/aae5fd3b528033b98e09e0d1582d1031/"
+      "gateway_10300_last_connected/config",
+      "{\"uniq_id\":\"supla_aae5fd3b528033b98e09e0d1582d1031_gateway_10300_la"
+      "st_connected\",\"name\":\"Last connected\",\"stat_t\":\"supla/"
+      "aae5fd3b528033b98e09e0d1582d1031/devices/10300/last_connected\","
+      "\"device_class\":\"timestamp\",\"entity_category\":\"diagnostic\","
+      "\"device\":{\"ids\":\"supla-iodevice-10300\",\"name\":\"ZAMEL RNW-01\","
+      "\"mf\":\"\",\"sw\":\"2.8.47\"}}",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/type",
       "RELAY",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/function",
@@ -2404,6 +2657,22 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5177/"
       "hidden",
       "false",
+      "homeassistant/sensor/879b9d8688bc4b7108801c5c6bff4b3b/"
+      "battery_4567_0/config",
+      NULL,
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/state/"
+      "battery_level",
+      NULL,
+      "homeassistant/sensor/879b9d8688bc4b7108801c5c6bff4b3b/"
+      "network_4567_0_ip_address/config",
+      NULL,
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/state/ip_address",
+      NULL,
+      "homeassistant/sensor/879b9d8688bc4b7108801c5c6bff4b3b/"
+      "network_4567_0_wifi_rssi/config",
+      NULL,
+      "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/state/wifi_rssi",
+      NULL,
       "supla/879b9d8688bc4b7108801c5c6bff4b3b/devices/4567/channels/5177/state/"
       "connected",
       "false",
@@ -3042,7 +3311,7 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   }
 
   waitForConnection();
-  waitForPublications(778);
+  waitForPublications(816);
   getLibAdapter()->published_clear();
 
   dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())

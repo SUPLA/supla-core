@@ -17,17 +17,75 @@
  */
 
 #include <mqtt_message_provider.h>
+
+#include <arpa/inet.h>
+
+#include "device/devicechannels.h"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <cstdio>
+#include <vector>
 
 supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
   this->index = 0;
 }
 
 supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
+
+supla_mqtt_message_provider::network_diagnostic
+supla_mqtt_message_provider::network_metadata(unsigned int owner, int field) {
+  switch (field) {
+    case SUPLA_CHANNELSTATE_FIELD_IPV4:
+      return {owner, "ip_address", "IP address", nullptr, nullptr, {}};
+    case SUPLA_CHANNELSTATE_FIELD_WIFIRSSI:
+      return {owner, "wifi_rssi", "Wi-Fi RSSI", "dBm", "signal_strength", {}};
+    default:
+      return {owner, "radio_signal_strength", "Radio signal strength", "%",
+              nullptr, {}};
+  }
+}
+
+std::vector<supla_mqtt_message_provider::network_diagnostic>
+supla_mqtt_message_provider::snapshot_network_diagnostics(
+    supla_device_channels *channels, int channel_id) {
+  std::vector<network_diagnostic> result;
+  for (const auto &sample : channels->get_network_samples(channel_id)) {
+    auto entry = network_metadata(sample.owner, sample.field);
+    if (sample.value == INT64_MIN) {
+      result.push_back(entry);
+      continue;
+    }
+    if (sample.field == SUPLA_CHANNELSTATE_FIELD_IPV4) {
+      struct in_addr address;
+      address.s_addr = static_cast<uint32_t>(sample.value);
+      char ip[INET_ADDRSTRLEN];
+      if (!inet_ntop(AF_INET, &address, ip, sizeof(ip))) {
+        continue;
+      }
+      entry.value = ip;
+    } else {
+      entry.value = std::to_string(sample.value);
+    }
+    result.push_back(entry);
+  }
+  return result;
+}
+
+bool supla_mqtt_message_provider::create_network_message(
+    const network_diagnostic &data, const char *prefix, const char *suid,
+    int device_id, char **topic_name, void **message, size_t *message_size) {
+  const char *value = data.value.empty() ? nullptr : data.value.c_str();
+  if (data.owner == 0) {
+    return create_message(prefix, suid, topic_name, message, message_size,
+                          value, false, "devices/%i/state/%s", device_id,
+                          data.key);
+  }
+  return create_message(prefix, suid, topic_name, message, message_size, value,
+                        false, "devices/%i/subdevices/%u/state/%s", device_id,
+                        data.owner, data.key);
+}
 
 bool supla_mqtt_message_provider::create_message(
     const char *topic_prefix, const char *suid, char **topic_name_out,
@@ -92,6 +150,23 @@ bool supla_mqtt_message_provider::create_message(
   }
 
   return false;
+}
+
+bool supla_mqtt_message_provider::create_battery_message(
+    const char *topic_prefix, const char *suid, int device_id,
+    unsigned int owner, int level, char **topic_name, void **message,
+    size_t *message_size) {
+  char value[16];
+  snprintf(value, sizeof(value), "%d", level);
+  const char *payload = level >= 0 ? value : nullptr;
+  if (owner == 0) {
+    return create_message(topic_prefix, suid, topic_name, message, message_size,
+                          payload, false, "devices/%i/state/battery_level",
+                          device_id);
+  }
+  return create_message(
+      topic_prefix, suid, topic_name, message, message_size, payload, false,
+      "devices/%i/subdevices/%u/state/battery_level", device_id, owner);
 }
 
 void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,

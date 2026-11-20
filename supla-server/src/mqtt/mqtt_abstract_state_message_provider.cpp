@@ -1109,8 +1109,9 @@ bool supla_mqtt_abstract_state_message_provider::
           get_channel_id());
     case 7: {
       char value[50] = {};
-      if (hvac_val && hvac_val->is_on() > 1) {
-        snprintf(value, sizeof(value), "%i", hvac_val->is_on() - 2);
+      const int percentage = hvac_val ? hvac_val->get_opening_percentage() : -1;
+      if (percentage >= 0) {
+        snprintf(value, sizeof(value), "%i", percentage);
       }
 
       return create_message(topic_prefix, user_suid, topic_name, message,
@@ -1118,6 +1119,16 @@ bool supla_mqtt_abstract_state_message_provider::
                             "devices/%i/channels/%i/state/percentage",
                             get_device_id(), get_channel_id());
     }
+    case 8:
+      if (!(channel_flags & SUPLA_CHANNEL_FLAG_BATTERY_COVER_AVAILABLE)) {
+        return false;
+      }
+      return create_message(
+          topic_prefix, user_suid, topic_name, message, message_size,
+          hvac_val ? (hvac_val->is_battery_cover_open() ? "true" : "false")
+                   : nullptr,
+          false, "devices/%i/channels/%i/state/battery_cover_open",
+          get_device_id(), get_channel_id());
   }
 
   return false;

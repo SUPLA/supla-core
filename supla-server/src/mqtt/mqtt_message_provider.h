@@ -19,21 +19,48 @@
 #ifndef MQTT_MESSAGE_PROVIDER_H_
 #define MQTT_MESSAGE_PROVIDER_H_
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "db/database.h"
 #include "mqtt_client_settings.h"
 
 #define MQTT_MAX_TOPIC_NAME_SIZE 32767
 #define MQTT_MAX_MESSAGE_SIZE 1048576
 
+class supla_device_channels;
+
 class supla_mqtt_message_provider {
  private:
   unsigned short index;
 
  protected:
+  struct network_diagnostic {
+    unsigned int owner;
+    const char *key;
+    const char *label;
+    const char *unit;
+    const char *device_class;
+    std::string value;
+  };
+
+  static network_diagnostic network_metadata(unsigned int owner, int field);
+  static std::vector<network_diagnostic> snapshot_network_diagnostics(
+      supla_device_channels *channels, int channel_id);
+  bool create_network_message(const network_diagnostic &data,
+                              const char *prefix, const char *suid,
+                              int device_id, char **topic_name, void **message,
+                              size_t *message_size);
+
   bool create_message(const char *topic_prefix, const char *email,
                       char **topic_name_out, void **message,
                       size_t *message_size, const char *message_string_in,
                       bool include_null_byte, const char *topic_name_in, ...);
+  bool create_battery_message(const char *topic_prefix, const char *suid,
+                              int device_id, unsigned int owner, int level,
+                              char **topic_name, void **message,
+                              size_t *message_size);
   void get_mfr_name(int mfr_id, char *buf, size_t buf_size);
 
  public:

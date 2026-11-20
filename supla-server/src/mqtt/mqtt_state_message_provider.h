@@ -21,6 +21,8 @@
 
 #include <memory.h>
 
+#include <vector>
+
 #include "device/channel_property_getter.h"
 #include "devicechannel.h"
 #include "mqtt_abstract_state_message_provider.h"
@@ -30,6 +32,16 @@ class supla_mqtt_state_message_provider
     : public supla_mqtt_abstract_state_message_provider {
  private:
   supla_channel_property_getter prop_getter;
+  std::vector<std::pair<unsigned int, int>> batteries;
+  size_t next_battery = 0;
+  std::vector<network_diagnostic> network;
+  size_t next_network = 0;
+
+ public:
+  void use_channel_metadata_for_diagnostics() { publish_diagnostics = false; }
+
+ private:
+  bool publish_diagnostics = false;
 
  protected:
   virtual const char *_get_user_suid(void);
@@ -39,6 +51,9 @@ class supla_mqtt_state_message_provider
  public:
   supla_mqtt_state_message_provider(void);
   virtual ~supla_mqtt_state_message_provider(void);
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size) override;
 };
 
 #endif /*MQTT_STATE_MESSAGE_PROVIDER_H_*/

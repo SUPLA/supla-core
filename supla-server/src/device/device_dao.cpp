@@ -29,6 +29,7 @@
 #include "device/device.h"
 #include "device/extended_value/channel_extended_value_factory.h"
 #include "log.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "tools.h"
 
 using std::string;
@@ -856,7 +857,8 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
       "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, CASE WHEN "
       "v.`valid_to` >= UTC_TIMESTAMP() THEN TIME_TO_SEC(TIMEDIFF(v.`valid_to`, "
       "UTC_TIMESTAMP())) + 2 ELSE NULL END, ev.`type`, ev.`value`, "
-      "c.`user_config`, c.`properties`, s.`state` FROM `supla_dev_channel` c  "
+      "c.`user_config`, c.`properties`, s.`state`, c.`sub_device_id` "
+      "FROM `supla_dev_channel` c "
       "LEFT JOIN `supla_dev_channel_value` v ON v.channel_id = c.id LEFT JOIN "
       "`supla_dev_channel_extended_value` ev ON ev.channel_id = c.id LEFT JOIN "
       "`supla_dev_channel_state` s ON s.channel_id = c.id WHERE "
@@ -871,7 +873,8 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
 
   if (dba->stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     my_bool is_null[11] = {};
-    MYSQL_BIND rbind[20] = {};
+    MYSQL_BIND rbind[21] = {};
+    unsigned int sub_device_id = 0;
 
     int type = 0;
     int func = 0;
@@ -1003,6 +1006,9 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
     rbind[19].is_null = &state_is_null;
     rbind[19].buffer_length = sizeof(state) - 1;
     rbind[19].length = &state_size;
+    rbind[20].buffer_type = MYSQL_TYPE_LONG;
+    rbind[20].buffer = &sub_device_id;
+    rbind[20].is_unsigned = true;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1064,6 +1070,7 @@ vector<supla_device_channel *> supla_device_dao::get_channels(
               validity_time_sec, extended_value,
               user_config_size ? user_config : nullptr,
               properties_size ? properties : nullptr, channel_state);
+          channel->sub_device_id = sub_device_id;
 
           result.push_back(channel);
         }
@@ -1835,6 +1842,8 @@ void supla_device_dao::set_subdevice_details(int device_id,
 
   if (dba->stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+    supla_mqtt_client_suite::globalInstance()->onSubdeviceNameChanged(
+        device_id, details->SubDeviceId, details->Name);
   }
 
   if (!already_connected) {

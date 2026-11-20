@@ -348,7 +348,7 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
   sleep(2);
   getDS()->on_device_deleted(117, 36);
   getDS()->on_device_deleted(743, 506);
-  waitForPublications(122);
+  waitForPublications(142);
 
   // print_expected();
 
@@ -367,6 +367,9 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/soft_ver",
       NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "gateway_36_last_connected/config",
+      NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/type",
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/function",
@@ -374,6 +377,22 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/caption",
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/hidden",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "battery_36_0/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/"
+      "battery_level",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "network_36_0_ip_address/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/ip_address",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "network_36_0_wifi_rssi/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/wifi_rssi",
       NULL,
       "homeassistant/light/5b15b00055c044220196eb41965b3627/50/config",
       NULL,
@@ -392,6 +411,22 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/caption",
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/hidden",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "battery_36_0/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/"
+      "battery_level",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "network_36_0_ip_address/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/ip_address",
+      NULL,
+      "homeassistant/sensor/5b15b00055c044220196eb41965b3627/"
+      "network_36_0_wifi_rssi/config",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/state/wifi_rssi",
       NULL,
       "homeassistant/light/5b15b00055c044220196eb41965b3627/51/config",
       NULL,
@@ -417,6 +452,9 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/soft_ver",
       NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "gateway_506_last_connected/config",
+      NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/type",
       NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/"
@@ -425,6 +463,22 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/caption",
       NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/hidden",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "battery_506_0/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/"
+      "battery_level",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "network_506_0_ip_address/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/ip_address",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "network_506_0_wifi_rssi/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/wifi_rssi",
       NULL,
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_0/config",
       NULL,
@@ -685,7 +739,7 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
   sleep(5);
   getDS()->on_devicedata_changed(743, 506);
 
-  waitForPublications(92);
+  waitForPublications(98);
 
   // print_expected();
 
@@ -698,6 +752,22 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/caption",
       NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/hidden",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "battery_506_0/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/"
+      "battery_level",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "network_506_0_ip_address/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/ip_address",
+      NULL,
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/"
+      "network_506_0_wifi_rssi/config",
+      NULL,
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/state/wifi_rssi",
       NULL,
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_0/config",
       NULL,
