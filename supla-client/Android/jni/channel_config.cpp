@@ -133,6 +133,7 @@ jobject supla_channel_config_to_jobject(JNIEnv *env, TSCS_ChannelConfig *config,
         }
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND:
+      case SUPLA_CHANNELFNC_VERTICAL_BLIND:
         if (config->ConfigType == SUPLA_CONFIG_TYPE_DEFAULT &&
             sizeof(TChannelConfig_FacadeBlind) == config->ConfigSize) {
           return supla_cc_fb_to_jobject(
