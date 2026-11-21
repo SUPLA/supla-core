@@ -21,6 +21,7 @@
 #include "device/extended_value/channel_and_timer_state_extended_value.h"
 #include "device/extended_value/channel_em_extended_value.h"
 #include "device/extended_value/channel_ic_extended_value.h"
+#include "device/extended_value/channel_general_purpose_text_extended_value.h"
 #include "device/extended_value/channel_multi_extended_value.h"
 #include "device/extended_value/channel_state_extended_value.h"
 #include "device/extended_value/channel_thermostat_extended_value.h"
@@ -50,6 +51,9 @@ supla_abstract_channel_extended_value_factory::new_value(
   } else if (supla_channel_multi_extended_value::is_ev_type_supported(
                  ev->type)) {
     return new supla_channel_multi_extended_value(ev);
+  } else if (supla_channel_general_purpose_text_extended_value::
+                 is_ev_type_supported(ev->type)) {
+    return new supla_channel_general_purpose_text_extended_value(ev);
   }
 
   return nullptr;
@@ -77,6 +81,9 @@ supla_abstract_channel_extended_value_factory::new_value(
   } else if (supla_channel_multi_extended_value::is_ev_type_supported(
                  ev->type)) {
     return new supla_channel_multi_extended_value(ev);
+  } else if (supla_channel_general_purpose_text_extended_value::
+                 is_ev_type_supported(ev->type)) {
+    return new supla_channel_general_purpose_text_extended_value(ev);
   }
 
   return nullptr;
