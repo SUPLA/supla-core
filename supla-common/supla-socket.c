@@ -124,7 +124,7 @@ unsigned char ssocket_loadcertificates(SSL_CTX *ctx, const char *CertFile,
     return 0;
   }
 
-  if (SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0) {
+  if (SSL_CTX_use_certificate_chain_file(ctx, CertFile) <= 0) {
     ssocket_ssl_error_log();
     return 0;
   }
